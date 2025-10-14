@@ -620,7 +620,7 @@ class OpenWrtWiFiScanner:
             
         print(f"\nTotal connected clients: {total_clients}")
     
-    def monitor_clients(self, refresh_interval: float = 5.0, debug: bool = False, file:str= None):
+    def monitor_clients(self, refresh_interval: float = 5.0, debug: bool = False, file:str= None, a:str=""):
         """
         Continuously monitor WiFi clients with auto-refresh.
         
@@ -630,17 +630,17 @@ class OpenWrtWiFiScanner:
         """
         print(f"Starting WiFi client monitoring (refresh every {refresh_interval}s)")
         print("Press Ctrl+C to stop monitoring\n")
-        
+        ts = time.time()
         try:
             iteration = 0
-            while True:
+            while True: # Clear caches every hour
                 iteration += 1
                 start_time = time.time()
                 
                 # Get current clients
                 all_clients = self.get_all_wifi_clients(debug)
-                with open(file, "a") as f:
-                    f.write(f"{datetime.now().timestamp()} {str(all_clients)}\n")
+                with open(file  + ".txt"  , "a") as f:
+                    f.write(f"{a}: {datetime.now().timestamp()} {str(all_clients)}\n")
 
                 
                 scan_time = time.time() - start_time
@@ -656,6 +656,7 @@ class OpenWrtWiFiScanner:
                 
                 # Wait for the specified interval
                 time.sleep(refresh_interval)
+                if iteration >= 10: break
                 
         except KeyboardInterrupt:
             print("\n\nMonitoring stopped by user.")
@@ -688,6 +689,8 @@ def main():
                        help="Enable debug mode to show available services and interfaces")
     parser.add_argument("-i", "--interval", type=float, metavar="SECONDS",
                        help="Enable auto-refresh mode with specified interval in seconds (min: 1)")
+    parser.add_argument("-a", "--file-number", type=str, default="",
+                       help="Append a string to the output file name")
 
 
     args = parser.parse_args()
@@ -750,7 +753,7 @@ def main():
                 print("Warning: Wireless scan (-s) is not supported in auto-refresh mode")
             
             # Start monitoring mode
-            scanner.monitor_clients(refresh_interval=args.interval, debug=args.debug, file=args.file)
+            scanner.monitor_clients(refresh_interval=args.interval, debug=args.debug, file=args.file, a=args.file_number)
         else:
             # Single scan mode
             all_clients = scanner.get_all_wifi_clients(debug=args.debug)
