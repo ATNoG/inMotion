@@ -1,0 +1,7 @@
+Perguntas Wavecom:
+- O AP está localizado em que zona do autocarro?
+	- Interessa simular pagamento/passagem de bilhete?
+	- Se há AP's nas paragens e nos autocarros, o que garante que os telemóveis fazem o ajuste do AP correto num tempo útil/momento ideal
+	
+- Sendo o RSSI radial, o que fazer quanto a situações em que a distância seria a mesma dentro e fora do autocarro..?
+

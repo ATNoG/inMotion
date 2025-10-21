@@ -1,0 +1,11 @@
+phy0-ap0,phy1-ap0
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -53, 'rx_bytes': 160546, 'tx_bytes': 54758, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -43, 'rx_bytes': 162058, 'tx_bytes': 55446, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -44, 'rx_bytes': 163498, 'tx_bytes': 56134, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -34, 'rx_bytes': 164863, 'tx_bytes': 57427, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -49, 'rx_bytes': 167966, 'tx_bytes': 58464, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -60, 'rx_bytes': 171143, 'tx_bytes': 58809, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -55, 'rx_bytes': 172686, 'tx_bytes': 58986, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+[],"[{'mac': '76:64:61:f6:e6:14', 'rssi': -64, 'rx_bytes': 174463, 'tx_bytes': 59275, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]"
+"[{'mac': '76:64:61:f6:e6:14', 'rssi': -62, 'rx_bytes': 216, 'tx_bytes': 357, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': False}]","[{'mac': '76:64:61:f6:e6:14', 'rssi': -62, 'rx_bytes': 174891, 'tx_bytes': 59861, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': False, 'authorized': False}]"
+"[{'mac': '76:64:61:f6:e6:14', 'rssi': -62, 'rx_bytes': 216, 'tx_bytes': 623, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': False}]","[{'mac': '76:64:61:f6:e6:14', 'rssi': 'N/A', 'rx_bytes': 0, 'tx_bytes': 0, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': False, 'authorized': False}]"
