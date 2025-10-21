@@ -1,35 +1,130 @@
-# 1: 1761055449.663832 {'phy0-ap0': [], 'phy1-ap0': [{'mac': 'e6:53:5c:2a:e8:e2', 'rssi': -51, 'rx_bytes': 259437, 'tx_bytes': 86091, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]}
-# 36: 1760454981.805809 {'phy0-ap0': [{'mac': '76:64:61:f6:e6:14', 'rssi': -53, 'rx_bytes': 50914, 'tx_bytes': 23489, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}], 'phy1-ap0': [{'mac': '76:64:61:f6:e6:14', 'rssi': 'N/A', 'rx_bytes': 0, 'tx_bytes': 0, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': False, 'authorized': False}]}
-# 37: 1760454994.640037 {'phy0-ap0': [{'mac': '76:64:61:f6:e6:14', 'rssi': -31, 'rx_bytes': 70540, 'tx_bytes': 31391, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}], 'phy1-ap0': []}
-# 34: 1760454863.122356 {'phy0-ap0': [{'mac': '76:64:61:f6:e6:14', 'rssi': 'N/A', 'rx_bytes': 0, 'tx_bytes': 0, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': False, 'authorized': False}], 'phy1-ap0': [{'mac': '76:64:61:f6:e6:14', 'rssi': -64, 'rx_bytes': 40423, 'tx_bytes': 29715, 'connected_time': 0, 'inactive_time': 0, 'auth': True, 'assoc': True, 'authorized': True}]}
 import pandas as pd
-import json
 import argparse
 import ast
+import os
+from typing import List, Dict, Any, Optional
 
-def export_to_csv(input_file: str, output_file: str) -> None:
-	data = [] # list of dicts
+def extract_rssi(data_dict: Dict[str, List[Dict[str, Any]]]) -> Optional[float]:
+	"""
+	Extract RSSI value from data dict, handling both phy0-ap0 and phy1-ap0.
+	Prioritizes authorized connections and handles 'N/A' values.
+	If both phys have valid RSSI, returns the mean.
+	"""
+	rssi_values = []
+	
+	# Check both phys
+	for phy_key in ['phy0-ap0', 'phy1-ap0']:
+		if phy_key in data_dict and len(data_dict[phy_key]) > 0:
+			for station in data_dict[phy_key]:
+				rssi = station.get('rssi', 'N/A')
+				# Only use valid RSSI values
+				if rssi != 'N/A' and isinstance(rssi, (int, float)):
+					rssi_values.append(float(rssi))
+	
+	if len(rssi_values) == 0:
+		return None
+	elif len(rssi_values) == 1:
+		return rssi_values[0]
+	else:
+		# Return mean if multiple valid values
+		return sum(rssi_values) / len(rssi_values)
+
+
+
+def export_to_csv(input_file: str, output_file: str, window_size: int = 10, label: str = 'AB') -> None:
+	"""
+	Export wavecom data to CSV with sliding window approach.
+	Each row contains window_size RSSI readings plus a label.
+	
+	Args:
+		input_file: Path to input data file
+		output_file: Path to output CSV file
+		window_size: Number of time points per sample (default: 10)
+	"""
+	# Read all lines and extract data
+	data = []
 	with open(input_file, "r") as f:
-		for line in f:
-			data.append(line.split(maxsplit=2)[2].strip())
-   
-	## data len = 10 
-
-	records = []
-	for line in data:
-		print(line)
-		data_dict = ast.literal_eval(line.replace("'", "\""))
-		records.append(data_dict)
+		content = f.read()
+	
+	# Split by dict boundaries - find all {..} occurrences
+	# This handles both newline-separated and concatenated formats
+	dict_strs = []
+	current_pos = 0
+	
+	while current_pos < len(content):
+		# Find next opening brace
+		start = content.find('{', current_pos)
+		if start == -1:
+			break
 		
-
-	df = pd.DataFrame(records)
+		# Find matching closing brace
+		brace_count = 0
+		i = start
+		while i < len(content):
+			if content[i] == '{':
+				brace_count += 1
+			elif content[i] == '}':
+				brace_count -= 1
+				if brace_count == 0:
+					# Found complete dict
+					dict_str = content[start:i+1]
+					dict_strs.append(dict_str)
+					current_pos = i + 1
+					break
+			i += 1
+		else:
+			# No matching brace found
+			break
+	
+	# Parse each dict string
+	for dict_str in dict_strs:
+		try:
+			data_dict = ast.literal_eval(dict_str)
+			data.append(data_dict)
+		except Exception as e:
+			print(f"Error parsing dict: {e}")
+			continue
+	
+	# Extract RSSI values from all data points
+	rssi_values = []
+	for data_dict in data:
+		rssi = extract_rssi(data_dict)
+		if rssi is not None:
+			rssi_values.append(rssi)
+	# Create records with non-overlapping windows
+	records = []
+	
+	# Process data in chunks of window_size
+	for i in range(0, len(rssi_values), window_size):
+		# Get the next window_size values
+		window = rssi_values[i:i + window_size]
+		
+		# If we have exactly window_size values, use them
+		if len(window) == window_size:
+			window.append(label)
+			records.append(window)
+		# If we have fewer than window_size values, pad with None
+		elif len(window) > 0:
+			# Pad with None if needed
+			window = window + [None] * (window_size - len(window))
+			window.append(label)
+			records.append(window)
+	
+	# Create DataFrame with proper headers
+	headers = [str(i) for i in range(1, window_size + 1)] + ['label']
+	df = pd.DataFrame(records, columns=headers)
+	
+	# Save to CSV
 	df.to_csv(output_file, index=False)
+	print(f"Exported {len(records)} records to {output_file}")
+	print(f"RSSI values extracted: {len(rssi_values)}")
+	print(f"Label: {label}")
  
 if __name__ == "__main__":
     # should receive the file flag and output flag
 	parser = argparse.ArgumentParser(description="Export wavecom data to CSV")
-	
+	parser.add_argument("--label", type=str, required=True, help="Label for the data")
 	parser.add_argument("--input", type=str, required=True, help="Input wavecom data file")
 	parser.add_argument("--output", type=str, required=True, help="Output CSV file")
 	args = parser.parse_args()
-	export_to_csv(args.input, args.output)
+	export_to_csv(args.input, args.output, 10, args.label)
