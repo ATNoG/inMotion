@@ -32,3 +32,26 @@ Each line represents a sequence of RSSI measurements captured every second over 
 
 ## SCHEMA:
 ![Esquema](images/Esquema.png)
+
+## How to use the export.py script:
+```sh
+# take so many groups as you want
+ uv run export.py \                         
+  --input wavecom_files/noiseG1BtoA_G2loopB.txt  \
+  --output data/noiseBA_BB.csv \
+  --group G1:ea:51:ae:7f:62:fa,76:64:61:f6:e6:14 \ # it can take N MACs
+  --group G2:e6:53:5c:2a:e8:e2,04:b1:67:ac:8d:65 \ # it can take N MACs
+  --group-label G1:BA \ # each group have a label
+  --group-label G2:LoopB \ # each group have a label
+```
+
+### Arguments:
+--input: Input wavecom data file
+--output: Output CSV file
+--group: Group definition in the form label:mac1,mac2,... (repeatable)
+--group-label: Map group name to final label, e.g., G1:AB (repeatable)
+
+## How to use the merge_csv.py script:
+```bash
+python merge_csv.py --input data/ --output dataset.csv
+```
