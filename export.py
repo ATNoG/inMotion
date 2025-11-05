@@ -33,7 +33,12 @@ def extract_rssi_and_mac_pairs(
 
 
 def export_to_csv(
-    input_file: str, output_file: str, window_size: int = 10, label: str = "AB"
+    input_file: str,
+    output_file: str,
+    window_size: int = 10,
+    label: str = "AB",
+    groups: list[str] | None = None,
+    group_labels: list[str] | None = None,
 ) -> None:
 
     data = []
@@ -61,19 +66,54 @@ def export_to_csv(
             mac_groups[mac] = []
         mac_groups[mac].append(rssi)
 
+    # Build MAC -> group mapping from groups (if provided)
+    mac_to_group: dict[str, str] = {}
+    if groups:
+        for group_def in groups:
+            # Expected format: LABEL:mac1,mac2,...
+            try:
+                label_name, mac_list = group_def.split(":", 1)
+                for mac in mac_list.split(','):
+                    mac_norm = mac.strip().lower()
+                    if mac_norm:
+                        mac_to_group[mac_norm] = label_name
+            except ValueError:
+                # Ignore malformed group entries
+                continue
+
+    # Build group name -> final label mapping (optional)
+    group_to_final_label: dict[str, str] = {}
+    if group_labels:
+        for mapping in group_labels:
+            try:
+                group_name, final_label = mapping.split(":", 1)
+                group_to_final_label[group_name] = final_label
+            except ValueError:
+                continue
+
     records = []
 
     for mac, rssi_values in mac_groups.items():
+        mac_norm = mac.lower()
+        # Determine label for this MAC
+        if mac_to_group:
+            # If groups were provided and this MAC isn't in any, skip it
+            if mac_norm not in mac_to_group:
+                continue
+            group_name = mac_to_group[mac_norm]
+            mac_label = group_to_final_label.get(group_name, group_name)
+        else:
+            mac_label = label
         for i in range(0, len(rssi_values), window_size):
             # Get the next window_size values
             rssi_window = rssi_values[i : i + window_size]
 
             if len(rssi_window) == window_size:
-                record = [mac] + rssi_window + [label]
+                record = [mac] + rssi_window + [mac_label]
                 records.append(record)
             elif len(rssi_window) > 0:
                 padded_rssi = rssi_window + [None] * (window_size - len(rssi_window))
-                record = [mac] + padded_rssi + [label]
+                record = [mac] + padded_rssi + [mac_label]
                 records.append(record)
 
     headers = ["mac"] + [str(i) for i in range(1, window_size + 1)] + ["label"]
@@ -82,14 +122,24 @@ def export_to_csv(
     # Save to CSV
     df.to_csv(output_file, index=False)
     print(f"Exported {len(records)} records to {output_file}")
-    print(f"RSSI values extracted: {len(rssi_values)}")
-    print(f"Label: {label}")
+    total_values = sum(len(v) for v in mac_groups.values())
+    print(f"RSSI values extracted: {total_values}")
+    if mac_to_group:
+        print(f"Groups: {mac_to_group}")
+    else:
+        print(f"Label: {label}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export wavecom data to CSV")
     parser.add_argument(
-        "--label", "-l", type=str, required=True, help="Label for the data"
+        "--label", "-l", type=str, default="AB", help="Default label for data (used when --group not provided or MAC not matched)"
+    )
+    parser.add_argument(
+        "--group", "-g", action="append", help="Group definition in the form label:mac1,mac2,... (repeatable)"
+    )
+    parser.add_argument(
+        "--group-label", "-G", action="append", help="Map group name to final label, e.g., G1:AB (repeatable)"
     )
     parser.add_argument(
         "--input", "-i", type=str, required=True, help="Input wavecom data file"
@@ -98,4 +148,4 @@ if __name__ == "__main__":
         "--output", "-o", type=str, required=True, help="Output CSV file"
     )
     args = parser.parse_args()
-    export_to_csv(args.input, args.output, 10, args.label)
+    export_to_csv(args.input, args.output, 10, args.label, args.group, args.group_label)
