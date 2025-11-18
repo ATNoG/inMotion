@@ -39,6 +39,7 @@ def export_to_csv(
     label: str = "AB",
     groups: list[str] | None = None,
     group_labels: list[str] | None = None,
+    noise_label: str = "False",
 ) -> None:
 
     data = []
@@ -118,6 +119,8 @@ def export_to_csv(
 
     headers = ["mac"] + [str(i) for i in range(1, window_size + 1)] + ["label"]
     df = pd.DataFrame(records, columns=headers)
+    # add a column 'noise' with value noise_label
+    df["noise"] = noise_label
 
     # Save to CSV
     df.to_csv(output_file, index=False)
@@ -147,5 +150,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output", "-o", type=str, required=True, help="Output CSV file"
     )
+    parser.add_argument(
+        "--noise-label", "-n", type=str, default="False", help="Value for noise column in output CSV"
+    )
     args = parser.parse_args()
-    export_to_csv(args.input, args.output, 10, args.label, args.group, args.group_label)
+    export_to_csv(args.input, args.output, 10, args.label, args.group, args.group_label, args.noise_label)
