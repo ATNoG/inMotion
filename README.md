@@ -55,3 +55,14 @@ Each line represents a sequence of RSSI measurements captured every second over 
 ```bash
 python merge_csv.py --input data/ --output dataset.csv
 ```
+
+
+ uv run export.py \                         
+  --input wavecom_files/noiseG1AtoB_G2BtoA2.txt \
+  --output data/noiseAB_BA.csv \
+  --group G1:2e:ad:62:53:35:66,76:64:61:f6:e6:14 \ # it can take N MACs
+  --group G2:e6:53:5c:2a:e8:e2,04:b1:67:ac:8d:65 \ # it can take N MACs
+  --group-label G1:AB \ # each group have a label
+  --group-label G2:BA \ # each group have a label
+
+ uv run export.py --input wavecom_files/noiseG1AtoB_G2BtoA2.txt --output data/noiseAB_BA2.csv --group G1:2e:ad:62:53:35:66,76:64:61:f6:e6:14 --group G2:e6:53:5c:2a:e8:e2,04:b1:67:ac:8d:65 --group-label G1:AB --group-label G2:BA

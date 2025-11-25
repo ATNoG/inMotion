@@ -630,7 +630,8 @@ class OpenWrtWiFiScanner:
         """
         print(f"Starting WiFi client monitoring (refresh every {refresh_interval}s)")
         print("Press Ctrl+C to stop monitoring\n")
-        ts = time.time()
+        time.sleep(3)
+        # ts = time.time()
         try:
             iteration = 0
             while True: # Clear caches every hour
