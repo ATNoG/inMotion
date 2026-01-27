@@ -35,7 +35,7 @@ Each line represents a sequence of RSSI measurements captured every second over 
 
 ## How to use the export.py script:
 ```sh
-# take so many groups as you want
+# takes as many groups as needed
  uv run export.py \                         
   --input wavecom_files/noiseG1BtoA_G2loopB.txt  \
   --output data/noiseBA_BB.csv \
