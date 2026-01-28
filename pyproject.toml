@@ -2,12 +2,77 @@
 name = "inmotion"
 version = "0.1.0"
 description = "Add your description here"
+authors = [
+    { name = "André Ribeiro", email = "andrepedroribeiro@av.it.pt" },
+    { name = "Guilherme Matos", email = "gui.matos@av.it.pt" },
+    { name = "Mário Antunes", email = "mario.antunes@av.it.pt" },
+]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "black>=25.9.0",
     "matplotlib>=3.10.6",
-    "mypy>=1.18.2",
     "pandas>=2.3.3",
     "pandas-stubs>=2.3.2.250926",
+    "polars>=1.37.1",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/eucnc"]
+
+[dependency-groups]
+dev = ["pyright>=1.1.408", "ruff>=0.14.14", "ty>=0.0.14"]
+
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+ignore = [
+    "COM812", # -- over-aggressively insists on trailing commas where not desired --
+]
+select = [
+    "C4",      # -- flake8-comprehensions --
+    "COM",     # -- flake8-commas --
+    "D200",    # -- short docstring on one line --
+    "D205",    # -- docstring: blank line between summary line and further text --
+    "D209",    # -- multi-line docstring closing quotes on own line --
+    "D212",    # -- docstring summary line starts immediately after quotes --
+    "E",       # -- pycodestyle errors --
+    "F",       # -- pyflakes --
+    "I",       # -- isort (imports) --
+    "PLR0402", # -- Name compared with itself like `foo == foo` --
+    "PT",      # -- flake8-pytest-style --
+    "SIM",     # -- flake8-simplify --
+    "UP006",   # -- use built-in generics like `list` instead of `List` from `typing` --
+    "UP007",   # -- prefer `A | B` over `Union[A, B]` --
+    "UP008",   # -- use modern `super()` call without arguments --
+    "UP015",   # -- redundant `open()` mode parameter (like "r" is default) --
+    "UP017",   # -- use `datetime.UTC` instead of `datetime.timezone.utc` --
+    "UP018",   # -- unnecessary {literal_type} call like `str("abc")`. (rewrite as a literal) --
+    "UP032",   # -- use f-string instead of `.format()` call --
+    "UP034",   # -- avoid extraneous parentheses --
+    "UP040",   # -- prefer `type Xyz = ...` over `Xyz = TypeAlias(...)` --
+    "W291",    # -- remove trailing whitespace from end of line --
+]
+
+
+[tool.pyright]
+include = ["src"]
+exclude = [""]                            #TODO
+typeCheckingMode = "basic"
+reportImportCycles = false
+reportUnnecessaryCast = true
+reportUnnecessaryTypeIgnoreComment = true
+verboseOutput = true
+pythonVersion = "3.13"
+pythonPlatform = "All"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
