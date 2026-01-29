@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Advanced Optuna Optimization with Dashboard Integration.
+"""Advanced Optuna Optimization with Dashboard Integration.
 
 This script performs comprehensive hyperparameter optimization using Optuna
 with SQLite storage and dashboard visualization support.
@@ -13,6 +12,9 @@ from pathlib import Path
 
 import numpy as np
 import optuna
+from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
+from ml_classification import Config, DataLoader, set_random_seeds
 from optuna.samplers import TPESampler
 from sklearn.ensemble import (
     ExtraTreesClassifier,
@@ -24,11 +26,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-from catboost import CatBoostClassifier
-
-from ml_classification import Config, DataLoader, set_random_seeds
-
 
 CLASSIFIERS_TO_OPTIMIZE = {
     "RandomForest": {
@@ -136,10 +133,12 @@ CLASSIFIERS_TO_OPTIMIZE = {
     "MLP": {
         "class": MLPClassifier,
         "space": lambda trial, seed, n_jobs: {
-            "hidden_layer_sizes": tuple([
-                trial.suggest_int(f"n_units_l{i}", 32, 256)
-                for i in range(trial.suggest_int("n_layers", 1, 3))
-            ]),
+            "hidden_layer_sizes": tuple(
+                [
+                    trial.suggest_int(f"n_units_l{i}", 32, 256)
+                    for i in range(trial.suggest_int("n_layers", 1, 3))
+                ]
+            ),
             "activation": trial.suggest_categorical("activation", ["relu", "tanh"]),
             "alpha": trial.suggest_float("alpha", 1e-5, 0.1, log=True),
             "learning_rate": trial.suggest_categorical("learning_rate", ["constant", "adaptive"]),
@@ -162,10 +161,10 @@ def create_objective(
     n_jobs: int,
 ):
     """Create an Optuna objective function for a classifier."""
-    
+
     def objective(trial: optuna.Trial) -> float:
         params = param_space_fn(trial, seed, n_jobs)
-        
+
         try:
             model = classifier_class(**params)
             scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy", n_jobs=n_jobs)
@@ -173,7 +172,7 @@ def create_objective(
         except Exception as e:
             print(f"Trial failed: {e}")
             return 0.0
-    
+
     return objective
 
 
@@ -189,7 +188,7 @@ def run_optimization(
 ) -> tuple[dict, float]:
     """Run Optuna optimization for a single classifier."""
     clf_config = CLASSIFIERS_TO_OPTIMIZE[classifier_name]
-    
+
     sampler = TPESampler(seed=seed)
     study = optuna.create_study(
         study_name=f"wifi_fingerprint_{classifier_name}",
@@ -198,18 +197,22 @@ def run_optimization(
         storage=storage,
         load_if_exists=True,
     )
-    
+
     cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=seed)
-    
+
     objective = create_objective(
         clf_config["class"],
         clf_config["space"],
-        X, y, cv, seed, n_jobs,
+        X,
+        y,
+        cv,
+        seed,
+        n_jobs,
     )
-    
+
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
-    
+
     return study.best_params, study.best_value
 
 
@@ -218,53 +221,39 @@ def main() -> int:
         description="Optuna Hyperparameter Optimization with Dashboard"
     )
     parser.add_argument(
-        "--data", type=str, default="dataset.csv",
-        help="Path to the dataset CSV file"
+        "--data", type=str, default="dataset.csv", help="Path to the dataset CSV file"
     )
     parser.add_argument(
-        "--classifiers", type=str, nargs="+",
+        "--classifiers",
+        type=str,
+        nargs="+",
         default=list(CLASSIFIERS_TO_OPTIMIZE.keys()),
-        help="Classifiers to optimize"
+        help="Classifiers to optimize",
+    )
+    parser.add_argument("--n-trials", type=int, default=50, help="Number of trials per classifier")
+    parser.add_argument("--cv-folds", type=int, default=5, help="Number of cross-validation folds")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--n-jobs", type=int, default=-1, help="Number of parallel jobs")
+    parser.add_argument(
+        "--storage", type=str, default="sqlite:///optuna_studies.db", help="Optuna storage URL"
     )
     parser.add_argument(
-        "--n-trials", type=int, default=50,
-        help="Number of trials per classifier"
+        "--dashboard", action="store_true", help="Launch Optuna dashboard after optimization"
     )
     parser.add_argument(
-        "--cv-folds", type=int, default=5,
-        help="Number of cross-validation folds"
-    )
-    parser.add_argument(
-        "--seed", type=int, default=42,
-        help="Random seed"
-    )
-    parser.add_argument(
-        "--n-jobs", type=int, default=-1,
-        help="Number of parallel jobs"
-    )
-    parser.add_argument(
-        "--storage", type=str, default="sqlite:///optuna_studies.db",
-        help="Optuna storage URL"
-    )
-    parser.add_argument(
-        "--dashboard", action="store_true",
-        help="Launch Optuna dashboard after optimization"
-    )
-    parser.add_argument(
-        "--dashboard-port", type=int, default=8080,
-        help="Port for Optuna dashboard"
+        "--dashboard-port", type=int, default=8080, help="Port for Optuna dashboard"
     )
     args = parser.parse_args()
-    
+
     set_random_seeds(args.seed)
-    
+
     config = Config(
         data_path=Path(args.data),
         random_seed=args.seed,
         n_cv_folds=args.cv_folds,
         n_jobs=args.n_jobs,
     )
-    
+
     print("=" * 70)
     print("Optuna Hyperparameter Optimization")
     print("=" * 70)
@@ -275,50 +264,56 @@ def main() -> int:
     print(f"Storage: {args.storage}")
     print("=" * 70)
     print()
-    
+
     print("Loading data...")
     loader = DataLoader(config)
     df = loader.load_data()
     X, y, class_names = loader.preprocess(df, scale_features=True, encode_labels=True)
     print(f"  Samples: {len(X)}, Features: {X.shape[1]}, Classes: {class_names}")
     print()
-    
+
     results = {}
     total_start = time.time()
-    
+
     for i, clf_name in enumerate(args.classifiers):
         if clf_name not in CLASSIFIERS_TO_OPTIMIZE:
             print(f"Warning: Unknown classifier '{clf_name}', skipping...")
             continue
-        
-        print(f"[{i+1}/{len(args.classifiers)}] Optimizing {clf_name}...")
+
+        print(f"[{i + 1}/{len(args.classifiers)}] Optimizing {clf_name}...")
         start = time.time()
-        
+
         best_params, best_score = run_optimization(
-            clf_name, X, y, args.storage, args.n_trials,
-            args.seed, args.n_jobs, args.cv_folds,
+            clf_name,
+            X,
+            y,
+            args.storage,
+            args.n_trials,
+            args.seed,
+            args.n_jobs,
+            args.cv_folds,
         )
-        
+
         elapsed = time.time() - start
         results[clf_name] = {"params": best_params, "score": best_score, "time": elapsed}
-        
+
         print(f"  Best CV Score: {best_score:.4f}")
         print(f"  Time: {elapsed:.1f}s")
         print(f"  Best Params: {best_params}")
         print()
-    
+
     total_time = time.time() - total_start
-    
+
     print("=" * 70)
     print("OPTIMIZATION RESULTS SUMMARY")
     print("=" * 70)
-    
+
     sorted_results = sorted(results.items(), key=lambda x: x[1]["score"], reverse=True)
     for rank, (name, res) in enumerate(sorted_results, 1):
         print(f"{rank}. {name}: {res['score']:.4f} (optimized in {res['time']:.1f}s)")
-    
+
     print(f"\nTotal optimization time: {total_time:.1f}s")
-    
+
     results_path = config.results_dir / "optuna_optimization_results.txt"
     with open(results_path, "w") as f:
         f.write("Optuna Hyperparameter Optimization Results\n")
@@ -327,21 +322,26 @@ def main() -> int:
             f.write(f"{name}:\n")
             f.write(f"  Best CV Score: {res['score']:.4f}\n")
             f.write(f"  Optimization Time: {res['time']:.1f}s\n")
-            f.write(f"  Best Parameters:\n")
+            f.write("  Best Parameters:\n")
             for param, value in res["params"].items():
                 f.write(f"    {param}: {value}\n")
             f.write("\n")
     print(f"\nResults saved to: {results_path}")
-    
+
     if args.dashboard:
         print(f"\nLaunching Optuna Dashboard at http://localhost:{args.dashboard_port}")
         print("Press Ctrl+C to stop the dashboard")
         import subprocess
-        subprocess.run([
-            "optuna-dashboard", args.storage,
-            "--port", str(args.dashboard_port),
-        ])
-    
+
+        subprocess.run(
+            [
+                "optuna-dashboard",
+                args.storage,
+                "--port",
+                str(args.dashboard_port),
+            ]
+        )
+
     return 0
 
 

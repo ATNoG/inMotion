@@ -13,6 +13,7 @@ def set_random_seeds(seed: int = 42) -> None:
     random.seed(seed)
     np.random.seed(seed)
     import os
+
     os.environ["PYTHONHASHSEED"] = str(seed)
 
 

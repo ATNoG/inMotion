@@ -33,7 +33,8 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["eucnc"]
+packages = ["eucnc", "ml_classification"]
+
 
 [dependency-groups]
 dev = ["pyright>=1.1.408", "ruff>=0.14.14", "ty>=0.0.14"]
