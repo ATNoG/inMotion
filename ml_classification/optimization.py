@@ -115,7 +115,7 @@ class OptunaOptimizer:
         }
 
     def _xgboost_space(self, trial: optuna.Trial) -> dict[str, Any]:
-        return {
+        params = {
             "n_estimators": trial.suggest_int("n_estimators", 50, 300),
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
             "max_depth": trial.suggest_int("max_depth", 3, 15),
@@ -126,11 +126,17 @@ class OptunaOptimizer:
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
             "random_state": self.config.random_seed,
             "eval_metric": "mlogloss",
-            "n_jobs": self.config.n_jobs,
         }
+        # GPU acceleration
+        if self.config.use_gpu:
+            params["device"] = "cuda"
+            params["tree_method"] = "hist"
+        else:
+            params["n_jobs"] = self.config.n_jobs
+        return params
 
     def _lightgbm_space(self, trial: optuna.Trial) -> dict[str, Any]:
-        return {
+        params = {
             "n_estimators": trial.suggest_int("n_estimators", 50, 300),
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
             "max_depth": trial.suggest_int("max_depth", 3, 15),
@@ -142,11 +148,18 @@ class OptunaOptimizer:
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
             "random_state": self.config.random_seed,
             "verbose": -1,
-            "n_jobs": self.config.n_jobs,
         }
+        # GPU acceleration
+        if self.config.use_gpu:
+            params["device"] = "gpu"
+            params["gpu_platform_id"] = 0
+            params["gpu_device_id"] = 0
+        else:
+            params["n_jobs"] = self.config.n_jobs
+        return params
 
     def _catboost_space(self, trial: optuna.Trial) -> dict[str, Any]:
-        return {
+        params = {
             "iterations": trial.suggest_int("iterations", 50, 300),
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
             "depth": trial.suggest_int("depth", 3, 12),
@@ -155,6 +168,11 @@ class OptunaOptimizer:
             "random_state": self.config.random_seed,
             "verbose": False,
         }
+        # GPU acceleration
+        if self.config.use_gpu:
+            params["task_type"] = "GPU"
+            params["devices"] = "0"
+        return params
 
     def _svc_rbf_space(self, trial: optuna.Trial) -> dict[str, Any]:
         return {

@@ -62,7 +62,9 @@ class TrainingPipeline:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.factory = ClassifierFactory(random_seed=config.random_seed, n_jobs=config.n_jobs)
+        self.factory = ClassifierFactory(
+            random_seed=config.random_seed, n_jobs=config.n_jobs, use_gpu=config.use_gpu
+        )
         self.results: list[ClassifierResult] = []
         self.trained_models: dict[str, ClassifierMixin] = {}
         self.feature_importances: dict[str, np.ndarray] = {}

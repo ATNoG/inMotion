@@ -1,20 +1,45 @@
 """Configuration module for ML classification pipeline."""
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 
 def check_gpu_availability() -> bool:
-    """Check if CUDA GPU is available for ML libraries."""
+    """Check if CUDA GPU is available for ML libraries.
+
+    Can be overridden with FORCE_GPU=1 or FORCE_CPU=1 environment variables.
+    """
+    # Check for manual override
+    if os.environ.get("FORCE_GPU", "").lower() in ("1", "true", "yes"):
+        return True
+    if os.environ.get("FORCE_CPU", "").lower() in ("1", "true", "yes"):
+        return False
+
+    # Try PyTorch CUDA detection
     try:
         import torch
-        return torch.cuda.is_available()
+
+        if torch.cuda.is_available():
+            return True
     except ImportError:
         pass
-    
-    # Fallback: check if CUDA libraries are accessible
+
+    # Try XGBoost GPU detection
+    try:
+        import xgboost as xgb
+
+        # Check if GPU support is compiled in
+        build_info = str(xgb.build_info()).lower()
+        if "gpu" in build_info or "cuda" in build_info:
+            return True
+    except (ImportError, AttributeError):
+        pass
+
+    # Fallback: check if nvidia-smi is accessible
     try:
         import subprocess
+
         result = subprocess.run(
             ["nvidia-smi"], capture_output=True, text=True, timeout=5
         )
@@ -54,7 +79,7 @@ class Config:
     # Training settings
     n_jobs: int = -1
     verbose: int = 1
-    
+
     # GPU settings
     use_gpu: bool = field(default_factory=check_gpu_availability)
 
@@ -71,8 +96,10 @@ class Config:
         self.models_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self.plots_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if self.use_gpu:
-            print("🚀 GPU acceleration enabled for supported classifiers (XGBoost, LightGBM, CatBoost)")
+            print(
+                "🚀 GPU acceleration enabled for supported classifiers (XGBoost, LightGBM, CatBoost)"
+            )
         else:
             print("⚠️ GPU not available, using CPU for all classifiers")

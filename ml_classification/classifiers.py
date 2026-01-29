@@ -41,9 +41,10 @@ from xgboost import XGBClassifier
 class ClassifierFactory:
     """Factory class to create and manage all classifiers."""
 
-    def __init__(self, random_seed: int = 42, n_jobs: int = -1) -> None:
+    def __init__(self, random_seed: int = 42, n_jobs: int = -1, use_gpu: bool = False) -> None:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
+        self.use_gpu = use_gpu
 
     def get_all_classifiers(self) -> dict[str, ClassifierMixin]:
         """Get all available classifiers with default parameters."""
@@ -197,7 +198,45 @@ class ClassifierFactory:
         }
 
     def get_boosting_classifiers(self) -> dict[str, ClassifierMixin | CatBoostClassifier]:
-        """Get gradient boosting classifiers."""
+        """Get gradient boosting classifiers with optional GPU support."""
+        # XGBoost GPU config
+        xgb_params = {
+            "n_estimators": 100,
+            "random_state": self.random_seed,
+            "use_label_encoder": False,
+            "eval_metric": "mlogloss",
+        }
+        if self.use_gpu:
+            xgb_params["device"] = "cuda"
+            xgb_params["tree_method"] = "hist"  # GPU-accelerated histogram
+        else:
+            xgb_params["n_jobs"] = self.n_jobs
+
+        # LightGBM GPU config
+        lgbm_params = {
+            "n_estimators": 100,
+            "random_state": self.random_seed,
+            "verbose": -1,
+        }
+        if self.use_gpu:
+            lgbm_params["device"] = "gpu"
+            lgbm_params["gpu_platform_id"] = 0
+            lgbm_params["gpu_device_id"] = 0
+        else:
+            lgbm_params["n_jobs"] = self.n_jobs
+
+        # CatBoost GPU config
+        catboost_params = {
+            "iterations": 100,
+            "random_state": self.random_seed,
+            "verbose": False,
+        }
+        if self.use_gpu:
+            catboost_params["task_type"] = "GPU"
+            catboost_params["devices"] = "0"
+        else:
+            catboost_params["thread_count"] = self.n_jobs if self.n_jobs > 0 else -1
+
         return {
             "GradientBoosting": GradientBoostingClassifier(
                 n_estimators=100, random_state=self.random_seed
@@ -205,22 +244,9 @@ class ClassifierFactory:
             "HistGradientBoosting": HistGradientBoostingClassifier(
                 max_iter=100, random_state=self.random_seed
             ),
-            "XGBoost": XGBClassifier(
-                n_estimators=100,
-                random_state=self.random_seed,
-                use_label_encoder=False,
-                eval_metric="mlogloss",
-                n_jobs=self.n_jobs,
-            ),
-            "LightGBM": LGBMClassifier(
-                n_estimators=100, random_state=self.random_seed, n_jobs=self.n_jobs, verbose=-1
-            ),
-            "CatBoost": CatBoostClassifier(
-                iterations=100,
-                random_state=self.random_seed,
-                verbose=False,
-                thread_count=self.n_jobs if self.n_jobs > 0 else -1,
-            ),
+            "XGBoost": XGBClassifier(**xgb_params),
+            "LightGBM": LGBMClassifier(**lgbm_params),
+            "CatBoost": CatBoostClassifier(**catboost_params),
         }
 
     def get_other_classifiers(self) -> dict[str, ClassifierMixin]:
@@ -240,18 +266,36 @@ class ClassifierFactory:
     ) -> VotingClassifier:
         """Create a voting ensemble from selected classifiers."""
         if base_classifiers is None:
+            # XGBoost config for ensemble
+            xgb_params = {
+                "n_estimators": 100,
+                "random_state": self.random_seed,
+                "eval_metric": "mlogloss",
+            }
+            if self.use_gpu:
+                xgb_params["device"] = "cuda"
+                xgb_params["tree_method"] = "hist"
+            else:
+                xgb_params["n_jobs"] = self.n_jobs
+
+            # LightGBM config for ensemble
+            lgbm_params = {
+                "n_estimators": 100,
+                "random_state": self.random_seed,
+                "verbose": -1,
+            }
+            if self.use_gpu:
+                lgbm_params["device"] = "gpu"
+            else:
+                lgbm_params["n_jobs"] = self.n_jobs
+
             base_classifiers = {
                 "rf": RandomForestClassifier(
                     n_estimators=100, random_state=self.random_seed, n_jobs=self.n_jobs
                 ),
-                "xgb": XGBClassifier(
-                    n_estimators=100,
-                    random_state=self.random_seed,
-                    n_jobs=self.n_jobs,
-                    eval_metric="mlogloss",
-                ),
+                "xgb": XGBClassifier(**xgb_params),
                 "svc": SVC(probability=True, random_state=self.random_seed),
-                "lgbm": LGBMClassifier(n_estimators=100, random_state=self.random_seed, verbose=-1),
+                "lgbm": LGBMClassifier(**lgbm_params),
             }
 
         estimators = list(base_classifiers.items())
@@ -264,16 +308,23 @@ class ClassifierFactory:
     ) -> StackingClassifier:
         """Create a stacking ensemble from selected classifiers."""
         if base_classifiers is None:
+            # XGBoost config for stacking
+            xgb_params = {
+                "n_estimators": 50,
+                "random_state": self.random_seed,
+                "eval_metric": "mlogloss",
+            }
+            if self.use_gpu:
+                xgb_params["device"] = "cuda"
+                xgb_params["tree_method"] = "hist"
+            else:
+                xgb_params["n_jobs"] = self.n_jobs
+
             base_classifiers = {
                 "rf": RandomForestClassifier(
                     n_estimators=50, random_state=self.random_seed, n_jobs=self.n_jobs
                 ),
-                "xgb": XGBClassifier(
-                    n_estimators=50,
-                    random_state=self.random_seed,
-                    n_jobs=self.n_jobs,
-                    eval_metric="mlogloss",
-                ),
+                "xgb": XGBClassifier(**xgb_params),
                 "svc": SVC(probability=True, random_state=self.random_seed),
             }
 
@@ -302,6 +353,18 @@ class ClassifierFactory:
 
     def get_quick_classifiers(self) -> dict[str, ClassifierMixin]:
         """Get a subset of fast classifiers for quick testing."""
+        # XGBoost config
+        xgb_params = {
+            "n_estimators": 50,
+            "random_state": self.random_seed,
+            "eval_metric": "mlogloss",
+        }
+        if self.use_gpu:
+            xgb_params["device"] = "cuda"
+            xgb_params["tree_method"] = "hist"
+        else:
+            xgb_params["n_jobs"] = self.n_jobs
+
         return {
             "DecisionTree": DecisionTreeClassifier(random_state=self.random_seed),
             "RandomForest": RandomForestClassifier(
@@ -313,10 +376,5 @@ class ClassifierFactory:
             "KNN_5": KNeighborsClassifier(n_neighbors=5, n_jobs=self.n_jobs),
             "GaussianNB": GaussianNB(),
             "LDA": LinearDiscriminantAnalysis(),
-            "XGBoost": XGBClassifier(
-                n_estimators=50,
-                random_state=self.random_seed,
-                eval_metric="mlogloss",
-                n_jobs=self.n_jobs,
-            ),
+            "XGBoost": XGBClassifier(**xgb_params),
         }
