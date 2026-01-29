@@ -114,11 +114,9 @@ def main() -> int:
         optimization_classifiers = [
             ("RandomForest", "sklearn.ensemble.RandomForestClassifier"),
             ("XGBoost", "xgboost.XGBClassifier"),
-            ("LightGBM", "lightgbm.LGBMClassifier"),
             ("SVC_RBF", "sklearn.svm.SVC"),
         ]
 
-        from lightgbm import LGBMClassifier
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.svm import SVC
         from xgboost import XGBClassifier
@@ -126,7 +124,6 @@ def main() -> int:
         classes = {
             "RandomForest": RandomForestClassifier,
             "XGBoost": XGBClassifier,
-            "LightGBM": LGBMClassifier,
             "SVC_RBF": SVC,
         }
 
