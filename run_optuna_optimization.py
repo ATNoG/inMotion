@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import optuna
 from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
 from ml_classification import Config, DataLoader, set_random_seeds
 from optuna.samplers import TPESampler
 from sklearn.ensemble import (
@@ -77,6 +78,23 @@ CLASSIFIERS_TO_OPTIMIZE = {
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
             "random_state": seed,
             "eval_metric": "mlogloss",
+            "n_jobs": n_jobs,
+        },
+    },
+    "LightGBM": {
+        "class": LGBMClassifier,
+        "space": lambda trial, seed, n_jobs: {
+            "n_estimators": trial.suggest_int("n_estimators", 50, 300),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+            "max_depth": trial.suggest_int("max_depth", 3, 15),
+            "num_leaves": trial.suggest_int("num_leaves", 10, 150),
+            "min_child_samples": trial.suggest_int("min_child_samples", 5, 50),
+            "subsample": trial.suggest_float("subsample", 0.6, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
+            "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+            "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+            "random_state": seed,
+            "verbose": -1,
             "n_jobs": n_jobs,
         },
     },

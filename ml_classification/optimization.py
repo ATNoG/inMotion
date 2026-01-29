@@ -49,6 +49,7 @@ class OptunaOptimizer:
             "GradientBoosting": self._gradient_boosting_space,
             "HistGradientBoosting": self._hist_gradient_boosting_space,
             "XGBoost": self._xgboost_space,
+            "LightGBM": self._lightgbm_space,
             "CatBoost": self._catboost_space,
             "SVC_RBF": self._svc_rbf_space,
             "SVC_Linear": self._svc_linear_space,
@@ -125,6 +126,22 @@ class OptunaOptimizer:
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
             "random_state": self.config.random_seed,
             "eval_metric": "mlogloss",
+            "n_jobs": self.config.n_jobs,
+        }
+
+    def _lightgbm_space(self, trial: optuna.Trial) -> dict[str, Any]:
+        return {
+            "n_estimators": trial.suggest_int("n_estimators", 50, 300),
+            "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+            "max_depth": trial.suggest_int("max_depth", 3, 15),
+            "num_leaves": trial.suggest_int("num_leaves", 10, 150),
+            "min_child_samples": trial.suggest_int("min_child_samples", 5, 50),
+            "subsample": trial.suggest_float("subsample", 0.6, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
+            "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+            "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+            "random_state": self.config.random_seed,
+            "verbose": -1,
             "n_jobs": self.config.n_jobs,
         }
 

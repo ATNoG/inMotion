@@ -42,6 +42,15 @@ def parse_args() -> argparse.Namespace:
         "--n-jobs", type=int, default=-1, help="Number of parallel jobs (-1 for all cores)"
     )
     parser.add_argument("--skip-eda", action="store_true", help="Skip exploratory data analysis")
+    parser.add_argument(
+        "--storage",
+        type=str,
+        default="sqlite:///optuna_studies.db",
+        help="Optuna storage URL (default: sqlite:///optuna_studies.db)",
+    )
+    parser.add_argument(
+        "--dashboard", action="store_true", help="Launch Optuna dashboard after optimization"
+    )
     return parser.parse_args()
 
 
@@ -54,6 +63,7 @@ def main() -> int:
         n_cv_folds=args.cv_folds,
         n_optuna_trials=args.n_trials,
         n_jobs=args.n_jobs,
+        optuna_storage=args.storage if args.optimize else "",
     )
 
     print("=" * 70)
@@ -109,31 +119,45 @@ def main() -> int:
 
     if args.optimize:
         print("[4/6] Running hyperparameter optimization with Optuna...")
+        print(f"  Storage: {config.optuna_storage}")
         optimizer = OptunaOptimizer(config)
 
-        optimization_classifiers = [
-            ("RandomForest", "sklearn.ensemble.RandomForestClassifier"),
-            ("XGBoost", "xgboost.XGBClassifier"),
-            ("SVC_RBF", "sklearn.svm.SVC"),
-        ]
-
-        from sklearn.ensemble import RandomForestClassifier
+        from lightgbm import LGBMClassifier
+        from sklearn.ensemble import (
+            ExtraTreesClassifier,
+            GradientBoostingClassifier,
+            RandomForestClassifier,
+        )
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.neural_network import MLPClassifier
         from sklearn.svm import SVC
         from xgboost import XGBClassifier
 
-        classes = {
+        optimization_classifiers = {
             "RandomForest": RandomForestClassifier,
+            "ExtraTrees": ExtraTreesClassifier,
+            "GradientBoosting": GradientBoostingClassifier,
             "XGBoost": XGBClassifier,
+            "LightGBM": LGBMClassifier,
             "SVC_RBF": SVC,
+            "KNN": KNeighborsClassifier,
+            "MLP": MLPClassifier,
         }
 
-        for name, _ in optimization_classifiers:
+        for name, clf_class in optimization_classifiers.items():
             print(f"  Optimizing {name}...")
             best_params, best_score = optimizer.optimize_classifier(
-                classes[name], name, X_train, y_train
+                clf_class, name, X_train, y_train
             )
             print(f"    Best CV Score: {best_score:.4f}")
             print(f"    Best Params: {best_params}")
+
+        if args.dashboard:
+            print("\n  Launching Optuna Dashboard at http://localhost:8080")
+            print("  Press Ctrl+C to stop the dashboard")
+            import subprocess
+
+            subprocess.run(["optuna-dashboard", config.optuna_storage, "--port", "8080"])
         print()
     else:
         print("[4/6] Skipping hyperparameter optimization (use --optimize to enable)")

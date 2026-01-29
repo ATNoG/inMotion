@@ -4,6 +4,25 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+def check_gpu_availability() -> bool:
+    """Check if CUDA GPU is available for ML libraries."""
+    try:
+        import torch
+        return torch.cuda.is_available()
+    except ImportError:
+        pass
+    
+    # Fallback: check if CUDA libraries are accessible
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["nvidia-smi"], capture_output=True, text=True, timeout=5
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
 @dataclass
 class Config:
     """Configuration settings for the ML classification pipeline."""
@@ -27,12 +46,17 @@ class Config:
     # Optuna settings
     n_optuna_trials: int = 50
     optuna_timeout: int | None = None
-    optuna_study_name: str = "wifi_fingerprint_classification"
-    optuna_storage: str | None = None
+    optuna_study_name: str = "inMotion_classification"
+    optuna_storage: str = (
+        "sqlite:///optuna_studies.db"  # Set to "sqlite:///optuna_studies.db" to persist
+    )
 
     # Training settings
     n_jobs: int = -1
     verbose: int = 1
+    
+    # GPU settings
+    use_gpu: bool = field(default_factory=check_gpu_availability)
 
     # Feature columns (RSSI readings)
     feature_columns: list[str] = field(
@@ -47,3 +71,8 @@ class Config:
         self.models_dir.mkdir(parents=True, exist_ok=True)
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self.plots_dir.mkdir(parents=True, exist_ok=True)
+        
+        if self.use_gpu:
+            print("🚀 GPU acceleration enabled for supported classifiers (XGBoost, LightGBM, CatBoost)")
+        else:
+            print("⚠️ GPU not available, using CPU for all classifiers")

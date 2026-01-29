@@ -13,6 +13,7 @@ dependencies = [
     "catboost>=1.2.8",
     "imbalanced-learn>=0.14.1",
     "joblib>=1.5.3",
+    "lightgbm>=4.6.0",
     "matplotlib>=3.10.6",
     "optuna>=4.7.0",
     "optuna-dashboard>=0.20.0",

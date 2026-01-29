@@ -3,6 +3,7 @@
 from typing import Any
 
 from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
 from sklearn.base import ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.discriminant_analysis import (
@@ -210,6 +211,9 @@ class ClassifierFactory:
                 use_label_encoder=False,
                 eval_metric="mlogloss",
                 n_jobs=self.n_jobs,
+            ),
+            "LightGBM": LGBMClassifier(
+                n_estimators=100, random_state=self.random_seed, n_jobs=self.n_jobs, verbose=-1
             ),
             "CatBoost": CatBoostClassifier(
                 iterations=100,
