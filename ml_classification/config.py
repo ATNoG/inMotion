@@ -40,9 +40,7 @@ def check_gpu_availability() -> bool:
     try:
         import subprocess
 
-        result = subprocess.run(
-            ["nvidia-smi"], capture_output=True, text=True, timeout=5
-        )
+        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, timeout=5)
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False

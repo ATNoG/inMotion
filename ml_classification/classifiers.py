@@ -46,7 +46,7 @@ class ClassifierFactory:
         self.n_jobs = n_jobs
         self.use_gpu = use_gpu
 
-    def get_all_classifiers(self) -> dict[str, ClassifierMixin]:
+    def get_all_classifiers(self) -> dict[str, ClassifierMixin | CatBoostClassifier]:
         """Get all available classifiers with default parameters."""
         return {
             **self.get_tree_classifiers(),
