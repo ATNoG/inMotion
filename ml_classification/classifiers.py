@@ -25,7 +25,6 @@ from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.linear_model import (
     LogisticRegression,
-    PassiveAggressiveClassifier,
     Perceptron,
     RidgeClassifier,
     SGDClassifier,
@@ -87,27 +86,24 @@ class ClassifierFactory:
         """Get linear classifiers with regularization."""
         return {
             "LogisticRegression_L2": LogisticRegression(
-                penalty="l2",
-                C=1.0,
-                max_iter=1000,
-                random_state=self.random_seed,
-                n_jobs=self.n_jobs,
-            ),
-            "LogisticRegression_L1": LogisticRegression(
-                penalty="l1",
+                l1_ratio=0,
                 C=1.0,
                 solver="saga",
                 max_iter=1000,
                 random_state=self.random_seed,
-                n_jobs=self.n_jobs,
+            ),
+            "LogisticRegression_L1": LogisticRegression(
+                l1_ratio=1,
+                C=1.0,
+                solver="saga",
+                max_iter=1000,
+                random_state=self.random_seed,
             ),
             "LogisticRegression_ElasticNet": LogisticRegression(
-                penalty="elasticnet",
                 l1_ratio=0.5,
                 solver="saga",
                 max_iter=1000,
                 random_state=self.random_seed,
-                n_jobs=self.n_jobs,
             ),
             "RidgeClassifier": RidgeClassifier(alpha=1.0, random_state=self.random_seed),
             "SGDClassifier": SGDClassifier(
@@ -120,8 +116,14 @@ class ClassifierFactory:
             "Perceptron": Perceptron(
                 penalty="l2", max_iter=1000, random_state=self.random_seed, n_jobs=self.n_jobs
             ),
-            "PassiveAggressive": PassiveAggressiveClassifier(
-                max_iter=1000, random_state=self.random_seed, n_jobs=self.n_jobs
+            "PassiveAggressive": SGDClassifier(
+                loss="hinge",
+                penalty=None,
+                learning_rate="constant",
+                eta0=1.0,
+                max_iter=1000,
+                random_state=self.random_seed,
+                n_jobs=self.n_jobs,
             ),
         }
 
@@ -203,7 +205,6 @@ class ClassifierFactory:
         xgb_params = {
             "n_estimators": 100,
             "random_state": self.random_seed,
-            "use_label_encoder": False,
             "eval_metric": "mlogloss",
         }
         if self.use_gpu:
@@ -264,30 +265,26 @@ class ClassifierFactory:
     def get_voting_ensemble(
         self, base_classifiers: dict[str, ClassifierMixin] | None = None
     ) -> VotingClassifier:
-        """Create a voting ensemble from selected classifiers."""
+        """Create a voting ensemble from selected classifiers.
+        
+        Note: Uses CPU for XGBoost/LightGBM to avoid device mismatch during CV.
+        """
         if base_classifiers is None:
-            # XGBoost config for ensemble
+            # XGBoost config for ensemble - use CPU to avoid device mismatch in CV
             xgb_params = {
                 "n_estimators": 100,
                 "random_state": self.random_seed,
                 "eval_metric": "mlogloss",
+                "n_jobs": self.n_jobs,
             }
-            if self.use_gpu:
-                xgb_params["device"] = "cuda"
-                xgb_params["tree_method"] = "hist"
-            else:
-                xgb_params["n_jobs"] = self.n_jobs
 
-            # LightGBM config for ensemble
+            # LightGBM config for ensemble - use CPU
             lgbm_params = {
                 "n_estimators": 100,
                 "random_state": self.random_seed,
                 "verbose": -1,
+                "n_jobs": self.n_jobs,
             }
-            if self.use_gpu:
-                lgbm_params["device"] = "gpu"
-            else:
-                lgbm_params["n_jobs"] = self.n_jobs
 
             base_classifiers = {
                 "rf": RandomForestClassifier(
@@ -306,19 +303,18 @@ class ClassifierFactory:
         base_classifiers: dict[str, ClassifierMixin] | None = None,
         final_estimator: ClassifierMixin | None = None,
     ) -> StackingClassifier:
-        """Create a stacking ensemble from selected classifiers."""
+        """Create a stacking ensemble from selected classifiers.
+        
+        Note: Uses CPU for XGBoost to avoid device mismatch during CV.
+        """
         if base_classifiers is None:
-            # XGBoost config for stacking
+            # XGBoost config for stacking - use CPU to avoid device mismatch in CV
             xgb_params = {
                 "n_estimators": 50,
                 "random_state": self.random_seed,
                 "eval_metric": "mlogloss",
+                "n_jobs": self.n_jobs,
             }
-            if self.use_gpu:
-                xgb_params["device"] = "cuda"
-                xgb_params["tree_method"] = "hist"
-            else:
-                xgb_params["n_jobs"] = self.n_jobs
 
             base_classifiers = {
                 "rf": RandomForestClassifier(
@@ -371,7 +367,7 @@ class ClassifierFactory:
                 n_estimators=50, random_state=self.random_seed, n_jobs=self.n_jobs
             ),
             "LogisticRegression_L2": LogisticRegression(
-                max_iter=1000, random_state=self.random_seed, n_jobs=self.n_jobs
+                l1_ratio=0, solver="saga", max_iter=1000, random_state=self.random_seed
             ),
             "KNN_5": KNeighborsClassifier(n_neighbors=5, n_jobs=self.n_jobs),
             "GaussianNB": GaussianNB(),

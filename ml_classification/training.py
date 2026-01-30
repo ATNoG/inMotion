@@ -1,13 +1,32 @@
 """Training pipeline for ML classification."""
 
+import contextlib
+import os
+import sys
 import time
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from joblib import parallel_config
 from sklearn.base import ClassifierMixin, clone
+
+
+@contextlib.contextmanager
+def suppress_stderr():
+    """Context manager to suppress stderr output (for C++ library warnings)."""
+    with open(os.devnull, 'w') as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
+
+
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -68,6 +87,13 @@ class TrainingPipeline:
         self.results: list[ClassifierResult] = []
         self.trained_models: dict[str, ClassifierMixin] = {}
         self.feature_importances: dict[str, np.ndarray] = {}
+        
+        # Suppress various warnings globally
+        warnings.filterwarnings("ignore", message=".*mismatched devices.*")
+        warnings.filterwarnings("ignore", message=".*Falling back to prediction.*")
+        warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
+        warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
+        warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.validation")
 
     def train_single_classifier(
         self,
@@ -89,15 +115,27 @@ class TrainingPipeline:
 
         start_time = time.time()
 
+        # Determine n_jobs for CV: use 1 for GPU-accelerated classifiers to avoid device issues
+        # and use threading backend to avoid Python 3.13 segfaults with loky
+        is_gpu_classifier = name in ["XGBoost", "LightGBM", "CatBoost"] and self.config.use_gpu
+        cv_n_jobs = 1 if is_gpu_classifier else self.config.n_jobs
+        
+        # Use stderr suppression for GPU classifiers to hide C++ warnings
+        stderr_ctx = suppress_stderr() if is_gpu_classifier else contextlib.nullcontext()
+
         try:
-            cv_scores = cross_val_score(
-                clone(classifier),
-                X_train,
-                y_train,
-                cv=cv,
-                scoring="accuracy",
-                n_jobs=self.config.n_jobs,
-            )
+            # Use threading backend to avoid segfaults with Python 3.13
+            with parallel_config(backend="threading"), warnings.catch_warnings(), stderr_ctx:
+                warnings.filterwarnings("ignore", message=".*mismatched devices.*")
+                warnings.filterwarnings("ignore", message=".*Falling back to prediction.*")
+                cv_scores = cross_val_score(
+                    clone(classifier),
+                    X_train,
+                    y_train,
+                    cv=cv,
+                    scoring="accuracy",
+                    n_jobs=cv_n_jobs,
+                )
         except Exception as e:
             print(f"CV failed for {name}: {e}")
             cv_scores = np.array([0.0])

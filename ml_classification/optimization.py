@@ -201,20 +201,17 @@ class OptunaOptimizer:
         }
 
     def _logistic_regression_space(self, trial: optuna.Trial) -> dict[str, Any]:
-        penalty = trial.suggest_categorical("penalty", ["l1", "l2", "elasticnet"])
+        # Use l1_ratio instead of deprecated penalty parameter
+        # l1_ratio=0 for L2, l1_ratio=1 for L1, values in between for ElasticNet
+        l1_ratio = trial.suggest_float("l1_ratio", 0.0, 1.0)
 
         params = {
             "C": trial.suggest_float("C", 0.001, 100.0, log=True),
-            "penalty": penalty,
+            "l1_ratio": l1_ratio,
+            "solver": "saga",  # saga supports all regularization types
             "max_iter": 1000,
             "random_state": self.config.random_seed,
-            "n_jobs": self.config.n_jobs,
         }
-
-        if penalty in ["l1", "elasticnet"]:
-            params["solver"] = "saga"
-        if penalty == "elasticnet":
-            params["l1_ratio"] = trial.suggest_float("l1_ratio", 0.0, 1.0)
 
         return params
 

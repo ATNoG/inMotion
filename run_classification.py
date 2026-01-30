@@ -6,9 +6,20 @@ predicting location classes based on WiFi RSSI fingerprints.
 """
 
 import argparse
+import os
 import sys
 import time
+import warnings
 from pathlib import Path
+
+# Suppress XGBoost verbosity before importing it
+os.environ["XGBOOST_VERBOSITY"] = "0"
+
+# Suppress sklearn and other warnings
+warnings.filterwarnings("ignore", message=".*mismatched devices.*")
+warnings.filterwarnings("ignore", message=".*Falling back to prediction.*")
+warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
+warnings.filterwarnings("ignore", category=UserWarning)
 
 from ml_classification import (
     Config,
