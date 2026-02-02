@@ -4,15 +4,7 @@ To evaluate the feasibility of RSSI-based passenger movement classification, a s
 
 \subsection{Environmental Configuration}
 
-The experimental environment was divided into two distinct zones, as illustrated in Fig.~\ref{fig:experimental_setup}, representing the interior of a public transport vehicle and the corresponding boarding area and bus stop:
-
-\begin{itemize}
-    \item \textbf{Zone A (Vehicle Interior):}  
-    A closed room was used to simulate the interior of a bus. The room provides moderate isolation from external interference, allowing controlled observation of RSSI variations. A WiFi access point (AP) was installed inside the room, positioned adjacent to the doorway, replicating a realistic placement of onboard communication equipment near the vehicle entrance.
-
-    \item \textbf{Zone B (Bus Stop):}  
-    The corridor immediately outside the room was designated as the bus stop and boarding area. This zone represents the external environment where passengers wait before boarding or after alighting from the vehicle.
-\end{itemize}
+The experimental environment was divided into two distinct zones, as illustrated in Fig.~\ref{fig:experimental_setup}, representing the interior of a public transport vehicle and the corresponding boarding area and bus stop. Zone~A, designated as the Vehicle Interior, consisted of a closed room used to simulate the interior of a bus. The room provides moderate isolation from external interference, allowing controlled observation of RSSI variations. A WiFi access point (AP) was installed inside the room, positioned adjacent to the doorway, replicating a realistic placement of onboard communication equipment near the vehicle entrance. Zone~B, representing the Bus Stop, was established in the corridor immediately outside the room and was designated as the boarding area. This zone represents the external environment where passengers wait before boarding or after alighting from the vehicle.
 
 The physical separation imposed by the wall and door between the two zones introduces signal attenuation, generating distinctive RSSI patterns when a device transitions between Zone~A and Zone~B. These characteristics are essential for replicating real-world conditions and for enabling the discrimination between static passenger states and transitional movements.
 
@@ -32,67 +24,21 @@ Each experimental trial was conducted over a \textbf{10-second observation windo
 
 To ensure consistent RSSI reporting during data collection, the mobile devices generated periodic low-overhead network traffic (ICMP echo requests) toward the access point. This approach maintained active communication with the AP while introducing negligible additional interference.
 
-For each detected device, the following attributes were extracted:
-\begin{itemize}
-    \item \textbf{MAC Address:} Unique device identifier, used solely for separating different devices during preprocessing.
-    \item \textbf{RSSI (dBm):} Received Signal Strength Indicator, serving as the primary feature for movement classification.
-    \item \textbf{Traffic Metadata:} Transmitted and received byte counters, collected by the AP but not retained for model training.
-\end{itemize}
+For each detected device, three primary attributes were extracted: the \textbf{MAC Address} served as a unique device identifier, used solely for separating different devices during preprocessing, the \textbf{RSSI} (dBm), representing the Received Signal Strength Indicator, served as the primary feature for movement classification and \textbf{Traffic Metadata}, consisting of transmitted and received byte counters, was collected by the AP but not retained for model training.
 
 To account for hardware heterogeneity, four different mobile devices, from three separate manufacturers and different generations, were used throughout the data collection process, introducing variability in antenna characteristics and transmission power. This diversity improves the robustness of the resulting dataset and reduces device-specific bias.
 
 \subsection{Movement Classes and Experimental Scenarios}
 
-Four fundamental movement classes were defined to cover all possible passenger state transitions relative to the vehicle:
+Four fundamental movement classes were defined to cover all possible passenger state transitions relative to the vehicle. The first class, Remaining Inside \textbf{(A~$\rightarrow$~A)}, corresponds to static presence or localized movement within the vehicle interior. The second class, Remaining at Stop \textbf{(B~$\rightarrow$~B)}, represents static presence or localized movement within the bus stop area. The third class, Alighting \textbf{(A~$\rightarrow$~B)}, captures the transition from inside the vehicle to the bus stop through the front door. Finally, the fourth class, Boarding \textbf{(B~$\rightarrow$~A)}, describes the transition from the bus stop into the vehicle through the front door.
 
-\begin{enumerate}
-    \item \textbf{Remaining Inside (A $\rightarrow$ A):}  
-    Static presence or localized movement within the vehicle interior.
-    \item \textbf{Remaining at Stop (B $\rightarrow$ B):}  
-    Static presence or localized movement within the bus stop area.
-    \item \textbf{Alighting (A $\rightarrow$ B):}  
-    Transition from inside the vehicle to the bus stop through the front door.
-    \item \textbf{Boarding (B $\rightarrow$ A):}  
-    Transition from the bus stop into the vehicle through the front door.
-\end{enumerate}
-
-To evaluate system robustness under varying interference conditions, data collection was performed under two distinct scenarios:
-
-\begin{itemize}
-    \item \textbf{Isolated Collection:}  
-    Trials conducted with a single active device at a time, minimizing channel contention and external interference. Two of the four devices were used in this scenario, with 20 repetitions per device for each movement class, providing clean baseline RSSI signatures.
-
-    \item \textbf{Noisy / Simultaneous Collection:}  
-    Trials conducted with all four devices operating simultaneously, performing two paired different movement classes in parallel. This setup introduces signal interference and collisions, approximating realistic passenger density conditions in public transport environments.
-\end{itemize}
+To evaluate system robustness under varying interference conditions, data collection was performed under two distinct scenarios. The first scenario, Isolated Collection, involved trials conducted with a single active device at a time, minimizing channel contention and external interference. Two of the four devices were used in this scenario, with 20 repetitions per device for each movement class, providing clean baseline RSSI signatures. The second scenario, Noisy or Simultaneous Collection, involved trials conducted with all four devices operating simultaneously, performing two paired different movement classes in parallel. This setup introduces signal interference and collisions, approximating realistic passenger density conditions in public transport environments.
 
 \subsection{Data Preprocessing and Structuring}
 
-The raw data captured by the access point consisted of nested Python dictionaries, where each one-second capture contained network metadata for all connected devices. For each 10-second trial, ten such snapshots were recorded.
+The raw data captured by the access point consisted of nested \texttt{Python} dictionaries, where each one-second capture contained network metadata for all connected devices. For each 10-second trial, ten such snapshots were recorded.
 
-The preprocessing pipeline transformed this raw data into a machine-learning-ready dataset through the following steps:
-
-\begin{enumerate}
-    \item \textbf{Temporal Aggregation:}  
-    For each device and trial, the 10 sequential RSSI measurements were aggregated into a single feature vector
-    \[
-        \mathbf{R} = [r_1, r_2, \ldots, r_{10}],
-    \]
-    allowing classifiers to exploit temporal trends, slopes, and variance rather than relying solely on instantaneous signal strength.
-
-    \item \textbf{Device Isolation:}  
-    Data corresponding to each device was isolated using its MAC address, enabling independent trajectory reconstruction even during simultaneous collection scenarios.
-
-    \item \textbf{Labeling:}  
-    Each RSSI sequence was labeled with:
-    \begin{itemize}
-        \item the corresponding movement class (AA, BB, AB, or BA);
-        \item a boolean noise label indicating whether the trial was collected in isolation or under simultaneous device activity.
-    \end{itemize}
-
-    \item \textbf{Feature Filtering:}  
-    Non-essential attributes, such as transmitted/received byte counts and connection duration, were discarded to reduce dimensionality and prevent overfitting.
-\end{enumerate}
+The preprocessing pipeline transformed this raw data into a machine-learning-ready dataset through a sequence of four steps. First, Temporal Aggregation was performed, where for each device and trial, the 10 sequential RSSI measurements were aggregated into a single feature vector $\mathbf{R} = [r_1, r_2, \ldots, r_{10}]$, allowing classifiers to exploit temporal trends, slopes, and variance rather than relying solely on instantaneous signal strength. Second, Device Isolation was applied, where data corresponding to each device was isolated using its MAC address, enabling independent trajectory reconstruction even during simultaneous collection scenarios. Third, Labeling was performed by assigning each RSSI sequence the corresponding movement class (\textbf{AA}, \textbf{BB}, \textbf{AB}, or \textbf{BA}) along with a boolean noise label indicating whether the trial was collected in isolation or under simultaneous device activity. Fourth, Feature Filtering was applied, where non-essential attributes, such as transmitted/received byte counts and connection duration, were discarded to reduce dimensionality and prevent overfitting.
 
 \subsection{Final Dataset Structure}
 
