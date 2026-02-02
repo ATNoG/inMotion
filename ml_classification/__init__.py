@@ -7,7 +7,7 @@ from .eda import ExploratoryDataAnalysis
 from .optimization import OptunaOptimizer
 from .training import TrainingPipeline
 from .utils import load_model, save_model, set_random_seeds
-from .visualization import Visualizer
+from .visualization import Visualizer, load_results_from_csv
 
 __all__ = [
     "Config",
@@ -20,4 +20,5 @@ __all__ = [
     "set_random_seeds",
     "save_model",
     "load_model",
+    "load_results_from_csv",
 ]

@@ -18,7 +18,7 @@ from sklearn.base import ClassifierMixin, clone
 @contextlib.contextmanager
 def suppress_stderr():
     """Context manager to suppress stderr output (for C++ library warnings)."""
-    with open(os.devnull, 'w') as devnull:
+    with open(os.devnull, "w") as devnull:
         old_stderr = sys.stderr
         sys.stderr = devnull
         try:
@@ -33,6 +33,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     f1_score,
+    matthews_corrcoef,
     precision_score,
     recall_score,
 )
@@ -53,6 +54,7 @@ class ClassifierResult:
     precision: float
     recall: float
     f1_score: float
+    mcc: float
     cv_mean: float
     cv_std: float
     train_time: float
@@ -70,6 +72,7 @@ class ClassifierResult:
             "Precision": self.precision,
             "Recall": self.recall,
             "F1_Score": self.f1_score,
+            "MCC": self.mcc,
             "CV_Mean": self.cv_mean,
             "CV_Std": self.cv_std,
             "Train_Time_s": self.train_time,
@@ -87,7 +90,7 @@ class TrainingPipeline:
         self.results: list[ClassifierResult] = []
         self.trained_models: dict[str, ClassifierMixin] = {}
         self.feature_importances: dict[str, np.ndarray] = {}
-        
+
         # Suppress various warnings globally
         warnings.filterwarnings("ignore", message=".*mismatched devices.*")
         warnings.filterwarnings("ignore", message=".*Falling back to prediction.*")
@@ -119,7 +122,7 @@ class TrainingPipeline:
         # and use threading backend to avoid Python 3.13 segfaults with loky
         is_gpu_classifier = name in ["XGBoost", "LightGBM", "CatBoost"] and self.config.use_gpu
         cv_n_jobs = 1 if is_gpu_classifier else self.config.n_jobs
-        
+
         # Use stderr suppression for GPU classifiers to hide C++ warnings
         stderr_ctx = suppress_stderr() if is_gpu_classifier else contextlib.nullcontext()
 
@@ -152,6 +155,7 @@ class TrainingPipeline:
                 precision=0.0,
                 recall=0.0,
                 f1_score=0.0,
+                mcc=0.0,
                 cv_mean=0.0,
                 cv_std=0.0,
                 train_time=0.0,
@@ -166,6 +170,7 @@ class TrainingPipeline:
         precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
         recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
         f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
+        mcc = matthews_corrcoef(y_test, y_pred)
 
         cm = confusion_matrix(y_test, y_pred)
         report = classification_report(
@@ -194,6 +199,7 @@ class TrainingPipeline:
             precision=precision,
             recall=recall,
             f1_score=f1,
+            mcc=mcc,
             cv_mean=cv_scores.mean(),
             cv_std=cv_scores.std(),
             train_time=train_time,
@@ -347,6 +353,7 @@ class TrainingPipeline:
                 f"{i + 1}. {row['Classifier']}: "
                 f"Acc={row['Accuracy']:.4f}, "
                 f"F1={row['F1_Score']:.4f}, "
+                f"MCC={row['MCC']:.4f}, "
                 f"CV={row['CV_Mean']:.4f}±{row['CV_Std']:.4f}"
             )
 
@@ -365,6 +372,7 @@ class TrainingPipeline:
                 f"Precision (weighted): {best_result.precision:.4f}",
                 f"Recall (weighted): {best_result.recall:.4f}",
                 f"F1 Score (weighted): {best_result.f1_score:.4f}",
+                f"MCC: {best_result.mcc:.4f}",
                 f"CV Score: {best_result.cv_mean:.4f} ± {best_result.cv_std:.4f}",
                 f"Training Time: {format_time(best_result.train_time)}",
                 "",

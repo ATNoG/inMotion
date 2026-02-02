@@ -19,6 +19,30 @@ class ExploratoryDataAnalysis:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.analysis_results: dict[str, Any] = {}
+        self._setup_plot_style()
+    
+    def _setup_plot_style(self) -> None:
+        """Setup matplotlib style with publication-ready fonts."""
+        plt.rcParams.update({
+            'font.size': self.config.plot_font_size,
+            'axes.titlesize': self.config.plot_title_size,
+            'axes.labelsize': self.config.plot_label_size,
+            'xtick.labelsize': self.config.plot_tick_size,
+            'ytick.labelsize': self.config.plot_tick_size,
+            'legend.fontsize': self.config.plot_legend_size,
+            'figure.titlesize': self.config.plot_title_size + 2,
+            'pdf.fonttype': 42,
+            'ps.fonttype': 42,
+        })
+        sns.set_context("paper", font_scale=self.config.plot_font_scale)
+    
+    def _get_save_path(self, base_name: str, save_path: Path | None = None) -> Path:
+        """Get the save path with the configured format."""
+        if save_path:
+            return save_path.with_suffix(f".{self.config.plot_format}")
+        plots_dir = self.config.plots_dir / "eda"
+        plots_dir.mkdir(parents=True, exist_ok=True)
+        return plots_dir / f"{base_name}.{self.config.plot_format}"
 
     def basic_statistics(self, df: pd.DataFrame) -> dict[str, Any]:
         """Compute basic statistics of the dataset."""
@@ -77,77 +101,118 @@ class ExploratoryDataAnalysis:
         self.analysis_results["class_separability"] = analysis
         return analysis
 
-    def plot_class_distribution(self, df: pd.DataFrame, save_path: Path | None = None) -> None:
-        """Plot class distribution."""
-        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
+    def plot_class_distribution(self, df: pd.DataFrame) -> None:
+        """Plot class distribution (saved as separate files)."""
+        # Part 1: Class distribution bar chart
+        fig, ax = plt.subplots(figsize=(10, 6))
         class_counts = df[self.config.target_column].value_counts()
         colors = sns.color_palette("husl", len(class_counts))
-        axes[0].bar(class_counts.index, class_counts.values, color=colors)
-        axes[0].set_xlabel("Class (Route)")
-        axes[0].set_ylabel("Count")
-        axes[0].set_title("Class Distribution")
+        ax.bar(class_counts.index, class_counts.values, color=colors)
+        ax.set_xlabel("Class (Route)")
+        ax.set_ylabel("Count")
+        ax.set_title("Class Distribution")
         for i, (cls, count) in enumerate(class_counts.items()):
-            axes[0].annotate(str(count), xy=(i, count), ha="center", va="bottom")
-
-        noise_counts = df.groupby([self.config.target_column, self.config.noise_column]).size()
-        noise_df = noise_counts.unstack(fill_value=0)
-        noise_df.plot(kind="bar", ax=axes[1], color=["#ff7f0e", "#2ca02c"])
-        axes[1].set_xlabel("Class (Route)")
-        axes[1].set_ylabel("Count")
-        axes[1].set_title("Class Distribution by Noise Condition")
-        axes[1].legend(["No Noise", "With Noise"], title="Noise")
-        axes[1].tick_params(axis="x", rotation=0)
-
+            ax.annotate(str(count), xy=(i, count), ha="center", va="bottom")
         plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(
+            self._get_save_path("class_distribution"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
         plt.close()
 
-    def plot_rssi_distributions(self, df: pd.DataFrame, save_path: Path | None = None) -> None:
-        """Plot RSSI value distributions across time steps and classes."""
-        fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+        # Part 2: Class distribution by noise condition
+        fig, ax = plt.subplots(figsize=(10, 6))
+        noise_counts = df.groupby([self.config.target_column, self.config.noise_column]).size()
+        noise_df = noise_counts.unstack(fill_value=0)
+        noise_df.plot(kind="bar", ax=ax, color=["#ff7f0e", "#2ca02c"])
+        ax.set_xlabel("Class (Route)")
+        ax.set_ylabel("Count")
+        ax.set_title("Class Distribution by Noise Condition")
+        ax.legend(["No Noise", "With Noise"], title="Noise")
+        ax.tick_params(axis="x", rotation=0)
+        plt.tight_layout()
+        plt.savefig(
+            self._get_save_path("class_distribution_by_noise"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
+        plt.close()
 
+    def plot_rssi_distributions(self, df: pd.DataFrame) -> None:
+        """Plot RSSI value distributions (saved as separate files)."""
         features = df[self.config.feature_columns]
-        axes[0, 0].boxplot([features[col].values for col in self.config.feature_columns])
-        axes[0, 0].set_xticklabels(self.config.feature_columns)
-        axes[0, 0].set_xlabel("Time Step")
-        axes[0, 0].set_ylabel("RSSI (dBm)")
-        axes[0, 0].set_title("RSSI Distribution per Time Step")
 
+        # Part 1: RSSI boxplot per time step
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.boxplot([features[col].values for col in self.config.feature_columns])
+        ax.set_xticklabels(self.config.feature_columns)
+        ax.set_xlabel("Time Step")
+        ax.set_ylabel("RSSI (dBm)")
+        ax.set_title("RSSI Distribution per Time Step")
+        plt.tight_layout()
+        plt.savefig(
+            self._get_save_path("rssi_boxplot_per_timestep"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
+        plt.close()
+
+        # Part 2: Mean RSSI trajectory per class
+        fig, ax = plt.subplots(figsize=(10, 6))
         for cls in df[self.config.target_column].unique():
             mask = df[self.config.target_column] == cls
             mean_rssi = df.loc[mask, self.config.feature_columns].mean()
-            axes[0, 1].plot(range(1, 11), mean_rssi.values, marker="o", label=cls, linewidth=2)
-        axes[0, 1].set_xlabel("Time Step")
-        axes[0, 1].set_ylabel("Mean RSSI (dBm)")
-        axes[0, 1].set_title("Mean RSSI Trajectory per Class")
-        axes[0, 1].legend()
-        axes[0, 1].grid(True, alpha=0.3)
+            ax.plot(range(1, 11), mean_rssi.values, marker="o", label=cls, linewidth=2)
+        ax.set_xlabel("Time Step")
+        ax.set_ylabel("Mean RSSI (dBm)")
+        ax.set_title("Mean RSSI Trajectory per Class")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(
+            self._get_save_path("rssi_mean_trajectory_per_class"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
+        plt.close()
 
+        # Part 3: Violin plot per class
+        fig, ax = plt.subplots(figsize=(12, 6))
         for i, cls in enumerate(df[self.config.target_column].unique()):
             mask = df[self.config.target_column] == cls
             class_features = df.loc[mask, self.config.feature_columns].values
-            axes[1, 0].violinplot(
+            ax.violinplot(
                 class_features, positions=np.arange(10) + i * 12, showmeans=True, showextrema=True
             )
-        axes[1, 0].set_xlabel("Time Steps (grouped by class)")
-        axes[1, 0].set_ylabel("RSSI (dBm)")
-        axes[1, 0].set_title("RSSI Distribution per Class (Violin Plot)")
+        ax.set_xlabel("Time Steps (grouped by class)")
+        ax.set_ylabel("RSSI (dBm)")
+        ax.set_title("RSSI Distribution per Class (Violin Plot)")
+        plt.tight_layout()
+        plt.savefig(
+            self._get_save_path("rssi_violin_per_class"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
+        plt.close()
 
+        # Part 4: Overall RSSI histogram
+        fig, ax = plt.subplots(figsize=(10, 6))
         all_rssi = df[self.config.feature_columns].values.flatten()
-        axes[1, 1].hist(all_rssi, bins=50, color="steelblue", edgecolor="white", alpha=0.7)
-        axes[1, 1].set_xlabel("RSSI (dBm)")
-        axes[1, 1].set_ylabel("Frequency")
-        axes[1, 1].set_title("Overall RSSI Distribution")
-        axes[1, 1].axvline(
+        ax.hist(all_rssi, bins=50, color="steelblue", edgecolor="white", alpha=0.7)
+        ax.set_xlabel("RSSI (dBm)")
+        ax.set_ylabel("Frequency")
+        ax.set_title("Overall RSSI Distribution")
+        ax.axvline(
             np.mean(all_rssi), color="red", linestyle="--", label=f"Mean: {np.mean(all_rssi):.1f}"
         )
-        axes[1, 1].legend()
-
+        ax.legend()
         plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(
+            self._get_save_path("rssi_histogram"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
         plt.close()
 
     def plot_correlation_heatmap(self, df: pd.DataFrame, save_path: Path | None = None) -> None:
@@ -175,23 +240,23 @@ class ExploratoryDataAnalysis:
         ax.set_ylabel("Time Step")
 
         plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("correlation_heatmap", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_pca_visualization(
-        self, X: np.ndarray, y: np.ndarray, class_names: list[str], save_path: Path | None = None
+        self, X: np.ndarray, y: np.ndarray, class_names: list[str]
     ) -> None:
-        """Plot PCA visualization of the data."""
+        """Plot PCA visualization (saved as separate files)."""
         pca = PCA(n_components=2, random_state=self.config.random_seed)
         X_pca = pca.fit_transform(X)
 
-        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
+        # Part 1: PCA scatter plot
+        fig, ax = plt.subplots(figsize=(10, 8))
         colors = sns.color_palette("husl", len(np.unique(y)))
         for i, cls in enumerate(np.unique(y)):
             mask = y == cls
-            axes[0].scatter(
+            ax.scatter(
                 X_pca[mask, 0],
                 X_pca[mask, 1],
                 c=[colors[i]],
@@ -199,36 +264,47 @@ class ExploratoryDataAnalysis:
                 alpha=0.7,
                 s=50,
             )
-        axes[0].set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0] * 100:.1f}%)")
-        axes[0].set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1] * 100:.1f}%)")
-        axes[0].set_title("PCA Visualization")
-        axes[0].legend()
-        axes[0].grid(True, alpha=0.3)
+        ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0] * 100:.1f}%)")
+        ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1] * 100:.1f}%)")
+        ax.set_title("PCA Visualization")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(
+            self._get_save_path("pca_scatter"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
+        plt.close()
 
+        # Part 2: PCA explained variance
+        fig, ax = plt.subplots(figsize=(10, 6))
         pca_full = PCA(random_state=self.config.random_seed)
         pca_full.fit(X)
         cumsum = np.cumsum(pca_full.explained_variance_ratio_)
-        axes[1].bar(
+        ax.bar(
             range(1, len(cumsum) + 1),
             pca_full.explained_variance_ratio_,
             alpha=0.7,
             label="Individual",
         )
-        axes[1].plot(range(1, len(cumsum) + 1), cumsum, "r-o", label="Cumulative")
-        axes[1].axhline(y=0.95, color="g", linestyle="--", label="95% threshold")
-        axes[1].set_xlabel("Principal Component")
-        axes[1].set_ylabel("Explained Variance Ratio")
-        axes[1].set_title("PCA Explained Variance")
-        axes[1].legend()
-        axes[1].grid(True, alpha=0.3)
-
+        ax.plot(range(1, len(cumsum) + 1), cumsum, "r-o", label="Cumulative")
+        ax.axhline(y=0.95, color="g", linestyle="--", label="95% threshold")
+        ax.set_xlabel("Principal Component")
+        ax.set_ylabel("Explained Variance Ratio")
+        ax.set_title("PCA Explained Variance")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(
+            self._get_save_path("pca_explained_variance"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
         plt.close()
 
     def plot_tsne_visualization(
-        self, X: np.ndarray, y: np.ndarray, class_names: list[str], save_path: Path | None = None
+        self, X: np.ndarray, y: np.ndarray, class_names: list[str]
     ) -> None:
         """Plot t-SNE visualization of the data."""
         perplexity = min(30, len(X) - 1)
@@ -256,19 +332,20 @@ class ExploratoryDataAnalysis:
         ax.grid(True, alpha=0.3)
 
         plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(
+            self._get_save_path("tsne_visualization"),
+            dpi=self.config.plot_dpi,
+            bbox_inches="tight",
+        )
         plt.close()
 
-    def plot_class_trajectories(self, df: pd.DataFrame, save_path: Path | None = None) -> None:
-        """Plot RSSI trajectories for each class with confidence intervals."""
-        fig, axes = plt.subplots(2, 2, figsize=(14, 12))
-
+    def plot_class_trajectories(self, df: pd.DataFrame) -> None:
+        """Plot RSSI trajectories for each class (saved as separate files per class)."""
         classes = df[self.config.target_column].unique()
         time_steps = list(range(1, 11))
 
-        for idx, cls in enumerate(classes):
-            ax = axes[idx // 2, idx % 2]
+        for cls in classes:
+            fig, ax = plt.subplots(figsize=(10, 6))
             mask = df[self.config.target_column] == cls
             class_data = df.loc[mask, self.config.feature_columns].values
 
@@ -288,15 +365,18 @@ class ExploratoryDataAnalysis:
 
             ax.set_xlabel("Time Step")
             ax.set_ylabel("RSSI (dBm)")
-            ax.set_title(f"Class: {cls} (n={len(class_data)})")
+            ax.set_title(f"RSSI Trajectory - Class: {cls} (n={len(class_data)})")
             ax.legend(loc="upper right")
             ax.grid(True, alpha=0.3)
             ax.set_xticks(time_steps)
 
-        plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        plt.close()
+            plt.tight_layout()
+            plt.savefig(
+                self._get_save_path(f"class_trajectory_{cls}"),
+                dpi=self.config.plot_dpi,
+                bbox_inches="tight",
+            )
+            plt.close()
 
     def run_full_analysis(
         self, df: pd.DataFrame, X: np.ndarray, y: np.ndarray, class_names: list[str]
@@ -309,12 +389,12 @@ class ExploratoryDataAnalysis:
         self.feature_analysis(df)
         self.class_separability_analysis(X, y, class_names)
 
-        self.plot_class_distribution(df, plots_dir / "class_distribution.png")
-        self.plot_rssi_distributions(df, plots_dir / "rssi_distributions.png")
-        self.plot_correlation_heatmap(df, plots_dir / "correlation_heatmap.png")
-        self.plot_pca_visualization(X, y, class_names, plots_dir / "pca_visualization.png")
-        self.plot_tsne_visualization(X, y, class_names, plots_dir / "tsne_visualization.png")
-        self.plot_class_trajectories(df, plots_dir / "class_trajectories.png")
+        self.plot_class_distribution(df)
+        self.plot_rssi_distributions(df)
+        self.plot_correlation_heatmap(df)
+        self.plot_pca_visualization(X, y, class_names)
+        self.plot_tsne_visualization(X, y, class_names)
+        self.plot_class_trajectories(df)
 
         return self.analysis_results
 

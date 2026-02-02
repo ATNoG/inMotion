@@ -1,5 +1,6 @@
 """Visualization module for ML classification results."""
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,125 @@ import pandas as pd
 import seaborn as sns
 
 from .config import Config
+
+
+def load_results_from_csv(
+    results_csv: Path | str,
+    detailed_csv: Path | str | None = None,
+) -> tuple[
+    pd.DataFrame,
+    dict[str, np.ndarray],
+    dict[str, np.ndarray],
+    pd.DataFrame,
+    list[str],
+    dict[str, dict[str, Any]],
+]:
+    """Load classification results from CSV files for plot regeneration.
+
+    Args:
+        results_csv: Path to classification_results.csv
+        detailed_csv: Path to detailed_classifier_results.csv (optional, will infer if not provided)
+
+    Returns:
+        Tuple of (results_df, confusion_matrices, feature_importances,
+                  feature_importance_summary, class_names, classification_reports)
+    """
+    results_csv = Path(results_csv)
+    results_df = pd.read_csv(results_csv)
+
+    # Infer detailed CSV path if not provided
+    if detailed_csv is None:
+        detailed_csv = results_csv.parent / "detailed_classifier_results.csv"
+    detailed_csv = Path(detailed_csv)
+
+    if not detailed_csv.exists():
+        raise FileNotFoundError(f"Detailed results not found: {detailed_csv}")
+
+    detailed_df = pd.read_csv(detailed_csv)
+
+    # Extract class names from column patterns (e.g., AA_precision, BB_recall)
+    class_names = []
+    for col in detailed_df.columns:
+        if col.endswith("_precision") and not col.startswith("FeatImp"):
+            class_name = col.replace("_precision", "")
+            if class_name not in class_names:
+                class_names.append(class_name)
+
+    # Extract confusion matrices
+    confusion_matrices: dict[str, np.ndarray] = {}
+    for _, row in detailed_df.iterrows():
+        clf_name = row["Classifier"]
+        if pd.notna(row.get("Confusion_Matrix")):
+            try:
+                cm_list = json.loads(row["Confusion_Matrix"])
+                confusion_matrices[clf_name] = np.array(cm_list)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    # Extract feature importances
+    feature_importances: dict[str, np.ndarray] = {}
+    feat_imp_cols = [c for c in detailed_df.columns if c.startswith("FeatImp_")]
+
+    for _, row in detailed_df.iterrows():
+        clf_name = row["Classifier"]
+        importances = []
+        has_importance = False
+        for col in feat_imp_cols:
+            val = row.get(col)
+            if pd.notna(val):
+                importances.append(float(val))
+                has_importance = True
+            else:
+                importances.append(0.0)
+        if has_importance and any(imp > 0 for imp in importances):
+            feature_importances[clf_name] = np.array(importances)
+
+    # Compute feature importance summary
+    feature_importance_summary = pd.DataFrame()
+    if feature_importances:
+        feature_names = [c.replace("FeatImp_", "") for c in feat_imp_cols]
+        all_importances = np.array(list(feature_importances.values()))
+        mean_importances = np.mean(all_importances, axis=0)
+        std_importances = np.std(all_importances, axis=0)
+        feature_importance_summary = pd.DataFrame(
+            {
+                "Feature": feature_names,
+                "Mean_Importance": mean_importances,
+                "Std_Importance": std_importances,
+            }
+        )
+
+    # Reconstruct classification reports
+    classification_reports: dict[str, dict[str, Any]] = {}
+    for _, row in detailed_df.iterrows():
+        clf_name = row["Classifier"]
+        report: dict[str, Any] = {}
+        for cls_name in class_names:
+            precision_col = f"{cls_name}_precision"
+            recall_col = f"{cls_name}_recall"
+            f1_col = f"{cls_name}_f1"
+            support_col = f"{cls_name}_support"
+
+            if precision_col in row and pd.notna(row.get(precision_col)):
+                report[cls_name] = {
+                    "precision": row.get(precision_col, 0),
+                    "recall": row.get(recall_col, 0),
+                    "f1-score": row.get(f1_col, 0),
+                    "support": int(row.get(support_col, 0))
+                    if pd.notna(row.get(support_col))
+                    else 0,
+                }
+        if report:
+            classification_reports[clf_name] = report
+
+    return (
+        results_df,
+        confusion_matrices,
+        feature_importances,
+        feature_importance_summary,
+        class_names,
+        classification_reports,
+    )
 
 
 class Visualizer:
@@ -21,6 +141,31 @@ class Visualizer:
 
         plt.style.use("seaborn-v0_8-whitegrid")
         self.colors = sns.color_palette("husl", 20)
+
+        self._setup_plot_style()
+
+    def _setup_plot_style(self) -> None:
+        """Setup matplotlib style with publication-ready fonts."""
+        plt.rcParams.update(
+            {
+                "font.size": self.config.plot_font_size,
+                "axes.titlesize": self.config.plot_title_size,
+                "axes.labelsize": self.config.plot_label_size,
+                "xtick.labelsize": self.config.plot_tick_size,
+                "ytick.labelsize": self.config.plot_tick_size,
+                "legend.fontsize": self.config.plot_legend_size,
+                "figure.titlesize": self.config.plot_title_size + 2,
+                "pdf.fonttype": 42,
+                "ps.fonttype": 42,
+            }
+        )
+        sns.set_context("paper", font_scale=self.config.plot_font_scale)
+
+    def _get_save_path(self, base_name: str, save_path: Path | None = None) -> Path:
+        """Get the save path with the configured format."""
+        if save_path:
+            return save_path.with_suffix(f".{self.config.plot_format}")
+        return self.results_plots_dir / f"{base_name}.{self.config.plot_format}"
 
     def plot_classifier_comparison(
         self,
@@ -44,13 +189,11 @@ class Visualizer:
         ax.invert_yaxis()
 
         for i, (bar, val) in enumerate(zip(bars, df[metric])):
-            ax.text(val + 0.005, i, f"{val:.4f}", va="center", fontsize=9)
+            ax.text(val + 0.005, i, f"{val:.4f}", va="center", fontsize=self.config.plot_tick_size)
 
         plt.tight_layout()
-        save_path = (
-            save_path or self.results_plots_dir / f"classifier_comparison_{metric.lower()}.png"
-        )
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path(f"classifier_comparison_{metric.lower()}", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_multi_metric_comparison(
@@ -62,17 +205,18 @@ class Visualizer:
     ) -> None:
         """Plot comparison of classifiers across multiple metrics."""
         if metrics is None:
-            metrics = ["Accuracy", "Precision", "Recall", "F1_Score", "CV_Mean"]
+            metrics = ["Accuracy", "Precision", "Recall", "F1_Score", "MCC", "CV_Mean"]
 
+        available_metrics = [m for m in metrics if m in results_df.columns]
         df = results_df.nlargest(top_n, "Accuracy")
 
         fig, ax = plt.subplots(figsize=(14, 8))
 
         x = np.arange(len(df))
-        width = 0.15
+        width = 0.12
 
-        for i, metric in enumerate(metrics):
-            offset = (i - len(metrics) / 2 + 0.5) * width
+        for i, metric in enumerate(available_metrics):
+            offset = (i - len(available_metrics) / 2 + 0.5) * width
             bars = ax.bar(x + offset, df[metric], width, label=metric, color=self.colors[i])
 
         ax.set_xlabel("Classifier")
@@ -84,8 +228,8 @@ class Visualizer:
         ax.set_ylim(0, 1.05)
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "multi_metric_comparison.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("multi_metric_comparison", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_cv_scores(
@@ -116,11 +260,17 @@ class Visualizer:
         ax.invert_yaxis()
 
         for i, (mean, std) in enumerate(zip(df["CV_Mean"], df["CV_Std"])):
-            ax.text(mean + std + 0.01, i, f"{mean:.3f}±{std:.3f}", va="center", fontsize=8)
+            ax.text(
+                mean + std + 0.01,
+                i,
+                f"{mean:.3f}±{std:.3f}",
+                va="center",
+                fontsize=self.config.plot_tick_size - 1,
+            )
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "cv_scores.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("cv_scores", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_training_times(
@@ -143,8 +293,8 @@ class Visualizer:
         ax.set_xscale("log")
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "training_times.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("training_times", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_confusion_matrix(
@@ -173,8 +323,8 @@ class Visualizer:
         ax.set_title(f"Confusion Matrix - {classifier_name}")
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / f"confusion_matrix_{classifier_name}.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path(f"confusion_matrix_{classifier_name}", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_all_confusion_matrices(
@@ -182,17 +332,12 @@ class Visualizer:
         confusion_matrices: dict[str, np.ndarray],
         class_names: list[str],
         top_n: int = 6,
-        save_path: Path | None = None,
     ) -> None:
-        """Plot confusion matrices for top classifiers in a grid."""
+        """Plot confusion matrices for top classifiers (saved as separate files)."""
         n_classifiers = min(top_n, len(confusion_matrices))
-        n_cols = 3
-        n_rows = (n_classifiers + n_cols - 1) // n_cols
-
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows))
-        axes = axes.flatten() if n_classifiers > 1 else [axes]
 
         for i, (name, cm) in enumerate(list(confusion_matrices.items())[:n_classifiers]):
+            fig, ax = plt.subplots(figsize=(8, 6))
             sns.heatmap(
                 cm,
                 annot=True,
@@ -200,56 +345,42 @@ class Visualizer:
                 cmap="Blues",
                 xticklabels=class_names,
                 yticklabels=class_names,
-                ax=axes[i],
+                ax=ax,
+                cbar_kws={"label": "Count"},
             )
-            axes[i].set_xlabel("Predicted")
-            axes[i].set_ylabel("True")
-            axes[i].set_title(name)
-
-        for j in range(i + 1, len(axes)):
-            axes[j].axis("off")
-
-        plt.suptitle("Confusion Matrices - Top Classifiers", fontsize=14, y=1.02)
-        plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "all_confusion_matrices.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        plt.close()
+            ax.set_xlabel("Predicted")
+            ax.set_ylabel("True")
+            ax.set_title(f"Confusion Matrix - {name}")
+            plt.tight_layout()
+            save_path = self._get_save_path(f"confusion_matrix_{name}")
+            plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
+            plt.close()
 
     def plot_feature_importance(
         self,
         feature_importances: dict[str, np.ndarray],
         feature_names: list[str],
         top_n_classifiers: int = 6,
-        save_path: Path | None = None,
     ) -> None:
-        """Plot feature importance for multiple classifiers."""
+        """Plot feature importance for multiple classifiers (saved as separate files)."""
         n_classifiers = min(top_n_classifiers, len(feature_importances))
-        n_cols = 3
-        n_rows = (n_classifiers + n_cols - 1) // n_cols
-
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows))
-        axes = axes.flatten() if n_classifiers > 1 else [axes]
 
         for i, (name, importances) in enumerate(list(feature_importances.items())[:n_classifiers]):
+            fig, ax = plt.subplots(figsize=(10, 6))
             sorted_idx = np.argsort(importances)
-            axes[i].barh(
+            ax.barh(
                 range(len(importances)),
                 importances[sorted_idx],
                 color=self.colors[i % len(self.colors)],
             )
-            axes[i].set_yticks(range(len(importances)))
-            axes[i].set_yticklabels([feature_names[j] for j in sorted_idx])
-            axes[i].set_xlabel("Importance")
-            axes[i].set_title(name)
-
-        for j in range(i + 1, len(axes)):
-            axes[j].axis("off")
-
-        plt.suptitle("Feature Importance by Classifier", fontsize=14, y=1.02)
-        plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "feature_importance.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        plt.close()
+            ax.set_yticks(range(len(importances)))
+            ax.set_yticklabels([feature_names[j] for j in sorted_idx])
+            ax.set_xlabel("Importance")
+            ax.set_title(f"Feature Importance - {name}")
+            plt.tight_layout()
+            save_path = self._get_save_path(f"feature_importance_{name}")
+            plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
+            plt.close()
 
     def plot_mean_feature_importance(
         self,
@@ -268,8 +399,8 @@ class Visualizer:
         ax.set_title("Average Feature Importance Across Classifiers")
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "mean_feature_importance.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("mean_feature_importance", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_accuracy_vs_time(
@@ -295,7 +426,7 @@ class Visualizer:
                 (row["Train_Time_s"], row["Accuracy"]),
                 xytext=(5, 5),
                 textcoords="offset points",
-                fontsize=7,
+                fontsize=self.config.plot_tick_size - 2,
                 alpha=0.8,
             )
 
@@ -308,8 +439,8 @@ class Visualizer:
         cbar.set_label("CV Mean Score")
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "accuracy_vs_time.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("accuracy_vs_time", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_metric_heatmap(
@@ -319,7 +450,16 @@ class Visualizer:
         save_path: Path | None = None,
     ) -> None:
         """Plot heatmap of metrics for top classifiers."""
-        metrics = ["Accuracy", "Balanced_Accuracy", "Precision", "Recall", "F1_Score", "CV_Mean"]
+        all_metrics = [
+            "Accuracy",
+            "Balanced_Accuracy",
+            "Precision",
+            "Recall",
+            "F1_Score",
+            "MCC",
+            "CV_Mean",
+        ]
+        metrics = [m for m in all_metrics if m in results_df.columns]
         df = results_df.nlargest(top_n, "Accuracy")[["Classifier"] + metrics]
 
         fig, ax = plt.subplots(figsize=(12, 10))
@@ -342,8 +482,8 @@ class Visualizer:
         ax.set_title(f"Performance Heatmap - Top {top_n} Classifiers")
 
         plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "metric_heatmap.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        save_path = self._get_save_path("metric_heatmap", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
     def plot_class_performance(
@@ -351,15 +491,13 @@ class Visualizer:
         classification_reports: dict[str, dict[str, Any]],
         class_names: list[str],
         top_n_classifiers: int = 5,
-        save_path: Path | None = None,
     ) -> None:
-        """Plot per-class performance for top classifiers."""
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+        """Plot per-class performance for top classifiers (saved as separate files)."""
         metrics = ["precision", "recall", "f1-score"]
-
         classifiers = list(classification_reports.keys())[:top_n_classifiers]
 
-        for ax, metric in zip(axes, metrics):
+        for metric in metrics:
+            fig, ax = plt.subplots(figsize=(10, 6))
             data = []
             for clf_name in classifiers:
                 report = classification_reports[clf_name]
@@ -377,17 +515,16 @@ class Visualizer:
 
             ax.set_xlabel("Class")
             ax.set_ylabel(metric.capitalize())
-            ax.set_title(f"Per-Class {metric.capitalize()}")
+            ax.set_title(f"Per-Class {metric.capitalize()} Comparison")
             ax.set_xticks(x)
             ax.set_xticklabels(class_names)
-            ax.legend(loc="lower right", fontsize=8)
+            ax.legend(loc="lower right", fontsize=self.config.plot_legend_size)
             ax.set_ylim(0, 1.1)
 
-        plt.suptitle("Per-Class Performance Comparison", fontsize=14, y=1.02)
-        plt.tight_layout()
-        save_path = save_path or self.results_plots_dir / "class_performance.png"
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
-        plt.close()
+            plt.tight_layout()
+            save_path = self._get_save_path(f"class_performance_{metric}")
+            plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
+            plt.close()
 
     def create_all_plots(
         self,
@@ -401,10 +538,15 @@ class Visualizer:
         """Generate all visualization plots."""
         self.plot_classifier_comparison(results_df, "Accuracy")
         self.plot_classifier_comparison(results_df, "F1_Score")
+        if "MCC" in results_df.columns:
+            self.plot_classifier_comparison(results_df, "MCC")
         self.plot_multi_metric_comparison(results_df)
         self.plot_cv_scores(results_df)
         self.plot_training_times(results_df)
         self.plot_accuracy_vs_time(results_df)
+        self.plot_metric_vs_time(results_df, "F1_Score")
+        if "MCC" in results_df.columns:
+            self.plot_metric_vs_time(results_df, "MCC")
         self.plot_metric_heatmap(results_df)
 
         if confusion_matrices:
@@ -419,3 +561,47 @@ class Visualizer:
 
         if classification_reports:
             self.plot_class_performance(classification_reports, class_names)
+
+    def plot_metric_vs_time(
+        self,
+        results_df: pd.DataFrame,
+        metric: str = "F1_Score",
+        save_path: Path | None = None,
+    ) -> None:
+        """Plot metric vs training time trade-off."""
+        if metric not in results_df.columns:
+            return
+
+        fig, ax = plt.subplots(figsize=(12, 8))
+
+        scatter = ax.scatter(
+            results_df["Train_Time_s"],
+            results_df[metric],
+            c=results_df["CV_Mean"],
+            cmap="viridis",
+            s=100,
+            alpha=0.7,
+        )
+
+        for _, row in results_df.iterrows():
+            ax.annotate(
+                row["Classifier"],
+                (row["Train_Time_s"], row[metric]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=self.config.plot_tick_size - 2,
+                alpha=0.8,
+            )
+
+        ax.set_xlabel("Training Time (seconds, log scale)")
+        ax.set_ylabel(metric.replace("_", " "))
+        ax.set_title(f"{metric.replace('_', ' ')} vs Training Time Trade-off")
+        ax.set_xscale("log")
+
+        cbar = plt.colorbar(scatter, ax=ax)
+        cbar.set_label("CV Mean Score")
+
+        plt.tight_layout()
+        save_path = self._get_save_path(f"{metric.lower()}_vs_time", save_path)
+        plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
+        plt.close()

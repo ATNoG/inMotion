@@ -213,19 +213,6 @@ class ClassifierFactory:
         else:
             xgb_params["n_jobs"] = self.n_jobs
 
-        # LightGBM GPU config
-        lgbm_params = {
-            "n_estimators": 100,
-            "random_state": self.random_seed,
-            "verbose": -1,
-        }
-        if self.use_gpu:
-            lgbm_params["device"] = "gpu"
-            lgbm_params["gpu_platform_id"] = 0
-            lgbm_params["gpu_device_id"] = 0
-        else:
-            lgbm_params["n_jobs"] = self.n_jobs
-
         # CatBoost GPU config
         catboost_params = {
             "iterations": 100,
@@ -246,7 +233,6 @@ class ClassifierFactory:
                 max_iter=100, random_state=self.random_seed
             ),
             "XGBoost": XGBClassifier(**xgb_params),
-            "LightGBM": LGBMClassifier(**lgbm_params),
             "CatBoost": CatBoostClassifier(**catboost_params),
         }
 
@@ -266,7 +252,7 @@ class ClassifierFactory:
         self, base_classifiers: dict[str, ClassifierMixin] | None = None
     ) -> VotingClassifier:
         """Create a voting ensemble from selected classifiers.
-        
+
         Note: Uses CPU for XGBoost/LightGBM to avoid device mismatch during CV.
         """
         if base_classifiers is None:
@@ -304,7 +290,7 @@ class ClassifierFactory:
         final_estimator: ClassifierMixin | None = None,
     ) -> StackingClassifier:
         """Create a stacking ensemble from selected classifiers.
-        
+
         Note: Uses CPU for XGBoost to avoid device mismatch during CV.
         """
         if base_classifiers is None:

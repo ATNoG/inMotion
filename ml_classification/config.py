@@ -89,6 +89,16 @@ class Config:
     noise_column: str = "noise_label"
     mac_column: str = "mac"
 
+    # Plot settings for publication-ready figures
+    plot_format: str = "pdf"
+    plot_dpi: int = 600
+    plot_font_scale: float = 1.5
+    plot_font_size: int = 14
+    plot_title_size: int = 16
+    plot_label_size: int = 14
+    plot_tick_size: int = 13
+    plot_legend_size: int = 12
+
     def __post_init__(self) -> None:
         """Create directories if they don't exist."""
         self.models_dir.mkdir(parents=True, exist_ok=True)
