@@ -1,0 +1,35 @@
+\section{Exploratory Data Analysis}\label{sec:eda}
+
+Prior to classifier training, an exploratory data analysis was conducted to assess the discriminative potential of temporal RSSI signatures and to characterize signal behavior across different passenger movement classes.
+
+\subsection{Dataset Composition}
+
+The final dataset is approximately balanced, comprising around 340 samples per movement class. For each class, 40 samples were collected under isolated conditions, while the remaining samples were obtained during simultaneous device activity, introducing controlled signal interference. This balance ensures that the exploratory analysis and the results reflect both ideal and realistic operating conditions.
+
+\subsection{Temporal RSSI Characteristics}
+
+The temporal evolution of RSSI values constitutes the primary discriminative feature between movement classes. Fig.~\ref{fig:temporal_rssi} illustrates the mean RSSI trajectory over the 10-second observation window for each class.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{images/temporal_rssi.png}
+    \caption{Temporal evolution of RSSI values over the 10-second observation window for each movement class.}
+    \label{fig:temporal_rssi}
+\end{figure}
+
+Static states (\textbf{AA and BB}) exhibit relatively stable signal levels over time, albeit with distinct average magnitudes due to their spatial separation from the access point. In contrast, transitional movements display clear monotonic trends. The boarding class (\textbf{B~$\rightarrow$~A}) shows a consistent increase in RSSI as the devices move toward the access point, while the alighting class (\textbf{A~$\rightarrow$~B}) presents a pronounced decrease as physical obstructions attenuate the signal.
+
+These opposing temporal patterns provide strong intuition for leveraging RSSI sequences in movement classification.
+
+\subsection{Feature Space Separability}
+
+To further inspect the structure of the 10-dimensional RSSI feature vectors, a t-Distributed Stochastic Neighbor Embedding (t-SNE) projection was applied for visualization purposes. The resulting two-dimensional embedding, shown in Fig.~\ref{fig:tsne}, reveals the formation of four predominantly distinct clusters corresponding to the defined movement classes.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/tsne.png}
+    \caption{t-SNE projection for visualization of each class structure}
+    \label{fig:tsne}
+\end{figure}
+
+While partial overlap is observed — primarily associated with samples collected under noisy conditions — the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis is intended as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
