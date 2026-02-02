@@ -12,6 +12,8 @@ import time
 import warnings
 from pathlib import Path
 
+from sklearn.linear_model import LogisticRegression
+
 # Suppress XGBoost verbosity before importing it
 os.environ["XGBOOST_VERBOSITY"] = "0"
 
@@ -45,7 +47,7 @@ def parse_args() -> argparse.Namespace:
         "--optimize", action="store_true", help="Run hyperparameter optimization with Optuna"
     )
     parser.add_argument(
-        "--n-trials", type=int, default=50, help="Number of Optuna trials per classifier"
+        "--n-trials", type=int, default=100, help="Number of Optuna trials per classifier"
     )
     parser.add_argument("--cv-folds", type=int, default=5, help="Number of cross-validation folds")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
@@ -62,11 +64,73 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dashboard", action="store_true", help="Launch Optuna dashboard after optimization"
     )
+    parser.add_argument(
+        "--no-seed-suffix",
+        action="store_true",
+        help="Don't add seed suffix to output directories (use results/ instead of results_42/)",
+    )
     return parser.parse_args()
+
+
+def save_detailed_classifier_reports(
+    pipeline: TrainingPipeline, config: Config, class_names: list[str]
+) -> Path:
+    """Save detailed per-classifier reports to a CSV file."""
+    import json
+
+    detailed_data = []
+    for result in pipeline.results:
+        row = {
+            "Classifier": result.name,
+            "Accuracy": result.accuracy,
+            "Balanced_Accuracy": result.balanced_accuracy,
+            "Precision": result.precision,
+            "Recall": result.recall,
+            "F1_Score": result.f1_score,
+            "MCC": result.mcc,
+            "CV_Mean": result.cv_mean,
+            "CV_Std": result.cv_std,
+            "Train_Time_s": result.train_time,
+        }
+
+        if result.classification_report:
+            for cls_name in class_names:
+                if cls_name in result.classification_report:
+                    cls_metrics = result.classification_report[cls_name]
+                    row[f"{cls_name}_precision"] = cls_metrics.get("precision", 0)
+                    row[f"{cls_name}_recall"] = cls_metrics.get("recall", 0)
+                    row[f"{cls_name}_f1"] = cls_metrics.get("f1-score", 0)
+                    row[f"{cls_name}_support"] = cls_metrics.get("support", 0)
+
+        if result.confusion_matrix is not None:
+            cm = result.confusion_matrix
+            row["Confusion_Matrix"] = json.dumps(cm.tolist())
+            for i, cls_i in enumerate(class_names):
+                for j, cls_j in enumerate(class_names):
+                    row[f"CM_{cls_i}_pred_{cls_j}"] = int(cm[i, j])
+
+        if result.feature_importances is not None:
+            for idx, feat in enumerate(config.feature_columns):
+                if idx < len(result.feature_importances):
+                    row[f"FeatImp_{feat}"] = result.feature_importances[idx]
+
+        detailed_data.append(row)
+
+    import pandas as pd
+
+    detailed_df = pd.DataFrame(detailed_data)
+    detailed_df = detailed_df.sort_values("Accuracy", ascending=False).reset_index(drop=True)
+
+    detailed_path = config.results_dir / "detailed_classifier_results.csv"
+    detailed_df.to_csv(detailed_path, index=False)
+
+    return detailed_path
 
 
 def main() -> int:
     args = parse_args()
+
+    suffix = "" if args.no_seed_suffix else f"_{args.seed}"
 
     config = Config(
         data_path=Path(args.data),
@@ -75,6 +139,9 @@ def main() -> int:
         n_optuna_trials=args.n_trials,
         n_jobs=args.n_jobs,
         optuna_storage=args.storage if args.optimize else "",
+        results_dir=Path(f"results{suffix}"),
+        plots_dir=Path(f"plots{suffix}"),
+        models_dir=Path(f"models{suffix}"),
     )
 
     print("=" * 70)
@@ -133,7 +200,6 @@ def main() -> int:
         print(f"  Storage: {config.optuna_storage}")
         optimizer = OptunaOptimizer(config)
 
-        from lightgbm import LGBMClassifier
         from sklearn.ensemble import (
             ExtraTreesClassifier,
             GradientBoostingClassifier,
@@ -149,10 +215,10 @@ def main() -> int:
             "ExtraTrees": ExtraTreesClassifier,
             "GradientBoosting": GradientBoostingClassifier,
             "XGBoost": XGBClassifier,
-            "LightGBM": LGBMClassifier,
             "SVC_RBF": SVC,
             "KNN": KNeighborsClassifier,
             "MLP": MLPClassifier,
+            "LogisticRegression": LogisticRegression,
         }
 
         for name, clf_class in optimization_classifiers.items():
@@ -200,6 +266,9 @@ def main() -> int:
     print("[6/6] Saving results...")
     results_path = pipeline.save_results()
     print(f"  Results saved to: {results_path}")
+
+    detailed_path = save_detailed_classifier_reports(pipeline, config, class_names)
+    print(f"  Detailed results saved to: {detailed_path}")
 
     report = pipeline.generate_report(class_names)
     report_path = config.results_dir / "classification_report.txt"

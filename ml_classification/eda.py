@@ -20,22 +20,24 @@ class ExploratoryDataAnalysis:
         self.config = config
         self.analysis_results: dict[str, Any] = {}
         self._setup_plot_style()
-    
+
     def _setup_plot_style(self) -> None:
         """Setup matplotlib style with publication-ready fonts."""
-        plt.rcParams.update({
-            'font.size': self.config.plot_font_size,
-            'axes.titlesize': self.config.plot_title_size,
-            'axes.labelsize': self.config.plot_label_size,
-            'xtick.labelsize': self.config.plot_tick_size,
-            'ytick.labelsize': self.config.plot_tick_size,
-            'legend.fontsize': self.config.plot_legend_size,
-            'figure.titlesize': self.config.plot_title_size + 2,
-            'pdf.fonttype': 42,
-            'ps.fonttype': 42,
-        })
+        plt.rcParams.update(
+            {
+                "font.size": self.config.plot_font_size,
+                "axes.titlesize": self.config.plot_title_size,
+                "axes.labelsize": self.config.plot_label_size,
+                "xtick.labelsize": self.config.plot_tick_size,
+                "ytick.labelsize": self.config.plot_tick_size,
+                "legend.fontsize": self.config.plot_legend_size,
+                "figure.titlesize": self.config.plot_title_size + 2,
+                "pdf.fonttype": 42,
+                "ps.fonttype": 42,
+            }
+        )
         sns.set_context("paper", font_scale=self.config.plot_font_scale)
-    
+
     def _get_save_path(self, base_name: str, save_path: Path | None = None) -> Path:
         """Get the save path with the configured format."""
         if save_path:
@@ -244,9 +246,7 @@ class ExploratoryDataAnalysis:
         plt.savefig(save_path, dpi=self.config.plot_dpi, bbox_inches="tight")
         plt.close()
 
-    def plot_pca_visualization(
-        self, X: np.ndarray, y: np.ndarray, class_names: list[str]
-    ) -> None:
+    def plot_pca_visualization(self, X: np.ndarray, y: np.ndarray, class_names: list[str]) -> None:
         """Plot PCA visualization (saved as separate files)."""
         pca = PCA(n_components=2, random_state=self.config.random_seed)
         X_pca = pca.fit_transform(X)
@@ -303,9 +303,7 @@ class ExploratoryDataAnalysis:
         )
         plt.close()
 
-    def plot_tsne_visualization(
-        self, X: np.ndarray, y: np.ndarray, class_names: list[str]
-    ) -> None:
+    def plot_tsne_visualization(self, X: np.ndarray, y: np.ndarray, class_names: list[str]) -> None:
         """Plot t-SNE visualization of the data."""
         perplexity = min(30, len(X) - 1)
         tsne = TSNE(n_components=2, random_state=self.config.random_seed, perplexity=perplexity)
