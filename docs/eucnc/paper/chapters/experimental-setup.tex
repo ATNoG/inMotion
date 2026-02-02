@@ -1,1 +1,109 @@
 \section{Experimental Setup}\label{sec:experimental-setup}
+
+To evaluate the feasibility of RSSI-based passenger movement classification, a series of controlled experiments were conducted in an indoor environment designed to emulate real-world public transport interactions. The experimental setup aimed to reproduce the spatial constraints of a bus and an adjacent bus stop, while enabling reproducible data collection under both isolated and noisy conditions. This section describes the environmental configuration, the data acquisition methodology, and the preprocessing pipeline applied to the collected data.
+
+\subsection{Environmental Configuration}
+
+The experimental environment was divided into two distinct zones, as illustrated in Fig.~\ref{fig:experimental_setup}, representing the interior of a public transport vehicle and the corresponding boarding area and bus stop:
+
+\begin{itemize}
+    \item \textbf{Zone A (Vehicle Interior):}  
+    A closed room was used to simulate the interior of a bus. The room provides moderate isolation from external interference, allowing controlled observation of RSSI variations. A WiFi access point (AP) was installed inside the room, positioned adjacent to the doorway, replicating a realistic placement of onboard communication equipment near the vehicle entrance.
+
+    \item \textbf{Zone B (Bus Stop):}  
+    The corridor immediately outside the room was designated as the bus stop and boarding area. This zone represents the external environment where passengers wait before boarding or after alighting from the vehicle.
+\end{itemize}
+
+The physical separation imposed by the wall and door between the two zones introduces signal attenuation, generating distinctive RSSI patterns when a device transitions between Zone~A and Zone~B. These characteristics are essential for replicating real-world conditions and for enabling the discrimination between static passenger states and transitional movements.
+
+% imagem como placeholder? deveria se fazer outra?
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/experimental_setup.png}
+    \caption{Experimental environment used to simulate a public transport scenario.}
+    \label{fig:experimental_setup}
+\end{figure}
+
+\subsection{Data Acquisition Methodology}
+
+Data collection was performed in real time using a custom Python-based extraction script. The script interfaced directly with the WiFi access point via an Ethernet connection, enabling continuous retrieval of network metadata associated with connected devices.
+
+Each experimental trial was conducted over a \textbf{10-second observation window}, during which \textbf{10 consecutive RSSI samples} were recorded at a sampling rate of \textbf{1 Hz}, such that each sample was acquired one second apart. This temporal resolution was selected to capture the dynamic evolution of signal strength as a subject moves within or between zones, over a time interval representative of typical boarding or alighting actions in public transport, while remaining compatible with real-time processing constraints.
+
+To ensure consistent RSSI reporting during data collection, the mobile devices generated periodic low-overhead network traffic (ICMP echo requests) toward the access point. This approach maintained active communication with the AP while introducing negligible additional interference.
+
+For each detected device, the following attributes were extracted:
+\begin{itemize}
+    \item \textbf{MAC Address:} Unique device identifier, used solely for separating different devices during preprocessing.
+    \item \textbf{RSSI (dBm):} Received Signal Strength Indicator, serving as the primary feature for movement classification.
+    \item \textbf{Traffic Metadata:} Transmitted and received byte counters, collected by the AP but not retained for model training.
+\end{itemize}
+
+To account for hardware heterogeneity, four different mobile devices, from three separate manufacturers and different generations, were used throughout the data collection process, introducing variability in antenna characteristics and transmission power. This diversity improves the robustness of the resulting dataset and reduces device-specific bias.
+
+\subsection{Movement Classes and Experimental Scenarios}
+
+Four fundamental movement classes were defined to cover all possible passenger state transitions relative to the vehicle:
+
+\begin{enumerate}
+    \item \textbf{Remaining Inside (A $\rightarrow$ A):}  
+    Static presence or localized movement within the vehicle interior.
+    \item \textbf{Remaining at Stop (B $\rightarrow$ B):}  
+    Static presence or localized movement within the bus stop area.
+    \item \textbf{Alighting (A $\rightarrow$ B):}  
+    Transition from inside the vehicle to the bus stop through the front door.
+    \item \textbf{Boarding (B $\rightarrow$ A):}  
+    Transition from the bus stop into the vehicle through the front door.
+\end{enumerate}
+
+To evaluate system robustness under varying interference conditions, data collection was performed under two distinct scenarios:
+
+\begin{itemize}
+    \item \textbf{Isolated Collection:}  
+    Trials conducted with a single active device at a time, minimizing channel contention and external interference. Two of the four devices were used in this scenario, with 20 repetitions per device for each movement class, providing clean baseline RSSI signatures.
+
+    \item \textbf{Noisy / Simultaneous Collection:}  
+    Trials conducted with all four devices operating simultaneously, performing two paired different movement classes in parallel. This setup introduces signal interference and collisions, approximating realistic passenger density conditions in public transport environments.
+\end{itemize}
+
+\subsection{Data Preprocessing and Structuring}
+
+The raw data captured by the access point consisted of nested Python dictionaries, where each one-second capture contained network metadata for all connected devices. For each 10-second trial, ten such snapshots were recorded.
+
+The preprocessing pipeline transformed this raw data into a machine-learning-ready dataset through the following steps:
+
+\begin{enumerate}
+    \item \textbf{Temporal Aggregation:}  
+    For each device and trial, the 10 sequential RSSI measurements were aggregated into a single feature vector
+    \[
+        \mathbf{R} = [r_1, r_2, \ldots, r_{10}],
+    \]
+    allowing classifiers to exploit temporal trends, slopes, and variance rather than relying solely on instantaneous signal strength.
+
+    \item \textbf{Device Isolation:}  
+    Data corresponding to each device was isolated using its MAC address, enabling independent trajectory reconstruction even during simultaneous collection scenarios.
+
+    \item \textbf{Labeling:}  
+    Each RSSI sequence was labeled with:
+    \begin{itemize}
+        \item the corresponding movement class (AA, BB, AB, or BA);
+        \item a boolean noise label indicating whether the trial was collected in isolation or under simultaneous device activity.
+    \end{itemize}
+
+    \item \textbf{Feature Filtering:}  
+    Non-essential attributes, such as transmitted/received byte counts and connection duration, were discarded to reduce dimensionality and prevent overfitting.
+\end{enumerate}
+
+\subsection{Final Dataset Structure}
+
+The resulting dataset was exported in a CSV format, where each row represents a complete 10-second trajectory for a single device. Each instance includes the device MAC, 10 RSSI features, the movement class label, and the noise indicator% (\ref{fig:data_sample})
+.
+
+% \begin{figure}[!ht]
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{images/data_sample.png}
+%     \caption{Dataset sample}
+%     \label{fig:data_sample}
+% \end{figure}
+
+This structure enables the analysis of both absolute signal strength and its temporal evolution, which is critical for distinguishing between static presence and transitional passenger movements, forming a solid foundation for supervised learning experiments.
