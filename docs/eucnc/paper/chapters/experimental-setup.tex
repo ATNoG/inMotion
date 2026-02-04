@@ -1,55 +1,68 @@
 \section{Experimental Setup}\label{sec:experimental-setup}
 
-To evaluate the feasibility of RSSI-based passenger movement classification, a series of controlled experiments were conducted in an indoor environment designed to emulate real-world public transport interactions. The experimental setup aimed to reproduce the spatial constraints of a bus and an adjacent bus stop, while enabling reproducible data collection under both isolated and noisy conditions. This section describes the environmental configuration, the data acquisition methodology, and the preprocessing pipeline applied to the collected data.
+This section describes the physical data collection environment and the machine learning experimental framework employed for passenger movement classification.
 
-\subsection{Environmental Configuration}
+\subsection{Physical Data Collection Setup}
 
-The experimental environment was divided into two distinct zones, as illustrated in Fig.~\ref{fig:experimental_setup}, representing the interior of a public transport vehicle and the corresponding boarding area and bus stop. Zone~A, designated as the Vehicle Interior, consisted of a closed room used to simulate the interior of a bus. The room provides moderate isolation from external interference, allowing controlled observation of RSSI variations. A WiFi access point (AP) was installed inside the room, positioned adjacent to the doorway, replicating a realistic placement of onboard communication equipment near the vehicle entrance. Zone~B, representing the Bus Stop, was established in the corridor immediately outside the room and was designated as the boarding area. This zone represents the external environment where passengers wait before boarding or after alighting from the vehicle.
+Controlled experiments were conducted in an indoor environment emulating public transport interactions, enabling reproducible data collection under both isolated and noisy conditions.
 
-The physical separation imposed by the wall and door between the two zones introduces signal attenuation, generating distinctive RSSI patterns when a device transitions between Zone~A and Zone~B. These characteristics are essential for replicating real-world conditions and for enabling the discrimination between static passenger states and transitional movements.
+\subsubsection{Environmental Configuration}
 
-% imagem como placeholder? deveria se fazer outra?
+The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a WiFi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive RSSI patterns during transitions.
+
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.7\linewidth]{images/experimental_setup.png}
-    \caption{Experimental environment used to simulate a public transport scenario.}
+    \caption{Experimental environment simulating a public transport scenario.}
     \label{fig:experimental_setup}
 \end{figure}
 
-\subsection{Data Acquisition Methodology}
+\subsubsection{Data Acquisition}
 
-Data collection was performed in real time using a custom Python-based extraction script. The script interfaced directly with the WiFi access point via an Ethernet connection, enabling continuous retrieval of network metadata associated with connected devices.
+Data was collected using a Python script interfacing with the AP via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 RSSI samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent RSSI reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
 
-Each experimental trial was conducted over a \textbf{10-second observation window}, during which \textbf{10 consecutive RSSI samples} were recorded at a sampling rate of \textbf{1 Hz}, such that each sample was acquired one second apart. This temporal resolution was selected to capture the dynamic evolution of signal strength as a subject moves within or between zones, over a time interval representative of typical boarding or alighting actions in public transport, while remaining compatible with real-time processing constraints.
+Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside), \textbf{B$\rightarrow$B} (remaining at stop), \textbf{A$\rightarrow$B} (alighting), and \textbf{B$\rightarrow$A} (boarding). Collection occurred under two scenarios: \textit{Isolated} (single device, 20 repetitions per class per device) and \textit{Noisy} (four devices simultaneously performing paired movements).
 
-To ensure consistent RSSI reporting during data collection, the mobile devices generated periodic low-overhead network traffic (ICMP echo requests) toward the access point. This approach maintained active communication with the AP while introducing negligible additional interference.
+\subsubsection{Preprocessing and Dataset Structure}
 
-For each detected device, three primary attributes were extracted: the \textbf{MAC Address} served as a unique device identifier, used solely for separating different devices during preprocessing, the \textbf{RSSI} (dBm), representing the Received Signal Strength Indicator, served as the primary feature for movement classification and \textbf{Traffic Metadata}, consisting of transmitted and received byte counters, was collected by the AP but not retained for model training.
+Raw data was transformed through: (1)~\textit{Temporal Aggregation}—10 RSSI measurements per trial aggregated into feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; (4)~\textit{Feature Filtering} to retain only RSSI values. The resulting CSV dataset contains approximately 1,360 samples, each representing a 10-second trajectory with movement class label, enabling analysis of both absolute signal strength and temporal evolution.
 
-To account for hardware heterogeneity, four different mobile devices, from three separate manufacturers and different generations, were used throughout the data collection process, introducing variability in antenna characteristics and transmission power. This diversity improves the robustness of the resulting dataset and reduces device-specific bias.
+\subsection{Machine Learning Experimental Framework}
 
-\subsection{Movement Classes and Experimental Scenarios}
+This subsection details the classifier selection rationale, evaluation methodology, and performance metrics employed in our experimental protocol.
 
-Four fundamental movement classes were defined to cover all possible passenger state transitions relative to the vehicle. The first class, Remaining Inside \textbf{(A~$\rightarrow$~A)}, corresponds to static presence or localized movement within the vehicle interior. The second class, Remaining at Stop \textbf{(B~$\rightarrow$~B)}, represents static presence or localized movement within the bus stop area. The third class, Alighting \textbf{(A~$\rightarrow$~B)}, captures the transition from inside the vehicle to the bus stop through the front door. Finally, the fourth class, Boarding \textbf{(B~$\rightarrow$~A)}, describes the transition from the bus stop into the vehicle through the front door.
+\subsubsection{Classifier Selection and Justification}
 
-To evaluate system robustness under varying interference conditions, data collection was performed under two distinct scenarios. The first scenario, Isolated Collection, involved trials conducted with a single active device at a time, minimizing channel contention and external interference. Two of the four devices were used in this scenario, with 20 repetitions per device for each movement class, providing clean baseline RSSI signatures. The second scenario, Noisy or Simultaneous Collection, involved trials conducted with all four devices operating simultaneously, performing two paired different movement classes in parallel. This setup introduces signal interference and collisions, approximating realistic passenger density conditions in public transport environments.
+We evaluated 38 classification algorithms spanning multiple paradigms to ensure comprehensive benchmarking. The classifier families were selected based on their established effectiveness in RSSI-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
 
-\subsection{Data Preprocessing and Structuring}
+\textbf{Support Vector Machines (SVM):} SVMs with RBF and linear kernels were included due to their demonstrated superiority in WiFi fingerprinting tasks. Prior studies on indoor localization using RSSI have shown SVMs achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The RBF kernel effectively captures non-linear relationships in signal strength patterns.
 
-The raw data captured by the access point consisted of nested \texttt{Python} dictionaries, where each one-second capture contained network metadata for all connected devices. For each 10-second trial, ten such snapshots were recorded.
+\textbf{Ensemble Methods:} Random Forest and Extra Trees were selected for their robustness to noise and ability to model complex decision boundaries without extensive hyperparameter tuning~\cite{singh2021rssisurvey}. Gradient boosting variants (XGBoost, LightGBM, CatBoost) were included based on their state-of-the-art performance in tabular classification tasks, with CatBoost demonstrating particular effectiveness for categorical features~\cite{fabre2025machine}.
 
-The preprocessing pipeline transformed this raw data into a machine-learning-ready dataset through a sequence of four steps. First, Temporal Aggregation was performed, where for each device and trial, the 10 sequential RSSI measurements were aggregated into a single feature vector $\mathbf{R} = [r_1, r_2, \ldots, r_{10}]$, allowing classifiers to exploit temporal trends, slopes, and variance rather than relying solely on instantaneous signal strength. Second, Device Isolation was applied, where data corresponding to each device was isolated using its MAC address, enabling independent trajectory reconstruction even during simultaneous collection scenarios. Third, Labeling was performed by assigning each RSSI sequence the corresponding movement class (\textbf{AA}, \textbf{BB}, \textbf{AB}, or \textbf{BA}) along with a boolean noise label indicating whether the trial was collected in isolation or under simultaneous device activity. Fourth, Feature Filtering was applied, where non-essential attributes, such as transmitted/received byte counts and connection duration, were discarded to reduce dimensionality and prevent overfitting.
+\textbf{Gaussian Process Classifier:} GPs provide probabilistic predictions with uncertainty quantification, particularly valuable for RSSI data where signal variability is inherent. The RBF kernel enables automatic adaptation to the intrinsic dimensionality of temporal RSSI sequences.
 
-\subsection{Final Dataset Structure}
+\textbf{Neural Networks:} Multi-layer perceptrons (MLPs) with varying architectures (small, medium, large) were evaluated to assess whether deeper representations improve classification over traditional methods for this feature space dimensionality.
 
-The resulting dataset was exported in a CSV format, where each row represents a complete 10-second trajectory for a single device. Each instance includes the device MAC, 10 RSSI features, the movement class label, and the noise indicator% (\ref{fig:data_sample})
-.
+\textbf{Stacking and Voting Ensembles:} Meta-learning approaches combining heterogeneous base learners were included to leverage complementary classifier strengths, a strategy shown to improve robustness in transportation sensing applications~\cite{wiboonsiriruk2023efficient}.
 
-% \begin{figure}[!ht]
-%     \centering
-%     \includegraphics[width=0.9\linewidth]{images/data_sample.png}
-%     \caption{Dataset sample}
-%     \label{fig:data_sample}
-% \end{figure}
+\subsubsection{Data Partitioning Strategy}
 
-This structure enables the analysis of both absolute signal strength and its temporal evolution, which is critical for distinguishing between static presence and transitional passenger movements, forming a solid foundation for supervised learning experiments.
+The dataset was partitioned using \textbf{stratified sampling} with an 80\%/20\% train-test split. Stratified sampling ensures that class distributions are preserved in both partitions, which is critical for multi-class classification problems where class imbalance could otherwise bias model evaluation. This approach maintains the original proportion of each movement class (AA, BB, AB, BA) in both training and testing sets.
+
+\subsubsection{Cross-Validation Protocol}
+
+Model training employed \textbf{5-fold stratified cross-validation}, a methodology widely recommended for robust classifier evaluation. Stratified K-fold cross-validation maintains class ratios across all folds, ensuring that minority classes receive adequate representation during training and validation. This technique reduces variance in performance estimates compared to simple hold-out validation.
+
+To assess result stability, experiments were repeated with three random seeds (3, 5, and 42), and metrics were aggregated across runs. This multi-seed evaluation quantifies classifier sensitivity to random initialization and data shuffling.
+
+\subsubsection{Performance Metrics}
+
+Four complementary metrics were employed to provide comprehensive performance characterization:
+
+\textbf{Accuracy:} The proportion of correctly classified samples. While intuitive, accuracy can be misleading for imbalanced datasets.
+
+\textbf{Weighted F1-Score:} The harmonic mean of precision and recall, weighted by class support. This metric balances false positives and false negatives while accounting for class distribution.
+
+\textbf{Balanced Accuracy:} The arithmetic mean of per-class recall values, ensuring equal contribution from each class regardless of prevalence.
+
+\textbf{Matthews Correlation Coefficient (MCC):} Selected as the primary evaluation criterion, as this metric offers a reliable and balanced evaluation of classification models, particularly in scenarios involving imbalanced datasets or when assessing performance across multiple classes~\cite{chicco2020mcc, chicco2023mcc}. MCC ranges from $-1$ to $+1$, producing high scores only when all confusion matrix categories achieve strong results.
