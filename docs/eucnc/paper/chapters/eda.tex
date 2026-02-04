@@ -8,7 +8,7 @@ The final dataset is approximately balanced, comprising around 340 samples per m
 
 \subsection{Temporal RSSI Characteristics}
 
-The temporal evolution of RSSI values constitutes the primary discriminative feature between movement classes. Fig.~\ref{fig:temporal_rssi} illustrates the mean RSSI trajectory over the 10-second observation window for each class.
+The temporal evolution of RSSI values constitutes the primary discriminative feature between movement classes. \autoref{fig:temporal_rssi} illustrates the mean RSSI trajectory over the 10-second observation window for each class.
 
 \begin{figure}[!ht]
     \centering
@@ -23,7 +23,7 @@ These opposing temporal patterns provide strong intuition for leveraging RSSI se
 
 \subsection{Feature Space Separability}
 
-To further inspect the structure of the 10-dimensional RSSI feature vectors, a t-Distributed Stochastic Neighbor Embedding (t-SNE) projection was applied for visualization purposes. The resulting two-dimensional embedding, shown in Fig.~\ref{fig:tsne}, reveals the formation of four predominantly distinct clusters corresponding to the defined movement classes.
+To further inspect the structure of the 10-dimensional RSSI feature vectors, a t-Distributed Stochastic Neighbor Embedding (t-SNE) projection was applied for visualization purposes. The resulting two-dimensional embedding, shown in \autoref{fig:tsne}, reveals the formation of four predominantly distinct clusters corresponding to the defined movement classes.
 
 \begin{figure}[!ht]
     \centering
@@ -32,4 +32,4 @@ To further inspect the structure of the 10-dimensional RSSI feature vectors, a t
     \label{fig:tsne}
 \end{figure}
 
-While partial overlap is observed — primarily associated with samples collected under noisy conditions — the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis is intended as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
+While partial overlap is observed, primarily associated with samples collected under noisy conditions, the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis is intended as a qualitative inspection of feature separability rather than a quantitative performance evaluation.

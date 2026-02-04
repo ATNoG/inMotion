@@ -1,1 +1,123 @@
 \section{Results}\label{sec:results}
+
+This section presents the experimental results obtained from training and evaluating a comprehensive set of machine learning classifiers on the RSSI-based passenger movement dataset. The evaluation encompasses 38 classification algorithms, ranging from simple baseline methods to advanced ensemble techniques, assessed across multiple random seeds to ensure statistical robustness. The experimental methodology, including data partitioning, cross-validation protocol, and evaluation metrics, is detailed in \autoref{sec:experimental-setup}.
+
+\subsection{Classification Performance}
+
+\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers, ranked by mean accuracy across the three experimental seeds.
+
+\begin{table}[!ht]
+    \centering
+    \caption{Top-10 Classifiers by Mean Accuracy Across Seeds}
+    \label{tab:top_classifiers}
+    \resizebox{\columnwidth}{!}{%
+        \begin{tabular}{lcccc}
+            \toprule
+            \textbf{Classifier}             & \textbf{Accuracy} & \textbf{Recall}   & \textbf{F1-Score} & \textbf{MCC}      \\
+            \midrule
+            GaussianProcess                 & 0.816 $\pm$ 0.024 & 0.816 $\pm$ 0.024 & 0.815 $\pm$ 0.024 & 0.756 $\pm$ 0.033 \\
+            SVC (RBF)                       & 0.815 $\pm$ 0.015 & 0.815 $\pm$ 0.015 & 0.813 $\pm$ 0.014 & 0.755 $\pm$ 0.021 \\
+            SVC (Linear)                    & 0.813 $\pm$ 0.017 & 0.813 $\pm$ 0.017 & 0.812 $\pm$ 0.016 & 0.750 $\pm$ 0.023 \\
+            StackingEnsemble                & 0.811 $\pm$ 0.015 & 0.811 $\pm$ 0.015 & 0.810 $\pm$ 0.014 & 0.749 $\pm$ 0.020 \\
+            CatBoost                        & 0.809 $\pm$ 0.013 & 0.809 $\pm$ 0.013 & 0.809 $\pm$ 0.013 & 0.746 $\pm$ 0.017 \\
+            RandomForest                    & 0.808 $\pm$ 0.017 & 0.808 $\pm$ 0.017 & 0.807 $\pm$ 0.016 & 0.744 $\pm$ 0.022 \\
+            LogisticRegression (L1)         & 0.808 $\pm$ 0.031 & 0.808 $\pm$ 0.031 & 0.806 $\pm$ 0.031 & 0.744 $\pm$ 0.042 \\
+            LogisticRegression (ElasticNet) & 0.808 $\pm$ 0.031 & 0.808 $\pm$ 0.031 & 0.806 $\pm$ 0.031 & 0.744 $\pm$ 0.042 \\
+            MLP (Large)                     & 0.806 $\pm$ 0.015 & 0.806 $\pm$ 0.015 & 0.805 $\pm$ 0.014 & 0.743 $\pm$ 0.021 \\
+            LogisticRegression (L2)         & 0.806 $\pm$ 0.033 & 0.806 $\pm$ 0.033 & 0.805 $\pm$ 0.033 & 0.743 $\pm$ 0.044 \\
+            \bottomrule
+        \end{tabular}%
+    }
+\end{table}
+
+The Gaussian Process classifier achieved the highest mean accuracy (81.6\%), recall (81.6\%), F1-score (81.5\%), and MCC (0.756), demonstrating strong discriminative capability for the temporal RSSI patterns. Support Vector Machines with RBF and linear kernels followed closely, with accuracies of 81.5\% and 81.3\%, F1-scores of 81.3\% and 81.2\%, and MCC values of 0.755 and 0.750, respectively. Notably, the Stacking Ensemble, which combines predictions from multiple base learners, attained competitive performance across all metrics (accuracy: 81.1\%, recall: 81.1\%, F1-score: 81.0\%, MCC: 0.749), validating the complementary nature of different classification strategies.
+
+Regularized logistic regression variants (L1, L2, and ElasticNet) demonstrated consistent performance with accuracies around 80.8\%, recall of 80.8\%, F1-scores of 80.6\%, and MCC values of 0.744, suggesting that linear decision boundaries with appropriate regularization can effectively separate the movement classes. The relatively higher standard deviation observed for logistic regression methods indicates greater sensitivity to the specific train-test split compared to kernel-based approaches.
+
+\subsection{Per-Class Analysis}
+
+\autoref{tab:class_performance} presents the per-class accuracy, recall, F1-score, and MCC for the best classifier (Gaussian Process, seed~3).
+
+\begin{table}[!ht]
+    \centering
+    \caption{Per-Class Performance Metrics (Gaussian Process)}
+    \label{tab:class_performance}
+    \resizebox{\columnwidth}{!}{%
+        \begin{tabular}{lcccc}
+            \toprule
+            \textbf{Class}        & \textbf{Accuracy} & \textbf{Recall} & \textbf{F1-Score} & \textbf{MCC}   \\
+            \midrule
+            AA (Inside)           & 0.838             & 0.750           & 0.791             & 0.785          \\
+            BB (Stop)             & 0.838             & 0.897           & 0.878             & 0.785          \\
+            BA (Boarding)         & 0.838             & 0.824           & 0.855             & 0.785          \\
+            AB (Alighting)        & 0.838             & 0.882           & 0.828             & 0.785          \\
+            \midrule
+            \textbf{Weighted Avg} & \textbf{0.838}    & \textbf{0.838}  & \textbf{0.838}    & \textbf{0.785} \\
+            \bottomrule
+        \end{tabular}%
+    }
+\end{table}
+
+The static state at the bus stop (BB) exhibited the highest recall (89.7\%) and strong F1-score (0.878), attributable to the consistent low RSSI values observed when devices remain outside the vehicle. The boarding movement (BA) also achieved strong results (recall: 82.4\%, F1-score: 0.855, MCC: 0.785), benefiting from the distinctive increasing RSSI pattern as devices approach the access point. The alighting class (AB) demonstrated high recall (88.2\%) but lower F1-score (0.828), indicating some false positives from the AA class. Conversely, the static state inside the vehicle (AA) presented the most challenging classification scenario, with the lowest recall (75.0\%) and F1-score (0.791), primarily due to confusion with the boarding class (BA), as both involve proximity to the access point. The overall accuracy of 83.8\% and MCC of 0.785 confirm robust multi-class discrimination across all movement categories.
+
+\subsection{Hyperparameter Configuration}
+
+The Gaussian Process classifier employed a Radial Basis Function (RBF) kernel, which is well-suited for capturing non-linear relationships in the RSSI feature space. The model configuration used is presented in \autoref{tab:hyperparams}.
+
+\begin{table}[!ht]
+    \centering
+    \caption{Gaussian Process Hyperparameters}
+    \label{tab:hyperparams}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Parameter}   & \textbf{Value}               \\
+        \midrule
+        Kernel               & $1.0 \times \text{RBF}(1.0)$ \\
+        Kernel Length Scale  & Optimized during fitting     \\
+        Optimizer            & L-BFGS-B                     \\
+        Max Iterations       & 100                          \\
+        Multi-class Strategy & One-vs-Rest                  \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The RBF kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the RSSI temporal sequences. This flexibility enables the Gaussian Process to model complex decision boundaries without requiring extensive manual hyperparameter tuning, making it particularly suitable for RSSI-based classification where signal patterns exhibit non-linear spatial dependencies.
+
+\subsection{Confusion Matrix Analysis}
+
+\autoref{fig:confusion_matrix} presents the normalized confusion matrix for the Gaussian Process classifier, which achieved the best average performance across experimental seeds.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{images/confusion_matrix_GaussianProcess.pdf}
+    \caption{Confusion matrix for the Gaussian Process classifier (seed~3), demonstrating strong diagonal dominance with minimal inter-class confusion.}
+    \label{fig:confusion_matrix}
+\end{figure}
+
+The confusion matrix reveals that the primary source of classification errors occurs between spatially adjacent classes. Specifically, the AA class (remaining inside) is occasionally misclassified as BA (boarding), reflecting the similarity in RSSI magnitude when devices are positioned near the access point. Similarly, minor confusion exists between AB (alighting) and BB (remaining at stop), as both classes share lower RSSI values characteristic of the exterior zone.
+
+\subsection{Model Stability Analysis}
+
+To evaluate the robustness of classifier rankings across different experimental conditions, \autoref{fig:accuracy_variability} illustrates the accuracy variability for the top classifiers across the three random seeds.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{images/accuracy_variability.pdf}
+    \caption{Accuracy variability across experimental seeds for top classifiers, demonstrating consistent ranking stability.}
+    \label{fig:accuracy_variability}
+\end{figure}
+
+The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (Gaussian Process, SVC) and ensemble approaches (Stacking, CatBoost) exhibiting the lowest variability. This stability is crucial for deployment scenarios where model retraining may occur with different data partitions.
+
+\subsection{Feature Importance}
+
+Analysis of feature importance across interpretable classifiers revealed that the initial RSSI measurements (features 1--3) contribute most significantly to classification decisions, as illustrated in \autoref{fig:feature_importance}. This finding aligns with the temporal dynamics of passenger movements, where early signal readings capture the initial position before any state transition occurs.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{images/mean_feature_importance.pdf}
+    \caption{Mean feature importance across classifiers, highlighting the discriminative value of initial RSSI measurements.}
+    \label{fig:feature_importance}
+\end{figure}
+
+The first RSSI sample exhibits the highest importance (normalized score: 2.29), followed by samples at positions 6 and 2. This pattern suggests that classifiers leverage both the starting signal strength and mid-trajectory measurements to infer movement direction, while later samples provide confirmatory information about the final position.

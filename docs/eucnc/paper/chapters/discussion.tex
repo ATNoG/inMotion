@@ -1,1 +1,39 @@
 \section{Discussion}\label{sec:discussion}
+
+The experimental results demonstrate the feasibility of using temporal RSSI sequences for non-intrusive passenger movement classification in public transport scenarios. This section analyses the key findings, examines the influence of data collection conditions, and discusses the practical implications for real-world deployment.
+
+\subsection{Classifier Performance Analysis}
+
+The superior performance of the Gaussian Process classifier (accuracy: 81.6\%, MCC: 0.756) can be attributed to its probabilistic framework and the flexibility of the RBF kernel in modelling non-linear decision boundaries. Unlike parametric models that assume specific functional forms, Gaussian Processes adapt their complexity to the underlying data distribution, which proves advantageous for RSSI patterns that exhibit complex spatial dependencies.
+
+Support Vector Machines with RBF and linear kernels achieved comparable performance, confirming that kernel-based methods are well-suited for this classification task. The margin-maximization principle of SVMs provides robust generalization, particularly relevant given the overlap between movement classes observed in the t-SNE visualization.
+
+The strong performance of regularized logistic regression variants suggests that, despite the non-linear nature of RSSI propagation, the temporal feature representation captures sufficient discriminative information for linear classifiers to achieve competitive results. Ensemble methods, including Stacking and CatBoost, demonstrated robust performance with notably low variance across seeds, indicating their suitability for deployment scenarios where model stability is paramount.
+
+\subsection{Per-Class Error Analysis}
+
+The confusion patterns reveal insights into the physical characteristics of each movement class. The static state inside the vehicle (AA) exhibited the lowest recall (75.0\%), primarily due to misclassification as boarding (BA). This confusion is attributable to the spatial proximity of both classes to the access point, resulting in similar high-RSSI signatures. Although the temporal dynamics differ (AA maintains relatively stable values while BA shows an increasing trend), this distinction may be subtle in short observation windows.
+
+Conversely, the bus stop class (BB) achieved the highest recall (89.7\%) due to the consistent signal attenuation caused by the physical barrier separating Zone~B from the access point. The transitional classes (AB and BA) benefited from their characteristic monotonic RSSI trends, with alighting (AB) achieving 88.2\% recall.
+
+\subsection{Impact of Data Collection Conditions}
+
+The inclusion of samples collected under noisy (simultaneous multi-device) conditions serves two purposes: (1) it improves model robustness by exposing classifiers to realistic operating conditions during training, and (2) it provides a more conservative performance estimate compared to evaluation on isolated data alone.
+
+The relatively low standard deviation observed across experimental seeds (accuracy std: 0.024 for Gaussian Process) suggests that the trained models generalize consistently despite the inherent variability in RSSI measurements. This stability is encouraging for practical deployment, where environmental conditions may vary.
+
+\subsection{Feature Importance Insights}
+
+The feature importance analysis revealed that initial RSSI measurements (samples 1--3) contribute most significantly to classification decisions, capturing the starting position and providing immediate context for distinguishing static states from transitional movements. The elevated importance of sample 6 (mid-trajectory) indicates that classifiers also rely on signal evolution to confirm movement direction, validating the choice of sequential RSSI measurements over aggregate statistics.
+
+\subsection{Limitations and Considerations}
+
+Several limitations should be acknowledged. First, the controlled experimental environment, while designed to simulate public transport conditions, may not capture all sources of variability present in operational settings, such as passenger density fluctuations, vehicle movement, and diverse access point placements.
+
+Second, the 10-second observation window, while suitable for capturing typical boarding and alighting actions, may be insufficient for detecting slower movements or hesitant passengers. Adaptive window lengths could potentially improve classification accuracy in such cases.
+
+Third, the current approach assumes consistent device behaviour; however, variations in device hardware, operating system power management, and user-initiated WiFi state changes may affect RSSI reporting in practice.
+
+\subsection{Practical Implications}
+
+Despite the limitations, the achieved classification performance (accuracy $>$81\%, MCC $>$0.75) demonstrates the potential of RSSI-based movement classification as a complementary technology for passenger counting systems. The Gaussian Process classifier offers probabilistic predictions useful for uncertainty quantification, while SVC or logistic regression models provide comparable accuracy with reduced inference time for resource-constrained deployments.
