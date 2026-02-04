@@ -2,11 +2,11 @@
 
 \subsection{Automatic Passenger Counting Systems}
 
-Traditional APC systems rely on infrared sensors, pressure mats, or video-based detection \cite{barabino2014offline}. Pronello and Garz\'{o}n Ruiz \cite{pronello2023evaluating} found that claimed 98\% accuracy often deteriorates to 53--74\% in practice. Deep learning approaches achieve up to 94\% accuracy \cite{wiboonsiriruk2023efficient}, but vision-based systems remain constrained by occlusion, lighting, and privacy concerns.
+Conventional APC systems rely on infrared sensors, pressure mats, or video-based detection \cite{barabino2014offline}. Pronello and Garz\'{o}n Ruiz \cite{pronello2023evaluating} observed that claimed 98\% accuracy frequently drops to 53--74\% under real-world conditions. Deep learning approaches can reach up to 94\% accuracy \cite{wiboonsiriruk2023efficient}, though vision-based systems remain hampered by occlusion, lighting variability, and privacy concerns.
 
 \subsection{WiFi-Based Passenger Sensing}
 
-WiFi-enabled device ubiquity has motivated wireless signal analysis for mobility monitoring. Myrvoll et al. \cite{myrvoll2017counting} pioneered probe request analysis for passenger counting, while Nitti et al. \cite{nitti2020iabacus} achieved 100\% detection in static and 94\% in dynamic scenarios. CSI-based systems offer richer information, with Guo et al. \cite{guo2024rssi} achieving over 94\% accuracy, but require specialized hardware. RSSI remains practical with standard equipment. Fabre et al. \cite{fabre2025machine} found Light Gradient Boosting effective for WiFi-based ridership estimation, and Simon\v{c}i\v{c} et al. \cite{simoncic2023nonintrusive} achieved over 96\% accuracy despite MAC randomization.
+The ubiquity of WiFi-enabled devices has spurred interest in wireless signal analysis for mobility monitoring. Myrvoll et al. \cite{myrvoll2017counting} pioneered probe request analysis for passenger counting, while Nitti et al. \cite{nitti2020iabacus} reported 100\% detection in static settings and 94\% in dynamic ones. CSI-based systems yield richer information, with Guo et al. \cite{guo2024rssi} reaching over 94\% accuracy, though they require specialized hardware. RSSI remains practical with off-the-shelf equipment. Fabre et al. \cite{fabre2025machine} found Light Gradient Boosting effective for WiFi-based ridership estimation, and Simon\v{c}i\v{c} et al. \cite{simoncic2023nonintrusive} attained over 96\% accuracy despite MAC randomization.
 
 \subsection{RSSI Fingerprinting and Movement Classification}
 
@@ -14,4 +14,4 @@ RSSI fingerprinting is well-established for indoor localization \cite{agualimpia
 
 \subsection{Research Gap}
 
-While progress has been made in passenger counting and wireless sensing, machine learning classification of movement patterns from RSSI time series remains underexplored. Existing approaches focus on aggregate counting rather than fine-grained movement classification. Our work addresses this gap by framing passenger movement detection as supervised classification using temporal RSSI evolution, enabling real-time trajectory classification with a single access point at the vehicle door, minimizing infrastructure requirements.
+Despite progress in passenger counting and wireless sensing, machine learning classification of movement patterns from RSSI time series has received comparatively little attention. Existing approaches tend to focus on aggregate counting rather than fine-grained movement classification. Our work addresses this gap by casting passenger movement detection as a supervised classification problem using temporal RSSI evolution, thereby enabling real-time trajectory classification with a single access point at the vehicle door and keeping infrastructure requirements to a minimum.

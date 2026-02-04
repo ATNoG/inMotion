@@ -1,10 +1,10 @@
 \section{Experimental Setup}\label{sec:experimental-setup}
 
-This section describes the physical data collection environment and the machine learning experimental framework employed for passenger movement classification.
+This section outlines the physical data collection environment and the machine learning experimental framework devised for passenger movement classification.
 
 \subsection{Physical Data Collection Setup}
 
-Controlled experiments were conducted in an indoor environment emulating public transport interactions, enabling reproducible data collection under both isolated and noisy conditions.
+Controlled experiments were carried out in an indoor environment that emulates public transport interactions, allowing reproducible data collection under both isolated and noisy conditions.
 
 \subsubsection{Environmental Configuration}
 
@@ -37,15 +37,15 @@ To comprehensively evaluate the impact of data collection conditions on classifi
 
 \textbf{Noisy-Only Dataset:} A subset containing exclusively samples collected with simultaneous multi-device activity ($n = 1,196$). This scenario evaluates classifier robustness under challenging conditions that closely approximate real-world public transport environments.
 
-The comparison across these scenarios enables quantitative assessment of how environmental noise affects classification accuracy and provides insights into the operational boundaries of RSSI-based movement detection.
+Comparing across these scenarios allows for a quantitative assessment of how environmental noise affects classification accuracy and sheds light on the operational boundaries of RSSI-based movement detection.
 
 \subsection{Machine Learning Experimental Framework}
 
-This subsection details the classifier selection rationale, evaluation methodology, and performance metrics employed in our experimental protocol.
+The following subsection details the classifier selection rationale, evaluation methodology, and performance metrics adopted in our experimental protocol.
 
 \subsubsection{Classifier Selection and Justification}
 
-We evaluated 38 classification algorithms spanning multiple paradigms to ensure comprehensive benchmarking. The classifier families were selected based on their established effectiveness in RSSI-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
+A total of 38 classification algorithms spanning multiple paradigms were evaluated to ensure thorough benchmarking. The classifier families were chosen based on their established effectiveness in RSSI-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
 
 \textbf{Support Vector Machines (SVM):} SVMs with RBF and linear kernels were included due to their demonstrated superiority in WiFi fingerprinting tasks. Prior studies on indoor localization using RSSI have shown SVMs achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The RBF kernel effectively captures non-linear relationships in signal strength patterns.
 

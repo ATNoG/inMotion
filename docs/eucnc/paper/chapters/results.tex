@@ -1,6 +1,6 @@
 \section{Results}\label{sec:results}
 
-This section presents the experimental results obtained from training and evaluating a comprehensive set of machine learning classifiers on the RSSI-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation encompasses 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
+This section presents the experimental results from training and evaluating an extensive set of machine learning classifiers on the RSSI-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation covers 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
 
 \subsection{Classification Performance: Combined Dataset}
 
@@ -30,7 +30,7 @@ This section presents the experimental results obtained from training and evalua
     }
 \end{table}
 
-The Gaussian Process classifier achieved the highest mean MCC (0.756) with accuracy of 81.6\%. Support Vector Machines with RBF and linear kernels followed closely with MCC values of 0.755 and 0.750, respectively.
+The Gaussian Process classifier attained the highest mean MCC (0.756) with an accuracy of 81.6\%. Support Vector Machines with RBF and linear kernels followed closely, recording MCC values of 0.755 and 0.750, respectively.
 
 \subsection{Comparative Analysis Across Experimental Scenarios}
 
@@ -60,9 +60,9 @@ The Gaussian Process classifier achieved the highest mean MCC (0.756) with accur
     }
 \end{table}
 
-The isolated-only scenario yielded the highest classification performance, with KNN (k=5) achieving an MCC of 0.907, representing a 20\% improvement over the combined dataset. Simpler classifiers such as KNN exhibited the most pronounced performance gains in the isolated scenario.
+The isolated-only scenario yielded the highest classification performance, with KNN (k=5) reaching an MCC of 0.907---a 20\% improvement over the combined dataset. Simpler classifiers such as KNN showed the most pronounced performance gains in the isolated scenario.
 
-The noisy-only scenario demonstrated performance levels comparable to the combined dataset, with CatBoost achieving the highest MCC of 0.770. The Gaussian Process classifier maintained robust performance (MCC: 0.755) across both combined and noisy-only conditions, but exhibited degradation in the isolated scenario (MCC: 0.414).
+The noisy-only scenario exhibited performance levels comparable to the combined dataset, with CatBoost attaining the highest MCC of 0.770. The Gaussian Process classifier maintained robust performance (MCC: 0.755) across both combined and noisy-only conditions, yet showed notable degradation in the isolated scenario (MCC: 0.414).
 
 \subsection{Per-Class Analysis}
 
@@ -137,7 +137,7 @@ To evaluate the robustness of classifier rankings across different experimental 
     \label{fig:accuracy_variability}
 \end{figure}
 
-The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (Gaussian Process, SVC) and ensemble approaches (Stacking, CatBoost) exhibiting the lowest variability.
+The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (Gaussian Process, SVC) and ensemble approaches (Stacking, CatBoost) displaying the lowest variability.
 
 \subsection{Feature Importance}
 

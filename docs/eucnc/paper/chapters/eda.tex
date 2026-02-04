@@ -1,14 +1,14 @@
 \section{Exploratory Data Analysis}\label{sec:eda}
 
-Prior to classifier training, an exploratory data analysis was conducted to assess the discriminative potential of temporal RSSI signatures and to characterize signal behavior across different passenger movement classes.
+Ahead of classifier training, an exploratory data analysis was carried out to gauge the discriminative potential of temporal RSSI signatures and to characterize signal behaviour across different passenger movement classes.
 
 \subsection{Dataset Composition}
 
-The final dataset is approximately balanced, comprising around 340 samples per movement class. For each class, 40 samples were collected under isolated conditions, while the remaining samples were obtained during simultaneous device activity, introducing controlled signal interference. This balance ensures that the exploratory analysis and the results reflect both ideal and realistic operating conditions.
+The final dataset is roughly balanced, comprising around 340 samples per movement class. For each class, 40 samples were gathered under isolated conditions, while the remaining samples were obtained during simultaneous device activity, thereby introducing controlled signal interference. This balance ensures that the exploratory analysis and subsequent results reflect both ideal and realistic operating conditions.
 
 \subsection{Temporal RSSI Characteristics}
 
-The temporal evolution of RSSI values constitutes the primary discriminative feature between movement classes. \autoref{fig:temporal_rssi} illustrates the mean RSSI trajectory over the 10-second observation window for each class.
+The temporal evolution of RSSI values serves as the primary discriminative feature between movement classes. \autoref{fig:temporal_rssi} depicts the mean RSSI trajectory over the 10-second observation window for each class.
 
 \begin{figure}[!ht]
     \centering
@@ -19,7 +19,7 @@ The temporal evolution of RSSI values constitutes the primary discriminative fea
 
 Static states (\textbf{AA and BB}) exhibit relatively stable signal levels over time, albeit with distinct average magnitudes due to their spatial separation from the access point. In contrast, transitional movements display clear monotonic trends. The boarding class (\textbf{B~$\rightarrow$~A}) shows a consistent increase in RSSI as the devices move toward the access point, while the alighting class (\textbf{A~$\rightarrow$~B}) presents a pronounced decrease as physical obstructions attenuate the signal.
 
-These opposing temporal patterns provide strong intuition for leveraging RSSI sequences in movement classification.
+These contrasting temporal patterns offer a compelling rationale for leveraging RSSI sequences in movement classification.
 
 \subsection{Feature Space Separability}
 
@@ -32,4 +32,4 @@ To further inspect the structure of the 10-dimensional RSSI feature vectors, a t
     \label{fig:tsne}
 \end{figure}
 
-While partial overlap is observed, primarily associated with samples collected under noisy conditions, the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis is intended as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
+Although partial overlap is evident, mainly among samples collected under noisy conditions, the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis serves as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
