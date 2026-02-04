@@ -16,7 +16,7 @@ Perhaps the most striking finding emerges from the comparison between experiment
 
 \textbf{Class Separability:} The absence of noise enables more distinct decision boundaries between movement classes. Simpler classifiers such as KNN, which rely on local neighbourhood structure, benefit disproportionately from this increased separability, suggesting that the underlying class boundaries are well-defined when noise is absent. This explains the pronounced performance gains observed for KNN in the isolated scenario.
 
-Conversely, complex models such as the Gaussian Process suffered marked performance degradation in the isolated scenario (MCC: 0.414), despite attaining the best results on the combined dataset. This apparent paradox is explained by the limited sample size ($n = 159$) of the isolated dataset, which proves insufficient for the Gaussian Process to reliably estimate its kernel hyperparameters without overfitting.
+Conversely, complex models such as the Gaussian Process suffered marked performance degradation in the isolated scenario (MCC: 0.414), despite attaining the best results on the combined dataset. This apparent paradox is explained by the limited sample size ($n = 160$) of the isolated dataset, which proves insufficient for the Gaussian Process to reliably estimate its kernel hyperparameters without overfitting.
 
 The noisy-only scenario, representing the most realistic operational conditions, showed performance levels on par with the combined dataset. CatBoost attained the highest MCC (0.770) in this scenario, suggesting that gradient boosting methods are particularly robust to signal interference. The consistency between noisy-only and combined results indicates that the combined dataset's performance is largely driven by the noisy samples, which make up 88\% of the total data.
 
@@ -60,7 +60,7 @@ Second, the 10-second observation window, while suitable for capturing typical b
 
 Third, the current approach assumes consistent device behaviour; however, variations in device hardware, operating system power management, and user-initiated WiFi state changes may affect RSSI reporting in practice.
 
-Fourth, the limited sample size of the isolated dataset ($n = 159$) constrains the reliability of performance estimates for complex classifiers in that scenario. Future work should expand isolated data collection to enable more robust comparisons.
+Fourth, the limited sample size of the isolated dataset ($n = 160$) constrains the reliability of performance estimates for complex classifiers in that scenario. Future work should expand isolated data collection to enable more robust comparisons.
 
 \subsection{Practical Implications}
 
