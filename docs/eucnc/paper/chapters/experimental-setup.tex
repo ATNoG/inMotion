@@ -25,7 +25,19 @@ Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside),
 
 \subsubsection{Preprocessing and Dataset Structure}
 
-Raw data was transformed through: (1)~\textit{Temporal Aggregation}—10 RSSI measurements per trial aggregated into feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; (4)~\textit{Feature Filtering} to retain only RSSI values. The resulting CSV dataset contains approximately 1,360 samples, each representing a 10-second trajectory with movement class label, enabling analysis of both absolute signal strength and temporal evolution.
+Raw data was transformed through: (1)~\textit{Temporal Aggregation}—10 RSSI measurements per trial aggregated into feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; (4)~\textit{Feature Filtering} to retain only RSSI values. The resulting CSV dataset contains approximately 1,356 samples, each representing a 10-second trajectory with movement class label, enabling analysis of both absolute signal strength and temporal evolution.
+
+\subsubsection{Experimental Scenarios}
+
+To comprehensively evaluate the impact of data collection conditions on classification performance, three distinct experimental scenarios were defined:
+
+\textbf{Combined Dataset:} The complete dataset containing all 1,356 samples from both isolated and noisy collection conditions. This scenario represents the most realistic deployment setting, where the classifier must generalize across varying environmental conditions.
+
+\textbf{Isolated-Only Dataset:} A subset containing exclusively samples collected under isolated conditions (single device, $n = 159$). This scenario provides an upper-bound estimate of classification performance under ideal conditions with minimal signal interference.
+
+\textbf{Noisy-Only Dataset:} A subset containing exclusively samples collected with simultaneous multi-device activity ($n = 1,196$). This scenario evaluates classifier robustness under challenging conditions that closely approximate real-world public transport environments.
+
+The comparison across these scenarios enables quantitative assessment of how environmental noise affects classification accuracy and provides insights into the operational boundaries of RSSI-based movement detection.
 
 \subsection{Machine Learning Experimental Framework}
 

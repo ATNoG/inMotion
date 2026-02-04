@@ -1,26 +1,40 @@
 \section{Discussion}\label{sec:discussion}
 
-The experimental results demonstrate the feasibility of using temporal RSSI sequences for non-intrusive passenger movement classification in public transport scenarios. This section analyses the key findings, examines the influence of data collection conditions, and discusses the practical implications for real-world deployment.
+The experimental results demonstrate the feasibility of using temporal RSSI sequences for non-intrusive passenger movement classification in public transport scenarios. This section analyses the key findings across the three experimental scenarios, examines the influence of data collection conditions, and discusses the practical implications for real-world deployment.
 
 \subsection{Classifier Performance Analysis}
 
-The superior performance of the Gaussian Process classifier (accuracy: 81.6\%, MCC: 0.756) can be attributed to its probabilistic framework and the flexibility of the RBF kernel in modelling non-linear decision boundaries. Unlike parametric models that assume specific functional forms, Gaussian Processes adapt their complexity to the underlying data distribution, which proves advantageous for RSSI patterns that exhibit complex spatial dependencies.
+The comparative evaluation across experimental scenarios reveals a nuanced picture of classifier suitability for RSSI-based movement classification. On the combined dataset, the Gaussian Process classifier achieved the highest MCC (0.756), attributable to its probabilistic framework and the flexibility of the RBF kernel in modelling non-linear decision boundaries. Unlike parametric models that assume specific functional forms, Gaussian Processes adapt their complexity to the underlying data distribution, which proves advantageous for RSSI patterns that exhibit complex spatial dependencies.
 
-Support Vector Machines with RBF and linear kernels achieved comparable performance, confirming that kernel-based methods are well-suited for this classification task. The margin-maximization principle of SVMs provides robust generalization, particularly relevant given the overlap between movement classes observed in the t-SNE visualization.
+Support Vector Machines with RBF and linear kernels achieved comparable performance on the combined dataset, confirming that kernel-based methods are well-suited for this classification task. The margin-maximization principle of SVMs provides robust generalization, particularly relevant given the overlap between movement classes observed in the t-SNE visualization.
 
-The strong performance of regularized logistic regression variants suggests that, despite the non-linear nature of RSSI propagation, the temporal feature representation captures sufficient discriminative information for linear classifiers to achieve competitive results. Ensemble methods, including Stacking and CatBoost, demonstrated robust performance with notably low variance across seeds, indicating their suitability for deployment scenarios where model stability is paramount.
+\subsection{Impact of Data Collection Conditions}
+
+The most striking finding emerges from the comparison between experimental scenarios. The isolated-only dataset yielded substantially superior classification performance, with KNN (k=5) achieving an MCC of 0.907—a 31\% relative improvement over its performance on the combined dataset (MCC: 0.692). This dramatic enhancement is attributable to two primary factors:
+
+\textbf{Signal Clarity:} In isolated conditions, RSSI measurements are unaffected by inter-device interference, co-channel contention, or access point load variations. The resulting signal patterns exhibit clearer temporal trajectories with reduced variance within each movement class.
+
+\textbf{Class Separability:} The absence of noise enables more distinct decision boundaries between movement classes. Simpler classifiers such as KNN, which rely on local neighbourhood structure, benefit disproportionately from this increased separability, as evidenced by their top-ranking performance in the isolated scenario.
+
+Conversely, complex models such as Gaussian Process exhibited severe performance degradation in the isolated scenario (MCC: 0.414), despite achieving the best results on the combined dataset. This apparent paradox is explained by the limited sample size ($n = 159$) of the isolated dataset, which is insufficient for the Gaussian Process to reliably estimate its kernel hyperparameters without overfitting.
+
+The noisy-only scenario, representing the most realistic operational conditions, demonstrated performance levels comparable to the combined dataset. CatBoost achieved the highest MCC (0.770) in this scenario, suggesting that gradient boosting methods are particularly robust to signal interference. The consistency between noisy-only and combined results indicates that the combined dataset's performance is predominantly determined by the noisy samples, which constitute 88\% of the total data.
+
+\subsection{Classifier Selection Guidelines}
+
+The experimental results inform practical recommendations for classifier selection based on deployment context:
+
+\textbf{High-interference environments:} For scenarios with multiple simultaneous devices, gradient boosting methods (CatBoost, XGBoost) and ensemble approaches (StackingEnsemble) offer the best balance of accuracy and robustness.
+
+\textbf{Controlled environments:} In settings with minimal device density, simpler classifiers such as KNN or logistic regression can achieve superior performance while offering reduced computational overhead and improved interpretability.
+
+\textbf{General deployment:} For systems that must operate across varying conditions, SVC with RBF kernel provides consistent performance with acceptable variance, making it a reliable default choice.
 
 \subsection{Per-Class Error Analysis}
 
 The confusion patterns reveal insights into the physical characteristics of each movement class. The static state inside the vehicle (AA) exhibited the lowest recall (75.0\%), primarily due to misclassification as boarding (BA). This confusion is attributable to the spatial proximity of both classes to the access point, resulting in similar high-RSSI signatures. Although the temporal dynamics differ (AA maintains relatively stable values while BA shows an increasing trend), this distinction may be subtle in short observation windows.
 
 Conversely, the bus stop class (BB) achieved the highest recall (89.7\%) due to the consistent signal attenuation caused by the physical barrier separating Zone~B from the access point. The transitional classes (AB and BA) benefited from their characteristic monotonic RSSI trends, with alighting (AB) achieving 88.2\% recall.
-
-\subsection{Impact of Data Collection Conditions}
-
-The inclusion of samples collected under noisy (simultaneous multi-device) conditions serves two purposes: (1) it improves model robustness by exposing classifiers to realistic operating conditions during training, and (2) it provides a more conservative performance estimate compared to evaluation on isolated data alone.
-
-The relatively low standard deviation observed across experimental seeds (accuracy std: 0.024 for Gaussian Process) suggests that the trained models generalize consistently despite the inherent variability in RSSI measurements. This stability is encouraging for practical deployment, where environmental conditions may vary.
 
 \subsection{Feature Importance Insights}
 
@@ -34,6 +48,10 @@ Second, the 10-second observation window, while suitable for capturing typical b
 
 Third, the current approach assumes consistent device behaviour; however, variations in device hardware, operating system power management, and user-initiated WiFi state changes may affect RSSI reporting in practice.
 
+Fourth, the limited sample size of the isolated dataset ($n = 159$) constrains the reliability of performance estimates for complex classifiers in that scenario. Future work should expand isolated data collection to enable more robust comparisons.
+
 \subsection{Practical Implications}
 
-Despite the limitations, the achieved classification performance (accuracy $>$81\%, MCC $>$0.75) demonstrates the potential of RSSI-based movement classification as a complementary technology for passenger counting systems. The Gaussian Process classifier offers probabilistic predictions useful for uncertainty quantification, while SVC or logistic regression models provide comparable accuracy with reduced inference time for resource-constrained deployments.
+The experimental findings carry significant implications for real-world deployment. The substantial performance improvement observed in isolated conditions (MCC up to 0.907) suggests that signal interference is the primary limiting factor for classification accuracy. Deployment strategies that mitigate interference—such as dedicated frequency channels, directional antennas, or temporal multiplexing—could substantially enhance system performance.
+
+Nevertheless, the achieved classification performance under noisy conditions (MCC $>$ 0.77 with CatBoost) demonstrates that RSSI-based movement classification remains viable as a complementary technology for passenger counting systems even in challenging environments. The consistency of results across the combined and noisy-only scenarios provides confidence that models trained on realistic data will generalize appropriately to operational settings.

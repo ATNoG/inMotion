@@ -1,14 +1,14 @@
 \section{Results}\label{sec:results}
 
-This section presents the experimental results obtained from training and evaluating a comprehensive set of machine learning classifiers on the RSSI-based passenger movement dataset. The evaluation encompasses 38 classification algorithms, ranging from simple baseline methods to advanced ensemble techniques, assessed across multiple random seeds to ensure statistical robustness. The experimental methodology, including data partitioning, cross-validation protocol, and evaluation metrics, is detailed in \autoref{sec:experimental-setup}.
+This section presents the experimental results obtained from training and evaluating a comprehensive set of machine learning classifiers on the RSSI-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation encompasses 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
 
-\subsection{Classification Performance}
+\subsection{Classification Performance: Combined Dataset}
 
-\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers, ranked by mean accuracy across the three experimental seeds.
+\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers on the combined dataset, ranked by mean MCC across the experimental seeds.
 
 \begin{table}[!ht]
     \centering
-    \caption{Top-10 Classifiers by Mean Accuracy Across Seeds}
+    \caption{Top-10 Classifiers on Combined Dataset (Ranked by MCC)}
     \label{tab:top_classifiers}
     \resizebox{\columnwidth}{!}{%
         \begin{tabular}{lcccc}
@@ -30,9 +30,39 @@ This section presents the experimental results obtained from training and evalua
     }
 \end{table}
 
-The Gaussian Process classifier achieved the highest mean accuracy (81.6\%), recall (81.6\%), F1-score (81.5\%), and MCC (0.756), demonstrating strong discriminative capability for the temporal RSSI patterns. Support Vector Machines with RBF and linear kernels followed closely, with accuracies of 81.5\% and 81.3\%, F1-scores of 81.3\% and 81.2\%, and MCC values of 0.755 and 0.750, respectively. Notably, the Stacking Ensemble, which combines predictions from multiple base learners, attained competitive performance across all metrics (accuracy: 81.1\%, recall: 81.1\%, F1-score: 81.0\%, MCC: 0.749), validating the complementary nature of different classification strategies.
+The Gaussian Process classifier achieved the highest mean MCC (0.756) with accuracy of 81.6\%, demonstrating strong discriminative capability for the temporal RSSI patterns. Support Vector Machines with RBF and linear kernels followed closely with MCC values of 0.755 and 0.750, respectively.
 
-Regularized logistic regression variants (L1, L2, and ElasticNet) demonstrated consistent performance with accuracies around 80.8\%, recall of 80.8\%, F1-scores of 80.6\%, and MCC values of 0.744, suggesting that linear decision boundaries with appropriate regularization can effectively separate the movement classes. The relatively higher standard deviation observed for logistic regression methods indicates greater sensitivity to the specific train-test split compared to kernel-based approaches.
+\subsection{Comparative Analysis Across Experimental Scenarios}
+
+\autoref{tab:scenario_comparison} presents the performance comparison of top classifiers across the three experimental scenarios, revealing the substantial impact of data collection conditions on classification performance.
+
+\begin{table}[!ht]
+    \centering
+    \caption{Performance Comparison Across Experimental Scenarios (MCC)}
+    \label{tab:scenario_comparison}
+    \resizebox{\columnwidth}{!}{%
+        \begin{tabular}{lccc}
+            \toprule
+            \textbf{Classifier}     & \textbf{Combined}     & \textbf{Isolated-Only}    & \textbf{Noisy-Only}       \\
+            \midrule
+            KNN (k=5)               & 0.692 $\pm$ 0.029     & \textbf{0.907 $\pm$ 0.061} & 0.704 $\pm$ 0.025         \\
+            KNN (k=3)               & 0.690 $\pm$ 0.046     & 0.882 $\pm$ 0.068          & 0.702 $\pm$ 0.043         \\
+            LinearSVC               & 0.726 $\pm$ 0.039     & 0.867 $\pm$ 0.060          & 0.716 $\pm$ 0.031         \\
+            LogisticRegression (L2) & 0.743 $\pm$ 0.044     & 0.866 $\pm$ 0.028          & 0.731 $\pm$ 0.009         \\
+            SVC (Linear)            & 0.750 $\pm$ 0.023     & 0.850 $\pm$ 0.088          & 0.731 $\pm$ 0.037         \\
+            StackingEnsemble        & 0.749 $\pm$ 0.020     & 0.851 $\pm$ 0.122          & 0.768 $\pm$ 0.023         \\
+            ExtraTrees              & 0.737 $\pm$ 0.013     & 0.836 $\pm$ 0.041          & 0.755 $\pm$ 0.021         \\
+            GaussianProcess         & \textbf{0.756 $\pm$ 0.033} & 0.414 $\pm$ 0.052     & 0.755 $\pm$ 0.028         \\
+            SVC (RBF)               & 0.755 $\pm$ 0.021     & 0.825 $\pm$ 0.101          & 0.754 $\pm$ 0.016         \\
+            CatBoost                & 0.746 $\pm$ 0.017     & 0.782 $\pm$ 0.063          & \textbf{0.770 $\pm$ 0.013} \\
+            \bottomrule
+        \end{tabular}%
+    }
+\end{table}
+
+The isolated-only scenario yielded the highest classification performance, with KNN (k=5) achieving an MCC of 0.907, representing a 20\% improvement over the combined dataset. This substantial increase is attributable to the absence of inter-device signal interference during data collection, resulting in cleaner RSSI patterns with more distinct class separations. Notably, simpler classifiers such as KNN exhibited the most pronounced performance gains in the isolated scenario, suggesting that the underlying class boundaries are well-defined when noise is absent.
+
+Conversely, the noisy-only scenario demonstrated performance levels comparable to the combined dataset, with CatBoost achieving the highest MCC of 0.770. The Gaussian Process classifier maintained robust performance (MCC: 0.755) across both combined and noisy-only conditions, but exhibited severe degradation in the isolated scenario (MCC: 0.414), likely due to overfitting on the limited sample size ($n = 159$).
 
 \subsection{Per-Class Analysis}
 
