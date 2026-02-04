@@ -4,21 +4,25 @@ The experimental results demonstrate the feasibility of using temporal RSSI sequ
 
 \subsection{Classifier Performance Analysis}
 
-The comparative evaluation across experimental scenarios reveals a nuanced picture of classifier suitability for RSSI-based movement classification. On the combined dataset, the Gaussian Process classifier achieved the highest MCC (0.756), attributable to its probabilistic framework and the flexibility of the RBF kernel in modelling non-linear decision boundaries. Unlike parametric models that assume specific functional forms, Gaussian Processes adapt their complexity to the underlying data distribution, which proves advantageous for RSSI patterns that exhibit complex spatial dependencies.
+The comparative evaluation across experimental scenarios reveals a nuanced picture of classifier suitability for RSSI-based movement classification. On the combined dataset, the Gaussian Process classifier achieved the highest MCC (0.756), demonstrating strong discriminative capability for the temporal RSSI patterns. This performance is attributable to its probabilistic framework and the flexibility of the RBF kernel in modelling non-linear decision boundaries. Unlike parametric models that assume specific functional forms, Gaussian Processes adapt their complexity to the underlying data distribution, which proves advantageous for RSSI patterns that exhibit complex spatial dependencies.
 
-Support Vector Machines with RBF and linear kernels achieved comparable performance on the combined dataset, confirming that kernel-based methods are well-suited for this classification task. The margin-maximization principle of SVMs provides robust generalization, particularly relevant given the overlap between movement classes observed in the t-SNE visualization.
+The flexibility of the RBF kernel enables the Gaussian Process to model complex decision boundaries without requiring extensive manual hyperparameter tuning, making it particularly suitable for RSSI-based classification where signal patterns exhibit non-linear spatial dependencies. Support Vector Machines with RBF and linear kernels achieved comparable performance on the combined dataset, confirming that kernel-based methods are well-suited for this classification task. The margin-maximization principle of SVMs provides robust generalization, particularly relevant given the overlap between movement classes observed in the t-SNE visualization.
 
 \subsection{Impact of Data Collection Conditions}
 
-The most striking finding emerges from the comparison between experimental scenarios. The isolated-only dataset yielded substantially superior classification performance, with KNN (k=5) achieving an MCC of 0.907—a 31\% relative improvement over its performance on the combined dataset (MCC: 0.692). This dramatic enhancement is attributable to two primary factors:
+The most striking finding emerges from the comparison between experimental scenarios. The isolated-only dataset yielded substantially superior classification performance, with KNN (k=5) achieving an MCC of 0.907---a 31\% relative improvement over its performance on the combined dataset (MCC: 0.692). This substantial increase is attributable to the absence of inter-device signal interference during data collection, resulting in cleaner RSSI patterns with more distinct class separations. This dramatic enhancement is attributable to two primary factors:
 
 \textbf{Signal Clarity:} In isolated conditions, RSSI measurements are unaffected by inter-device interference, co-channel contention, or access point load variations. The resulting signal patterns exhibit clearer temporal trajectories with reduced variance within each movement class.
 
-\textbf{Class Separability:} The absence of noise enables more distinct decision boundaries between movement classes. Simpler classifiers such as KNN, which rely on local neighbourhood structure, benefit disproportionately from this increased separability, as evidenced by their top-ranking performance in the isolated scenario.
+\textbf{Class Separability:} The absence of noise enables more distinct decision boundaries between movement classes. Simpler classifiers such as KNN, which rely on local neighbourhood structure, benefit disproportionately from this increased separability, suggesting that the underlying class boundaries are well-defined when noise is absent. This explains the pronounced performance gains observed for KNN in the isolated scenario.
 
 Conversely, complex models such as Gaussian Process exhibited severe performance degradation in the isolated scenario (MCC: 0.414), despite achieving the best results on the combined dataset. This apparent paradox is explained by the limited sample size ($n = 159$) of the isolated dataset, which is insufficient for the Gaussian Process to reliably estimate its kernel hyperparameters without overfitting.
 
 The noisy-only scenario, representing the most realistic operational conditions, demonstrated performance levels comparable to the combined dataset. CatBoost achieved the highest MCC (0.770) in this scenario, suggesting that gradient boosting methods are particularly robust to signal interference. The consistency between noisy-only and combined results indicates that the combined dataset's performance is predominantly determined by the noisy samples, which constitute 88\% of the total data.
+
+\subsection{Model Stability Considerations}
+
+The observed stability of classifier rankings across experimental seeds carries significant implications for deployment scenarios. Kernel-based methods (Gaussian Process, SVC) and ensemble approaches (Stacking, CatBoost) exhibited the lowest variability, which is crucial for deployment scenarios where model retraining may occur with different data partitions. This consistency provides confidence that selected classifiers will maintain their relative performance across different operational conditions.
 
 \subsection{Classifier Selection Guidelines}
 
@@ -32,13 +36,21 @@ The experimental results inform practical recommendations for classifier selecti
 
 \subsection{Per-Class Error Analysis}
 
-The confusion patterns reveal insights into the physical characteristics of each movement class. The static state inside the vehicle (AA) exhibited the lowest recall (75.0\%), primarily due to misclassification as boarding (BA). This confusion is attributable to the spatial proximity of both classes to the access point, resulting in similar high-RSSI signatures. Although the temporal dynamics differ (AA maintains relatively stable values while BA shows an increasing trend), this distinction may be subtle in short observation windows.
+The confusion patterns reveal insights into the physical characteristics of each movement class. The static state inside the vehicle (AA) exhibited the lowest recall (75.0\%), primarily due to misclassification as boarding (BA). This confusion is attributable to the spatial proximity of both classes to the access point, resulting in similar high-RSSI signatures that reflect the similarity in RSSI magnitude when devices are positioned near the access point. Although the temporal dynamics differ (AA maintains relatively stable values while BA shows an increasing trend), this distinction may be subtle in short observation windows.
 
-Conversely, the bus stop class (BB) achieved the highest recall (89.7\%) due to the consistent signal attenuation caused by the physical barrier separating Zone~B from the access point. The transitional classes (AB and BA) benefited from their characteristic monotonic RSSI trends, with alighting (AB) achieving 88.2\% recall.
+Conversely, the bus stop class (BB) achieved the highest recall (89.7\%), attributable to the consistent low RSSI values observed when devices remain outside the vehicle. The physical barrier separating Zone~B from the access point provides natural signal attenuation that enables clear class discrimination. The transitional classes (AB and BA) benefited from their characteristic monotonic RSSI trends, with alighting (AB) achieving 88.2\% recall. However, the lower F1-score (0.828) for the alighting class indicates some false positives from the AA class. The boarding movement (BA) achieved strong results (F1-score: 0.855), benefiting from the distinctive increasing RSSI pattern as devices approach the access point.
+
+The overall accuracy of 83.8\% and MCC of 0.785 confirm robust multi-class discrimination across all movement categories, demonstrating that RSSI-based temporal patterns provide sufficient information for reliable passenger movement classification.
+
+\subsection{Confusion Matrix Interpretation}
+
+The observed confusion between spatially adjacent classes provides important insights for system design. The AA--BA confusion reflects the similarity in RSSI magnitude when devices are positioned near the access point, suggesting that additional features or longer observation windows might improve discrimination between static and transitional states. Similarly, the AB--BB confusion arises because both classes share lower RSSI values characteristic of the exterior zone, though the transitional nature of AB provides some discriminative information through temporal patterns.
 
 \subsection{Feature Importance Insights}
 
-The feature importance analysis revealed that initial RSSI measurements (samples 1--3) contribute most significantly to classification decisions, capturing the starting position and providing immediate context for distinguishing static states from transitional movements. The elevated importance of sample 6 (mid-trajectory) indicates that classifiers also rely on signal evolution to confirm movement direction, validating the choice of sequential RSSI measurements over aggregate statistics.
+The feature importance analysis revealed that initial RSSI measurements (samples 1--3) contribute most significantly to classification decisions, capturing the starting position and providing immediate context for distinguishing static states from transitional movements. This finding aligns with the temporal dynamics of passenger movements, where early signal readings capture the initial position before any state transition occurs.
+
+The elevated importance of sample 6 (mid-trajectory) indicates that classifiers also rely on signal evolution to confirm movement direction, validating the choice of sequential RSSI measurements over aggregate statistics. The observed pattern suggests that classifiers leverage both the starting signal strength and mid-trajectory measurements to infer movement direction, while later samples provide confirmatory information about the final position. This temporal dependency structure supports the use of sequence-based classification approaches for RSSI-based passenger detection.
 
 \subsection{Limitations and Considerations}
 
@@ -52,6 +64,6 @@ Fourth, the limited sample size of the isolated dataset ($n = 159$) constrains t
 
 \subsection{Practical Implications}
 
-The experimental findings carry significant implications for real-world deployment. The substantial performance improvement observed in isolated conditions (MCC up to 0.907) suggests that signal interference is the primary limiting factor for classification accuracy. Deployment strategies that mitigate interference—such as dedicated frequency channels, directional antennas, or temporal multiplexing—could substantially enhance system performance.
+The experimental findings carry significant implications for real-world deployment. The substantial performance improvement observed in isolated conditions (MCC up to 0.907) suggests that signal interference is the primary limiting factor for classification accuracy. Deployment strategies that mitigate interference---such as dedicated frequency channels, directional antennas, or temporal multiplexing---could substantially enhance system performance.
 
 Nevertheless, the achieved classification performance under noisy conditions (MCC $>$ 0.77 with CatBoost) demonstrates that RSSI-based movement classification remains viable as a complementary technology for passenger counting systems even in challenging environments. The consistency of results across the combined and noisy-only scenarios provides confidence that models trained on realistic data will generalize appropriately to operational settings.

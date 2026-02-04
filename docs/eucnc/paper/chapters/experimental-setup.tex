@@ -25,7 +25,7 @@ Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside),
 
 \subsubsection{Preprocessing and Dataset Structure}
 
-Raw data was transformed through: (1)~\textit{Temporal Aggregation}—10 RSSI measurements per trial aggregated into feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; (4)~\textit{Feature Filtering} to retain only RSSI values. The resulting CSV dataset contains approximately 1,356 samples, each representing a 10-second trajectory with movement class label, enabling analysis of both absolute signal strength and temporal evolution.
+Raw data was transformed through: (1)~\textit{Temporal Aggregation}---10 RSSI measurements per trial aggregated into feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; (4)~\textit{Feature Filtering} to retain only RSSI values. The resulting CSV dataset contains approximately 1,356 samples, each representing a 10-second trajectory with movement class label, enabling analysis of both absolute signal strength and temporal evolution.
 
 \subsubsection{Experimental Scenarios}
 
