@@ -69,6 +69,13 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Don't add seed suffix to output directories (use results/ instead of results_42/)",
     )
+    parser.add_argument(
+        "--suffix-after-seed",
+        type=str,
+        default="",
+        help="Place seed suffix after other suffixes (e.g., results_42_pure/",
+    )
+
     return parser.parse_args()
 
 
@@ -139,9 +146,9 @@ def main() -> int:
         n_optuna_trials=args.n_trials,
         n_jobs=args.n_jobs,
         optuna_storage=args.storage if args.optimize else "",
-        results_dir=Path(f"results{suffix}"),
-        plots_dir=Path(f"plots{suffix}"),
-        models_dir=Path(f"models{suffix}"),
+        results_dir=Path(f"results{suffix}{args.suffix_after_seed}"),
+        plots_dir=Path(f"plots{suffix}{args.suffix_after_seed}"),
+        models_dir=Path(f"models{suffix}{args.suffix_after_seed}"),
     )
 
     print("=" * 70)

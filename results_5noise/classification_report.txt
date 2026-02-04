@@ -1,0 +1,58 @@
+======================================================================
+CLASSIFICATION RESULTS REPORT
+======================================================================
+
+Total classifiers evaluated: 38
+Cross-validation folds: 5
+Test set size: 20%
+
+----------------------------------------------------------------------
+TOP 10 CLASSIFIERS BY ACCURACY
+----------------------------------------------------------------------
+1. StackingEnsemble: Acc=0.8333, F1=0.8331, MCC=0.7778, CV=0.8180±0.0184
+2. CatBoost: Acc=0.8250, F1=0.8248, MCC=0.7668, CV=0.0000±0.0000
+3. GaussianProcess: Acc=0.8208, F1=0.8214, MCC=0.7612, CV=0.8106±0.0251
+4. VotingEnsemble: Acc=0.8208, F1=0.8205, MCC=0.7612, CV=0.8012±0.0177
+5. SVC_RBF: Acc=0.8167, F1=0.8166, MCC=0.7556, CV=0.8138±0.0304
+6. MLP_Large: Acc=0.8125, F1=0.8119, MCC=0.7503, CV=0.8159±0.0176
+7. NuSVC: Acc=0.8083, F1=0.8077, MCC=0.7450, CV=0.8065±0.0179
+8. RandomForest: Acc=0.8083, F1=0.8086, MCC=0.7446, CV=0.7970±0.0213
+9. GradientBoosting: Acc=0.8042, F1=0.8039, MCC=0.7392, CV=0.7918±0.0069
+10. SVC_Linear: Acc=0.8042, F1=0.8042, MCC=0.7390, CV=0.8180±0.0228
+
+----------------------------------------------------------------------
+BEST CLASSIFIER: StackingEnsemble
+----------------------------------------------------------------------
+
+Accuracy: 0.8333
+Balanced Accuracy: 0.8333
+Precision (weighted): 0.8329
+Recall (weighted): 0.8333
+F1 Score (weighted): 0.8331
+MCC: 0.7778
+CV Score: 0.8180 ± 0.0184
+Training Time: 6.98s
+
+Classification Report:
+  AA: precision=0.763, recall=0.750, f1=0.756
+  BB: precision=0.850, recall=0.850, f1=0.850
+  BA: precision=0.869, recall=0.883, f1=0.876
+  AB: precision=0.850, recall=0.850, f1=0.850
+  macro avg: precision=0.833, recall=0.833, f1=0.833
+  weighted avg: precision=0.833, recall=0.833, f1=0.833
+
+----------------------------------------------------------------------
+FEATURE IMPORTANCE (AVERAGED ACROSS CLASSIFIERS)
+----------------------------------------------------------------------
+  1: 2.4701
+  10: 1.5044
+  2: 1.2749
+  6: 1.1874
+  3: 0.8665
+  9: 0.8559
+  5: 0.7391
+  7: 0.7234
+  4: 0.6626
+  8: 0.6413
+
+======================================================================
