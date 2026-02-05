@@ -8,7 +8,7 @@ Controlled experiments were carried out in an indoor environment that emulates p
 
 \subsubsection{Environmental Configuration}
 
-The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a WiFi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive RSSI patterns during transitions.
+The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a WiFi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive \ac{RSSI} patterns during transitions.
 
 \begin{figure}[!ht]
     \centering
@@ -19,15 +19,15 @@ The environment was divided into two zones (\autoref{fig:experimental_setup}). Z
 
 \subsubsection{Data Acquisition}
 
-Data was collected using a Python script interfacing with the AP via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 RSSI samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent RSSI reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
+Data was collected using a Python script interfacing with the AP via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 \ac{RSSI} samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent \ac{RSSI} reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
 
 Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside), \textbf{B$\rightarrow$B} (remaining at stop), \textbf{A$\rightarrow$B} (alighting), and \textbf{B$\rightarrow$A} (boarding). Collection occurred under two scenarios: \textit{Isolated} (single device, 20 repetitions per class per device) and \textit{Noisy} (four devices simultaneously performing paired movements).
 
 \subsubsection{Preprocessing and Dataset Structure}
 
-Raw data underwent the following preprocessing steps: (1)~\textit{Temporal Aggregation}, where 10 RSSI measurements per trial were aggregated into a feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using MAC addresses; (3)~\textit{Labeling} with movement class and noise indicator; and (4)~\textit{Feature Filtering} to retain only RSSI values.
+Raw data underwent the following preprocessing steps: (1)~\textit{Temporal Aggregation}, where 10 \ac{RSSI} measurements per trial were aggregated into a feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using \ac{MAC} addresses; (3)~\textit{Labeling} with movement class and noise indicator; and (4)~\textit{Feature Filtering} to retain only \ac{RSSI} values.
 
-Prior to model training, \textit{Feature Scaling} was applied using standardization (z-score normalization), which transforms each feature to zero mean and unit variance. This step is essential for classifiers sensitive to feature magnitudes, such as SVMs, Gaussian Process classifiers, MLPs, and logistic regression, as these distance-based and gradient-based methods may otherwise suffer from degraded convergence speed and classification performance when operating on raw RSSI value ranges.
+Prior to model training, \textit{Feature Scaling} was applied using standardization (z-score normalization), which transforms each feature to zero mean and unit variance. This step is essential for classifiers sensitive to feature magnitudes, such as \acp{SVM}, \ac{GP} classifiers, \acp{MLP}, and logistic regression, as these distance-based and gradient-based methods may otherwise suffer from degraded convergence speed and classification performance when operating on raw \ac{RSSI} value ranges.
 
 The resulting dataset contains 1,356 samples, each representing a 10-second trajectory with a corresponding movement class label, enabling analysis of both absolute signal strength and temporal evolution.
 
@@ -41,7 +41,7 @@ To comprehensively evaluate the impact of data collection conditions on classifi
 
 \textbf{Noisy-Only Dataset:} A subset containing exclusively samples collected with simultaneous multi-device activity ($n = 1,196$). This scenario evaluates classifier robustness under challenging conditions that closely approximate real-world public transport environments.
 
-Comparing across these scenarios allows for a quantitative assessment of how environmental noise affects classification accuracy and sheds light on the operational boundaries of RSSI-based movement detection.
+Comparing across these scenarios allows for a quantitative assessment of how environmental noise affects classification accuracy and sheds light on the operational boundaries of \ac{RSSI}-based movement detection.
 
 \subsection{Machine Learning Experimental Framework}
 
@@ -49,15 +49,15 @@ The following subsection details the classifier selection rationale, evaluation 
 
 \subsubsection{Classifier Selection and Justification}
 
-A total of 38 classification algorithms spanning multiple paradigms were evaluated to ensure thorough benchmarking. The classifier families were chosen based on their established effectiveness in RSSI-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
+A total of 38 classification algorithms spanning multiple paradigms were evaluated to ensure thorough benchmarking. The classifier families were chosen based on their established effectiveness in \ac{RSSI}-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
 
-\textbf{Support Vector Machines (SVM):} SVMs with RBF and linear kernels were included due to their demonstrated superiority in WiFi fingerprinting tasks. Prior studies on indoor localization using RSSI have shown SVMs achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The RBF kernel effectively captures non-linear relationships in signal strength patterns.
+\textbf{Support Vector Machines (SVM):} \acp{SVM} with \ac{RBF} and linear kernels were included due to their demonstrated superiority in WiFi fingerprinting tasks. Prior studies on indoor localization using \ac{RSSI} have shown \acp{SVM} achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The \ac{RBF} kernel effectively captures non-linear relationships in signal strength patterns.
 
 \textbf{Ensemble Methods:} Random Forest and Extra Trees were selected for their robustness to noise and ability to model complex decision boundaries without extensive hyperparameter tuning~\cite{singh2021rssisurvey}. Gradient boosting variants (XGBoost, LightGBM, CatBoost) were included based on their state-of-the-art performance in tabular classification tasks, with CatBoost demonstrating particular effectiveness for categorical features~\cite{fabre2025machine}.
 
-\textbf{Gaussian Process Classifier:} GPs provide probabilistic predictions with uncertainty quantification, particularly valuable for RSSI data where signal variability is inherent. The RBF kernel enables automatic adaptation to the intrinsic dimensionality of temporal RSSI sequences.
+\textbf{Gaussian Process Classifier:} \acp{GP} provide probabilistic predictions with uncertainty quantification, particularly valuable for \ac{RSSI} data where signal variability is inherent. The \ac{RBF} kernel enables automatic adaptation to the intrinsic dimensionality of temporal \ac{RSSI} sequences.
 
-\textbf{Neural Networks:} Multi-layer perceptrons (MLPs) with varying architectures (small, medium, large) were evaluated to assess whether deeper representations improve classification over traditional methods for this feature space dimensionality.
+\textbf{Neural Networks:} \acp{MLP} with varying architectures (small, medium, large) were evaluated to assess whether deeper representations improve classification over traditional methods for this feature space dimensionality.
 
 \textbf{Stacking and Voting Ensembles:} Meta-learning approaches combining heterogeneous base learners were included to leverage complementary classifier strengths, a strategy shown to improve robustness in transportation sensing applications~\cite{wiboonsiriruk2023efficient}.
 
@@ -81,4 +81,4 @@ Four complementary metrics were employed to provide comprehensive performance ch
 
 \textbf{Balanced Accuracy:} The arithmetic mean of per-class recall values, ensuring equal contribution from each class regardless of prevalence.
 
-\textbf{Matthews Correlation Coefficient (MCC):} Selected as the primary evaluation criterion, as this metric offers a reliable and balanced evaluation of classification models, particularly in scenarios involving imbalanced datasets or when assessing performance across multiple classes~\cite{chicco2020mcc, chicco2023mcc}. MCC ranges from $-1$ to $+1$, producing high scores only when all confusion matrix categories achieve strong results.
+\textbf{Matthews Correlation Coefficient (MCC):} Selected as the primary evaluation criterion, as this metric offers a reliable and balanced evaluation of classification models, particularly in scenarios involving imbalanced datasets or when assessing performance across multiple classes~\cite{chicco2020mcc, chicco2023mcc}. \ac{MCC} ranges from $-1$ to $+1$, producing high scores only when all confusion matrix categories achieve strong results.

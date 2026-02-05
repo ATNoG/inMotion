@@ -11,12 +11,33 @@
 \usepackage[english]{babel}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{booktabs}
+\usepackage[printonlyused,withpage]{acronym}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=BlueViolet, citecolor=blue]{hyperref}
 
+\hypersetup{
+    hidelinks,
+}
+
+% Acronym definitions
+\acrodef{RSSI}{Received Signal Strength Indicator}
+\acrodef{APC}{Automatic Passenger Counting}
+\acrodef{CSI}{Channel State Information}
+\acrodef{MCC}{Matthews Correlation Coefficient}
+\acrodef{SVM}[SVM]{Support Vector Machine}
+\acrodefplural{SVM}[SVMs]{Support Vector Machines}
+\acrodef{RBF}{Radial Basis Function}
+\acrodef{KNN}{K-Nearest Neighbors}
+\acrodef{MLP}[MLP]{Multi-Layer Perceptron}
+\acrodefplural{MLP}[MLPs]{Multi-Layer Perceptrons}
+\acrodef{MAC}{Media Access Control}
+\acrodef{t-SNE}{t-Distributed Stochastic Neighbor Embedding}
+\acrodef{GP}[GP]{Gaussian Process}
+\acrodefplural{GP}[GPs]{Gaussian Processes}
+\acrodef{OD}{Origin-Destination}
 
 \begin{document}
 \title{RSSI-Based Passenger Movement Classification for Non-Intrusive Public Transport Monitoring}

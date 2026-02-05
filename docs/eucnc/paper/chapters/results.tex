@@ -1,14 +1,14 @@
 \section{Results}\label{sec:results}
 
-This section presents the experimental results from training and evaluating an extensive set of machine learning classifiers on the RSSI-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation covers 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
+This section presents the experimental results from training and evaluating an extensive set of machine learning classifiers on the \ac{RSSI}-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation covers 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
 
 \subsection{Classification Performance: Combined Dataset}
 
-\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers on the combined dataset, ranked by mean MCC across the experimental seeds.
+\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers on the combined dataset, ranked by mean \ac{MCC} across the experimental seeds.
 
 \begin{table}[!ht]
     \centering
-    \caption{Top-10 Classifiers on Combined Dataset (Ranked by MCC)}
+    \caption{Top-10 Classifiers on Combined Dataset (Ranked by \ac{MCC})}
     \label{tab:top_classifiers}
     \resizebox{\columnwidth}{!}{%
         \begin{tabular}{lcccc}
@@ -30,7 +30,7 @@ This section presents the experimental results from training and evaluating an e
     }
 \end{table}
 
-The Gaussian Process classifier attained the highest mean MCC (0.756) with an accuracy of 81.6\%. Support Vector Machines with RBF and linear kernels followed closely, recording MCC values of 0.755 and 0.750, respectively.
+The Gaussian Process classifier attained the highest mean \ac{MCC} (0.756) with an accuracy of 81.6\%. \acp{SVM} with \ac{RBF} and linear kernels followed closely, recording \ac{MCC} values of 0.755 and 0.750, respectively.
 
 \subsection{Comparative Analysis Across Experimental Scenarios}
 
@@ -38,7 +38,7 @@ The Gaussian Process classifier attained the highest mean MCC (0.756) with an ac
 
 \begin{table}[!ht]
     \centering
-    \caption{Performance Comparison Across Experimental Scenarios (MCC)}
+    \caption{Performance Comparison Across Experimental Scenarios (\ac{MCC})}
     \label{tab:scenario_comparison}
     \resizebox{\columnwidth}{!}{%
         \begin{tabular}{lccc}
@@ -60,17 +60,17 @@ The Gaussian Process classifier attained the highest mean MCC (0.756) with an ac
     }
 \end{table}
 
-The isolated-only scenario yielded the highest classification performance, with KNN (k=5) reaching an MCC of 0.907---a 20\% improvement over the combined dataset. Simpler classifiers such as KNN showed the most pronounced performance gains in the isolated scenario.
+The isolated-only scenario yielded the highest classification performance, with \ac{KNN} (k=5) reaching an \ac{MCC} of 0.907---a 20\% improvement over the combined dataset. Simpler classifiers such as \ac{KNN} showed the most pronounced performance gains in the isolated scenario.
 
-The noisy-only scenario exhibited performance levels comparable to the combined dataset, with CatBoost attaining the highest MCC of 0.770. The Gaussian Process classifier maintained robust performance (MCC: 0.755) across both combined and noisy-only conditions, yet showed notable degradation in the isolated scenario (MCC: 0.414).
+The noisy-only scenario exhibited performance levels comparable to the combined dataset, with CatBoost attaining the highest \ac{MCC} of 0.770. The \ac{GP} classifier maintained robust performance (\ac{MCC}: 0.755) across both combined and noisy-only conditions, yet showed notable degradation in the isolated scenario (\ac{MCC}: 0.414).
 
 \subsection{Per-Class Analysis}
 
-\autoref{tab:class_performance} presents the per-class accuracy, recall, F1-score, and MCC for the best classifier (Gaussian Process).
+\autoref{tab:class_performance} presents the per-class accuracy, recall, F1-score, and \ac{MCC} for the best classifier (\ac{GP}).
 
 \begin{table}[!ht]
     \centering
-    \caption{Per-Class Performance Metrics (Gaussian Process)}
+    \caption{Per-Class Performance Metrics (\ac{GP})}
     \label{tab:class_performance}
     \resizebox{\columnwidth}{!}{%
         \begin{tabular}{lcccc}
@@ -88,15 +88,15 @@ The noisy-only scenario exhibited performance levels comparable to the combined 
     }
 \end{table}
 
-The static state at the bus stop (BB) exhibited the highest recall (89.7\%) and F1-score (0.878). The boarding movement (BA) achieved recall of 82.4\%, F1-score of 0.855, and MCC of 0.785. The alighting class (AB) demonstrated high recall (88.2\%) but lower F1-score (0.828). The static state inside the vehicle (AA) presented the lowest recall (75.0\%) and F1-score (0.791). The overall accuracy reached 83.8\% with an MCC of 0.785.
+The static state at the bus stop (BB) exhibited the highest recall (89.7\%) and F1-score (0.878). The boarding movement (BA) achieved recall of 82.4\%, F1-score of 0.855, and \ac{MCC} of 0.785. The alighting class (AB) demonstrated high recall (88.2\%) but lower F1-score (0.828). The static state inside the vehicle (AA) presented the lowest recall (75.0\%) and F1-score (0.791). The overall accuracy reached 83.8\% with an \ac{MCC} of 0.785.
 
 \subsection{Hyperparameter Configuration}
 
-The Gaussian Process classifier employed a Radial Basis Function (RBF) kernel, which is well-suited for capturing non-linear relationships in the RSSI feature space. The model configuration used is presented in \autoref{tab:hyperparams}.
+The \ac{GP} classifier employed a \ac{RBF} kernel, which is well-suited for capturing non-linear relationships in the \ac{RSSI} feature space. The model configuration used is presented in \autoref{tab:hyperparams}.
 
 \begin{table}[!ht]
     \centering
-    \caption{Gaussian Process Hyperparameters}
+    \caption{\ac{GP} Hyperparameters}
     \label{tab:hyperparams}
     \begin{tabular}{ll}
         \toprule
@@ -111,16 +111,16 @@ The Gaussian Process classifier employed a Radial Basis Function (RBF) kernel, w
     \end{tabular}
 \end{table}
 
-The RBF kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the RSSI temporal sequences.
+The \ac{RBF} kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the \ac{RSSI} temporal sequences.
 
 \subsection{Confusion Matrix Analysis}
 
-\autoref{fig:confusion_matrix} presents the normalized confusion matrix for the Gaussian Process classifier, which achieved the best average performance across experimental seeds.
+\autoref{fig:confusion_matrix} presents the normalized confusion matrix for the \ac{GP} classifier, which achieved the best average performance across experimental seeds.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.85\linewidth]{images/confusion_matrix_GaussianProcess.pdf}
-    \caption{Confusion matrix for the Gaussian Process classifier, demonstrating strong diagonal dominance with minimal inter-class confusion.}
+    \caption{Confusion matrix for the \ac{GP} classifier, demonstrating strong diagonal dominance with minimal inter-class confusion.}
     \label{fig:confusion_matrix}
 \end{figure}
 
@@ -137,17 +137,17 @@ To evaluate the robustness of classifier rankings across different experimental 
     \label{fig:accuracy_variability}
 \end{figure}
 
-The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (Gaussian Process, SVC) and ensemble approaches (Stacking, CatBoost) displaying the lowest variability.
+The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (\ac{GP}, SVC) and ensemble approaches (Stacking, CatBoost) displaying the lowest variability.
 
 \subsection{Feature Importance}
 
-Analysis of feature importance across interpretable classifiers revealed that the initial RSSI measurements (features 1--3) contribute most significantly to classification decisions, as illustrated in \autoref{fig:feature_importance}.
+Analysis of feature importance across interpretable classifiers revealed that the initial \ac{RSSI} measurements (features 1--3) contribute most significantly to classification decisions, as illustrated in \autoref{fig:feature_importance}.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=\linewidth]{images/mean_feature_importance.pdf}
-    \caption{Mean feature importance across classifiers, highlighting the discriminative value of initial RSSI measurements.}
+    \caption{Mean feature importance across classifiers, highlighting the discriminative value of initial \ac{RSSI} measurements.}
     \label{fig:feature_importance}
 \end{figure}
 
-The first RSSI sample exhibits the highest importance (normalized score: 2.29), followed by samples at positions 6 and 2.
+The first \ac{RSSI} sample exhibits the highest importance (normalized score: 2.29), followed by samples at positions 6 and 2.

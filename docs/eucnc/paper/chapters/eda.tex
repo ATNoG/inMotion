@@ -1,6 +1,6 @@
 \section{Exploratory Data Analysis}\label{sec:eda}
 
-Ahead of classifier training, an exploratory data analysis was carried out to gauge the discriminative potential of temporal RSSI signatures and to characterize signal behaviour across different passenger movement classes.
+Ahead of classifier training, an exploratory data analysis was carried out to gauge the discriminative potential of temporal \ac{RSSI} signatures and to characterize signal behaviour across different passenger movement classes.
 
 \subsection{Dataset Composition}
 
@@ -8,28 +8,28 @@ The final dataset is roughly balanced, comprising around 340 samples per movemen
 
 \subsection{Temporal RSSI Characteristics}
 
-The temporal evolution of RSSI values serves as the primary discriminative feature between movement classes. \autoref{fig:temporal_rssi} depicts the mean RSSI trajectory over the 10-second observation window for each class.
+The temporal evolution of \ac{RSSI} values serves as the primary discriminative feature between movement classes. \autoref{fig:temporal_rssi} depicts the mean \ac{RSSI} trajectory over the 10-second observation window for each class.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=\linewidth]{images/rssi_mean_trajectory_per_class.pdf}
-    \caption{Temporal evolution of RSSI values over the 10-second observation window for each movement class.}
+    \caption{Temporal evolution of \ac{RSSI} values over the 10-second observation window for each movement class.}
     \label{fig:temporal_rssi}
 \end{figure}
 
-Static states (\textbf{AA and BB}) exhibit relatively stable signal levels over time, albeit with distinct average magnitudes due to their spatial separation from the access point. In contrast, transitional movements display clear monotonic trends. The boarding class (\textbf{B~$\rightarrow$~A}) shows a consistent increase in RSSI as the devices move toward the access point, while the alighting class (\textbf{A~$\rightarrow$~B}) presents a pronounced decrease as physical obstructions attenuate the signal.
+Static states (\textbf{AA and BB}) exhibit relatively stable signal levels over time, albeit with distinct average magnitudes due to their spatial separation from the access point. In contrast, transitional movements display clear monotonic trends. The boarding class (\textbf{B~$\rightarrow$~A}) shows a consistent increase in \ac{RSSI} as the devices move toward the access point, while the alighting class (\textbf{A~$\rightarrow$~B}) presents a pronounced decrease as physical obstructions attenuate the signal.
 
-These contrasting temporal patterns offer a compelling rationale for leveraging RSSI sequences in movement classification.
+These contrasting temporal patterns offer a compelling rationale for leveraging \ac{RSSI} sequences in movement classification.
 
 \subsection{Feature Space Separability}
 
-To further inspect the structure of the 10-dimensional RSSI feature vectors, a t-Distributed Stochastic Neighbor Embedding (t-SNE) projection was applied for visualization purposes. The resulting two-dimensional embedding, shown in \autoref{fig:tsne}, reveals the formation of four predominantly distinct clusters corresponding to the defined movement classes.
+To further inspect the structure of the 10-dimensional \ac{RSSI} feature vectors, a \ac{t-SNE} projection was applied for visualization purposes. The resulting two-dimensional embedding, shown in \autoref{fig:tsne}, reveals the formation of four predominantly distinct clusters corresponding to the defined movement classes.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.9\linewidth]{images/tsne_visualization.pdf}
-    \caption{t-SNE projection for visualization of each class structure}
+    \caption{\ac{t-SNE} projection for visualization of each class structure}
     \label{fig:tsne}
 \end{figure}
 
-Although partial overlap is evident, mainly among samples collected under noisy conditions, the overall clustering suggests that temporal RSSI patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis serves as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
+Although partial overlap is evident, mainly among samples collected under noisy conditions, the overall clustering suggests that temporal \ac{RSSI} patterns retain sufficient class-dependent structure to support supervised learning approaches. This analysis serves as a qualitative inspection of feature separability rather than a quantitative performance evaluation.
