@@ -8,7 +8,7 @@ Controlled experiments were carried out in an indoor environment that emulates p
 
 \subsubsection{Environmental Configuration}
 
-The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a WiFi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive \ac{RSSI} patterns during transitions.
+The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a Wi-Fi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive \ac{RSSI} patterns during transitions.
 
 \begin{figure}[!ht]
     \centering
@@ -19,7 +19,7 @@ The environment was divided into two zones (\autoref{fig:experimental_setup}). Z
 
 \subsubsection{Data Acquisition}
 
-Data was collected using a Python script interfacing with the AP via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 \ac{RSSI} samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent \ac{RSSI} reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
+Data was collected using a Python script interfacing with the Acess Point via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 \ac{RSSI} samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent \ac{RSSI} reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
 
 Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside), \textbf{B$\rightarrow$B} (remaining at stop), \textbf{A$\rightarrow$B} (alighting), and \textbf{B$\rightarrow$A} (boarding). Collection occurred under two scenarios: \textit{Isolated} (single device, 20 repetitions per class per device) and \textit{Noisy} (four devices simultaneously performing paired movements).
 
@@ -51,7 +51,7 @@ The following subsection details the classifier selection rationale, evaluation 
 
 A total of 38 classification algorithms spanning multiple paradigms were evaluated to ensure thorough benchmarking. The classifier families were chosen based on their established effectiveness in \ac{RSSI}-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
 
-\textbf{Support Vector Machines (SVM):} \acp{SVM} with \ac{RBF} and linear kernels were included due to their demonstrated superiority in WiFi fingerprinting tasks. Prior studies on indoor localization using \ac{RSSI} have shown \acp{SVM} achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The \ac{RBF} kernel effectively captures non-linear relationships in signal strength patterns.
+\textbf{Support Vector Machines (SVM):} \acp{SVM} with \ac{RBF} and linear kernels were included due to their demonstrated superiority in Wi-Fi fingerprinting tasks. Prior studies on indoor localization using \ac{RSSI} have shown \acp{SVM} achieving accuracies exceeding 90\% for location classification~\cite{agualimpia2024rssi, jain2021lowcost}. The \ac{RBF} kernel effectively captures non-linear relationships in signal strength patterns.
 
 \textbf{Ensemble Methods:} Random Forest and Extra Trees were selected for their robustness to noise and ability to model complex decision boundaries without extensive hyperparameter tuning~\cite{singh2021rssisurvey}. Gradient boosting variants (XGBoost, LightGBM, CatBoost) were included based on their state-of-the-art performance in tabular classification tasks, with CatBoost demonstrating particular effectiveness for categorical features~\cite{fabre2025machine}.
 
@@ -70,6 +70,14 @@ The dataset was partitioned using \textbf{stratified sampling} with an 80\%/20\%
 Model training employed \textbf{5-fold stratified cross-validation}, a methodology widely recommended for robust classifier evaluation. Stratified K-fold cross-validation maintains class ratios across all folds, ensuring that minority classes receive adequate representation during training and validation. This technique reduces variance in performance estimates compared to simple hold-out validation.
 
 To assess result stability, experiments were repeated with three random seeds (3, 5, and 42), and metrics were aggregated across runs. This multi-seed evaluation quantifies classifier sensitivity to random initialization and data shuffling.
+
+\subsubsection{Hyperparameter Optimization}
+
+To ensure fair comparison and optimal performance across classifier families, systematic hyperparameter optimization was conducted using Optuna~\cite{optuna2019}, a state-of-the-art Bayesian optimization framework. Optuna employs the Tree-structured Parzen Estimator (TPE) algorithm to efficiently explore high-dimensional hyperparameter spaces, focusing search efforts on promising regions.
+
+For each tunable classifier, extensive hyperparameter searches were performed with budgets ranging from 50 to over 1,300 trials depending on model complexity. The optimization objective was accuracy during 5-fold stratified cross-validation on the training set. This approach yields classifier configurations specifically adapted to the \ac{RSSI} feature space characteristics.
+
+The hyperparameter search spaces were defined based on recommended ranges from the literature and practical considerations. Ensemble methods (Random Forest, Extra Trees, Gradient Boosting variants) were tuned over tree depth, number of estimators, and regularization parameters. \acp{SVM} were optimized for the regularization parameter $C$ and kernel coefficients. Neural network configurations explored layer architectures, learning rates, and regularization strengths. The complete hyperparameter search spaces and optimal configurations for each classifier are documented in the Appendix.
 
 \subsubsection{Performance Metrics}
 

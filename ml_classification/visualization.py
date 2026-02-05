@@ -87,7 +87,20 @@ def load_results_from_csv(
     feature_importance_summary = pd.DataFrame()
     if feature_importances:
         feature_names = [c.replace("FeatImp_", "") for c in feat_imp_cols]
-        all_importances = np.array(list(feature_importances.values()))
+
+        # Normalize each classifier's importances to [0, 1] before aggregating
+        normalized_importances = []
+        for importances in feature_importances.values():
+            # Min-max normalization
+            min_val = np.min(importances)
+            max_val = np.max(importances)
+            if max_val > min_val:
+                normalized = (importances - min_val) / (max_val - min_val)
+            else:
+                normalized = np.zeros_like(importances)
+            normalized_importances.append(normalized)
+
+        all_importances = np.array(normalized_importances)
         mean_importances = np.mean(all_importances, axis=0)
         std_importances = np.std(all_importances, axis=0)
         feature_importance_summary = pd.DataFrame(
@@ -391,11 +404,28 @@ class Visualizer:
         fig, ax = plt.subplots(figsize=(10, 6))
 
         df = feature_importance_df.sort_values("Mean_Importance", ascending=True)
-
-        ax.barh(range(len(df)), df["Mean_Importance"], color="steelblue")
+        print(df)
+        ax.barh(
+            range(len(df)),
+            df["Mean_Importance"],
+            xerr=df["Std_Importance"],
+            color="steelblue",
+            capsize=3,
+            alpha=0.8,
+        )
+        
+        for i, (mean, std) in enumerate(zip(df["Mean_Importance"], df["Std_Importance"])):
+            ax.text(
+            mean + std + 0.005,
+            i,
+            f"{mean:.3f}±{std:.3f}",
+            va="center",
+            fontsize=self.config.plot_tick_size - 1,
+            )
         ax.set_yticks(range(len(df)))
         ax.set_yticklabels(df["Feature"])
         ax.set_xlabel("Mean Importance")
+        ax.set_ylabel("Feature")
         ax.set_title("Average Feature Importance Across Classifiers")
 
         plt.tight_layout()

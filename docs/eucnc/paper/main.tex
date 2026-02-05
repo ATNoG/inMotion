@@ -11,6 +11,8 @@
 \usepackage[english]{babel}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
 \usepackage[printonlyused,withpage]{acronym}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -18,9 +20,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=BlueViolet, citecolor=blue]{hyperref}
 
-\hypersetup{
-    hidelinks,
-}
+% \hypersetup{
+%     hidelinks,
+% }
 
 % Acronym definitions
 \acrodef{RSSI}{Received Signal Strength Indicator}
@@ -69,10 +71,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \input{chapters/eda}
 \input{chapters/results}
 \input{chapters/discussion}
-\input{chapters/contributions}
+%\input{chapters/contributions}
 \input{chapters/conclusions}
+
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
+\clearpage
+\input{chapters/appendix}
 
 \end{document}

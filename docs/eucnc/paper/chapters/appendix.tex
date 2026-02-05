@@ -1,0 +1,262 @@
+\appendix
+\section{Hyperparameter Optimization Details}\label{sec:appendix}
+
+This appendix documents the hyperparameter optimization process conducted using Optuna~\cite{optuna2019}, including the search spaces explored and the optimal configurations identified for each classifier family.
+
+\subsection{Optimization Methodology}
+
+The Tree-structured Parzen Estimator (TPE) sampler was employed with consistent random seeds to ensure reproducibility. Each classifier underwent extensive optimization with the number of trials shown in \autoref{tab:optuna_summary}. The optimization objective was 5-fold stratified cross-validation accuracy on the training set.
+
+\begin{table}[!ht]
+    \centering
+    \caption{Optuna Hyperparameter Optimization Summary}
+    \label{tab:optuna_summary}
+    \begin{tabular}{lrr}
+        \toprule
+        \textbf{Classifier} & \textbf{Trials} & \textbf{Best CV Accuracy} \\
+        \midrule
+        Random Forest       & 1,303           & 89.08\%                   \\
+        Extra Trees         & 1,250           & 91.45\%                   \\
+        Gradient Boosting   & 1,170           & 87.51\%                   \\
+        XGBoost             & 1,150           & 87.51\%                   \\
+        LightGBM            & 51              & 79.89\%                   \\
+        SVC (RBF)           & 950             & 92.22\%                   \\
+        KNN                 & 950             & 85.88\%                   \\
+        MLP                 & 950             & 90.68\%                   \\
+        Logistic Regression & 900             & 85.97\%                   \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Optimal Hyperparameter Configurations}
+
+The following tables present the best hyperparameter configurations identified through the optimization process.
+
+\begin{enumerate}
+    \item \textbf{Random Forest} (\autoref{tab:rf_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{Random Forest Best Hyperparameters}
+              \label{tab:rf_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter}  & \textbf{Value} \\
+                  \midrule
+                  n\_estimators       & 97             \\
+                  max\_depth          & 13             \\
+                  min\_samples\_split & 2              \\
+                  min\_samples\_leaf  & 1              \\
+                  max\_features       & sqrt           \\
+                  bootstrap           & False          \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{Extra Trees} (\autoref{tab:et_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{Extra Trees Best Hyperparameters}
+              \label{tab:et_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter}  & \textbf{Value} \\
+                  \midrule
+                  n\_estimators       & 182            \\
+                  max\_depth          & 9              \\
+                  min\_samples\_split & 9              \\
+                  min\_samples\_leaf  & 1              \\
+                  max\_features       & sqrt           \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{Gradient Boosting} (\autoref{tab:gb_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{Gradient Boosting Best Hyperparameters}
+              \label{tab:gb_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter}  & \textbf{Value} \\
+                  \midrule
+                  n\_estimators       & 156            \\
+                  learning\_rate      & 0.0616         \\
+                  max\_depth          & 12             \\
+                  min\_samples\_split & 4              \\
+                  min\_samples\_leaf  & 2              \\
+                  subsample           & 0.950          \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{XGBoost} (\autoref{tab:xgb_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{XGBoost Best Hyperparameters}
+              \label{tab:xgb_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter} & \textbf{Value}        \\
+                  \midrule
+                  n\_estimators      & 104                   \\
+                  learning\_rate     & 0.253                 \\
+                  max\_depth         & 13                    \\
+                  min\_child\_weight & 2                     \\
+                  subsample          & 0.800                 \\
+                  colsample\_bytree  & 0.714                 \\
+                  reg\_alpha (L1)    & $2.66 \times 10^{-6}$ \\
+                  reg\_lambda (L2)   & 1.368                 \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{LightGBM} (\autoref{tab:lgbm_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{LightGBM Best Hyperparameters}
+              \label{tab:lgbm_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter}  & \textbf{Value}        \\
+                  \midrule
+                  n\_estimators       & 83                    \\
+                  learning\_rate      & 0.0333                \\
+                  max\_depth          & 8                     \\
+                  num\_leaves         & 25                    \\
+                  min\_child\_samples & 45                    \\
+                  subsample           & 0.970                 \\
+                  colsample\_bytree   & 0.923                 \\
+                  reg\_alpha (L1)     & $4.15 \times 10^{-5}$ \\
+                  reg\_lambda (L2)    & $1.02 \times 10^{-7}$ \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{SVC (RBF Kernel)} (\autoref{tab:svc_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{SVC (RBF Kernel) Best Hyperparameters}
+              \label{tab:svc_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter} & \textbf{Value} \\
+                  \midrule
+                  C (regularization) & 0.634          \\
+                  gamma              & scale          \\
+                  kernel             & RBF            \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{K-Nearest Neighbors} (\autoref{tab:knn_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{KNN Best Hyperparameters}
+              \label{tab:knn_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter} & \textbf{Value} \\
+                  \midrule
+                  n\_neighbors       & 4              \\
+                  weights            & distance       \\
+                  metric             & minkowski      \\
+                  p                  & 5              \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{MLP Neural Network} (\autoref{tab:mlp_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{MLP Best Hyperparameters}
+              \label{tab:mlp_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter}   & \textbf{Value} \\
+                  \midrule
+                  hidden\_layer\_sizes & (249, 140, 95) \\
+                  activation           & tanh           \\
+                  alpha (L2 penalty)   & 0.000991       \\
+                  learning\_rate       & constant       \\
+                  learning\_rate\_init & 0.00696        \\
+                  max\_iter            & 500            \\
+                  early\_stopping      & True           \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+
+    \item \textbf{Logistic Regression} (\autoref{tab:lr_params})
+
+          \begin{table}[H]
+              \centering
+              \caption{Logistic Regression Best Hyperparameters}
+              \label{tab:lr_params}
+              \begin{tabular}{ll}
+                  \toprule
+                  \textbf{Parameter} & \textbf{Value} \\
+                  \midrule
+                  C (regularization) & 36.81          \\
+                  l1\_ratio          & 0.214          \\
+                  solver             & saga           \\
+                  max\_iter          & 1000           \\
+                  \bottomrule
+              \end{tabular}
+          \end{table}
+\end{enumerate}
+
+\subsection{Search Space Definitions}
+
+\autoref{tab:search_spaces} summarizes the hyperparameter search ranges explored during optimization.
+
+\begin{table*}[!ht]
+    \centering
+    \caption{Hyperparameter Search Space Ranges}
+    \label{tab:search_spaces}
+    \begin{tabular}{llll}
+        \toprule
+        \textbf{Classifier} & \textbf{Parameter}   & \textbf{Range}                      & \textbf{Scale} \\
+        \midrule
+        \multirow{5}{*}{Tree Ensembles}
+                            & n\_estimators        & [50, 300]                           & Linear         \\
+                            & max\_depth           & [3, 30]                             & Linear         \\
+                            & min\_samples\_split  & [2, 20]                             & Linear         \\
+                            & min\_samples\_leaf   & [1, 10]                             & Linear         \\
+                            & max\_features        & \{sqrt, log2, None\}                & Categorical    \\
+        \midrule
+        \multirow{4}{*}{Boosting Methods}
+                            & learning\_rate       & [0.01, 0.3]                         & Log            \\
+                            & subsample            & [0.6, 1.0]                          & Linear         \\
+                            & reg\_alpha           & [$10^{-8}$, 10]                     & Log            \\
+                            & reg\_lambda          & [$10^{-8}$, 10]                     & Log            \\
+        \midrule
+        \multirow{2}{*}{SVC (RBF)}
+                            & C                    & [0.01, 100]                         & Log            \\
+                            & gamma                & \{scale, auto\}                     & Categorical    \\
+        \midrule
+        \multirow{4}{*}{KNN}
+                            & n\_neighbors         & [1, 20]                             & Linear         \\
+                            & weights              & \{uniform, distance\}               & Categorical    \\
+                            & metric               & \{euclidean, manhattan, minkowski\} & Categorical    \\
+                            & p                    & [1, 5]                              & Linear         \\
+        \midrule
+        \multirow{5}{*}{MLP}
+                            & n\_layers            & [1, 3]                              & Linear         \\
+                            & n\_units\_per\_layer & [32, 256]                           & Linear         \\
+                            & alpha                & [$10^{-5}$, 0.1]                    & Log            \\
+                            & learning\_rate\_init & [$10^{-4}$, 0.1]                    & Log            \\
+                            & activation           & \{relu, tanh\}                      & Categorical    \\
+        \midrule
+        \multirow{2}{*}{Logistic Regression}
+                            & C                    & [0.001, 100]                        & Log            \\
+                            & l1\_ratio            & [0, 1]                              & Linear         \\
+        \bottomrule
+    \end{tabular}
+\end{table*}

@@ -2,36 +2,6 @@
 
 This section presents the experimental results from training and evaluating an extensive set of machine learning classifiers on the \ac{RSSI}-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation covers 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
 
-\subsection{Classification Performance: Combined Dataset}
-
-\autoref{tab:top_classifiers} summarizes the performance of the top-10 classifiers on the combined dataset, ranked by mean \ac{MCC} across the experimental seeds.
-
-\begin{table}[!ht]
-    \centering
-    \caption{Top-10 Classifiers on Combined Dataset (Ranked by \ac{MCC})}
-    \label{tab:top_classifiers}
-    \resizebox{\columnwidth}{!}{%
-        \begin{tabular}{lcccc}
-            \toprule
-            \textbf{Classifier}             & \textbf{Accuracy} & \textbf{Recall}   & \textbf{F1-Score} & \textbf{MCC}      \\
-            \midrule
-            GaussianProcess                 & 0.816 $\pm$ 0.024 & 0.816 $\pm$ 0.024 & 0.815 $\pm$ 0.024 & 0.756 $\pm$ 0.033 \\
-            SVC (RBF)                       & 0.815 $\pm$ 0.015 & 0.815 $\pm$ 0.015 & 0.813 $\pm$ 0.014 & 0.755 $\pm$ 0.021 \\
-            SVC (Linear)                    & 0.813 $\pm$ 0.017 & 0.813 $\pm$ 0.017 & 0.812 $\pm$ 0.016 & 0.750 $\pm$ 0.023 \\
-            StackingEnsemble                & 0.811 $\pm$ 0.015 & 0.811 $\pm$ 0.015 & 0.810 $\pm$ 0.014 & 0.749 $\pm$ 0.020 \\
-            CatBoost                        & 0.809 $\pm$ 0.013 & 0.809 $\pm$ 0.013 & 0.809 $\pm$ 0.013 & 0.746 $\pm$ 0.017 \\
-            RandomForest                    & 0.808 $\pm$ 0.017 & 0.808 $\pm$ 0.017 & 0.807 $\pm$ 0.016 & 0.744 $\pm$ 0.022 \\
-            LogisticRegression (L1)         & 0.808 $\pm$ 0.031 & 0.808 $\pm$ 0.031 & 0.806 $\pm$ 0.031 & 0.744 $\pm$ 0.042 \\
-            LogisticRegression (ElasticNet) & 0.808 $\pm$ 0.031 & 0.808 $\pm$ 0.031 & 0.806 $\pm$ 0.031 & 0.744 $\pm$ 0.042 \\
-            MLP (Large)                     & 0.806 $\pm$ 0.015 & 0.806 $\pm$ 0.015 & 0.805 $\pm$ 0.014 & 0.743 $\pm$ 0.021 \\
-            LogisticRegression (L2)         & 0.806 $\pm$ 0.033 & 0.806 $\pm$ 0.033 & 0.805 $\pm$ 0.033 & 0.743 $\pm$ 0.044 \\
-            \bottomrule
-        \end{tabular}%
-    }
-\end{table}
-
-The Gaussian Process classifier attained the highest mean \ac{MCC} (0.756) with an accuracy of 81.6\%. \acp{SVM} with \ac{RBF} and linear kernels followed closely, recording \ac{MCC} values of 0.755 and 0.750, respectively.
-
 \subsection{Comparative Analysis Across Experimental Scenarios}
 
 \autoref{tab:scenario_comparison} presents the performance comparison of top classifiers across the three experimental scenarios, revealing the substantial impact of data collection conditions on classification performance.
@@ -92,7 +62,7 @@ The static state at the bus stop (BB) exhibited the highest recall (89.7\%) and 
 
 \subsection{Hyperparameter Configuration}
 
-The \ac{GP} classifier employed a \ac{RBF} kernel, which is well-suited for capturing non-linear relationships in the \ac{RSSI} feature space. The model configuration used is presented in \autoref{tab:hyperparams}.
+While extensive hyperparameter optimization was conducted for nine classifier families using Optuna (detailed in \autoref{sec:appendix}), the \ac{GP} classifier employed default configurations with a \ac{RBF} kernel, which proved highly effective without explicit tuning. The \ac{GP} configuration is presented in \autoref{tab:hyperparams}.
 
 \begin{table}[!ht]
     \centering
@@ -111,7 +81,7 @@ The \ac{GP} classifier employed a \ac{RBF} kernel, which is well-suited for capt
     \end{tabular}
 \end{table}
 
-The \ac{RBF} kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the \ac{RSSI} temporal sequences.
+The \ac{RBF} kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the \ac{RSSI} temporal sequences. Notably, the \ac{GP} classifier achieved top performance without requiring the extensive hyperparameter search applied to other classifiers, suggesting that its probabilistic formulation is particularly well-suited to the \ac{RSSI} feature space.
 
 \subsection{Confusion Matrix Analysis}
 
@@ -132,8 +102,8 @@ To evaluate the robustness of classifier rankings across different experimental 
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=\linewidth]{images/accuracy_variability.pdf}
-    \caption{Accuracy variability across experimental seeds for top classifiers, demonstrating consistent ranking stability.}
+    \includegraphics[width=\linewidth]{images/mcc_variability.pdf}
+    \caption{\ac{MCC} variability for top classifiers, in combined dataset, demonstrating consistent ranking stability.}
     \label{fig:accuracy_variability}
 \end{figure}
 
@@ -146,7 +116,7 @@ Analysis of feature importance across interpretable classifiers revealed that th
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=\linewidth]{images/mean_feature_importance.pdf}
-    \caption{Mean feature importance across classifiers, highlighting the discriminative value of initial \ac{RSSI} measurements.}
+    \caption{Mean feature importance across classifiers, with standard deviation, to the $[0, 1]$ range using min-max normalization}
     \label{fig:feature_importance}
 \end{figure}
 
