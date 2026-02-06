@@ -20,9 +20,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=BlueViolet, citecolor=blue]{hyperref}
 
-% \hypersetup{
-%     hidelinks,
-% }
+\hypersetup{
+    hidelinks,
+}
 
 % Acronym definitions
 \acrodef{RSSI}{Received Signal Strength Indicator}
@@ -58,11 +58,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \maketitle
 
 \begin{abstract}
-    Accurate monitoring of passenger flows in public transport is essential for service optimization and network planning, yet traditional counting methods face limitations in coverage, cost, and privacy preservation. This paper presents a novel approach for classifying passenger movements using temporal sequences of WiFi Received Signal Strength Indicator (RSSI) measurements. We introduce a dataset collected in a controlled experimental environment that simulates public transport scenarios, capturing the distinctive signal patterns associated with four fundamental movement classes: boarding the vehicle, alighting from the vehicle, remaining inside, and remaining at the bus stop. By analyzing the temporal evolution of RSSI values over ten-second observation windows, our approach enables non-intrusive distinction between static and transitional states without requiring specialized hardware or compromising passenger anonymity. Experimental evaluation using multiple machine learning classifiers demonstrates the feasibility of RSSI-based movement classification, providing a cost-effective complement to existing automatic passenger counting systems for intelligent transportation applications.
+    Accurate monitoring of passenger flows in public transport is essential for service optimization and network planning, yet traditional counting methods face limitations in coverage, cost, and privacy preservation. This paper presents a novel approach for classifying passenger movements using temporal sequences of Wi-Fi Received Signal Strength Indicator (RSSI) measurements. We introduce a dataset collected in a controlled experimental environment that simulates public transport scenarios, capturing the distinctive signal patterns associated with four fundamental movement classes: boarding the vehicle, alighting from the vehicle, remaining inside, and remaining at the bus stop. By analyzing the temporal evolution of RSSI values over ten-second observation windows, our approach enables non-intrusive distinction between static and transitional states without requiring specialized hardware or compromising passenger anonymity. Experimental evaluation using multiple machine learning classifiers demonstrates the feasibility of RSSI-based movement classification, providing a cost-effective complement to existing automatic passenger counting systems for intelligent transportation applications.
 \end{abstract}
 
 \begin{IEEEkeywords}
-    Passenger counting, RSSI fingerprinting, WiFi sensing, public transport, machine learning, intelligent transportation systems, urban mobility
+    Passenger counting, RSSI fingerprinting, Wi-Fi sensing, public transport, machine learning, intelligent transportation systems, urban mobility
 \end{IEEEkeywords}
 
 \input{chapters/introduction}
@@ -70,7 +70,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \input{chapters/experimental-setup}
 \input{chapters/eda}
 \input{chapters/results}
-\input{chapters/discussion}
 %\input{chapters/contributions}
 \input{chapters/conclusions}
 

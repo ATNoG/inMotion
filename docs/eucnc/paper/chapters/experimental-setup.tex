@@ -19,13 +19,15 @@ The environment was divided into two zones (\autoref{fig:experimental_setup}). Z
 
 \subsubsection{Data Acquisition}
 
-Data was collected using a Python script interfacing with the Acess Point via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 \ac{RSSI} samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent \ac{RSSI} reporting. Four mobile devices from three manufacturers were used to introduce hardware variability.
+Data was collected using a Python script interfacing with the Access Point via Ethernet. Each trial comprised a \textbf{10-second window} with \textbf{10 \ac{RSSI} samples at 1~Hz}. Devices maintained periodic low-overhead traffic (ICMP) to ensure consistent \ac{RSSI} reporting. Four smartphones from three brands were employed to introduce hardware and chipset variability: Samsung Galaxy S20 (Android~13), Samsung Galaxy S23 (Android~14), POCO X7 Pro (Android~14), and Xiaomi Redmi~4 (Android~6). This selection spans a wide range of Wi-Fi chipset generations and transmit power characteristics, improving the generalizability of trained models.
 
 Four movement classes were defined: \textbf{A$\rightarrow$A} (remaining inside), \textbf{B$\rightarrow$B} (remaining at stop), \textbf{A$\rightarrow$B} (alighting), and \textbf{B$\rightarrow$A} (boarding). Collection occurred under two scenarios: \textit{Isolated} (single device, 20 repetitions per class per device) and \textit{Noisy} (four devices simultaneously performing paired movements).
 
 \subsubsection{Preprocessing and Dataset Structure}
 
 Raw data underwent the following preprocessing steps: (1)~\textit{Temporal Aggregation}, where 10 \ac{RSSI} measurements per trial were aggregated into a feature vector $\mathbf{R} = [r_1, \ldots, r_{10}]$; (2)~\textit{Device Isolation} using \ac{MAC} addresses; (3)~\textit{Labeling} with movement class and noise indicator; and (4)~\textit{Feature Filtering} to retain only \ac{RSSI} values.
+
+Device isolation relies on \ac{MAC} addresses reported by the access point for associated clients. Although modern mobile operating systems randomize \ac{MAC} addresses during probe requests, this randomization does not affect our methodology: once a device establishes a Wi-Fi association, it retains a consistent \ac{MAC} address for the duration of the session. Since each 10-second observation window operates well within a single association period, device identification remains stable throughout the measurement interval.
 
 Prior to model training, \textit{Feature Scaling} was applied using standardization (z-score normalization), which transforms each feature to zero mean and unit variance. This step is essential for classifiers sensitive to feature magnitudes, such as \acp{SVM}, \ac{GP} classifiers, \acp{MLP}, and logistic regression, as these distance-based and gradient-based methods may otherwise suffer from degraded convergence speed and classification performance when operating on raw \ac{RSSI} value ranges.
 
@@ -47,7 +49,7 @@ Comparing across these scenarios allows for a quantitative assessment of how env
 
 The following subsection details the classifier selection rationale, evaluation methodology, and performance metrics adopted in our experimental protocol.
 
-\subsubsection{Classifier Selection and Justification}
+\subsubsection{Classifier Selection}
 
 A total of 38 classification algorithms spanning multiple paradigms were evaluated to ensure thorough benchmarking. The classifier families were chosen based on their established effectiveness in \ac{RSSI}-based classification tasks~\cite{singh2021rssisurvey, zholamanov2025rssi}:
 
@@ -77,7 +79,7 @@ To ensure fair comparison and optimal performance across classifier families, sy
 
 For each tunable classifier, extensive hyperparameter searches were performed with budgets ranging from 50 to over 1,300 trials depending on model complexity. The optimization objective was accuracy during 5-fold stratified cross-validation on the training set. This approach yields classifier configurations specifically adapted to the \ac{RSSI} feature space characteristics.
 
-The hyperparameter search spaces were defined based on recommended ranges from the literature and practical considerations. Ensemble methods (Random Forest, Extra Trees, Gradient Boosting variants) were tuned over tree depth, number of estimators, and regularization parameters. \acp{SVM} were optimized for the regularization parameter $C$ and kernel coefficients. Neural network configurations explored layer architectures, learning rates, and regularization strengths. The complete hyperparameter search spaces and optimal configurations for each classifier are documented in the Appendix.
+The hyperparameter search spaces were defined based on recommended ranges from the literature and practical considerations. Ensemble methods (Random Forest, Extra Trees, Gradient Boosting variants) were tuned over tree depth, number of estimators, and regularization parameters. \acp{SVM} were optimized for the regularization parameter $C$ and kernel coefficients. Neural network configurations explored layer architectures, learning rates, and regularization strengths. The complete hyperparameter search spaces and optimal configurations for each classifier are documented in the Appendix \ref{sec:appendix}.
 
 \subsubsection{Performance Metrics}
 

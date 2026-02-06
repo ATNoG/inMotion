@@ -1,17 +1,11 @@
 \section{Related Work}\label{sec:related-work}
 
-\subsection{Automatic Passenger Counting Systems}
+\subsection{Automatic Passenger Counting}
 
-Conventional \ac{APC} systems rely on infrared sensors, pressure mats, or video-based detection \cite{barabino2014offline}. Pronello and Garz\'{o}n Ruiz \cite{pronello2023evaluating} observed that claimed 98\% accuracy frequently drops to 53--74\% under real-world conditions. Deep learning approaches can reach up to 94\% accuracy \cite{wiboonsiriruk2023efficient}, though vision-based systems remain hampered by occlusion, lighting variability, and privacy concerns.
+Conventional \ac{APC} systems rely on infrared sensors, pressure mats, or video-based detection \cite{barabino2014offline}, yet claimed accuracies of 98\% frequently drop to 53--74\% under real-world conditions \cite{pronello2023evaluating}. Vision-based approaches can reach 94\% accuracy \cite{wiboonsiriruk2023efficient} but remain hampered by occlusion, lighting variability, and privacy concerns.
 
-\subsection{Wi-Fi-Based Passenger Sensing}
+\subsection{Wi-Fi-Based Sensing and Research Gap}
 
-The ubiquity of Wi-Fi-enabled devices has spurred interest in wireless signal analysis for mobility monitoring. Nitti et al. \cite{nitti2020iabacus} demonstrated Wi-Fi-based passenger counting with 100\% detection in static settings and 94\% in dynamic ones. \ac{CSI}-based systems yield richer information, with Guo et al. \cite{guo2024rssi} reaching over 94\% accuracy, though they require specialized hardware. \ac{RSSI} remains practical with off-the-shelf equipment, and Simon\v{c}i\v{c} et al. \cite{simoncic2023nonintrusive} attained over 96\% accuracy for presence monitoring despite \ac{MAC} randomization challenges.
+Wi-Fi-based passenger counting has been demonstrated with up to 100\% detection in static settings \cite{nitti2020iabacus}. While \ac{CSI}-based systems yield richer information with over 94\% accuracy \cite{guo2024rssi}, they require specialized hardware. \ac{RSSI}-based methods remain practical with off-the-shelf equipment; Simon\v{c}i\v{c} et al. \cite{simoncic2023nonintrusive} attained over 96\% accuracy for presence monitoring despite \ac{MAC} randomization challenges.
 
-\subsection{RSSI Fingerprinting and Movement Classification}
-
-\ac{RSSI} fingerprinting is well-established for indoor localization \cite{agualimpia2024rssi}. Recent work has proposed treating \ac{RSSI} measurements as temporal sequences rather than static fingerprints, aligning with our methodology. Cerqueira et al. \cite{cerqueira2022inference} demonstrated the importance of complete journey patterns for \ac{OD} matrix inference.
-
-\subsection{Research Gap}
-
-Despite progress in passenger counting and wireless sensing, machine learning classification of movement patterns from \ac{RSSI} time series has received comparatively little attention. Our work addresses this gap by casting passenger movement detection as a supervised classification problem using temporal \ac{RSSI} evolution, enabling real-time trajectory classification with a single access point at the vehicle door.
+Despite this progress, machine learning classification of movement patterns from \ac{RSSI} time series has received comparatively little attention. Existing work treats \ac{RSSI} primarily as static fingerprints for indoor localization \cite{agualimpia2024rssi} rather than as temporal sequences encoding movement dynamics. Our work addresses this gap by casting passenger movement detection as a supervised classification problem over temporal \ac{RSSI} evolution, enabling real-time trajectory classification with a single access point at the vehicle door.

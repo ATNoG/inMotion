@@ -1,8 +1,8 @@
-\section{Results}\label{sec:results}
+\section{Results and Discussion}\label{sec:results}
 
-This section presents the experimental results from training and evaluating an extensive set of machine learning classifiers on the \ac{RSSI}-based passenger movement dataset across three experimental scenarios: combined, isolated-only, and noisy-only conditions. The evaluation covers 38 classification algorithms assessed across multiple random seeds to ensure statistical robustness.
+This section presents the experimental results from evaluating 38 machine learning classifiers on the \ac{RSSI}-based passenger movement dataset and analyses their implications across three experimental scenarios.
 
-\subsection{Comparative Analysis Across Experimental Scenarios}
+\subsection{Comparative Analysis Across Scenarios}
 
 \autoref{tab:scenario_comparison} presents the performance comparison of top classifiers across the three experimental scenarios, revealing the substantial impact of data collection conditions on classification performance.
 
@@ -30,19 +30,21 @@ This section presents the experimental results from training and evaluating an e
     }
 \end{table}
 
-The isolated-only scenario yielded the highest classification performance, with \ac{KNN} (k=5) reaching an \ac{MCC} of 0.907---a 20\% improvement over the combined dataset. Simpler classifiers such as \ac{KNN} showed the most pronounced performance gains in the isolated scenario.
+The isolated-only scenario yielded markedly superior performance, with \ac{KNN} (k=5) reaching an \ac{MCC} of 0.907---a 31\% relative improvement over the combined dataset. This increase stems from the absence of inter-device signal interference, producing cleaner \ac{RSSI} patterns with more distinct class separations. Simpler classifiers such as \ac{KNN}, which rely on local neighbourhood structure, benefit disproportionately from this increased separability.
 
-The noisy-only scenario exhibited performance levels comparable to the combined dataset, with CatBoost attaining the highest \ac{MCC} of 0.770. The \ac{GP} classifier maintained robust performance (\ac{MCC}: 0.755) across both combined and noisy-only conditions, yet showed notable degradation in the isolated scenario (\ac{MCC}: 0.414).
+Conversely, the \ac{GP} classifier suffered notable degradation in the isolated scenario (\ac{MCC}: 0.414) despite attaining the highest \ac{MCC} (0.756) on the combined dataset. This paradox is explained by the limited sample size ($n = 160$), which proves insufficient for reliable kernel hyperparameter estimation. On the combined dataset, the \ac{GP}'s probabilistic framework and \ac{RBF} kernel flexibility enable effective modelling of non-linear decision boundaries without extensive manual tuning.
 
-\subsection{Per-Class Analysis}
+The noisy-only scenario, representing the most realistic operational conditions, showed performance on par with the combined dataset, with CatBoost attaining the highest \ac{MCC} (0.770). This consistency indicates that the combined dataset's performance is largely driven by the noisy samples, which constitute 88\% of the total data. Gradient boosting methods demonstrated particular robustness to signal interference.
 
-\autoref{tab:class_performance} presents the per-class accuracy, recall, F1-score, and \ac{MCC} for the best classifier (\ac{GP}).
+\subsection{Per-Class and Error Analysis}
+
+\autoref{tab:class_performance} presents the per-class metrics for the best classifier (\ac{GP}).
 
 \begin{table}[!ht]
     \centering
     \caption{Per-Class Performance Metrics (\ac{GP})}
     \label{tab:class_performance}
-    \resizebox{\columnwidth}{!}{%
+    \resizebox{0.8\columnwidth}{!}{%
         \begin{tabular}{lcccc}
             \toprule
             \textbf{Class}        & \textbf{Accuracy} & \textbf{Recall} & \textbf{F1-Score} & \textbf{MCC}   \\
@@ -58,11 +60,52 @@ The noisy-only scenario exhibited performance levels comparable to the combined 
     }
 \end{table}
 
-The static state at the bus stop (BB) exhibited the highest recall (89.7\%) and F1-score (0.878). The boarding movement (BA) achieved recall of 82.4\%, F1-score of 0.855, and \ac{MCC} of 0.785. The alighting class (AB) demonstrated high recall (88.2\%) but lower F1-score (0.828). The static state inside the vehicle (AA) presented the lowest recall (75.0\%) and F1-score (0.791). The overall accuracy reached 83.8\% with an \ac{MCC} of 0.785.
+The bus stop state (BB) achieved the highest recall (89.7\%) and F1-score (0.878), attributable to the consistent low \ac{RSSI} values produced by the physical barrier separating Zone~B from the access point. The boarding movement (BA) achieved strong results (recall: 82.4\%, F1-score: 0.855), benefiting from its distinctive increasing \ac{RSSI} pattern. The alighting class (AB) demonstrated high recall (88.2\%) but lower F1-score (0.828), indicating some false positives from the AA class.
+
+The static state inside the vehicle (AA) presented the lowest recall (75.0\%), primarily due to misclassification as boarding (BA). This confusion arises from the spatial proximity of both classes to the access point, producing similar high-\ac{RSSI} signatures. Although their temporal dynamics differ, AA maintains relatively stable values while BA exhibits an increasing trend, this distinction may be subtle within the 10-second observation window. The overall accuracy of 83.8\% and \ac{MCC} of 0.785 confirm robust multi-class discrimination.
+
+\subsection{Confusion Matrix Analysis}
+
+\autoref{fig:confusion_matrix} presents the normalized confusion matrix for the \ac{GP} classifier.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{images/confusion_matrix_GaussianProcess.pdf}
+    \caption{Confusion matrix for the \ac{GP} classifier, demonstrating strong diagonal dominance with minimal inter-class confusion.}
+    \label{fig:confusion_matrix}
+\end{figure}
+
+The confusion matrix confirms that classification errors concentrate between spatially adjacent classes. The AA--BA confusion reflects \ac{RSSI} magnitude similarity when devices are near the access point, while the AB--BB confusion arises from both classes sharing lower \ac{RSSI} values characteristic of the exterior zone. These patterns suggest that additional features or longer observation windows could improve discrimination between static and transitional states.
+
+\subsection{Model Stability}
+
+\autoref{fig:accuracy_variability} illustrates the \ac{MCC} variability for top classifiers across the three random seeds.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{images/mcc_variability.pdf}
+    \caption{\ac{MCC} variability for top classifiers, in combined dataset, demonstrating consistent ranking stability.}
+    \label{fig:accuracy_variability}
+\end{figure}
+
+Top-performing classifiers maintain consistent relative rankings across seeds. Kernel-based methods (\ac{GP}, SVC) and ensemble approaches (Stacking, CatBoost) displayed the lowest variability, a desirable property for deployment scenarios where model retraining may occur with different data partitions.
+
+\subsection{Feature Importance}
+
+\autoref{fig:feature_importance} illustrates the mean feature importance across interpretable classifiers.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{images/mean_feature_importance.pdf}
+    \caption{Mean feature importance across classifiers, with standard deviation, to the $[0, 1]$ range using min-max normalization}
+    \label{fig:feature_importance}
+\end{figure}
+
+Initial \ac{RSSI} measurements (features 1--3) contribute most significantly to classification decisions, capturing the starting position and enabling immediate distinction between static and transitional states. Feature~1 exhibits the highest mean importance (normalized score: 0.99) with universal agreement among classifiers (standard deviation: 0.009). The elevated importance of feature~6 (mid-trajectory) indicates that classifiers also rely on signal evolution to confirm movement direction, validating the use of sequential \ac{RSSI} measurements over aggregate statistics.
 
 \subsection{Hyperparameter Configuration}
 
-While extensive hyperparameter optimization was conducted for nine classifier families using Optuna (detailed in \autoref{sec:appendix}), the \ac{GP} classifier employed default configurations with a \ac{RBF} kernel, which proved highly effective without explicit tuning. The \ac{GP} configuration is presented in \autoref{tab:hyperparams}.
+While extensive hyperparameter optimization was performed for nine classifier families using Optuna (detailed in \autoref{sec:appendix}), the \ac{GP} classifier employed default configurations with a \ac{RBF} kernel. The \ac{GP} configuration is presented in \autoref{tab:hyperparams}.
 
 \begin{table}[!ht]
     \centering
@@ -81,43 +124,18 @@ While extensive hyperparameter optimization was conducted for nine classifier fa
     \end{tabular}
 \end{table}
 
-The \ac{RBF} kernel automatically learns the optimal length scale parameter during training, adapting to the intrinsic dimensionality of the \ac{RSSI} temporal sequences. Notably, the \ac{GP} classifier achieved top performance without requiring the extensive hyperparameter search applied to other classifiers, suggesting that its probabilistic formulation is particularly well-suited to the \ac{RSSI} feature space.
+The \ac{RBF} kernel automatically learns optimal length scale parameters during training, adapting to the intrinsic dimensionality of \ac{RSSI} sequences. Notably, the \ac{GP} achieved top performance without requiring the extensive hyperparameter search applied to other classifiers, suggesting that its probabilistic formulation is well-suited to the \ac{RSSI} feature space.
 
-\subsection{Confusion Matrix Analysis}
+\subsection{Deployment Considerations}
 
-\autoref{fig:confusion_matrix} presents the normalized confusion matrix for the \ac{GP} classifier, which achieved the best average performance across experimental seeds.
+The experimental results inform practical classifier selection. For high-interference environments with multiple simultaneous devices, gradient boosting methods (CatBoost, XGBoost) and ensemble approaches offer the best balance of accuracy and robustness. In controlled settings with minimal device density, simpler classifiers such as \ac{KNN} achieve superior performance with reduced computational overhead. For general deployment across varying conditions, SVC with \ac{RBF} kernel provides consistent performance with acceptable variance.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{images/confusion_matrix_GaussianProcess.pdf}
-    \caption{Confusion matrix for the \ac{GP} classifier, demonstrating strong diagonal dominance with minimal inter-class confusion.}
-    \label{fig:confusion_matrix}
-\end{figure}
+The notable performance improvement in isolated conditions (\ac{MCC} up to 0.907) indicates that signal interference is the chief limiting factor. Deployment strategies that mitigate interference, like dedicated frequency channels or directional antennas, could markedly enhance performance. Nevertheless, the results under noisy conditions (\ac{MCC} $>$ 0.77) confirm that \ac{RSSI}-based movement classification remains viable as a complementary passenger counting technology even in challenging environments.
 
-The confusion matrix reveals that the primary source of classification errors occurs between spatially adjacent classes. The AA class (remaining inside) is occasionally misclassified as BA (boarding), and minor confusion exists between AB (alighting) and BB (remaining at stop).
+\subsection{Limitations}
 
-\subsection{Model Stability Analysis}
+Several limitations warrant discussion. The controlled experimental environment, while designed to simulate public transport conditions, may not capture all sources of variability present in operational settings, such as passenger density fluctuations, vehicle movement, and diverse access point placements. The 10-second observation window, while suitable for typical boarding and alighting actions, may be insufficient for slower movements; adaptive window lengths could improve accuracy. The limited isolated dataset size ($n = 160$) further constrains reliability estimates for complex classifiers in that scenario.
 
-To evaluate the robustness of classifier rankings across different experimental conditions, \autoref{fig:accuracy_variability} illustrates the accuracy variability for the top classifiers across the three random seeds.
+Regarding energy consumption, the proposed approach imposes minimal overhead on passenger devices, as it leverages existing Wi-Fi associations without requiring additional active scanning. The access point performs passive \ac{RSSI} sampling, introducing no extra power drain on user devices. However, maintaining continuous Wi-Fi connectivity may affect battery life on devices with aggressive power-saving policies. On the infrastructure side, the access point's processing and energy overhead, while generally modest, may increase with higher device densities and more computationally demanding classification models, necessitating efficient implementation for real-time inference. Furthermore, certain router operating systems may enter power-saving modes that could disrupt continuous \ac{RSSI} monitoring; careful firmware configuration is therefore required to ensure uninterrupted data collection. A quantitative characterization of energy impact, on both client devices and access point hardware, across different deployment scales remains an avenue for future investigation.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\linewidth]{images/mcc_variability.pdf}
-    \caption{\ac{MCC} variability for top classifiers, in combined dataset, demonstrating consistent ranking stability.}
-    \label{fig:accuracy_variability}
-\end{figure}
-
-The analysis confirms that top-performing classifiers maintain consistent relative rankings across seeds, with kernel-based methods (\ac{GP}, SVC) and ensemble approaches (Stacking, CatBoost) displaying the lowest variability.
-
-\subsection{Feature Importance}
-
-Analysis of feature importance across interpretable classifiers revealed that the initial \ac{RSSI} measurements (features 1--3) contribute most significantly to classification decisions, as illustrated in \autoref{fig:feature_importance}.
-
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\linewidth]{images/mean_feature_importance.pdf}
-    \caption{Mean feature importance across classifiers, with standard deviation, to the $[0, 1]$ range using min-max normalization}
-    \label{fig:feature_importance}
-\end{figure}
-
-The first \ac{RSSI} sample exhibits the highest importance (normalized score: 2.29), followed by samples at positions 6 and 2.
+Modern mobile operating systems employ \ac{MAC} address randomization during Wi-Fi probe requests, which can complicate device tracking in passive sensing scenarios. Our approach mitigates this challenge by relying on established Wi-Fi associations rather than passive scanning: once a device associates with the access point, it maintains a consistent \ac{MAC} address throughout the session, and the 10-second observation window operates well within a single association period, ensuring stable device identification. Nevertheless, devices that do not actively connect to the access point (or that cycle their \ac{MAC} address between association events) remain untrackable, imposing a practical ceiling on detection coverage. Variations in device hardware and operating system behaviour may further affect \ac{RSSI} reporting consistency in practice.
