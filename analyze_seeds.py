@@ -21,18 +21,18 @@ def setup_plot_style() -> None:
     """Setup publication-ready plot style."""
     plt.rcParams.update(
         {
-            "font.size": 14,
-            "axes.titlesize": 16,
-            "axes.labelsize": 14,
-            "xtick.labelsize": 13,
-            "ytick.labelsize": 13,
-            "legend.fontsize": 12,
+            "font.size": 16,
+            "axes.titlesize": 18,
+            "axes.labelsize": 16,
+            "xtick.labelsize": 50,
+            "ytick.labelsize": 50,
+            "legend.fontsize": 18,
             "figure.titlesize": 18,
             "pdf.fonttype": 42,
             "ps.fonttype": 42,
         }
     )
-    sns.set_context("paper", font_scale=1.5)
+    sns.set_context("paper", font_scale=2.0)
     plt.style.use("seaborn-v0_8-whitegrid")
 
 
@@ -147,7 +147,7 @@ def plot_metric_variability(
     y_pos = range(len(stats))
     colors = sns.color_palette("viridis", len(stats))
 
-    ax.barh(y_pos, stats["Mean"], xerr=stats["Std"], color=colors, capsize=3, alpha=0.8)
+    ax.barh(y_pos, stats["Mean"], xerr=stats["Std"], color=colors, capsize=5, alpha=0.8)
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels(stats["Classifier"])
@@ -156,7 +156,7 @@ def plot_metric_variability(
     ax.invert_yaxis()
 
     for i, (mean, std) in enumerate(zip(stats["Mean"], stats["Std"])):
-        ax.text(mean + std + 0.01, i, f"{mean:.3f}±{std:.3f}", va="center", fontsize=10)
+        ax.text(mean + std + 0.01, i, f"{mean:.3f}±{std:.3f}", va="center", fontsize=18)
 
     plt.tight_layout()
     plt.savefig(output_dir / f"{metric.lower()}_variability.pdf", dpi=300, bbox_inches="tight")

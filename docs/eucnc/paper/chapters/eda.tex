@@ -13,10 +13,12 @@ The temporal evolution of \ac{RSSI} values serves as the primary discriminative 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=\linewidth]{images/rssi_mean_trajectory_per_class.pdf}
-    \caption{Temporal evolution of \ac{RSSI} values over the 10-second observation window for each movement class.}
+    \caption{Temporal evolution of \ac{RSSI} values over the 10-second observation window for each movement class plus the standard deviation.}
     \label{fig:temporal_rssi}
 \end{figure}
 
 Static states (\textbf{AA and BB}) exhibit relatively stable signal levels over time, albeit with distinct average magnitudes due to their spatial separation from the access point. In contrast, transitional movements display clear monotonic trends. The boarding class (\textbf{B~$\rightarrow$~A}) shows a consistent increase in \ac{RSSI} as the devices move toward the access point, while the alighting class (\textbf{A~$\rightarrow$~B}) presents a pronounced decrease as physical obstructions attenuate the signal.
 
 These contrasting temporal patterns offer a compelling rationale for leveraging \ac{RSSI} sequences in movement classification.
+
+Although the standard deviation bands exhibit considerable overlap across classes, indicating substantial signal variability inherent to wireless environments, machine learning classifiers can effectively mitigate this noise by learning the underlying temporal trends rather than relying on instantaneous measurements. By capturing the discriminative patterns in \ac{RSSI} evolution over the observation window, these models can filter out stochastic fluctuations and focus on the systematic differences between movement classes, thereby enabling robust classification despite challenging radio conditions.

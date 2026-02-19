@@ -11,6 +11,7 @@
 \usepackage[english]{babel}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{float}
 \usepackage[printonlyused,withpage]{acronym}
@@ -44,16 +45,15 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 \title{RSSI-Based Passenger Movement Classification for Non-Intrusive Public Transport Monitoring}
 
-\author{\IEEEauthorblockN{Author One\IEEEauthorrefmark{1},
-        Author Two\IEEEauthorrefmark{2}, Author Three\IEEEauthorrefmark{3} and
-        Author Four\IEEEauthorrefmark{4}}
-    \IEEEauthorblockA{Department of Whatever,
-        Whichever University\\
-        Wherever\\
-        Email: \IEEEauthorrefmark{1}author.one@add.on.net,
-        \IEEEauthorrefmark{2}author.two@add.on.net,
-        \IEEEauthorrefmark{3}author.three@add.on.net,
-        \IEEEauthorrefmark{4}author.four@add.on.net}}
+\author{
+    \IEEEauthorblockN{
+        André Ribeiro\IEEEauthorrefmark{1}, Guilherme Matos\IEEEauthorrefmark{1}, Julio Corona\IEEEauthorrefmark{1}, Mário Antunes\IEEEauthorrefmark{1}\IEEEauthorrefmark{2} and Diogo Gomes\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}}
+    \IEEEauthorblockA{
+        \IEEEauthorrefmark{1}Instituto de Telecomunicações, Universidade de Aveiro, Aveiro, Portugal\\
+        E-mails: \{andrepedroribeiro,gui.matos,jcamejo,mario.antunes,dgomes\}@av.it.pt\\
+        \IEEEauthorrefmark{2}DETI, Universidade de Aveiro, Aveiro, Portugal\\
+        E-mails: \{mario.antunes,dgomes\}@ua.pt}
+}
 
 \maketitle
 
@@ -70,13 +70,15 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \input{chapters/experimental-setup}
 \input{chapters/eda}
 \input{chapters/results}
-%\input{chapters/contributions}
 \input{chapters/conclusions}
 
+\section*{Acknowledgment}
+
+This work is supported by the European Regional Development Fund (FEDER), through the Regional Operational Programme of Centre (CENTRO 2030) of the Portugal 2030 framework [Project inMotion with Nr. 21359 (CENTRO2030-FEDER-02225900)];
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
-\clearpage
-\input{chapters/appendix}
+% \clearpage
+% \input{chapters/appendix}
 
 \end{document}

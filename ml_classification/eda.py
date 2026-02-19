@@ -160,15 +160,26 @@ class ExploratoryDataAnalysis:
         )
         plt.close()
 
-        # Part 2: Mean RSSI trajectory per class
+        # Part 2: Mean RSSI trajectory per class with std dev
         fig, ax = plt.subplots(figsize=(10, 6))
-        for cls in df[self.config.target_column].unique():
+        colors = sns.color_palette("husl", df[self.config.target_column].nunique())
+        time_steps = list(range(1, 11))
+        for i, cls in enumerate(df[self.config.target_column].unique()):
             mask = df[self.config.target_column] == cls
-            mean_rssi = df.loc[mask, self.config.feature_columns].mean()
-            ax.plot(range(1, 11), mean_rssi.values, marker="o", label=cls, linewidth=2)
+            class_features = df.loc[mask, self.config.feature_columns]
+            mean_rssi = class_features.mean().values
+            std_rssi = class_features.std().values
+            ax.plot(time_steps, mean_rssi, marker="o", label=cls, linewidth=2, color=colors[i])
+            ax.fill_between(
+                time_steps,
+                mean_rssi - std_rssi,
+                mean_rssi + std_rssi,
+                alpha=0.2,
+                color=colors[i],
+            )
         ax.set_xlabel("Time Step")
         ax.set_ylabel("Mean RSSI (dBm)")
-        ax.set_title("Mean RSSI Trajectory per Class")
+        ax.set_title("Mean RSSI Trajectory per Class (±1 Std Dev)")
         ax.legend()
         ax.grid(True, alpha=0.3)
         plt.tight_layout()

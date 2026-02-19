@@ -1,12 +1,14 @@
 \section{Introduction}\label{sec:introduction}
 
-Accurate passenger flow data is essential for public transport optimization, yet traditional counting approaches---manual surveys, ticketing systems, infrared sensors, and \ac{APC} devices---suffer from high costs, incomplete coverage, and privacy concerns \cite{pronello2023evaluating}. The ubiquity of Wi-Fi-enabled devices offers new avenues for non-intrusive sensing: \ac{RSSI} signatures enable movement pattern recognition while preserving anonymity, using only standard networking equipment \cite{nitti2020iabacus, simoncic2023nonintrusive, agualimpia2024rssi}.
+Accurate passenger flow data is essential for service optimization and network planning, yet traditional counting approaches---manual surveys, ticketing systems, infrared sensors, and \ac{APC} devices---suffer from high costs, incomplete coverage, and privacy concerns \cite{pronello2023evaluating}. The ubiquity of Wi-Fi-enabled devices offers new avenues for non-intrusive sensing: \ac{RSSI} signatures enable movement pattern recognition while preserving anonymity, using only standard networking equipment \cite{nitti2020iabacus, simoncic2023nonintrusive, agualimpia2024rssi}.
 
 This paper proposes a passenger boarding and alighting classification framework based on temporal \ac{RSSI} sequences. By tracking signal evolution over ten-second observation windows, the methodology distinguishes four movement patterns: remaining inside the vehicle, remaining at the stop, boarding, and alighting. Without requiring precise localization or specialized hardware. The principal contributions are:
 \begin{enumerate}
-    \item An \ac{RSSI}-based movement classification framework exploiting temporal signal evolution;
-    \item An experimental dataset comprising approximately 1,360 labelled samples across four classes, collected from four smartphone models spanning three brands;
-    \item A comprehensive evaluation of 38 machine learning classifiers with Bayesian hyperparameter optimization;
-    \item Feature importance analysis revealing the discriminative role of initial and mid-trajectory \ac{RSSI} measurements;
-    \item A privacy-preserving sensing approach that operates without device identification.
+  \item An \ac{RSSI}-based movement classification framework exploiting temporal signal evolution;
+  \item An experimental dataset comprising approximately 1,360 labelled samples across four classes, collected from four smartphone models spanning three brands;
+  \item A comprehensive evaluation of 38 machine learning classifiers with Bayesian hyperparameter optimization;
+  \item Feature importance analysis revealing the discriminative role of initial and mid-trajectory \ac{RSSI} measurements;
+  \item A privacy-preserving sensing approach that operates without device identification.
 \end{enumerate}
+
+The remainder of this paper reviews related work (\autoref{sec:related-work}), describes the experimental setup (\autoref{sec:experimental-setup}), presents exploratory data analysis (\autoref{sec:eda}), presents results (\autoref{sec:results}), and concludes with future directions (\autoref{sec:conclusions}).

@@ -11,10 +11,10 @@ Controlled experiments were carried out in an indoor environment that emulates p
 The environment was divided into two zones (\autoref{fig:experimental_setup}). Zone~A (Vehicle Interior) consisted of a closed room simulating a bus interior, with a Wi-Fi access point positioned adjacent to the doorway. Zone~B (Bus Stop) was the corridor outside, representing the boarding area. The wall and door between zones introduce signal attenuation, generating distinctive \ac{RSSI} patterns during transitions.
 
 \begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.7\linewidth]{images/experimental_setup.png}
-    \caption{Experimental environment simulating a public transport scenario.}
-    \label{fig:experimental_setup}
+  \centering
+  \includegraphics[width=\linewidth]{images/experimental_setup.png}
+  \caption{Experimental environment simulating a public transport scenario.}
+  \label{fig:experimental_setup}
 \end{figure}
 
 \subsubsection{Data Acquisition}
@@ -79,11 +79,13 @@ To ensure fair comparison and optimal performance across classifier families, sy
 
 For each tunable classifier, extensive hyperparameter searches were performed with budgets ranging from 50 to over 1,300 trials depending on model complexity. The optimization objective was accuracy during 5-fold stratified cross-validation on the training set. This approach yields classifier configurations specifically adapted to the \ac{RSSI} feature space characteristics.
 
-The hyperparameter search spaces were defined based on recommended ranges from the literature and practical considerations. Ensemble methods (Random Forest, Extra Trees, Gradient Boosting variants) were tuned over tree depth, number of estimators, and regularization parameters. \acp{SVM} were optimized for the regularization parameter $C$ and kernel coefficients. Neural network configurations explored layer architectures, learning rates, and regularization strengths. The complete hyperparameter search spaces and optimal configurations for each classifier are documented in the Appendix \ref{sec:appendix}.
+The hyperparameter search spaces were defined based on recommended ranges from the literature and practical considerations. Ensemble methods (Random Forest, Extra Trees, Gradient Boosting variants) were tuned over tree depth, number of estimators, and regularization parameters. \acp{SVM} were optimized for the regularization parameter $C$ and kernel coefficients. Neural network configurations explored layer architectures, learning rates, and regularization strengths.
+
+The complete hyperparameter search spaces and the optimal configurations identified for each classifier are provided as supplementary material and are available on GitHub \cite{githubrepo}.
 
 \subsubsection{Performance Metrics}
 
-Four complementary metrics were employed to provide comprehensive performance characterization:
+Four complementary metrics were employed to provide a comprehensive performance characterization:
 
 \textbf{Accuracy:} The proportion of correctly classified samples. While intuitive, accuracy can be misleading for imbalanced datasets.
 
@@ -91,4 +93,4 @@ Four complementary metrics were employed to provide comprehensive performance ch
 
 \textbf{Balanced Accuracy:} The arithmetic mean of per-class recall values, ensuring equal contribution from each class regardless of prevalence.
 
-\textbf{Matthews Correlation Coefficient (MCC):} Selected as the primary evaluation criterion, as this metric offers a reliable and balanced evaluation of classification models, particularly in scenarios involving imbalanced datasets or when assessing performance across multiple classes~\cite{chicco2023mcc}. \ac{MCC} ranges from $-1$ to $+1$, producing high scores only when all confusion matrix categories achieve strong results.
+\textbf{Matthews Correlation Coefficient (MCC):} Selected as the primary evaluation criterion, as this metric offers a reliable and balanced evaluation of classification models, particularly in scenarios involving imbalanced datasets or when assessing performance across multiple classes~\cite{chicco2020mcc, chicco2023mcc}. \ac{MCC} ranges from $-1$ to $+1$, producing high scores only when all confusion matrix categories achieve strong results.
