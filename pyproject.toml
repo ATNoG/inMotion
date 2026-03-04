@@ -86,3 +86,8 @@ pythonVersion = "3.13"
 pythonPlatform = "All"
 reportUnknownMemberType = "none"
 reportUnknownParameterType = "none"
+
+[tool.uv.workspace]
+members = [
+    "demo",
+]
