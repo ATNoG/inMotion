@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>inMotion Child</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="page" data-role="child">
+      <div class="header">
+        <div class="title">inMotion • Child view</div>
+        <div id="childStatusBadge" class="badge">waiting registration</div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Join session</h2>
+          <div class="input-row">
+            <input
+              id="codenameInput"
+              placeholder="Your codename (e.g. Child-1)"
+            />
+            <button id="registerBtn" class="primary">Register</button>
+          </div>
+          <div id="childInfo" class="small"></div>
+          <div id="registerStatus" class="status-line">
+            MAC detection pending
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Live RSSI (last 10 samples, dBm)</h2>
+          <canvas id="rssiCanvas" width="460" height="220"></canvas>
+          <div id="sampleStatus" class="status-line">
+            Prediction appears after first 10 samples
+          </div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top: 1rem">
+        <h2>Latest prediction</h2>
+        <div class="prediction">
+          <div id="predMain" class="main">—</div>
+          <div id="predConf" class="small">confidence: —</div>
+          <div id="predProb"></div>
+        </div>
+      </section>
+
+      <div class="link-row"><a href="/teacher">Open teacher view</a></div>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

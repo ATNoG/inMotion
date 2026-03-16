@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
+class DemoConfig:
+    root_dir: Path
+    model_path: Path
+    fallback_csv_path: Path
+    scan_interval_seconds: float
+    scan_mode: str
+    router_ip: str
+    router_user: str
+    router_pass: str
+    router_key_file: str
+    router_port: int
+    router_command_mode: str
+    classes: tuple[str, ...] = ("AA", "AB", "BA", "BB")
+    window_size: int = 10
+
+
+def load_config() -> DemoConfig:
+    app_dir = Path(__file__).resolve().parent
+    demo_dir = app_dir.parent
+    root_dir = demo_dir.parent
+
+    model_path = Path(os.getenv("INMOTION_MODEL_PATH", root_dir / "models" / "RandomForest.joblib"))
+    fallback_csv_path = Path(os.getenv("INMOTION_FALLBACK_CSV", root_dir / "dataset_only_pure.csv"))
+
+    return DemoConfig(
+        root_dir=root_dir,
+        model_path=model_path,
+        fallback_csv_path=fallback_csv_path,
+        scan_interval_seconds=float(os.getenv("INMOTION_SCAN_INTERVAL", "1.0")),
+        scan_mode=os.getenv("INMOTION_SCAN_MODE", "auto"),
+        router_ip=os.getenv("INMOTION_ROUTER_IP", ""),
+        router_user=os.getenv("INMOTION_ROUTER_USER", "root"),
+        router_pass=os.getenv("INMOTION_ROUTER_PASS", ""),
+        router_key_file=os.getenv("INMOTION_ROUTER_KEY_FILE", ""),
+        router_port=int(os.getenv("INMOTION_ROUTER_PORT", "22")),
+        router_command_mode=os.getenv("INMOTION_ROUTER_COMMAND_MODE", "auto"),
+    )

@@ -1,0 +1,1 @@
+"""inMotion demo app package."""

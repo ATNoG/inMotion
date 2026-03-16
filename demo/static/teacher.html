@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>inMotion Teacher</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="page" data-role="teacher">
+      <div class="header">
+        <div class="title">inMotion • Teacher view</div>
+        <div id="scannerBadge" class="badge">scanner: unknown</div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Session controls</h2>
+          <div class="controls">
+            <button id="startBtn" class="primary">Start monitoring</button>
+            <button id="stopBtn">Stop monitoring</button>
+          </div>
+          <div id="teacherState" class="status-line">waiting registration</div>
+          <div class="link-row"><a href="/child">Open child view</a></div>
+        </section>
+
+        <section class="card">
+          <h2>Children roster</h2>
+          <table class="roster">
+            <thead>
+              <tr>
+                <th>Codename</th>
+                <th>MAC</th>
+                <th>Status</th>
+                <th>Samples</th>
+                <th>Prediction</th>
+              </tr>
+            </thead>
+            <tbody id="rosterBody"></tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

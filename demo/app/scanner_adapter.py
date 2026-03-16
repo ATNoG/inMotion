@@ -1,0 +1,265 @@
+from __future__ import annotations
+
+import asyncio
+import contextlib
+import csv
+import importlib.util
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Literal
+
+from .config import DemoConfig
+
+
+@dataclass
+class ScannerEvent:
+    timestamp: datetime
+    mac: str
+    rssi: float
+    source: Literal["live", "replay"]
+
+
+class ScannerAdapter:
+    def __init__(self, config: DemoConfig) -> None:
+        self._config = config
+        self._running = False
+        self._task: asyncio.Task | None = None
+        self._scanner = None
+        self._mode: str = "live"
+        self._latest_seen: dict[str, datetime] = {}
+        self._replay_values = self._load_replay_values(config.fallback_csv_path)
+        self._replay_idx_by_mac: dict[str, int] = {}
+        self._reconnect_counter = 0
+        self._live_ready_sent = False
+        self._replay_ready_sent = False
+
+    @property
+    def mode(self) -> str:
+        return self._mode
+
+    def get_detected_macs(self) -> list[str]:
+        return [
+            mac
+            for mac, _ in sorted(
+                self._latest_seen.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        ]
+
+    def detect_unassigned_mac(self, assigned_macs: set[str]) -> str | None:
+        for mac in self.get_detected_macs():
+            if mac not in assigned_macs:
+                return mac
+        return None
+
+    async def start(
+        self,
+        on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
+        on_status_event: Callable[[dict], Awaitable[None] | None],
+        get_target_macs: Callable[[], list[str]],
+    ) -> None:
+        if self._running:
+            return
+        self._running = True
+        self._task = asyncio.create_task(
+            self._run_loop(on_rssi_event, on_status_event, get_target_macs)
+        )
+
+    async def stop(self) -> None:
+        self._running = False
+        if self._task is not None:
+            self._task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await self._task
+
+    async def _run_loop(
+        self,
+        on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
+        on_status_event: Callable[[dict], Awaitable[None] | None],
+        get_target_macs: Callable[[], list[str]],
+    ) -> None:
+        await self._emit_status(on_status_event, "connect", "live", "Scanner connecting")
+
+        while self._running:
+            if self._mode == "live":
+                try:
+                    await self._tick_live(on_rssi_event, get_target_macs)
+                    if not self._live_ready_sent:
+                        await self._emit_status(
+                            on_status_event,
+                            "start",
+                            "live",
+                            "Live scanner active",
+                        )
+                        self._live_ready_sent = True
+                        self._replay_ready_sent = False
+                except Exception as exc:
+                    await self._emit_status(on_status_event, "error", "live", str(exc))
+                    self._mode = "replay"
+                    self._reconnect_counter = 0
+                await asyncio.sleep(self._config.scan_interval_seconds)
+            else:
+                await self._tick_replay(on_rssi_event, get_target_macs)
+                if not self._replay_ready_sent:
+                    await self._emit_status(
+                        on_status_event,
+                        "start",
+                        "replay",
+                        "Replay fallback active",
+                    )
+                    self._replay_ready_sent = True
+                    self._live_ready_sent = False
+                await asyncio.sleep(self._config.scan_interval_seconds)
+                self._reconnect_counter += 1
+                if self._reconnect_counter >= 15:
+                    self._reconnect_counter = 0
+                    try:
+                        await self._tick_live(on_rssi_event, get_target_macs)
+                        self._mode = "live"
+                        await self._emit_status(
+                            on_status_event,
+                            "recover",
+                            "live",
+                            "Recovered live scanner",
+                        )
+                    except Exception:
+                        pass
+
+    async def _tick_live(
+        self,
+        on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
+        get_target_macs: Callable[[], list[str]],
+    ) -> None:
+        scanner = await self._ensure_live_scanner()
+        all_clients = await asyncio.to_thread(scanner.get_all_wifi_clients, False)
+        if not isinstance(all_clients, dict):
+            raise RuntimeError("Unexpected scanner output")
+
+        target_macs = {m.lower() for m in get_target_macs()}
+        aggregated: dict[str, list[float]] = {}
+
+        for clients in all_clients.values():
+            if not isinstance(clients, list):
+                continue
+            for client in clients:
+                mac = str(client.get("mac", "")).lower().strip()
+                rssi_raw = client.get("rssi")
+                if not mac:
+                    continue
+                try:
+                    rssi = float(rssi_raw)
+                except (TypeError, ValueError):
+                    continue
+                self._latest_seen[mac] = datetime.now(UTC)
+                aggregated.setdefault(mac, []).append(rssi)
+
+        for mac, values in aggregated.items():
+            if target_macs and mac not in target_macs:
+                continue
+            avg_rssi = float(sum(values) / len(values))
+            event = ScannerEvent(
+                timestamp=datetime.now(UTC),
+                mac=mac,
+                rssi=avg_rssi,
+                source="live",
+            )
+            maybe_task = on_rssi_event(event)
+            if asyncio.iscoroutine(maybe_task):
+                await maybe_task
+
+    async def _tick_replay(
+        self,
+        on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
+        get_target_macs: Callable[[], list[str]],
+    ) -> None:
+        target_macs = get_target_macs()
+        if not target_macs:
+            return
+
+        for mac in target_macs:
+            idx = self._replay_idx_by_mac.get(mac, 0)
+            value = self._replay_values[idx % len(self._replay_values)]
+            self._replay_idx_by_mac[mac] = idx + 1
+            self._latest_seen[mac] = datetime.now(UTC)
+            event = ScannerEvent(
+                timestamp=datetime.now(UTC),
+                mac=mac,
+                rssi=value,
+                source="replay",
+            )
+            maybe_task = on_rssi_event(event)
+            if asyncio.iscoroutine(maybe_task):
+                await maybe_task
+
+    async def _ensure_live_scanner(self):
+        if self._scanner is not None:
+            return self._scanner
+        if not self._config.router_ip:
+            raise RuntimeError("Router not configured; using replay fallback")
+
+        scanner_script = self._config.root_dir / "wavecom_files" / "wifi_scan.py"
+        if not scanner_script.exists():
+            raise RuntimeError("wifi_scan.py not found")
+
+        spec = importlib.util.spec_from_file_location("wifi_scan", scanner_script)
+        if spec is None or spec.loader is None:
+            raise RuntimeError("Cannot import wifi scanner module")
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        scanner_cls = getattr(module, "OpenWrtWiFiScanner", None)
+        if scanner_cls is None:
+            raise RuntimeError("OpenWrtWiFiScanner class missing")
+
+        self._scanner = scanner_cls(
+            router_ip=self._config.router_ip,
+            username=self._config.router_user,
+            password=self._config.router_pass or None,
+            key_file=self._config.router_key_file or None,
+            port=self._config.router_port,
+            mode=self._config.router_command_mode,
+        )
+        return self._scanner
+
+    def _load_replay_values(self, csv_path: Path) -> list[float]:
+        default_values = [-52.0, -53.0, -55.0, -57.0, -54.0, -50.0, -48.0, -49.0, -51.0, -53.0]
+        if not csv_path.exists():
+            return default_values
+
+        values: list[float] = []
+        with csv_path.open(newline="") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                for i in range(1, 11):
+                    key = str(i)
+                    if key not in row:
+                        continue
+                    try:
+                        values.append(float(row[key]))
+                    except (TypeError, ValueError):
+                        continue
+                if len(values) >= 500:
+                    break
+
+        return values if values else default_values
+
+    async def _emit_status(
+        self,
+        callback: Callable[[dict], Awaitable[None] | None],
+        status: str,
+        mode: str,
+        message: str,
+    ) -> None:
+        payload = {
+            "event_type": "status",
+            "timestamp": datetime.now(UTC),
+            "status": status,
+            "mode": mode,
+            "message": message,
+        }
+        maybe_task = callback(payload)
+        if asyncio.iscoroutine(maybe_task):
+            await maybe_task
