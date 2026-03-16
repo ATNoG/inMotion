@@ -199,7 +199,7 @@ async def get_state() -> SessionStateResponse:
 
 
 @app.get("/api/child/detect-mac", response_model=DetectMacResponse)
-async def detect_mac(codename: str = Query(default="child")) -> DetectMacResponse:
+async def detect_mac(codename: str = Query(default="crianca")) -> DetectMacResponse:
     async with state_lock:
         assigned = set(store.get_registered_macs())
         detected = scanner.detect_unassigned_mac(assigned)
@@ -231,7 +231,7 @@ async def register_child(req: ChildRegisterRequest) -> ChildSessionView:
             "timestamp": datetime.now(UTC).isoformat(),
             "status": "recover",
             "mode": scanner.mode,
-            "message": f"Child {child.codename} registered ({child.mac})",
+            "message": f"Criança {child.codename} registada ({child.mac})",
         }
     )
     return child_view
@@ -248,7 +248,7 @@ async def teacher_start() -> TeacherControlResponse:
             timestamp=datetime.now(UTC),
             status="start",
             mode="live" if scanner.mode == "live" else "replay",
-            message="Teacher started monitoring",
+            message="Professor iniciou a monitorização",
         ).model_dump(mode="json")
     )
     return TeacherControlResponse(monitor=monitor)
@@ -265,10 +265,38 @@ async def teacher_stop() -> TeacherControlResponse:
             timestamp=datetime.now(UTC),
             status="recover",
             mode="live" if scanner.mode == "live" else "replay",
-            message="Teacher stopped monitoring",
+            message="Professor parou a monitorização",
         ).model_dump(mode="json")
     )
     return TeacherControlResponse(monitor=monitor)
+
+
+@app.post("/api/test-router/start")
+async def test_router_start() -> dict:
+    scanner.set_test_mode(True)
+    await _publish(
+        StatusEvent(
+            timestamp=datetime.now(UTC),
+            status="start",
+            mode="replay",
+            message="Modo de teste do router ativado",
+        ).model_dump(mode="json")
+    )
+    return {"ok": True, "test_mode": True}
+
+
+@app.post("/api/test-router/stop")
+async def test_router_stop() -> dict:
+    scanner.set_test_mode(False)
+    await _publish(
+        StatusEvent(
+            timestamp=datetime.now(UTC),
+            status="recover",
+            mode="live" if scanner.mode == "live" else "replay",
+            message="Modo de teste do router desativado",
+        ).model_dump(mode="json")
+    )
+    return {"ok": True, "test_mode": False}
 
 
 async def _send_stream_events(websocket: WebSocket, child_id: str | None) -> None:

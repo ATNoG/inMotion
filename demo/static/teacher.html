@@ -1,46 +1,173 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-PT" data-bs-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>inMotion Teacher</title>
+    <title>inMotion Professor</title>
+    <link rel="stylesheet" href="/static/vendor/bootstrap.min.css" />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body>
-    <div class="page" data-role="teacher">
-      <div class="header">
-        <div class="title">inMotion • Teacher view</div>
-        <div id="scannerBadge" class="badge">scanner: unknown</div>
+  <body class="bg-light">
+    <div class="container py-4 page" data-role="teacher">
+      <div
+        class="d-flex justify-content-between align-items-center mb-4 header"
+      >
+        <h1 class="h3 mb-0 title text-dark">inMotion &bull; Vista Professor</h1>
+        <span
+          id="scannerBadge"
+          class="badge rounded-pill text-bg-secondary px-3 py-2"
+          >scanner: desconhecido</span
+        >
       </div>
 
-      <div class="grid">
-        <section class="card">
-          <h2>Session controls</h2>
-          <div class="controls">
-            <button id="startBtn" class="primary">Start monitoring</button>
-            <button id="stopBtn">Stop monitoring</button>
-          </div>
-          <div id="teacherState" class="status-line">waiting registration</div>
-          <div class="link-row"><a href="/child">Open child view</a></div>
-        </section>
+      <div class="row g-4">
+        <!-- Controlos da sessão -->
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+              <h2 class="h5 card-title mb-3">Controlos da sessão</h2>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button id="startBtn" class="btn btn-primary">
+                  Iniciar monitorização
+                </button>
+                <button id="stopBtn" class="btn btn-outline-secondary">
+                  Parar monitorização
+                </button>
+              </div>
+              <div id="teacherState" class="text-muted small mb-3">
+                a aguardar registos
+              </div>
 
-        <section class="card">
-          <h2>Children roster</h2>
-          <table class="roster">
-            <thead>
-              <tr>
-                <th>Codename</th>
-                <th>MAC</th>
-                <th>Status</th>
-                <th>Samples</th>
-                <th>Prediction</th>
-              </tr>
-            </thead>
-            <tbody id="rosterBody"></tbody>
-          </table>
-        </section>
+              <hr class="my-3" />
+
+              <h3 class="h6 mb-3 text-secondary">
+                Simulador de Router (Teste)
+              </h3>
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <button
+                  id="testRouterStartBtn"
+                  class="btn btn-sm btn-outline-success"
+                >
+                  Ativar Mock Router
+                </button>
+                <button
+                  id="testRouterStopBtn"
+                  class="btn btn-sm btn-outline-danger"
+                >
+                  Desativar Mock Router
+                </button>
+              </div>
+
+              <div class="mt-auto pt-2">
+                <a
+                  href="/child"
+                  class="text-decoration-none fw-medium"
+                  target="_blank"
+                  >Abrir vista da criança &rarr;</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de crianças -->
+        <div class="col-md-6">
+          <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+              <h2 class="h5 card-title mb-3">Lista de crianças</h2>
+              <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nome de código</th>
+                      <th>MAC</th>
+                      <th>Estado</th>
+                      <th>Amostras</th>
+                      <th>Previsão</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rosterBody">
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-3">
+                        Sem crianças registadas
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tutorial rápido -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <h2 class="h5 card-title mb-3">Tutorial rápido para aula</h2>
+              <ol class="mb-0 text-secondary">
+                <li class="mb-1">
+                  Ligar o telemóvel do aluno ao mesmo router WiFi usado na demo.
+                </li>
+                <li class="mb-1">
+                  Abrir a vista da criança e registar com nome de código.
+                </li>
+                <li class="mb-1">
+                  Pedir ao aluno para caminhar mantendo tráfego ativo (ex.:
+                  abrir uma página).
+                </li>
+                <li class="mb-1">
+                  Clicar em <strong>Iniciar monitorização</strong> para começar
+                  a captura de 10 segundos.
+                </li>
+                <li>
+                  Após terminar a captura, a previsão aparece na interface da
+                  criança.
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arquitetura -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-body">
+              <h2 class="h5 card-title mb-3">Arquitetura</h2>
+              <div
+                class="d-flex align-items-center flex-wrap gap-2 mb-2 font-monospace small"
+              >
+                <div class="border rounded px-2 py-1 bg-light">
+                  RSSI do telemóvel
+                </div>
+                <div class="text-muted text-center">&rarr;</div>
+                <div class="border rounded px-2 py-1 bg-light">
+                  Adaptador de scanner
+                </div>
+                <div class="text-muted text-center">&rarr;</div>
+                <div class="border rounded px-2 py-1 bg-light">
+                  Buffer de sessão (10)
+                </div>
+                <div class="text-muted text-center">&rarr;</div>
+                <div class="border rounded px-2 py-1 bg-light">
+                  Modelo RandomForest
+                </div>
+                <div class="text-muted text-center">&rarr;</div>
+                <div class="border rounded px-2 py-1 bg-light">
+                  UI Professor + Criança
+                </div>
+              </div>
+              <div class="text-muted small">
+                O modo ao vivo no router é preferencial, com fallback automático
+                por replay para robustez offline.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <script src="/static/vendor/bootstrap.bundle.min.js"></script>
     <script src="/static/app.js"></script>
   </body>
 </html>

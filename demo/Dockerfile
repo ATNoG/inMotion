@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM astral/uv:python3.14-bookworm-slim
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements first for better caching
 COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .
+RUN uv sync
 
 # Copy application code
 COPY . .
@@ -24,4 +24,4 @@ RUN mkdir -p models
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

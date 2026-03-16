@@ -2,8 +2,7 @@
 
 ## UI
 
-- [ ] Show a tutorial to someone connects to the WiFi, any router.
-- [ ]
+- [x] Show a tutorial to someone connects to the WiFi, any router.
 
 ## Model Inference
 
@@ -17,9 +16,9 @@
 
 ## Some funny things
 
-- [ ] Show the Architecture
-- [ ] Show the data, maybe a graph of the signal strength, or something like that
-- [ ] Show the model, maybe a simple diagram of the neural network, or something like that
-- [ ] Show the prediction, maybe a simple graph of the predicted position, or something like that
-- [ ] Show the accuracy, maybe a simple graph of the accuracy over time, or something like that
-- [ ] Show the softmax result, like the confidence of each prediction
+- [x] Show the Architecture
+- [x] Show the data, maybe a graph of the signal strength, or something like that
+- [x] Show the model, maybe a simple diagram of the neural network, or something like that
+- [x] Show the prediction, maybe a simple graph of the predicted position, or something like that
+- [x] Show the accuracy, maybe a simple graph of the accuracy over time, or something like that
+- [x] Show the softmax result, like the confidence of each prediction

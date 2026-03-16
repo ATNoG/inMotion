@@ -7,12 +7,13 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.133.1",
     "gunicorn>=25.1.0",
-    "uvicorn>=0.41.0",
+    "uvicorn[standard]>=0.41.0",
     "scikit-learn>=1.5.0",
     "joblib>=1.4.0",
     "numpy>=2.0.0",
     "polars>=1.0.0",
     "pydantic>=2.0.0",
+    "watchfiles>=1.1.1",
 ]
 
 [tool.setuptools]
