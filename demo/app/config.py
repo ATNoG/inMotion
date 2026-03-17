@@ -5,11 +5,24 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+def _resolve_path(env_key: str, candidates: list[Path]) -> Path:
+    env_value = os.getenv(env_key)
+    if env_value:
+        return Path(env_value)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return candidates[0]
+
+
 @dataclass(frozen=True)
 class DemoConfig:
     root_dir: Path
     model_path: Path
     fallback_csv_path: Path
+    test_router_csv_path: Path
     scan_interval_seconds: float
     scan_mode: str
     router_ip: str
@@ -27,13 +40,34 @@ def load_config() -> DemoConfig:
     demo_dir = app_dir.parent
     root_dir = demo_dir.parent
 
-    model_path = Path(os.getenv("INMOTION_MODEL_PATH", root_dir / "models" / "RandomForest.joblib"))
-    fallback_csv_path = Path(os.getenv("INMOTION_FALLBACK_CSV", root_dir / "dataset_only_pure.csv"))
+    model_path = _resolve_path(
+        "INMOTION_MODEL_PATH",
+        [
+            demo_dir / "models" / "GaussianProcess.joblib",
+            root_dir / "models" / "GaussianProcess.joblib",
+        ],
+    )
+    fallback_csv_path = _resolve_path(
+        "INMOTION_FALLBACK_CSV",
+        [
+            demo_dir / "dataset_only_pure.csv",
+            root_dir / "dataset_only_pure.csv",
+        ],
+    )
+    test_router_csv_path = _resolve_path(
+        "INMOTION_TEST_ROUTER_CSV",
+        [
+            demo_dir / "dataset.csv",
+            root_dir / "dataset.csv",
+            fallback_csv_path,
+        ],
+    )
 
     return DemoConfig(
         root_dir=root_dir,
         model_path=model_path,
         fallback_csv_path=fallback_csv_path,
+        test_router_csv_path=test_router_csv_path,
         scan_interval_seconds=float(os.getenv("INMOTION_SCAN_INTERVAL", "1.0")),
         scan_mode=os.getenv("INMOTION_SCAN_MODE", "auto"),
         router_ip=os.getenv("INMOTION_ROUTER_IP", ""),

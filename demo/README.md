@@ -1,19 +1,19 @@
-# Demo inMotion RSSI ao Vivo (Professor + Criança)
+# Demo inMotion RSSI ao Vivo (Investigador + Participante)
 
-Demo local baseada em FastAPI, com sessões multi-criança, streaming RSSI em tempo real e previsões com janela deslizante de 10 amostras.
+Demo local baseada em FastAPI, com sessões multi-participante, streaming RSSI em tempo real e previsões com janela deslizante de 10 amostras.
 
 ## O que está incluído
 
 - **Backend modular em FastAPI**:
-  - `demo/app/session_store.py`: estado da sessão de monitorização e das crianças
+  - `demo/app/session_store.py`: estado da sessão de monitorização e dos participantes
   - `demo/app/scanner_adapter.py`: scanner ao vivo + fallback automático por replay
   - `demo/app/inference.py`: carregamento de `models/RandomForest.joblib` e inferência
   - `demo/app/event_hub.py`: distribuição de eventos para WebSocket/SSE
 - **UI local dividida**:
-  - `/teacher`: controlo start/stop e lista de crianças
+  - `/teacher`: controlo start/stop e lista de participantes
   - `/child`: registo, deteção de MAC, gráfico RSSI e previsão
 - **Regras de buffer determinísticas**:
-  - buffer por criança com 10 RSSI
+  - buffer por participante com 10 RSSI
   - primeira previsão após 10 amostras
   - atualizações seguintes por janela deslizante
 - **Resiliência offline**:
@@ -36,8 +36,8 @@ uv run python demo/main.py
 
 Abrir:
 
-- Vista professor: `http://127.0.0.1:8000/teacher`
-- Vista criança: `http://127.0.0.1:8000/child`
+- Vista investigador: `http://127.0.0.1:8000/teacher`
+- Vista participante: `http://127.0.0.1:8000/child`
 
 Se a porta `8000` estiver ocupada:
 
@@ -70,7 +70,7 @@ uv run python demo/main.py
 
 ## Contratos de API
 
-### Registo da criança e identidade
+### Registo do participante e identidade
 
 1. Detetar MAC:
 
@@ -78,7 +78,7 @@ uv run python demo/main.py
 GET /api/child/detect-mac?codename=Alice
 ```
 
-2. Registar criança:
+2. Registar participante:
 
 ```http
 POST /api/child/register
@@ -87,7 +87,7 @@ Content-Type: application/json
 {"codename":"Alice","mac":"rp:63:84:e2:b2:18:4b"}
 ```
 
-### Controlo do professor
+### Controlo do investigador
 
 - `POST /api/teacher/start`
 - `POST /api/teacher/stop`
@@ -101,19 +101,19 @@ Content-Type: application/json
 
 ## Transporte em tempo real
 
-- WebSocket professor: `/ws/teacher`
-- WebSocket criança: `/ws/child/{child_id}`
+- WebSocket investigador: `/ws/teacher`
+- WebSocket participante: `/ws/child/{child_id}`
 - SSE compatível: `/events`
 
 ## Fluxo de operação (aula)
 
 1. Iniciar backend (`uv run python demo/main.py`).
 2. Abrir vistas de professor e criança.
-3. Na criança: registar codename + MAC.
-4. No professor: clicar em **Iniciar monitorização**.
+3. No participante: registar codename + MAC.
+4. No investigador: clicar em **Iniciar monitorização**.
 5. Pedir ao aluno para caminhar com tráfego ativo no telemóvel.
 6. Aguardar 10 segundos para fim da captura.
-7. Ver previsão e probabilidades na vista criança.
+7. Ver previsão e probabilidades na vista participante.
 
 ## Resolução de problemas
 

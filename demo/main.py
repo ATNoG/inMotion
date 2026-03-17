@@ -154,7 +154,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 @app.get("/")
 def root() -> RedirectResponse:
-    return RedirectResponse(url="/teacher")
+    return RedirectResponse(url="/overview")
 
 
 @app.get("/teacher")
@@ -165,6 +165,11 @@ def teacher_page() -> FileResponse:
 @app.get("/child")
 def child_page() -> FileResponse:
     return FileResponse(static_dir / "child.html")
+
+
+@app.get("/overview")
+def overview_page() -> FileResponse:
+    return FileResponse(static_dir / "overview.html")
 
 
 @app.get("/health")
@@ -199,14 +204,14 @@ async def get_state() -> SessionStateResponse:
 
 
 @app.get("/api/child/detect-mac", response_model=DetectMacResponse)
-async def detect_mac(codename: str = Query(default="crianca")) -> DetectMacResponse:
+async def detect_mac(codename: str = Query(default="participante")) -> DetectMacResponse:
     async with state_lock:
         assigned = set(store.get_registered_macs())
         detected = scanner.detect_unassigned_mac(assigned)
         if detected:
             return DetectMacResponse(mac=detected, source="live")
 
-        if scanner.mode == "replay":
+        if scanner.mode in {"replay", "replay-test"}:
             return DetectMacResponse(mac=store.deterministic_replay_mac(codename), source="replay")
 
         return DetectMacResponse(mac=None, source="none")
@@ -231,7 +236,7 @@ async def register_child(req: ChildRegisterRequest) -> ChildSessionView:
             "timestamp": datetime.now(UTC).isoformat(),
             "status": "recover",
             "mode": scanner.mode,
-            "message": f"Criança {child.codename} registada ({child.mac})",
+            "message": f"Participante {child.codename} registado ({child.mac})",
         }
     )
     return child_view
@@ -248,7 +253,7 @@ async def teacher_start() -> TeacherControlResponse:
             timestamp=datetime.now(UTC),
             status="start",
             mode="live" if scanner.mode == "live" else "replay",
-            message="Professor iniciou a monitorização",
+            message="Investigador iniciou a monitorização",
         ).model_dump(mode="json")
     )
     return TeacherControlResponse(monitor=monitor)
@@ -265,7 +270,7 @@ async def teacher_stop() -> TeacherControlResponse:
             timestamp=datetime.now(UTC),
             status="recover",
             mode="live" if scanner.mode == "live" else "replay",
-            message="Professor parou a monitorização",
+            message="Investigador parou a monitorização",
         ).model_dump(mode="json")
     )
     return TeacherControlResponse(monitor=monitor)
@@ -278,8 +283,8 @@ async def test_router_start() -> dict:
         StatusEvent(
             timestamp=datetime.now(UTC),
             status="start",
-            mode="replay",
-            message="Modo de teste do router ativado",
+            mode="replay-test",
+            message="Modo de teste do router ativado (dataset.csv aleatório)",
         ).model_dump(mode="json")
     )
     return {"ok": True, "test_mode": True}
@@ -292,7 +297,7 @@ async def test_router_stop() -> dict:
         StatusEvent(
             timestamp=datetime.now(UTC),
             status="recover",
-            mode="live" if scanner.mode == "live" else "replay",
+            mode=scanner.mode,
             message="Modo de teste do router desativado",
         ).model_dump(mode="json")
     )

@@ -1,169 +1,75 @@
 <!doctype html>
-<html lang="pt-PT" data-bs-theme="light">
+<html lang="pt-PT">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>inMotion Criança</title>
-    <link rel="stylesheet" href="/static/vendor/bootstrap.min.css" />
+    <title>inMotion Participante</title>
+    <link rel="stylesheet" href="/static/vendor/tailwind.min.css" />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body class="bg-light">
-    <div class="container py-4 page" data-role="child">
-      <div
-        class="d-flex justify-content-between align-items-center mb-4 header"
-      >
-        <h1 class="h3 mb-0 title text-dark">inMotion &bull; Vista Criança</h1>
-        <span
-          id="childStatusBadge"
-          class="badge rounded-pill text-bg-secondary px-3 py-2"
-          >a aguardar registo</span
-        >
+  <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 text-gray-900 antialiased">
+    <div class="w-full min-h-screen p-6 md:p-8" data-role="child">
+      <header class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 shadow-md backdrop-blur">
+        <h1 class="text-xl font-bold text-blue-800 md:text-2xl">inMotion &bull; Vista Participante</h1>
+        <nav class="flex items-center gap-4">
+          <a href="/overview" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Vista geral</a>
+          <span id="childStatusBadge" class="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800">a aguardar registo</span>
+        </nav>
+      </header>
+
+      <section class="mb-8 rounded-2xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-6 shadow-lg">
+        <h2 class="mb-4 text-base font-bold uppercase tracking-wide text-blue-800">Registo</h2>
+        <p class="mb-4 text-sm text-gray-600">Introduza o seu nome de código e clique em <strong>Registar</strong> para entrar na sessão.</p>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            id="codenameInput"
+            class="rounded-xl border-2 border-blue-200 px-4 py-3 text-base outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            placeholder="Nome de código (ex.: Participante-1)"
+          />
+          <button
+            id="registerBtn"
+            type="button"
+            class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-base font-bold text-white shadow-lg transition hover:bg-blue-700 hover:shadow-xl"
+          >
+            Registar
+          </button>
+        </div>
+        <p id="childInfo" class="mt-3 text-sm text-gray-500"></p>
+        <p id="registerStatus" class="mt-1 text-sm text-gray-500">deteção de MAC pendente</p>
+        <p class="mt-4 text-xs text-gray-500">
+          Ligar ao WiFi da sala → registar → caminhar com tráfego ativo → aguardar captura.
+        </p>
+      </section>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section class="rounded-2xl border-2 border-green-200 bg-gradient-to-b from-green-50 to-white p-6 shadow-md">
+          <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-green-800">RSSI (últimas 10 amostras, dBm)</h2>
+          <div class="relative h-48 md:h-56 rounded-lg bg-white/50">
+            <canvas id="rssiCanvas" class="absolute inset-0 h-full w-full"></canvas>
+          </div>
+          <p id="captureStatus" class="mt-3 text-sm text-gray-600">
+            a captura começa quando o investigador inicia a monitorização
+          </p>
+          <p id="sampleStatus" class="text-sm text-gray-500"></p>
+        </section>
+
+        <section class="rounded-2xl border-2 border-indigo-200 bg-gradient-to-b from-indigo-50 to-white p-6 shadow-md">
+          <h2 class="mb-4 text-sm font-bold uppercase tracking-wide text-indigo-800">Previsão</h2>
+          <div class="flex flex-col items-center py-4">
+            <div id="predMain" class="text-5xl font-black text-indigo-700">—</div>
+            <div id="predConf" class="mt-2 text-sm text-gray-600">confiança: —</div>
+            <div id="predSource" class="mt-1 text-xs text-gray-500">—</div>
+          </div>
+          <div id="predProb" class="mx-auto max-w-sm"></div>
+        </section>
       </div>
 
-      <div class="row g-4">
-        <!-- Entrar na sessão -->
-        <div class="col-md-6">
-          <div class="card shadow-sm h-100 border-0">
-            <div class="card-body">
-              <h2 class="h5 card-title mb-3">Entrar na sessão</h2>
-              <div class="d-flex gap-2 mb-2">
-                <input
-                  id="codenameInput"
-                  class="form-control"
-                  placeholder="Nome de código (ex.: Crianca-1)"
-                />
-                <button id="registerBtn" class="btn btn-primary px-4">
-                  Registar
-                </button>
-              </div>
-              <div id="childInfo" class="text-muted small mb-1"></div>
-              <div id="registerStatus" class="form-text mb-3">
-                deteção de MAC pendente
-              </div>
-
-              <ol class="small text-secondary mb-0">
-                <li class="mb-1">Ligar o telemóvel ao WiFi da sala.</li>
-                <li class="mb-1">
-                  Registar com nome de código e MAC detetado.
-                </li>
-                <li class="mb-1">
-                  Caminhar mantendo tráfego ativo no telemóvel.
-                </li>
-                <li>Aguardar o fim da captura de 10 segundos.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-
-        <!-- RSSI em tempo real -->
-        <div class="col-md-6">
-          <div class="card shadow-sm h-100 border-0">
-            <div class="card-body d-flex flex-column">
-              <h2 class="h5 card-title mb-3">
-                RSSI em tempo real (últimas 10 amostras, dBm)
-              </h2>
-              <div
-                class="flex-grow-1 position-relative"
-                style="min-height: 200px"
-              >
-                <canvas
-                  id="rssiCanvas"
-                  class="position-absolute w-100 h-100"
-                ></canvas>
-              </div>
-              <div class="mt-3">
-                <div id="captureStatus" class="small text-muted mb-1">
-                  a captura de 10 segundos começa quando o professor inicia a
-                  monitorização
-                </div>
-                <div id="sampleStatus" class="small text-muted">
-                  a previsão surge após as primeiras 10 amostras
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modelo e Histórico -->
-        <div class="col-12">
-          <div class="card shadow-sm border-0">
-            <div class="card-body">
-              <h2 class="h5 card-title mb-3">
-                Modelo e histórico de previsões
-              </h2>
-              <div
-                class="d-flex align-items-center flex-wrap gap-2 mb-3 font-monospace small"
-              >
-                <div class="border rounded px-2 py-1 bg-light">RSSI 1..10</div>
-                <div class="text-muted">&rarr;</div>
-                <div class="border rounded px-2 py-1 bg-light">
-                  RandomForest
-                </div>
-                <div class="text-muted">&rarr;</div>
-                <div class="border rounded px-2 py-1 bg-light">
-                  AA | AB | BA | BB
-                </div>
-              </div>
-
-              <div
-                class="position-relative mb-2"
-                style="height: 170px; width: 100%"
-              >
-                <canvas
-                  id="predictionTimelineCanvas"
-                  class="position-absolute w-100 h-100"
-                ></canvas>
-              </div>
-              <div class="small text-muted mb-4 text-center">
-                Linha temporal das previsões nas janelas recentes
-              </div>
-
-              <div
-                class="position-relative mb-2"
-                style="height: 170px; width: 100%"
-              >
-                <canvas
-                  id="confidenceCanvas"
-                  class="position-absolute w-100 h-100"
-                ></canvas>
-              </div>
-              <div class="small text-muted mb-2 text-center">
-                Confiança ao longo do tempo (proxy de estabilidade do modelo)
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Última previsão -->
-        <div class="col-12">
-          <div class="card shadow-sm border-0 text-center">
-            <div class="card-body">
-              <h2 class="h5 card-title mb-3">Última previsão</h2>
-              <div class="d-flex flex-column align-items-center mb-3">
-                <div id="predMain" class="display-4 fw-bold text-primary mb-2">
-                  &mdash;
-                </div>
-                <div id="predConf" class="text-muted">confiança: &mdash;</div>
-              </div>
-              <div
-                id="predProb"
-                class="w-100 mx-auto"
-                style="max-width: 400px"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-4 text-center">
-        <a href="/teacher" class="text-decoration-none" target="_blank"
-          >&larr; Abrir vista do professor</a
-        >
-      </div>
+      <p class="mt-8 text-center">
+        <a href="/overview" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">Ver vista geral de todos os participantes</a>
+      </p>
     </div>
 
     <script src="/static/vendor/chart.umd.min.js"></script>
-    <script src="/static/vendor/bootstrap.bundle.min.js"></script>
     <script src="/static/app.js"></script>
   </body>
 </html>

@@ -7,8 +7,11 @@ services:
       - "8005:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - INMOTION_MODEL_PATH=/app/models/GaussianProcess.joblib
     volumes:
-      - ./models:/app/models
+      - ../models:/app/models:ro
+      - ../dataset.csv:/app/dataset.csv:ro
+      - ../dataset_only_pure.csv:/app/dataset_only_pure.csv:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

@@ -4,6 +4,7 @@ import asyncio
 import contextlib
 import csv
 import importlib.util
+import random
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -29,8 +30,9 @@ class ScannerAdapter:
         self._scanner = None
         self._mode: str = "live"
         self._latest_seen: dict[str, datetime] = {}
-        self._replay_values = self._load_replay_values(config.fallback_csv_path)
-        self._replay_idx_by_mac: dict[str, int] = {}
+        self._fallback_replay_windows = self._load_replay_windows(config.fallback_csv_path)
+        self._test_replay_windows = self._load_replay_windows(config.test_router_csv_path)
+        self._replay_state_by_mac: dict[str, tuple[list[float], int]] = {}
         self._reconnect_counter = 0
         self._live_ready_sent = False
         self._replay_ready_sent = False
@@ -202,9 +204,18 @@ class ScannerAdapter:
             return
 
         for mac in target_macs:
-            idx = self._replay_idx_by_mac.get(mac, 0)
-            value = self._replay_values[idx % len(self._replay_values)]
-            self._replay_idx_by_mac[mac] = idx + 1
+            windows = (
+                self._test_replay_windows
+                if self._force_test_mode
+                else self._fallback_replay_windows
+            )
+            active_window, idx = self._replay_state_by_mac.get(mac, ([], 0))
+            if not active_window or idx >= len(active_window):
+                active_window = random.choice(windows)
+                idx = 0
+
+            value = active_window[idx]
+            self._replay_state_by_mac[mac] = (active_window, idx + 1)
             self._latest_seen[mac] = datetime.now(UTC)
             event = ScannerEvent(
                 timestamp=datetime.now(UTC),
@@ -246,27 +257,30 @@ class ScannerAdapter:
         )
         return self._scanner
 
-    def _load_replay_values(self, csv_path: Path) -> list[float]:
-        default_values = [-52.0, -53.0, -55.0, -57.0, -54.0, -50.0, -48.0, -49.0, -51.0, -53.0]
+    def _load_replay_windows(self, csv_path: Path) -> list[list[float]]:
+        default_values = [[-52.0, -53.0, -55.0, -57.0, -54.0, -50.0, -48.0, -49.0, -51.0, -53.0]]
         if not csv_path.exists():
             return default_values
 
-        values: list[float] = []
+        windows: list[list[float]] = []
         with csv_path.open(newline="") as file:
             reader = csv.DictReader(file)
             for row in reader:
+                window: list[float] = []
                 for i in range(1, 11):
                     key = str(i)
                     if key not in row:
                         continue
                     try:
-                        values.append(float(row[key]))
+                        window.append(float(row[key]))
                     except (TypeError, ValueError):
                         continue
-                if len(values) >= 500:
+                if len(window) == 10:
+                    windows.append(window)
+                if len(windows) >= 2000:
                     break
 
-        return values if values else default_values
+        return windows if windows else default_values
 
     async def _emit_status(
         self,

@@ -1,6 +1,5 @@
 :root {
   --accent: #1f6f5f;
-  --accent-soft: #e8f3f1;
 }
 
 body {
@@ -8,43 +7,17 @@ body {
 }
 
 .page {
-  max-width: 980px;
+  max-width: 72rem;
 }
 
-.badge {
-  font-weight: 500;
-  font-size: 0.85rem;
+.page--full {
+  max-width: none;
 }
 
-.prob-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.4rem;
-}
-
-.prob-key {
-  width: 30px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.prob-bar-wrap {
-  flex: 1;
-  height: 10px;
-  border-radius: 999px;
-  background: #eef1f4;
-  overflow: hidden;
-}
-
-.prob-bar {
-  height: 100%;
-  background: var(--accent);
-  transition: width 0.3s ease;
-}
+/* Prob bars: width is set inline, layout uses Tailwind in app.js */
 
 .status-line {
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   color: #6b7280;
   margin-top: 0.35rem;
 }

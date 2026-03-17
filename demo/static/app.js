@@ -12,6 +12,12 @@ const traducoesEstado = {
   recover: "recuperado",
 };
 
+const traducoesModo = {
+  live: "router ao vivo",
+  replay: "fallback replay",
+  "replay-test": "mock router (dataset.csv)",
+};
+
 const coresClasse = {
   AA: "#1f6f5f",
   AB: "#2f6ea5",
@@ -39,6 +45,8 @@ if (role === "teacher") {
   iniciarProfessor();
 } else if (role === "child") {
   iniciarCrianca();
+} else if (role === "overview") {
+  iniciarOverview();
 }
 
 function iniciarProfessor() {
@@ -56,16 +64,15 @@ function iniciarProfessor() {
       .map((child) => {
         const pred = child.latest_prediction?.predicted_class || "—";
         return `<tr>
-          <td>${child.codename}</td>
-          <td>${child.mac}</td>
-          <td>${traduzEstado(child.status)}</td>
-          <td>${child.sample_count}</td>
-          <td>${pred}</td>
+          <td class="py-2">${child.codename}</td>
+          <td class="py-2 font-mono text-slate-600">${child.mac}</td>
+          <td class="py-2 text-slate-600">${traduzEstado(child.status)}</td>
+          <td class="py-2 font-medium">${pred}</td>
         </tr>`;
       });
 
     rosterBody.innerHTML =
-      rows.join("") || '<tr><td colspan="5">Sem crianças registadas</td></tr>';
+      rows.join("") || '<tr><td colspan="4" class="py-4 text-center text-slate-400">Sem participantes registados</td></tr>';
   }
 
   async function refreshState() {
@@ -163,6 +170,149 @@ function iniciarProfessor() {
   });
 }
 
+function iniciarOverview() {
+  const tableBody = document.getElementById("overviewTableBody");
+  const canvas = document.getElementById("overviewRssiCanvas");
+  if (!canvas) return;
+
+  const participants = new Map();
+  const rssiByChild = new Map();
+  const maxRssiSamples = 80;
+  const coresParticipante = [
+    "#1e40af",
+    "#047857",
+    "#b45309",
+    "#7c3aed",
+    "#be123c",
+    "#0e7490",
+    "#4d7c0f",
+    "#9f1239",
+  ];
+
+  const chart = new Chart(canvas, {
+    type: "line",
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: "index" },
+      scales: {
+        y: {
+          min: -80,
+          max: -30,
+          title: { display: true, text: "RSSI (dBm)" },
+        },
+        x: {
+          title: { display: true, text: "Amostra" },
+        },
+      },
+      plugins: {
+        legend: { position: "top" },
+      },
+    },
+  });
+
+  function getCor(id) {
+    const idx = [...participants.keys()].sort().indexOf(id) % coresParticipante.length;
+    return coresParticipante[idx];
+  }
+
+  function renderTable() {
+    const rows = [...participants.values()]
+      .sort((a, b) => (a.codename || "").localeCompare(b.codename || ""))
+      .map((p) => {
+        const pred = p.latest_prediction;
+        const predClass = pred?.predicted_class ?? "—";
+        const conf = pred ? `${(pred.confidence * 100).toFixed(1)}%` : "—";
+        return `<tr>
+          <td class="px-4 py-3 font-medium text-slate-800">${p.codename}</td>
+          <td class="px-4 py-3 font-mono text-slate-600">${p.mac}</td>
+          <td class="px-4 py-3"><span class="font-semibold" style="color:${coresClasse[predClass] || "#64748b"}">${predClass}</span></td>
+          <td class="px-4 py-3 text-slate-600">${conf}</td>
+        </tr>`;
+      });
+
+    tableBody.innerHTML =
+      rows.join("") ||
+      '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Nenhum participante registado</td></tr>';
+  }
+
+  function updateChart() {
+    const sorted = [...participants.keys()].sort();
+    chart.data.datasets = sorted.map((childId) => {
+      const p = participants.get(childId);
+      const data = rssiByChild.get(childId) || [];
+      return {
+        label: p?.codename ?? childId,
+        data: [...data],
+        borderColor: getCor(childId),
+        backgroundColor: "transparent",
+        pointRadius: 2,
+        tension: 0.2,
+        fill: false,
+      };
+    });
+
+    const maxLen = Math.max(1, ...[...rssiByChild.values()].map((a) => a.length));
+    chart.data.labels = Array.from({ length: maxLen }, (_, i) => i + 1);
+    chart.update("none");
+  }
+
+  const ws = new WebSocket(
+    `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/teacher`,
+  );
+
+  ws.onmessage = (event) => {
+    const payload = JSON.parse(event.data);
+
+    if (payload.monitor && payload.children) {
+      payload.children.forEach((c) => participants.set(c.child_id, c));
+      renderTable();
+      return;
+    }
+
+    if (payload.event_type === "rssi") {
+      const c = participants.get(payload.child_id) || {
+        child_id: payload.child_id,
+        codename: payload.codename,
+        mac: payload.mac,
+        latest_prediction: null,
+      };
+      participants.set(payload.child_id, c);
+
+      let buf = rssiByChild.get(payload.child_id) || [];
+      buf.push(payload.rssi);
+      while (buf.length > maxRssiSamples) buf.shift();
+      rssiByChild.set(payload.child_id, buf);
+
+      updateChart();
+    }
+
+    if (payload.event_type === "prediction") {
+      const c = participants.get(payload.child_id) || {
+        child_id: payload.child_id,
+        codename: payload.codename,
+        mac: payload.mac,
+      };
+      c.latest_prediction = {
+        predicted_class: payload.predicted_class,
+        confidence: payload.confidence,
+      };
+      participants.set(payload.child_id, c);
+      renderTable();
+    }
+  };
+
+  async function refresh() {
+    const state = await fetchJSON("/api/session/state");
+    state.children.forEach((c) => participants.set(c.child_id, c));
+    renderTable();
+    updateChart();
+  }
+
+  refresh().catch(() => {});
+}
+
 function iniciarCrianca() {
   const codenameInput = document.getElementById("codenameInput");
   const registerBtn = document.getElementById("registerBtn");
@@ -173,14 +323,13 @@ function iniciarCrianca() {
   const statusBadge = document.getElementById("childStatusBadge");
   const predMain = document.getElementById("predMain");
   const predConf = document.getElementById("predConf");
+  const predSource = document.getElementById("predSource");
   const predProb = document.getElementById("predProb");
 
   let childId = localStorage.getItem("inmotion-child-id") || "";
   let detectedMac = localStorage.getItem("inmotion-child-mac") || "";
 
   const rssiHistory = [];
-  const confidenceHistory = [];
-  const predictionHistory = [];
 
   const captureDurationMs = 10_000;
   let captureStartedAt = null;
@@ -188,8 +337,6 @@ function iniciarCrianca() {
   let pendingPrediction = null;
 
   const rssiChart = criarGraficoRssi();
-  const confidenceChart = criarGraficoConfianca();
-  const predictionChart = criarGraficoPrevisoes();
 
   function atualizarGraficoRssi() {
     rssiChart.data.labels = rssiHistory.map((_, index) => `${index + 1}`);
@@ -197,55 +344,15 @@ function iniciarCrianca() {
     rssiChart.update("none");
   }
 
-  function atualizarGraficoConfianca() {
-    confidenceChart.data.labels = confidenceHistory.map(
-      (_, index) => `${index + 1}`,
-    );
-    confidenceChart.data.datasets[0].data = confidenceHistory.map(
-      (v) => +(v * 100).toFixed(2),
-    );
-    confidenceChart.update("none");
-  }
-
-  function atualizarGraficoPrevisoes() {
-    predictionChart.data.datasets[0].data = predictionHistory.map(
-      (item, index) => ({
-        x: index + 1,
-        y: classeParaIndice(item.label),
-      }),
-    );
-    predictionChart.data.datasets[0].pointBackgroundColor =
-      predictionHistory.map((item) => coresClasse[item.label] || "#1f6f5f");
-    predictionChart.update("none");
-  }
-
-  function classeParaIndice(label) {
-    if (label === "AA") return 0;
-    if (label === "AB") return 1;
-    if (label === "BA") return 2;
-    return 3;
-  }
-
-  function indiceParaClasse(index) {
-    const i = Number(index);
-    if (i === 0) return "AA";
-    if (i === 1) return "AB";
-    if (i === 2) return "BA";
-    return "BB";
-  }
-
   function resetCaptura() {
     captureStartedAt = Date.now();
     captureCompleted = false;
     pendingPrediction = null;
     rssiHistory.length = 0;
-    confidenceHistory.length = 0;
-    predictionHistory.length = 0;
     atualizarGraficoRssi();
-    atualizarGraficoConfianca();
-    atualizarGraficoPrevisoes();
     predMain.textContent = "—";
     predConf.textContent = "confiança: —";
+    predSource.textContent = "origem: —";
     predProb.innerHTML = "";
     sampleStatus.textContent = "amostras na janela: 0/10";
   }
@@ -253,7 +360,7 @@ function iniciarCrianca() {
   function atualizarEstadoCaptura() {
     if (!captureStartedAt) {
       captureStatus.textContent =
-        "a captura de 10 segundos começa quando o professor inicia a monitorização";
+        "a captura de 10 segundos começa quando o investigador inicia a monitorização";
       return;
     }
 
@@ -278,26 +385,18 @@ function iniciarCrianca() {
   function aplicarPrevisao(payload) {
     predMain.textContent = payload.predicted_class;
     predConf.textContent = `confiança: ${(payload.confidence * 100).toFixed(1)}%`;
-    sampleStatus.textContent = "previsão atualizada com janela deslizante";
-
-    confidenceHistory.push(payload.confidence);
-    while (confidenceHistory.length > 45) confidenceHistory.shift();
-    atualizarGraficoConfianca();
-
-    predictionHistory.push({
-      label: payload.predicted_class,
-      confidence: payload.confidence,
-    });
-    while (predictionHistory.length > 45) predictionHistory.shift();
-    atualizarGraficoPrevisoes();
+    predSource.textContent = `origem: ${payload.source || "desconhecida"}`;
+    sampleStatus.textContent = "previsão atualizada";
 
     predProb.innerHTML = Object.entries(payload.probabilities)
       .map(
         ([key, value]) => `
-          <div class="prob-row">
-            <div class="prob-key">${key}</div>
-            <div class="prob-bar-wrap"><div class="prob-bar" style="width:${Math.max(2, value * 100)}%"></div></div>
-            <div class="small">${(value * 100).toFixed(1)}%</div>
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-8 text-xs font-semibold text-slate-700">${key}</div>
+            <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300" style="width:${Math.max(2, value * 100)}%;background-color:var(--accent,#1f6f5f)"></div>
+            </div>
+            <div class="w-12 text-right text-xs text-slate-500">${(value * 100).toFixed(1)}%</div>
           </div>
         `,
       )
@@ -331,7 +430,9 @@ function iniciarCrianca() {
       const payload = JSON.parse(event.data);
 
       if (payload.event_type === "status") {
+        const modoLegivel = traducoesModo[payload.mode] || payload.mode;
         statusBadge.textContent = `${traduzEstado(payload.status)} (${payload.mode})`;
+        predSource.textContent = `origem: ${modoLegivel}`;
         if (payload.status === "start") {
           resetCaptura();
         }
@@ -372,7 +473,7 @@ function iniciarCrianca() {
   registerBtn.addEventListener("click", async () => {
     const codename =
       (codenameInput.value || "").trim() ||
-      `Crianca-${Math.floor(Math.random() * 100)}`;
+      `Participante-${Math.floor(Math.random() * 100)}`;
 
     try {
       if (!detectedMac) {
@@ -380,7 +481,8 @@ function iniciarCrianca() {
       }
 
       if (!detectedMac) {
-        registerStatus.textContent = "não foi possível detetar o MAC ainda";
+        registerStatus.textContent =
+          "MAC não detetado. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
         return;
       }
 
@@ -392,7 +494,7 @@ function iniciarCrianca() {
       childId = child.child_id;
       localStorage.setItem("inmotion-child-id", childId);
       statusBadge.textContent = traduzEstado(child.status);
-      childInfo.textContent = `ID criança: ${child.child_id} • MAC: ${child.mac}`;
+      childInfo.textContent = `ID participante: ${child.child_id} • MAC: ${child.mac}`;
       registerStatus.textContent = `registado como ${child.codename}`;
       ligarWebSocketCrianca();
     } catch (error) {
@@ -400,13 +502,13 @@ function iniciarCrianca() {
     }
   });
 
-  const initialCodename = codenameInput.value || "crianca";
+  const initialCodename = codenameInput.value || "participante";
   detetarMac(initialCodename).catch(() => {
     registerStatus.textContent = "deteção de MAC pendente";
   });
 
   if (childId) {
-    childInfo.textContent = `ID criança: ${childId} • MAC: ${detectedMac || "desconhecido"}`;
+    childInfo.textContent = `ID participante: ${childId} • MAC: ${detectedMac || "desconhecido"}`;
     ligarWebSocketCrianca();
   }
 
@@ -440,78 +542,6 @@ function iniciarCrianca() {
           },
           x: {
             title: { display: true, text: "Amostra" },
-          },
-        },
-        plugins: {
-          legend: { display: false },
-        },
-      },
-    });
-  }
-
-  function criarGraficoConfianca() {
-    return new Chart(document.getElementById("confidenceCanvas"), {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: "Confiança (%)",
-            data: [],
-            borderColor: "#2f6ea5",
-            backgroundColor: "rgba(47, 110, 165, 0.12)",
-            pointRadius: 2,
-            tension: 0.2,
-            fill: true,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            min: 0,
-            max: 100,
-            title: { display: true, text: "%" },
-          },
-          x: {
-            title: { display: true, text: "Janela" },
-          },
-        },
-      },
-    });
-  }
-
-  function criarGraficoPrevisoes() {
-    return new Chart(document.getElementById("predictionTimelineCanvas"), {
-      type: "scatter",
-      data: {
-        datasets: [
-          {
-            label: "Classe prevista",
-            data: [],
-            pointRadius: 4,
-            showLine: false,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            title: { display: true, text: "Janela" },
-            ticks: { precision: 0 },
-          },
-          y: {
-            min: -0.5,
-            max: 3.5,
-            ticks: {
-              stepSize: 1,
-              callback: (value) => indiceParaClasse(value),
-            },
-            title: { display: true, text: "Classe" },
           },
         },
         plugins: {

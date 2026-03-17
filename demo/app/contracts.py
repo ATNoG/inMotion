@@ -83,5 +83,5 @@ class StatusEvent(BaseModel):
     event_type: Literal["status"] = "status"
     timestamp: datetime
     status: Literal["connect", "start", "error", "recover"]
-    mode: Literal["live", "replay"]
+    mode: Literal["live", "replay", "replay-test"]
     message: str
