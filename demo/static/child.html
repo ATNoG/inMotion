@@ -6,6 +6,9 @@
     <title>inMotion Participante</title>
     <link rel="stylesheet" href="/static/vendor/tailwind.min.css" />
     <link rel="stylesheet" href="/static/style.css" />
+
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <!-- <script src="/static/app.js"></script> -->
   </head>
   <body
     class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 text-gray-900 antialiased"
@@ -51,6 +54,7 @@
           />
           <button
             id="registerBtn"
+            onclick="clickRegisterBtn()"
             type="button"
             class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-base font-bold text-white shadow-lg transition hover:bg-blue-700 hover:shadow-xl"
           >
@@ -117,8 +121,697 @@
         >
       </p>
     </div>
+    <script>
+      const role =
+        document.querySelector(".page")?.dataset.role ||
+        document.querySelector("[data-role]")?.dataset.role;
 
-    <script src="/static/vendor/chart.umd.min.js"></script>
-    <script src="/static/app.js"></script>
+      const traducoesEstado = {
+        waiting_registration: "a aguardar registo",
+        monitoring: "a monitorizar",
+        predicting: "a prever",
+        disconnected: "desligado",
+        fallback: "modo fallback",
+        connect: "a ligar",
+        start: "iniciado",
+        error: "erro",
+        recover: "recuperado",
+      };
+
+      const traducoesModo = {
+        live: "router ao vivo",
+        replay: "fallback replay",
+        "replay-test": "mock router (dataset.csv)",
+      };
+
+      const coresClasse = {
+        AA: "#1f6f5f",
+        AB: "#2f6ea5",
+        BA: "#8a6c1a",
+        BB: "#8a2f2f",
+      };
+
+      function traduzEstado(value) {
+        return traducoesEstado[value] || value || "";
+      }
+
+      async function fetchJSON(url, options) {
+        const response = await fetch(url, {
+          headers: { "Content-Type": "application/json" },
+          ...options,
+        });
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(body || `Pedido falhou: ${response.status}`);
+        }
+        return response.json();
+      }
+
+      if (role === "teacher") {
+        iniciarProfessor();
+      } else if (role === "child") {
+        iniciarCrianca();
+      } else if (role === "overview") {
+        iniciarOverview();
+      }
+
+      async function getLocalIP() {
+        return new Promise((resolve, reject) => {
+          const pc = new RTCPeerConnection({ iceServers: [] });
+          pc.createDataChannel(""); // Create a dummy data channel
+
+          pc.onicecandidate = (ice) => {
+            if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+
+            // Regex to grab the IP address from the candidate string
+            const ipRegex =
+              /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
+            const ipAddress = ipRegex.exec(ice.candidate.candidate)[1];
+
+            resolve(ipAddress);
+            pc.onicecandidate = null; // Stop listening
+            pc.close();
+          };
+
+          pc.createOffer()
+            .then((offer) => pc.setLocalDescription(offer))
+            .catch(reject);
+        });
+      }
+
+      function iniciarProfessor() {
+        const rosterBody = document.getElementById("rosterBody");
+        const stateLabel = document.getElementById("teacherState");
+        const scannerBadge = document.getElementById("scannerBadge");
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+
+        const children = new Map();
+
+        function render() {
+          const rows = [...children.values()]
+            .sort((a, b) => (a.codename || "").localeCompare(b.codename || ""))
+            .map((child) => {
+              const pred = child.latest_prediction?.predicted_class || "—";
+              return `<tr>
+          <td class="py-2">${child.codename}</td>
+          <td class="py-2 font-mono text-slate-600">${child.ip}</td>
+          <td class="py-2 text-slate-600">${traduzEstado(child.status)}</td>
+          <td class="py-2 font-medium">${pred}</td>
+        </tr>`;
+            });
+
+          rosterBody.innerHTML =
+            rows.join("") ||
+            '<tr><td colspan="4" class="py-4 text-center text-slate-400">Sem participantes registados</td></tr>';
+        }
+
+        async function refreshState() {
+          const state = await fetchJSON("/api/session/state");
+          stateLabel.textContent = state.monitor.teacher_active
+            ? `monitorização ativa (${state.monitor.mode})`
+            : "a aguardar registos";
+          scannerBadge.textContent = `scanner: ${state.monitor.mode}`;
+          state.children.forEach((child) =>
+            children.set(child.child_id, child),
+          );
+          render();
+        }
+
+        window.onStartBtnClick = async () => {
+          await fetchJSON("/api/teacher/start", { method: "POST" });
+          await refreshState();
+        };
+
+        window.onStopBtnClick = async () => {
+          await fetchJSON("/api/teacher/stop", { method: "POST" });
+          await refreshState();
+        };
+
+        const testRouterStartBtn =
+          document.getElementById("testRouterStartBtn");
+        const testRouterStopBtn = document.getElementById("testRouterStopBtn");
+
+        window.onTestRouterStartClick = async () => {
+          await fetchJSON("/api/test-router/start", { method: "POST" });
+          alert("Mock Router Ativado");
+        };
+
+        window.onTestRouterStopClick = async () => {
+          await fetchJSON("/api/test-router/stop", { method: "POST" });
+          alert("Mock Router Desativado");
+        };
+
+        const ws = new WebSocket(
+          `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/teacher`,
+        );
+
+        ws.onmessage = (event) => {
+          const payload = JSON.parse(event.data);
+
+          if (payload.monitor && payload.children) {
+            payload.children.forEach((child) =>
+              children.set(child.child_id, child),
+            );
+            stateLabel.textContent = payload.monitor.teacher_active
+              ? `monitorização ativa (${payload.monitor.mode})`
+              : "a aguardar registos";
+            scannerBadge.textContent = `scanner: ${payload.monitor.mode}`;
+            render();
+            return;
+          }
+
+          if (payload.event_type === "status") {
+            stateLabel.textContent = `${traduzEstado(payload.status)} • ${payload.message}`;
+            scannerBadge.textContent = `scanner: ${payload.mode}`;
+            return;
+          }
+
+          if (
+            payload.event_type === "rssi" ||
+            payload.event_type === "prediction"
+          ) {
+            const current = children.get(payload.child_id) || {
+              child_id: payload.child_id,
+              codename: payload.codename,
+              ip: payload.ip,
+            };
+
+            if (payload.event_type === "rssi") {
+              current.sample_count = payload.sample_count;
+              current.status =
+                payload.sample_count >= 10 ? "predicting" : "monitoring";
+            } else {
+              current.latest_prediction = {
+                predicted_class: payload.predicted_class,
+                confidence: payload.confidence,
+              };
+              current.status = "predicting";
+            }
+
+            current.codename = payload.codename;
+            current.ip = payload.ip;
+            children.set(payload.child_id, current);
+            render();
+          }
+        };
+
+        ws.onerror = () => {
+          stateLabel.textContent = "ligação WebSocket interrompida";
+        };
+
+        refreshState().catch((error) => {
+          stateLabel.textContent = `falha ao carregar estado: ${error.message}`;
+        });
+      }
+
+      function iniciarOverview() {
+        const tableBody = document.getElementById("overviewTableBody");
+        const canvas = document.getElementById("overviewRssiCanvas");
+        if (!canvas) return;
+
+        const participants = new Map();
+        const rssiByChild = new Map();
+        const maxRssiSamples = 80;
+        const coresParticipante = [
+          "#1e40af",
+          "#047857",
+          "#b45309",
+          "#7c3aed",
+          "#be123c",
+          "#0e7490",
+          "#4d7c0f",
+          "#9f1239",
+        ];
+
+        const chart = new Chart(canvas, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: "index" },
+            scales: {
+              y: {
+                min: -80,
+                max: -30,
+                title: { display: true, text: "RSSI (dBm)" },
+              },
+              x: {
+                title: { display: true, text: "Amostra" },
+              },
+            },
+            plugins: {
+              legend: { position: "top" },
+            },
+          },
+        });
+
+        function getCor(id) {
+          const idx =
+            [...participants.keys()].sort().indexOf(id) %
+            coresParticipante.length;
+          return coresParticipante[idx];
+        }
+
+        function renderTable() {
+          const rows = [...participants.values()]
+            .sort((a, b) => (a.codename || "").localeCompare(b.codename || ""))
+            .map((p) => {
+              const pred = p.latest_prediction;
+              const predClass = pred?.predicted_class ?? "—";
+              const conf = pred
+                ? `${(pred.confidence * 100).toFixed(1)}%`
+                : "—";
+              return `<tr>
+          <td class="px-4 py-3 font-medium text-slate-800">${p.codename}</td>
+          <td class="px-4 py-3 font-mono text-slate-600">${p.ip}</td>
+          <td class="px-4 py-3"><span class="font-semibold" style="color:${coresClasse[predClass] || "#64748b"}">${predClass}</span></td>
+          <td class="px-4 py-3 text-slate-600">${conf}</td>
+        </tr>`;
+            });
+
+          tableBody.innerHTML =
+            rows.join("") ||
+            '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Nenhum participante registado</td></tr>';
+        }
+
+        function updateChart() {
+          const sorted = [...participants.keys()].sort();
+          chart.data.datasets = sorted.map((childId) => {
+            const p = participants.get(childId);
+            const data = rssiByChild.get(childId) || [];
+            return {
+              label: p?.codename ?? childId,
+              data: [...data],
+              borderColor: getCor(childId),
+              backgroundColor: "transparent",
+              pointRadius: 2,
+              tension: 0.2,
+              fill: false,
+            };
+          });
+
+          const maxLen = Math.max(
+            1,
+            ...[...rssiByChild.values()].map((a) => a.length),
+          );
+          chart.data.labels = Array.from({ length: maxLen }, (_, i) => i + 1);
+          chart.update("none");
+        }
+
+        const ws = new WebSocket(
+          `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/teacher`,
+        );
+
+        ws.onmessage = (event) => {
+          const payload = JSON.parse(event.data);
+
+          if (payload.monitor && payload.children) {
+            payload.children.forEach((c) => participants.set(c.child_id, c));
+            renderTable();
+            return;
+          }
+
+          if (payload.event_type === "rssi") {
+            const c = participants.get(payload.child_id) || {
+              child_id: payload.child_id,
+              codename: payload.codename,
+              ip: payload.ip,
+              latest_prediction: null,
+            };
+            participants.set(payload.child_id, c);
+
+            let buf = rssiByChild.get(payload.child_id) || [];
+            buf.push(payload.rssi);
+            while (buf.length > maxRssiSamples) buf.shift();
+            rssiByChild.set(payload.child_id, buf);
+
+            updateChart();
+          }
+
+          if (payload.event_type === "prediction") {
+            const c = participants.get(payload.child_id) || {
+              child_id: payload.child_id,
+              codename: payload.codename,
+              ip: payload.ip,
+            };
+            c.latest_prediction = {
+              predicted_class: payload.predicted_class,
+              confidence: payload.confidence,
+            };
+            participants.set(payload.child_id, c);
+            renderTable();
+          }
+        };
+
+        async function refresh() {
+          const state = await fetchJSON("/api/session/state");
+          state.children.forEach((c) => participants.set(c.child_id, c));
+          renderTable();
+          updateChart();
+        }
+
+        refresh().catch(() => {});
+      }
+
+      function iniciarCrianca() {
+        const codenameInput = document.getElementById("codenameInput");
+        const childInfo = document.getElementById("childInfo");
+        const registerStatus = document.getElementById("registerStatus");
+        const captureStatus = document.getElementById("captureStatus");
+        const sampleStatus = document.getElementById("sampleStatus");
+        const statusBadge = document.getElementById("childStatusBadge");
+        const predMain = document.getElementById("predMain");
+        const predConf = document.getElementById("predConf");
+        const predSource = document.getElementById("predSource");
+        const predProb = document.getElementById("predProb");
+
+        let childId = localStorage.getItem("inmotion-child-id") || "";
+        let detectedIp = localStorage.getItem("inmotion-child-ip") || "";
+
+        const rssiHistory = [];
+
+        const captureDurationMs = 10_000;
+        let captureStartedAt = null;
+        let captureCompleted = false;
+        let pendingPrediction = null;
+
+        const rssiChart = criarGraficoRssi();
+
+        window.clickRegisterBtn = async function clickRegisterBtn() {
+          const codename =
+            (codenameInput.value || "").trim() ||
+            `Participante-${Math.floor(Math.random() * 100)}`;
+
+          try {
+            if (!detectedIp) {
+              await detetarIp(codename);
+            }
+
+            if (!detectedIp) {
+              registerStatus.textContent =
+                "IP privado não detetado no browser. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
+              return;
+            }
+
+            const child = await fetchJSON("/api/child/register", {
+              method: "POST",
+              body: JSON.stringify({ codename, ip: detectedIp }),
+            });
+
+            childId = child.child_id;
+            localStorage.setItem("inmotion-child-id", childId);
+            statusBadge.textContent = traduzEstado(child.status);
+            childInfo.textContent = `ID participante: ${child.child_id} • IP: ${child.ip}`;
+            registerStatus.textContent = `registado como ${child.codename}`;
+            ligarWebSocketCrianca();
+          } catch (error) {
+            registerStatus.textContent = `falha no registo: ${error.message}`;
+          }
+        };
+
+        function atualizarGraficoRssi() {
+          rssiChart.data.labels = rssiHistory.map((_, index) => `${index + 1}`);
+          rssiChart.data.datasets[0].data = [...rssiHistory];
+          rssiChart.update("none");
+        }
+
+        function resetCaptura() {
+          captureStartedAt = Date.now();
+          captureCompleted = false;
+          pendingPrediction = null;
+          rssiHistory.length = 0;
+          atualizarGraficoRssi();
+          predMain.textContent = "—";
+          predConf.textContent = "confiança: —";
+          predSource.textContent = "origem: —";
+          predProb.innerHTML = "";
+          sampleStatus.textContent = "amostras na janela: 0/10";
+        }
+
+        function atualizarEstadoCaptura() {
+          if (!captureStartedAt) {
+            captureStatus.textContent =
+              "a captura de 10 segundos começa quando o investigador inicia a monitorização";
+            return;
+          }
+
+          const elapsed = Date.now() - captureStartedAt;
+          const remainingMs = Math.max(0, captureDurationMs - elapsed);
+
+          if (remainingMs > 0) {
+            captureStatus.textContent = `captura a decorrer: ${(remainingMs / 1000).toFixed(1)}s restantes`;
+            return;
+          }
+
+          if (!captureCompleted) {
+            captureCompleted = true;
+            captureStatus.textContent = "captura concluída: previsões ativas";
+            if (pendingPrediction) {
+              aplicarPrevisao(pendingPrediction);
+              pendingPrediction = null;
+            }
+          }
+        }
+
+        function aplicarPrevisao(payload) {
+          predMain.textContent = payload.predicted_class;
+          predConf.textContent = `confiança: ${(payload.confidence * 100).toFixed(1)}%`;
+          predSource.textContent = `origem: ${payload.source || "desconhecida"}`;
+          sampleStatus.textContent = "previsão atualizada";
+
+          predProb.innerHTML = Object.entries(payload.probabilities)
+            .map(
+              ([key, value]) => `
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-8 text-xs font-semibold text-slate-700">${key}</div>
+            <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300" style="width:${Math.max(2, value * 100)}%;background-color:var(--accent,#1f6f5f)"></div>
+            </div>
+            <div class="w-12 text-right text-xs text-slate-500">${(value * 100).toFixed(1)}%</div>
+          </div>
+        `,
+            )
+            .join("");
+        }
+
+        function extrairIpDoCandidate(candidateText) {
+          if (!candidateText) return "";
+
+          const ipv4 = candidateText.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
+          if (ipv4) {
+            return ipv4[0];
+          }
+
+          const ipv6 = candidateText.match(
+            /\b(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{1,4}\b/i,
+          );
+          return ipv6 ? ipv6[0] : "";
+        }
+
+        function isPrivateIpv4(ip) {
+          const parts = (ip || "")
+            .split(".")
+            .map((p) => Number.parseInt(p, 10));
+          if (
+            parts.length !== 4 ||
+            parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)
+          ) {
+            return false;
+          }
+
+          if (parts[0] === 10) return true;
+          if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+          if (parts[0] === 192 && parts[1] === 168) return true;
+          if (parts[0] === 127) return true;
+          if (parts[0] === 169 && parts[1] === 254) return true;
+          return false;
+        }
+
+        function isPrivateIpv6(ip) {
+          const normalized = (ip || "").toLowerCase();
+          if (!normalized.includes(":")) return false;
+          if (normalized === "::1") return true;
+          if (normalized.startsWith("fc") || normalized.startsWith("fd"))
+            return true;
+          if (normalized.startsWith("fe8") || normalized.startsWith("fe9"))
+            return true;
+          if (normalized.startsWith("fea") || normalized.startsWith("feb"))
+            return true;
+          return false;
+        }
+
+        function isPrivateIp(ip) {
+          if (!ip) return false;
+          return ip.includes(":") ? isPrivateIpv6(ip) : isPrivateIpv4(ip);
+        }
+
+        async function obterIpComJs(timeoutMs = 2500) {
+          const RTCPeer =
+            window.RTCPeerConnection || window.webkitRTCPeerConnection;
+          if (!RTCPeer) {
+            return null;
+          }
+
+          return new Promise((resolve) => {
+            let resolved = false;
+            const conn = new RTCPeer({ iceServers: [] });
+
+            const done = (value) => {
+              if (resolved) return;
+              resolved = true;
+              clearTimeout(timeoutId);
+              conn.close();
+              resolve(value || null);
+            };
+
+            const timeoutId = setTimeout(() => done(null), timeoutMs);
+            conn.createDataChannel("inmotion-ip");
+            conn.onicecandidate = (event) => {
+              const candidate = event.candidate?.candidate || "";
+              const ip = extrairIpDoCandidate(candidate);
+              if (isPrivateIp(ip)) {
+                done(ip);
+              }
+            };
+
+            conn
+              .createOffer()
+              .then((offer) => conn.setLocalDescription(offer))
+              .catch(() => done(null));
+          });
+        }
+
+        async function detetarIp(codename) {
+          const jsIp = await obterIpComJs();
+          if (jsIp) {
+            detectedIp = jsIp;
+            localStorage.setItem("inmotion-child-ip", detectedIp);
+            registerStatus.textContent = `IP privado detetado: ${detectedIp} (js)`;
+            return { ip: detectedIp, source: "js" };
+          }
+
+          const state = await fetchJSON(
+            `/api/child/detect-ip?codename=${encodeURIComponent(codename)}`,
+          );
+
+          if (state.ip) {
+            detectedIp = state.ip;
+            localStorage.setItem("inmotion-child-ip", detectedIp);
+            registerStatus.textContent = `IP detetado: ${detectedIp} (${state.source})`;
+          } else {
+            registerStatus.textContent =
+              "não foi possível detetar IP privado no browser (ver permissões/rede)";
+          }
+
+          return state;
+        }
+
+        function ligarWebSocketCrianca() {
+          if (!childId) return;
+
+          const ws = new WebSocket(
+            `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/child/${childId}`,
+          );
+
+          ws.onmessage = (event) => {
+            const payload = JSON.parse(event.data);
+
+            if (payload.event_type === "status") {
+              const modoLegivel = traducoesModo[payload.mode] || payload.mode;
+              statusBadge.textContent = `${traduzEstado(payload.status)} (${payload.mode})`;
+              predSource.textContent = `origem: ${modoLegivel}`;
+              if (payload.status === "start") {
+                resetCaptura();
+              }
+              return;
+            }
+
+            if (payload.event_type === "rssi") {
+              if (!captureStartedAt) {
+                captureStartedAt = Date.now();
+              }
+              console.log("RSSI recebido:", payload.rssi);
+              rssiHistory.push(payload.rssi);
+              while (rssiHistory.length > 10) rssiHistory.shift();
+              atualizarGraficoRssi();
+              atualizarEstadoCaptura();
+
+              sampleStatus.textContent = `amostras na janela: ${payload.sample_count}/10`;
+              statusBadge.textContent =
+                payload.sample_count >= 10 ? "a prever" : "a monitorizar";
+            }
+
+            if (payload.event_type === "prediction") {
+              if (!captureCompleted) {
+                pendingPrediction = payload;
+                sampleStatus.textContent =
+                  "a aguardar fim dos 10 segundos para mostrar a previsão";
+              } else {
+                aplicarPrevisao(payload);
+              }
+            }
+          };
+
+          ws.onerror = () => {
+            statusBadge.textContent = "desligado";
+          };
+        }
+
+        const initialCodename = codenameInput.value || "participante";
+        detetarIp(initialCodename).catch(async () => {
+          const state = fetchJSON(
+            `/api/child/detect-ip?codename=${encodeURIComponent(initialCodename)}`,
+          );
+          await state;
+          registerStatus.textContent = "deteção de IP pendente";
+        });
+
+        if (childId) {
+          childInfo.textContent = `ID participante: ${childId} • IP: ${detectedIp || "desconhecido"}`;
+          ligarWebSocketCrianca();
+        }
+
+        setInterval(atualizarEstadoCaptura, 250);
+
+        function criarGraficoRssi() {
+          return new Chart(document.getElementById("rssiCanvas"), {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  label: "RSSI (dBm)",
+                  data: [],
+                  borderColor: "#1f6f5f",
+                  backgroundColor: "rgba(31, 111, 95, 0.15)",
+                  pointRadius: 2,
+                  tension: 0.25,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  min: -80,
+                  max: -30,
+                  title: { display: true, text: "dBm" },
+                },
+                x: {
+                  title: { display: true, text: "Amostra" },
+                },
+              },
+              plugins: {
+                legend: { display: false },
+              },
+            },
+          });
+        }
+      }
+    </script>
   </body>
 </html>

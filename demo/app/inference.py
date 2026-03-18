@@ -75,6 +75,7 @@ class InferenceService:
         else:
             x = np.array(rssi_window, dtype=np.float32).reshape(1, -1)
             proba = self._model.predict_proba(x)[0]
+            self._debug_print(f"Raw model output probabilities={proba} sum={sum(proba):.6f}")
             source = "model"
 
         idx = int(np.argmax(proba))

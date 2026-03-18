@@ -218,9 +218,12 @@ class OpenWrtWiFiScanner:
         # Check if the call succeeded (has "clients" key, even if empty)
         if "clients" in clients_data:
             for mac, client_info in clients_data["clients"].items():
+                normalized_mac = str(mac).lower().strip()
                 client = {
-                    "mac": mac,
-                    "ip": self.arp_table.get(mac, "N/A"),  # Get IP from ARP table if available
+                    "mac": normalized_mac,
+                    "ip": self.arp_table.get(
+                        normalized_mac, ""
+                    ),  # Get IP from ARP table if available
                     "rssi": client_info.get("signal", "N/A"),
                     "rx_bytes": client_info.get("bytes", {}).get("rx", 0),
                     "tx_bytes": client_info.get("bytes", {}).get("tx", 0),
@@ -239,8 +242,10 @@ class OpenWrtWiFiScanner:
         clients = []
         if "results" in iwinfo_data:
             for result in iwinfo_data["results"]:
+                normalized_mac = str(result.get("mac", "")).lower().strip()
                 client = {
-                    "mac": result.get("mac", ""),
+                    "mac": normalized_mac,
+                    "ip": self.arp_table.get(normalized_mac, ""),
                     "rssi": result.get("signal", "N/A"),
                     "rx_bytes": result.get("rx_bytes", 0),
                     "tx_bytes": result.get("tx_bytes", 0),
@@ -358,6 +363,7 @@ class OpenWrtWiFiScanner:
             Dictionary with interface names as keys and client lists as values
         """
         all_clients = {}
+        self.call_arp()
 
         # Get wireless interfaces (uses caching)
         interfaces = self.get_wireless_interfaces()
@@ -388,7 +394,6 @@ class OpenWrtWiFiScanner:
 
             try:
                 output = self._execute_ssh_command(batch_command)
-                print("OUTPUTS", output)
                 # Parse the batched output
                 sections = output.split("===START_")
                 for i, section in enumerate(sections[1:]):  # Skip first empty section
@@ -403,8 +408,10 @@ class OpenWrtWiFiScanner:
                             clients = []
                             if "clients" in data:
                                 for mac, client_info in data["clients"].items():
+                                    normalized_mac = str(mac).lower().strip()
                                     client = {
-                                        "mac": mac,
+                                        "mac": normalized_mac,
+                                        "ip": self.arp_table.get(normalized_mac, ""),
                                         "rssi": client_info.get("signal", "N/A"),
                                         "rx_bytes": client_info.get("bytes", {}).get("rx", 0),
                                         "tx_bytes": client_info.get("bytes", {}).get("tx", 0),
@@ -440,6 +447,7 @@ class OpenWrtWiFiScanner:
             Dictionary with interface names as keys and client lists as values
         """
         all_clients = {}
+        self.call_arp()
 
         # Get wireless interfaces (uses caching)
         interfaces = self.get_wireless_interfaces()
@@ -703,12 +711,13 @@ class OpenWrtWiFiScanner:
                     parts = line.split()
                     if len(parts) >= 6:
                         ip_addr = parts[0]
-                        mac_addr = parts[3]
+                        mac_addr = parts[3].lower().strip()
                         arp_table[mac_addr] = ip_addr
             self.arp_table = arp_table
 
         except Exception as e:
             print(f"Error calling ARP: {e}")
+            self.arp_table = {}
 
 
 def main():

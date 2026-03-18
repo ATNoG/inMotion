@@ -49,6 +49,30 @@ if (role === "teacher") {
   iniciarOverview();
 }
 
+async function getLocalIP() {
+  return new Promise((resolve, reject) => {
+    const pc = new RTCPeerConnection({ iceServers: [] });
+    pc.createDataChannel(""); // Create a dummy data channel
+
+    pc.onicecandidate = (ice) => {
+      if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+
+      // Regex to grab the IP address from the candidate string
+      const ipRegex =
+        /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
+      const ipAddress = ipRegex.exec(ice.candidate.candidate)[1];
+
+      resolve(ipAddress);
+      pc.onicecandidate = null; // Stop listening
+      pc.close();
+    };
+
+    pc.createOffer()
+      .then((offer) => pc.setLocalDescription(offer))
+      .catch(reject);
+  });
+}
+
 function iniciarProfessor() {
   const rosterBody = document.getElementById("rosterBody");
   const stateLabel = document.getElementById("teacherState");
@@ -318,6 +342,39 @@ function iniciarOverview() {
   refresh().catch(() => {});
 }
 
+const clickRegisterBtn = async () => {
+  console.log("Iniciando registo com codename:", codenameInput.value);
+  const codename =
+    (codenameInput.value || "").trim() ||
+    `Participante-${Math.floor(Math.random() * 100)}`;
+
+  try {
+    if (!detectedIp) {
+      await detetarIp(codename);
+    }
+
+    if (!detectedIp) {
+      registerStatus.textContent =
+        "IP privado não detetado no browser. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
+      return;
+    }
+
+    const child = await fetchJSON("/api/child/register", {
+      method: "POST",
+      body: JSON.stringify({ codename, ip: detectedIp }),
+    });
+
+    childId = child.child_id;
+    localStorage.setItem("inmotion-child-id", childId);
+    statusBadge.textContent = traduzEstado(child.status);
+    childInfo.textContent = `ID participante: ${child.child_id} • IP: ${child.ip}`;
+    registerStatus.textContent = `registado como ${child.codename}`;
+    ligarWebSocketCrianca();
+  } catch (error) {
+    registerStatus.textContent = `falha no registo: ${error.message}`;
+  }
+};
+
 function iniciarCrianca() {
   const codenameInput = document.getElementById("codenameInput");
   const registerBtn = document.getElementById("registerBtn");
@@ -422,7 +479,41 @@ function iniciarCrianca() {
     return ipv6 ? ipv6[0] : "";
   }
 
-  async function obterIpComJs(timeoutMs = 2000) {
+  function isPrivateIpv4(ip) {
+    const parts = (ip || "").split(".").map((p) => Number.parseInt(p, 10));
+    if (
+      parts.length !== 4 ||
+      parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)
+    ) {
+      return false;
+    }
+
+    if (parts[0] === 10) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    return false;
+  }
+
+  function isPrivateIpv6(ip) {
+    const normalized = (ip || "").toLowerCase();
+    if (!normalized.includes(":")) return false;
+    if (normalized === "::1") return true;
+    if (normalized.startsWith("fc") || normalized.startsWith("fd")) return true;
+    if (normalized.startsWith("fe8") || normalized.startsWith("fe9"))
+      return true;
+    if (normalized.startsWith("fea") || normalized.startsWith("feb"))
+      return true;
+    return false;
+  }
+
+  function isPrivateIp(ip) {
+    if (!ip) return false;
+    return ip.includes(":") ? isPrivateIpv6(ip) : isPrivateIpv4(ip);
+  }
+
+  async function obterIpComJs(timeoutMs = 2500) {
     const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
     if (!RTCPeer) {
       return null;
@@ -445,7 +536,7 @@ function iniciarCrianca() {
       conn.onicecandidate = (event) => {
         const candidate = event.candidate?.candidate || "";
         const ip = extrairIpDoCandidate(candidate);
-        if (ip && !ip.endsWith(".local")) {
+        if (isPrivateIp(ip)) {
           done(ip);
         }
       };
@@ -462,7 +553,7 @@ function iniciarCrianca() {
     if (jsIp) {
       detectedIp = jsIp;
       localStorage.setItem("inmotion-child-ip", detectedIp);
-      registerStatus.textContent = `IP detetado: ${detectedIp} (js)`;
+      registerStatus.textContent = `IP privado detetado: ${detectedIp} (js)`;
       return { ip: detectedIp, source: "js" };
     }
 
@@ -475,7 +566,8 @@ function iniciarCrianca() {
       localStorage.setItem("inmotion-child-ip", detectedIp);
       registerStatus.textContent = `IP detetado: ${detectedIp} (${state.source})`;
     } else {
-      registerStatus.textContent = "deteção de IP pendente";
+      registerStatus.textContent =
+        "não foi possível detetar IP privado no browser (ver permissões/rede)";
     }
 
     return state;
@@ -532,41 +624,16 @@ function iniciarCrianca() {
     };
   }
 
-  registerBtn.addEventListener("click", async () => {
-    const codename =
-      (codenameInput.value || "").trim() ||
-      `Participante-${Math.floor(Math.random() * 100)}`;
-
-    try {
-      if (!detectedIp) {
-        await detetarIp(codename);
-      }
-
-      if (!detectedIp) {
-        registerStatus.textContent =
-          "IP não detetado. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
-        return;
-      }
-
-      const child = await fetchJSON("/api/child/register", {
-        method: "POST",
-        body: JSON.stringify({ codename, ip: detectedIp }),
-      });
-
-      childId = child.child_id;
-      localStorage.setItem("inmotion-child-id", childId);
-      statusBadge.textContent = traduzEstado(child.status);
-      childInfo.textContent = `ID participante: ${child.child_id} • IP: ${child.ip}`;
-      registerStatus.textContent = `registado como ${child.codename}`;
-      ligarWebSocketCrianca();
-    } catch (error) {
-      registerStatus.textContent = `falha no registo: ${error.message}`;
-    }
-  });
+  registerBtn.addEventListener("click", clickRegisterBtn);
 
   const initialCodename = codenameInput.value || "participante";
-  detetarIp(initialCodename).catch(() => {
-    registerStatus.textContent = "deteção de IP pendente";
+  detetarIp(initialCodename).catch(async () => {
+    const state = fetchJSON(
+      `/api/child/detect-ip?codename=${encodeURIComponent(codename)}`,
+    );
+    let a = await state;
+    console.log("TESTE", a);
+    registerStatus.textContent = "ABC deteção de IP pendente";
   });
 
   if (childId) {
