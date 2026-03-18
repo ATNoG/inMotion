@@ -7,7 +7,7 @@ services:
       - "8005:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      # - INMOTION_MODEL_PATH=/app/models/
+      - INMOTION_MODEL_PATH=${INMOTION_MODEL_PATH:-/app/models/GaussianProcess42.joblib}
       - INMOTION_ROUTER_IP=${INMOTION_ROUTER_IP:-10.30.0.1}
       - INMOTION_ROUTER_USER=${INMOTION_ROUTER_USER:-admin}
       - INMOTION_ROUTER_PASS=${INMOTION_ROUTER_PASS:-}

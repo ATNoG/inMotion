@@ -45,7 +45,9 @@ def load_config() -> DemoConfig:
         [
             Path("/app/models/RandomForest.joblib"),
             Path("/app/models/GaussianProcess.joblib"),
+            demo_dir / "models" / "RandomForest.joblib",
             demo_dir / "models" / "GaussianProcess.joblib",
+            root_dir / "models" / "RandomForest.joblib",
             root_dir / "models" / "GaussianProcess.joblib",
         ],
     )

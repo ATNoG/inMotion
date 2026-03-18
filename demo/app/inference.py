@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 
 import joblib
 import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 from .config import DemoConfig
 
@@ -15,6 +17,7 @@ class InferenceService:
         self._model = None
         self._classes = list(config.classes)
         self._degraded = True
+        self._scaler: StandardScaler | None = None
         self._debug = os.getenv("INMOTION_INFERENCE_DEBUG", "1").lower() not in {
             "0",
             "false",
@@ -29,6 +32,7 @@ class InferenceService:
     def startup(self) -> None:
         self._degraded = True
         self._model = None
+        self._scaler = None
         if not self._config.model_path.exists():
             self._debug_print(
                 f"Model file not found at {self._config.model_path}. Falling back to degraded mode."
@@ -46,10 +50,51 @@ class InferenceService:
             filtered = [c for c in classes if c in self._config.classes]
             if filtered:
                 self._classes = filtered
+
+        self._initialize_scaler_if_needed(model)
         self._degraded = False
         self._debug_print(
             f"Model loaded from {self._config.model_path}. classes={self._classes} degraded={self._degraded}"
         )
+
+    def _initialize_scaler_if_needed(self, model) -> None:
+        if not hasattr(model, "predict_proba"):
+            return
+
+        probe = np.array(
+            [
+                [-50.0, -51.0, -51.0, -51.0, -52.0, -50.0, -51.0, -51.0, -50.0, -51.0],
+                [-22.0, -22.0, -24.0, -22.0, -24.0, -22.0, -22.0, -23.0, -24.0, -24.0],
+            ],
+            dtype=np.float32,
+        )
+
+        try:
+            proba = model.predict_proba(probe)
+            if np.unique(np.round(proba, 6), axis=0).shape[0] > 1:
+                return
+        except Exception:
+            return
+
+        csv_path = self._config.test_router_csv_path
+        if not csv_path.exists():
+            return
+
+        try:
+            df = pd.read_csv(csv_path)
+            feature_cols = [str(i) for i in range(1, 11)]
+            if not all(col in df.columns for col in feature_cols):
+                return
+            scaler = StandardScaler()
+            scaler.fit(df[feature_cols].astype(np.float32).values)
+            proba_scaled = model.predict_proba(scaler.transform(probe))
+            if np.unique(np.round(proba_scaled, 6), axis=0).shape[0] > 1:
+                self._scaler = scaler
+                self._debug_print(
+                    "Detected standardized-training model. Applying StandardScaler at inference."
+                )
+        except Exception as exc:
+            self._debug_print(f"Could not initialize inference scaler: {exc}")
 
     @property
     def degraded(self) -> bool:
@@ -74,6 +119,8 @@ class InferenceService:
             source = "degraded"
         else:
             x = np.array(rssi_window, dtype=np.float32).reshape(1, -1)
+            if self._scaler is not None:
+                x = self._scaler.transform(x)
             proba = self._model.predict_proba(x)[0]
             self._debug_print(f"Raw model output probabilities={proba} sum={sum(proba):.6f}")
             source = "model"

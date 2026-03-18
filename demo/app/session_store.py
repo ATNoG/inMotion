@@ -116,8 +116,6 @@ class SessionStore:
         child = self.get_child_by_ip(ip)
         if child is None:
             return None, None
-        if child.latest_prediction is not None:
-            return None, None
         child.sample_buffer.append(float(rssi))
         child.latest_rssi = float(rssi)
         child.updated_at = utc_now()
