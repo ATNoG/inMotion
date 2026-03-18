@@ -7,58 +7,111 @@
     <link rel="stylesheet" href="/static/vendor/tailwind.min.css" />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-gray-900 antialiased">
-    <div class="w-full min-h-screen p-6 md:p-8 page page--full" data-role="teacher">
-      <header class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 shadow-md backdrop-blur">
-        <h1 class="text-xl font-bold text-blue-800">inMotion &bull; Vista Investigador</h1>
+  <body
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-gray-900 antialiased"
+  >
+    <div
+      class="w-full min-h-screen p-6 md:p-8 page page--full"
+      data-role="teacher"
+    >
+      <header
+        class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 shadow-md backdrop-blur"
+      >
+        <h1 class="text-xl font-bold text-blue-800">
+          inMotion &bull; Vista Investigador
+        </h1>
         <nav class="flex items-center gap-4 text-sm font-medium">
-          <a href="/overview" class="text-blue-600 hover:text-blue-800 hover:underline">Vista geral</a>
-          <a href="/child" class="text-blue-600 hover:text-blue-800 hover:underline">Vista participante</a>
-          <span id="scannerBadge" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">scanner: desconhecido</span>
+          <a
+            href="/overview"
+            class="text-blue-600 hover:text-blue-800 hover:underline"
+            >Vista geral</a
+          >
+          <a
+            href="/child"
+            class="text-blue-600 hover:text-blue-800 hover:underline"
+            >Vista participante</a
+          >
+          <span
+            id="scannerBadge"
+            class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800"
+            >scanner: desconhecido</span
+          >
         </nav>
       </header>
 
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section class="rounded-xl border-2 border-blue-200 bg-white p-6 shadow-md">
-          <h2 class="mb-3 text-sm font-medium text-blue-800 uppercase tracking-wide">Controlos</h2>
+        <section
+          class="rounded-xl border-2 border-blue-200 bg-white p-6 shadow-md"
+        >
+          <h2
+            class="mb-3 text-sm font-medium text-blue-800 uppercase tracking-wide"
+          >
+            Controlos
+          </h2>
           <div class="flex flex-wrap gap-2">
-            <button id="startBtn" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow hover:bg-blue-700">
+            <button
+              id="startBtn"
+              class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow hover:bg-blue-700"
+            >
               Iniciar monitorização
             </button>
-            <button id="stopBtn" class="rounded-xl border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <button
+              id="stopBtn"
+              class="rounded-xl border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
               Parar
             </button>
           </div>
-          <p id="teacherState" class="mt-2 text-sm text-slate-500">a aguardar registos</p>
+          <p id="teacherState" class="mt-2 text-sm text-slate-500">
+            a aguardar registos
+          </p>
 
           <details class="mt-4 border-t border-slate-100 pt-4">
-            <summary class="cursor-pointer text-sm text-slate-600 hover:text-slate-800">Simulador (teste)</summary>
+            <summary
+              class="cursor-pointer text-sm text-slate-600 hover:text-slate-800"
+            >
+              Simulador (teste)
+            </summary>
             <div class="mt-2 flex gap-2">
-              <button id="testRouterStartBtn" class="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
+              <button
+                id="testRouterStartBtn"
+                class="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+              >
                 Ativar Mock
               </button>
-              <button id="testRouterStopBtn" class="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
+              <button
+                id="testRouterStopBtn"
+                class="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+              >
                 Desativar Mock
               </button>
             </div>
           </details>
         </section>
 
-        <section class="rounded-xl border-2 border-green-200 bg-white p-6 shadow-md">
-          <h2 class="mb-3 text-sm font-medium text-green-800 uppercase tracking-wide">Participantes</h2>
+        <section
+          class="rounded-xl border-2 border-green-200 bg-white p-6 shadow-md"
+        >
+          <h2
+            class="mb-3 text-sm font-medium text-green-800 uppercase tracking-wide"
+          >
+            Participantes
+          </h2>
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead class="border-b border-slate-200 text-left">
                 <tr>
                   <th class="py-2 font-medium text-slate-600">Participante</th>
-                  <th class="py-2 font-medium text-slate-600">MAC</th>
+                  <th class="py-2 font-medium text-slate-600">IP</th>
                   <th class="py-2 font-medium text-slate-600">Estado</th>
                   <th class="py-2 font-medium text-slate-600">Previsão</th>
                 </tr>
               </thead>
               <tbody id="rosterBody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="4" class="py-4 text-center text-slate-400">Sem participantes registados</td>
+                  <td colspan="4" class="py-4 text-center text-slate-400">
+                    Sem participantes registados
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -67,8 +120,9 @@
       </div>
 
       <p class="mt-6 max-w-2xl text-sm text-slate-500">
-        1. Ligar telemóvel ao WiFi da sala. 2. Registar na vista participante com nome de código.
-        3. Caminhar com tráfego ativo. 4. Iniciar monitorização e aguardar 10 segundos.
+        1. Ligar telemóvel ao WiFi da sala. 2. Registar na vista participante
+        com nome de código. 3. Caminhar com tráfego ativo. 4. Iniciar
+        monitorização e aguardar 10 segundos.
       </p>
     </div>
 

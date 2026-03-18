@@ -7,50 +7,98 @@
     <link rel="stylesheet" href="/static/vendor/tailwind.min.css" />
     <link rel="stylesheet" href="/static/style.css" />
   </head>
-  <body class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 text-gray-900 antialiased">
+  <body
+    class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 text-gray-900 antialiased"
+  >
     <div class="w-full min-h-screen p-6 md:p-8" data-role="overview">
-      <header class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 shadow-md backdrop-blur">
-        <h1 class="text-xl font-bold text-blue-800 md:text-2xl">inMotion &bull; Vista Geral</h1>
+      <header
+        class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/80 px-6 py-4 shadow-md backdrop-blur"
+      >
+        <h1 class="text-xl font-bold text-blue-800 md:text-2xl">
+          inMotion &bull; Vista Geral
+        </h1>
         <nav class="flex items-center gap-4 text-sm font-medium">
-          <a href="/teacher" class="text-blue-600 hover:text-blue-800 hover:underline">Vista investigador</a>
-          <a href="/child" class="text-blue-600 hover:text-blue-800 hover:underline">Vista participante</a>
+          <a
+            href="/teacher"
+            class="text-blue-600 hover:text-blue-800 hover:underline"
+            >Vista investigador</a
+          >
+          <a
+            href="/child"
+            class="text-blue-600 hover:text-blue-800 hover:underline"
+            >Vista participante</a
+          >
         </nav>
       </header>
 
-      <section class="mb-8 rounded-xl border-2 border-blue-200 bg-white/90 p-6 shadow-md">
-        <h2 class="mb-4 text-base font-medium text-slate-700">Sobre o projeto</h2>
+      <section
+        class="mb-8 rounded-xl border-2 border-blue-200 bg-white/90 p-6 shadow-md"
+      >
+        <h2 class="mb-4 text-base font-medium text-slate-700">
+          Sobre o projeto
+        </h2>
         <div class="space-y-3 text-slate-600">
           <p>
-            O <strong class="text-slate-800">inMotion</strong> é um sistema de investigação que usa a força do sinal WiFi (RSSI) de telemóveis para inferir padrões de movimento. Participantes ligam o dispositivo ao WiFi da sala, caminham mantendo tráfego ativo, e o sistema captura 10 amostras de RSSI para cada um.
+            O <strong class="text-slate-800">inMotion</strong> é um sistema de
+            investigação que usa a força do sinal WiFi (RSSI) de telemóveis para
+            inferir padrões de movimento. Participantes ligam o dispositivo ao
+            WiFi da sala, caminham mantendo tráfego ativo, e o sistema captura
+            10 amostras de RSSI para cada um.
           </p>
           <p>
-            Um modelo de machine learning (RandomForest) processa essas 10 amostras e prevê uma das classes AA, AB, BA ou BB, associadas a diferentes padrões. Esta demo foi concebida para o <strong class="text-slate-800">eXperimenta</strong>, onde alunos dos 10.º ao 12.º ano observam o processo de investigação em tempo real.
+            Um modelo de machine learning (RandomForest) processa essas 10
+            amostras e prevê uma das classes AA, AB, BA ou BB, associadas a
+            diferentes padrões. Esta demo foi concebida para o
+            <strong class="text-slate-800">eXperimenta</strong>, onde alunos dos
+            10.º ao 12.º ano observam o processo de investigação em tempo real.
           </p>
         </div>
       </section>
 
       <section class="mb-8">
-        <h2 class="mb-3 text-sm font-medium uppercase tracking-wide text-slate-600">RSSI por participante (dBm)</h2>
-        <div class="relative h-80 overflow-hidden rounded-xl border-2 border-green-200 bg-white p-4 shadow-md">
+        <h2
+          class="mb-3 text-sm font-medium uppercase tracking-wide text-slate-600"
+        >
+          RSSI por participante (dBm)
+        </h2>
+        <div
+          class="relative h-80 overflow-hidden rounded-xl border-2 border-green-200 bg-white p-4 shadow-md"
+        >
           <canvas id="overviewRssiCanvas" class="h-full w-full"></canvas>
         </div>
       </section>
 
       <section>
-        <h2 class="mb-3 text-sm font-medium uppercase tracking-wide text-slate-600">Participantes</h2>
-        <div class="overflow-x-auto rounded-xl border-2 border-indigo-200 bg-white shadow-md">
+        <h2
+          class="mb-3 text-sm font-medium uppercase tracking-wide text-slate-600"
+        >
+          Participantes
+        </h2>
+        <div
+          class="overflow-x-auto rounded-xl border-2 border-indigo-200 bg-white shadow-md"
+        >
           <table class="min-w-full text-sm">
             <thead class="border-b border-slate-200 bg-slate-50">
               <tr>
-                <th class="px-4 py-3 text-left font-medium text-slate-700">Participante</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-700">Endereço MAC</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-700">Previsão</th>
-                <th class="px-4 py-3 text-left font-medium text-slate-700">Confiança</th>
+                <th class="px-4 py-3 text-left font-medium text-slate-700">
+                  Participante
+                </th>
+                <th class="px-4 py-3 text-left font-medium text-slate-700">
+                  Endereço IP
+                </th>
+                <th class="px-4 py-3 text-left font-medium text-slate-700">
+                  Previsão
+                </th>
+                <th class="px-4 py-3 text-left font-medium text-slate-700">
+                  Confiança
+                </th>
               </tr>
             </thead>
             <tbody id="overviewTableBody" class="divide-y divide-slate-100">
               <tr>
-                <td colspan="4" class="px-4 py-8 text-center text-slate-400">Nenhum participante registado</td>
+                <td colspan="4" class="px-4 py-8 text-center text-slate-400">
+                  Nenhum participante registado
+                </td>
               </tr>
             </tbody>
           </table>

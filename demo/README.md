@@ -11,7 +11,7 @@ Demo local baseada em FastAPI, com sessões multi-participante, streaming RSSI e
   - `demo/app/event_hub.py`: distribuição de eventos para WebSocket/SSE
 - **UI local dividida**:
   - `/teacher`: controlo start/stop e lista de participantes
-  - `/child`: registo, deteção de MAC, gráfico RSSI e previsão
+  - `/child`: registo, deteção de IP, gráfico RSSI e previsão
 - **Regras de buffer determinísticas**:
   - buffer por participante com 10 RSSI
   - primeira previsão após 10 amostras
@@ -72,10 +72,10 @@ uv run python demo/main.py
 
 ### Registo do participante e identidade
 
-1. Detetar MAC:
+1. Detetar IP:
 
 ```http
-GET /api/child/detect-mac?codename=Alice
+GET /api/child/detect-ip?codename=Alice
 ```
 
 2. Registar participante:
@@ -84,7 +84,7 @@ GET /api/child/detect-mac?codename=Alice
 POST /api/child/register
 Content-Type: application/json
 
-{"codename":"Alice","mac":"rp:63:84:e2:b2:18:4b"}
+{"codename":"Alice","ip":"10.255.99.132"}
 ```
 
 ### Controlo do investigador
@@ -109,7 +109,7 @@ Content-Type: application/json
 
 1. Iniciar backend (`uv run python demo/main.py`).
 2. Abrir vistas de professor e criança.
-3. No participante: registar codename + MAC.
+3. No participante: registar codename + IP.
 4. No investigador: clicar em **Iniciar monitorização**.
 5. Pedir ao aluno para caminhar com tráfego ativo no telemóvel.
 6. Aguardar 10 segundos para fim da captura.
@@ -119,8 +119,8 @@ Content-Type: application/json
 
 - **Router inacessível / sem SSH**
   - O sistema entra em modo replay automaticamente.
-- **MAC não detetado**
-  - Em modo replay, MAC é gerado de forma determinística pelo codename.
+- **IP não detetado**
+  - Em modo replay, IP é gerado de forma determinística pelo codename.
 - **Modelo não carregado**
   - Verificar `/health` (`model_degraded`) e o ficheiro `models/RandomForest.joblib`.
 - **Porta ocupada**

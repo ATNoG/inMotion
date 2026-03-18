@@ -31,7 +31,7 @@ class TestScannerAdapter(unittest.IsolatedAsyncioTestCase):
             base = Path(tmp)
             csv_path = base / "sample.csv"
             csv_path.write_text(
-                "mac,1,2,3,4,5,6,7,8,9,10,label\n"
+                "ip,1,2,3,4,5,6,7,8,9,10,label\n"
                 "aa:aa:aa:aa:aa:aa,-40,-41,-42,-43,-44,-45,-46,-47,-48,-49,AA\n"
             )
 
@@ -41,19 +41,19 @@ class TestScannerAdapter(unittest.IsolatedAsyncioTestCase):
             async def on_rssi(event):
                 emitted.append(event)
 
-            await adapter._tick_replay(on_rssi, lambda: ["aa:aa:aa:aa:aa:aa"])
-            await adapter._tick_replay(on_rssi, lambda: ["aa:aa:aa:aa:aa:aa"])
+            await adapter._tick_replay(on_rssi, lambda: ["192.168.1.20"])
+            await adapter._tick_replay(on_rssi, lambda: ["192.168.1.20"])
 
             self.assertEqual(len(emitted), 2)
             self.assertEqual(emitted[0].source, "replay")
             self.assertTrue(-60 <= emitted[0].rssi <= -30)
 
-    async def test_detect_unassigned_mac(self) -> None:
+    async def test_detect_unassigned_ip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
             csv_path = base / "sample.csv"
             csv_path.write_text(
-                "mac,1,2,3,4,5,6,7,8,9,10,label\n"
+                "ip,1,2,3,4,5,6,7,8,9,10,label\n"
                 "bb:bb:bb:bb:bb:bb,-50,-50,-50,-50,-50,-50,-50,-50,-50,-50,BB\n"
             )
 
@@ -62,11 +62,11 @@ class TestScannerAdapter(unittest.IsolatedAsyncioTestCase):
             async def on_rssi(_event):
                 return None
 
-            await adapter._tick_replay(on_rssi, lambda: ["bb:bb:bb:bb:bb:bb"])
+            await adapter._tick_replay(on_rssi, lambda: ["192.168.1.30"])
 
-            found = adapter.detect_unassigned_mac(set())
-            self.assertEqual(found, "bb:bb:bb:bb:bb:bb")
-            self.assertIsNone(adapter.detect_unassigned_mac({"bb:bb:bb:bb:bb:bb"}))
+            found = adapter.detect_unassigned_ip(set())
+            self.assertEqual(found, "192.168.1.30")
+            self.assertIsNone(adapter.detect_unassigned_ip({"192.168.1.30"}))
 
 
 if __name__ == "__main__":

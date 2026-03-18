@@ -30,7 +30,7 @@ def _slug(value: str) -> str:
 class ChildSession:
     child_id: str
     codename: str
-    mac: str
+    ip: str
     status: StatusLiteral = "waiting_registration"
     sample_buffer: deque[float] = field(default_factory=lambda: deque(maxlen=10))
     latest_prediction: dict | None = None
@@ -54,11 +54,11 @@ class SessionStore:
     def __init__(self) -> None:
         self.monitor = MonitorSession()
         self.children_by_id: dict[str, ChildSession] = {}
-        self.child_id_by_mac: dict[str, str] = {}
+        self.child_id_by_ip: dict[str, str] = {}
 
-    def register_child(self, codename: str, mac: str) -> ChildSession:
-        normalized_mac = mac.lower().strip()
-        existing_id = self.child_id_by_mac.get(normalized_mac)
+    def register_child(self, codename: str, ip: str) -> ChildSession:
+        normalized_ip = ip.lower().strip()
+        existing_id = self.child_id_by_ip.get(normalized_ip)
         if existing_id:
             child = self.children_by_id[existing_id]
             child.codename = codename.strip()
@@ -72,15 +72,14 @@ class SessionStore:
             child_id = f"{base}-{idx}"
             idx += 1
 
-        child = ChildSession(child_id=child_id, codename=codename.strip(), mac=normalized_mac)
+        child = ChildSession(child_id=child_id, codename=codename.strip(), ip=normalized_ip)
         self.children_by_id[child_id] = child
-        self.child_id_by_mac[normalized_mac] = child_id
+        self.child_id_by_ip[normalized_ip] = child_id
         return child
 
-    def deterministic_replay_mac(self, codename: str) -> str:
-        digest = hashlib.md5(codename.strip().lower().encode("utf-8")).hexdigest()[:12]
-        grouped = ":".join([digest[i : i + 2] for i in range(0, 12, 2)])
-        return f"rp:{grouped}"
+    def deterministic_replay_ip(self, codename: str) -> str:
+        digest = hashlib.md5(codename.strip().lower().encode("utf-8")).digest()
+        return f"10.255.{digest[0]}.{digest[1]}"
 
     def start_teacher_session(self, mode: str) -> None:
         self.monitor.teacher_active = True
@@ -104,17 +103,17 @@ class SessionStore:
     def set_mode(self, mode: str) -> None:
         self.monitor.mode = mode
 
-    def get_child_by_mac(self, mac: str) -> ChildSession | None:
-        child_id = self.child_id_by_mac.get(mac.lower().strip())
+    def get_child_by_ip(self, ip: str) -> ChildSession | None:
+        child_id = self.child_id_by_ip.get(ip.lower().strip())
         if not child_id:
             return None
         return self.children_by_id.get(child_id)
 
-    def get_registered_macs(self) -> list[str]:
-        return list(self.child_id_by_mac.keys())
+    def get_registered_ips(self) -> list[str]:
+        return list(self.child_id_by_ip.keys())
 
-    def ingest_rssi(self, mac: str, rssi: float) -> tuple[ChildSession | None, list[float] | None]:
-        child = self.get_child_by_mac(mac)
+    def ingest_rssi(self, ip: str, rssi: float) -> tuple[ChildSession | None, list[float] | None]:
+        child = self.get_child_by_ip(ip)
         if child is None:
             return None, None
         if child.latest_prediction is not None:
@@ -149,7 +148,7 @@ class SessionStore:
                 {
                     "child_id": child.child_id,
                     "codename": child.codename,
-                    "mac": child.mac,
+                    "ip": child.ip,
                     "status": child.status,
                     "sample_count": child.sample_count(),
                     "latest_rssi": child.latest_rssi,

@@ -9,7 +9,7 @@ from app.config import load_config
 from app.contracts import (
     ChildRegisterRequest,
     ChildSessionView,
-    DetectMacResponse,
+    DetectIpResponse,
     MonitorSessionView,
     PredictionEvent,
     RSSIEvent,
@@ -54,7 +54,7 @@ def _child_view(child) -> ChildSessionView:
     return ChildSessionView(
         child_id=child.child_id,
         codename=child.codename,
-        mac=child.mac,
+        ip=child.ip,
         status=child.status,
         sample_count=child.sample_count(),
         latest_rssi=child.latest_rssi,
@@ -93,7 +93,7 @@ async def _handle_rssi(event: ScannerEvent) -> None:
         if not store.monitor.teacher_active:
             return
 
-        child, window = store.ingest_rssi(event.mac, event.rssi)
+        child, window = store.ingest_rssi(event.ip, event.rssi)
         if child is None:
             return
 
@@ -102,7 +102,7 @@ async def _handle_rssi(event: ScannerEvent) -> None:
             session_id=store.monitor.session_id,
             child_id=child.child_id,
             codename=child.codename,
-            mac=child.mac,
+            ip=child.ip,
             rssi=event.rssi,
             sample_count=child.sample_count(),
             window_size=config.window_size,
@@ -123,7 +123,7 @@ async def _handle_rssi(event: ScannerEvent) -> None:
         session_id=store.monitor.session_id,
         child_id=child.child_id,
         codename=child.codename,
-        mac=child.mac,
+        ip=child.ip,
         predicted_class=prediction["predicted_class"],
         confidence=prediction["confidence"],
         probabilities=prediction["probabilities"],
@@ -135,7 +135,7 @@ async def _handle_rssi(event: ScannerEvent) -> None:
 
 async def _lifespan_startup() -> None:
     inference.startup()
-    await scanner.start(_handle_rssi, _handle_status, store.get_registered_macs)
+    await scanner.start(_handle_rssi, _handle_status, store.get_registered_ips)
 
 
 async def _lifespan_shutdown() -> None:
@@ -203,27 +203,27 @@ async def get_state() -> SessionStateResponse:
         return _session_state()
 
 
-@app.get("/api/child/detect-mac", response_model=DetectMacResponse)
-async def detect_mac(codename: str = Query(default="participante")) -> DetectMacResponse:
+@app.get("/api/child/detect-ip", response_model=DetectIpResponse)
+async def detect_ip(codename: str = Query(default="participante")) -> DetectIpResponse:
     async with state_lock:
-        assigned = set(store.get_registered_macs())
-        detected = scanner.detect_unassigned_mac(assigned)
+        assigned = set(store.get_registered_ips())
+        detected = scanner.detect_unassigned_ip(assigned)
         if detected:
-            return DetectMacResponse(mac=detected, source="live")
+            return DetectIpResponse(ip=detected, source="live")
 
         if scanner.mode in {"replay", "replay-test"}:
-            return DetectMacResponse(mac=store.deterministic_replay_mac(codename), source="replay")
+            return DetectIpResponse(ip=store.deterministic_replay_ip(codename), source="replay")
 
-        return DetectMacResponse(mac=None, source="none")
+        return DetectIpResponse(ip=None, source="none")
 
 
 @app.post("/api/child/register", response_model=ChildSessionView)
 async def register_child(req: ChildRegisterRequest) -> ChildSessionView:
     async with state_lock:
-        if not req.mac.strip():
-            raise HTTPException(status_code=400, detail="MAC is required")
+        if not req.ip.strip():
+            raise HTTPException(status_code=400, detail="IP is required")
 
-        child = store.register_child(req.codename, req.mac)
+        child = store.register_child(req.codename, req.ip)
         if store.monitor.teacher_active:
             child.status = "monitoring"
             child.updated_at = datetime.now(UTC)
@@ -236,7 +236,7 @@ async def register_child(req: ChildRegisterRequest) -> ChildSessionView:
             "timestamp": datetime.now(UTC).isoformat(),
             "status": "recover",
             "mode": scanner.mode,
-            "message": f"Participante {child.codename} registado ({child.mac})",
+            "message": f"Participante {child.codename} registado ({child.ip})",
         }
     )
     return child_view
@@ -297,7 +297,13 @@ async def test_router_stop() -> dict:
         StatusEvent(
             timestamp=datetime.now(UTC),
             status="recover",
-            mode=scanner.mode,
+            mode=(
+                "live"
+                if scanner.mode == "live"
+                else "replay-test"
+                if scanner.mode == "replay-test"
+                else "replay"
+            ),
             message="Modo de teste do router desativado",
         ).model_dump(mode="json")
     )

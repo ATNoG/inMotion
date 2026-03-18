@@ -65,14 +65,15 @@ function iniciarProfessor() {
         const pred = child.latest_prediction?.predicted_class || "—";
         return `<tr>
           <td class="py-2">${child.codename}</td>
-          <td class="py-2 font-mono text-slate-600">${child.mac}</td>
+          <td class="py-2 font-mono text-slate-600">${child.ip}</td>
           <td class="py-2 text-slate-600">${traduzEstado(child.status)}</td>
           <td class="py-2 font-medium">${pred}</td>
         </tr>`;
       });
 
     rosterBody.innerHTML =
-      rows.join("") || '<tr><td colspan="4" class="py-4 text-center text-slate-400">Sem participantes registados</td></tr>';
+      rows.join("") ||
+      '<tr><td colspan="4" class="py-4 text-center text-slate-400">Sem participantes registados</td></tr>';
   }
 
   async function refreshState() {
@@ -139,7 +140,7 @@ function iniciarProfessor() {
       const current = children.get(payload.child_id) || {
         child_id: payload.child_id,
         codename: payload.codename,
-        mac: payload.mac,
+        ip: payload.ip,
       };
 
       if (payload.event_type === "rssi") {
@@ -155,7 +156,7 @@ function iniciarProfessor() {
       }
 
       current.codename = payload.codename;
-      current.mac = payload.mac;
+      current.ip = payload.ip;
       children.set(payload.child_id, current);
       render();
     }
@@ -213,7 +214,8 @@ function iniciarOverview() {
   });
 
   function getCor(id) {
-    const idx = [...participants.keys()].sort().indexOf(id) % coresParticipante.length;
+    const idx =
+      [...participants.keys()].sort().indexOf(id) % coresParticipante.length;
     return coresParticipante[idx];
   }
 
@@ -226,7 +228,7 @@ function iniciarOverview() {
         const conf = pred ? `${(pred.confidence * 100).toFixed(1)}%` : "—";
         return `<tr>
           <td class="px-4 py-3 font-medium text-slate-800">${p.codename}</td>
-          <td class="px-4 py-3 font-mono text-slate-600">${p.mac}</td>
+          <td class="px-4 py-3 font-mono text-slate-600">${p.ip}</td>
           <td class="px-4 py-3"><span class="font-semibold" style="color:${coresClasse[predClass] || "#64748b"}">${predClass}</span></td>
           <td class="px-4 py-3 text-slate-600">${conf}</td>
         </tr>`;
@@ -253,7 +255,10 @@ function iniciarOverview() {
       };
     });
 
-    const maxLen = Math.max(1, ...[...rssiByChild.values()].map((a) => a.length));
+    const maxLen = Math.max(
+      1,
+      ...[...rssiByChild.values()].map((a) => a.length),
+    );
     chart.data.labels = Array.from({ length: maxLen }, (_, i) => i + 1);
     chart.update("none");
   }
@@ -275,7 +280,7 @@ function iniciarOverview() {
       const c = participants.get(payload.child_id) || {
         child_id: payload.child_id,
         codename: payload.codename,
-        mac: payload.mac,
+        ip: payload.ip,
         latest_prediction: null,
       };
       participants.set(payload.child_id, c);
@@ -292,7 +297,7 @@ function iniciarOverview() {
       const c = participants.get(payload.child_id) || {
         child_id: payload.child_id,
         codename: payload.codename,
-        mac: payload.mac,
+        ip: payload.ip,
       };
       c.latest_prediction = {
         predicted_class: payload.predicted_class,
@@ -327,7 +332,7 @@ function iniciarCrianca() {
   const predProb = document.getElementById("predProb");
 
   let childId = localStorage.getItem("inmotion-child-id") || "";
-  let detectedMac = localStorage.getItem("inmotion-child-mac") || "";
+  let detectedIp = localStorage.getItem("inmotion-child-ip") || "";
 
   const rssiHistory = [];
 
@@ -403,17 +408,74 @@ function iniciarCrianca() {
       .join("");
   }
 
-  async function detetarMac(codename) {
+  function extrairIpDoCandidate(candidateText) {
+    if (!candidateText) return "";
+
+    const ipv4 = candidateText.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
+    if (ipv4) {
+      return ipv4[0];
+    }
+
+    const ipv6 = candidateText.match(
+      /\b(?:[0-9a-f]{1,4}:){2,7}[0-9a-f]{1,4}\b/i,
+    );
+    return ipv6 ? ipv6[0] : "";
+  }
+
+  async function obterIpComJs(timeoutMs = 2000) {
+    const RTCPeer = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+    if (!RTCPeer) {
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const conn = new RTCPeer({ iceServers: [] });
+
+      const done = (value) => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeoutId);
+        conn.close();
+        resolve(value || null);
+      };
+
+      const timeoutId = setTimeout(() => done(null), timeoutMs);
+      conn.createDataChannel("inmotion-ip");
+      conn.onicecandidate = (event) => {
+        const candidate = event.candidate?.candidate || "";
+        const ip = extrairIpDoCandidate(candidate);
+        if (ip && !ip.endsWith(".local")) {
+          done(ip);
+        }
+      };
+
+      conn
+        .createOffer()
+        .then((offer) => conn.setLocalDescription(offer))
+        .catch(() => done(null));
+    });
+  }
+
+  async function detetarIp(codename) {
+    const jsIp = await obterIpComJs();
+    if (jsIp) {
+      detectedIp = jsIp;
+      localStorage.setItem("inmotion-child-ip", detectedIp);
+      registerStatus.textContent = `IP detetado: ${detectedIp} (js)`;
+      return { ip: detectedIp, source: "js" };
+    }
+
     const state = await fetchJSON(
-      `/api/child/detect-mac?codename=${encodeURIComponent(codename)}`,
+      `/api/child/detect-ip?codename=${encodeURIComponent(codename)}`,
     );
 
-    if (state.mac) {
-      detectedMac = state.mac;
-      localStorage.setItem("inmotion-child-mac", detectedMac);
-      registerStatus.textContent = `MAC detetado: ${detectedMac} (${state.source})`;
+    if (state.ip) {
+      detectedIp = state.ip;
+      localStorage.setItem("inmotion-child-ip", detectedIp);
+      registerStatus.textContent = `IP detetado: ${detectedIp} (${state.source})`;
     } else {
-      registerStatus.textContent = "deteção de MAC pendente";
+      registerStatus.textContent = "deteção de IP pendente";
     }
 
     return state;
@@ -443,7 +505,7 @@ function iniciarCrianca() {
         if (!captureStartedAt) {
           captureStartedAt = Date.now();
         }
-
+        console.log("RSSI recebido:", payload.rssi);
         rssiHistory.push(payload.rssi);
         while (rssiHistory.length > 10) rssiHistory.shift();
         atualizarGraficoRssi();
@@ -476,25 +538,25 @@ function iniciarCrianca() {
       `Participante-${Math.floor(Math.random() * 100)}`;
 
     try {
-      if (!detectedMac) {
-        await detetarMac(codename);
+      if (!detectedIp) {
+        await detetarIp(codename);
       }
 
-      if (!detectedMac) {
+      if (!detectedIp) {
         registerStatus.textContent =
-          "MAC não detetado. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
+          "IP não detetado. (Se estiver a testar, ative o 'Mock Router' na vista do Investigador primeiro)";
         return;
       }
 
       const child = await fetchJSON("/api/child/register", {
         method: "POST",
-        body: JSON.stringify({ codename, mac: detectedMac }),
+        body: JSON.stringify({ codename, ip: detectedIp }),
       });
 
       childId = child.child_id;
       localStorage.setItem("inmotion-child-id", childId);
       statusBadge.textContent = traduzEstado(child.status);
-      childInfo.textContent = `ID participante: ${child.child_id} • MAC: ${child.mac}`;
+      childInfo.textContent = `ID participante: ${child.child_id} • IP: ${child.ip}`;
       registerStatus.textContent = `registado como ${child.codename}`;
       ligarWebSocketCrianca();
     } catch (error) {
@@ -503,12 +565,12 @@ function iniciarCrianca() {
   });
 
   const initialCodename = codenameInput.value || "participante";
-  detetarMac(initialCodename).catch(() => {
-    registerStatus.textContent = "deteção de MAC pendente";
+  detetarIp(initialCodename).catch(() => {
+    registerStatus.textContent = "deteção de IP pendente";
   });
 
   if (childId) {
-    childInfo.textContent = `ID participante: ${childId} • MAC: ${detectedMac || "desconhecido"}`;
+    childInfo.textContent = `ID participante: ${childId} • IP: ${detectedIp || "desconhecido"}`;
     ligarWebSocketCrianca();
   }
 

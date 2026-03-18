@@ -17,7 +17,7 @@ from .config import DemoConfig
 @dataclass
 class ScannerEvent:
     timestamp: datetime
-    mac: str
+    ip: str
     rssi: float
     source: Literal["live", "replay"]
 
@@ -32,7 +32,7 @@ class ScannerAdapter:
         self._latest_seen: dict[str, datetime] = {}
         self._fallback_replay_windows = self._load_replay_windows(config.fallback_csv_path)
         self._test_replay_windows = self._load_replay_windows(config.test_router_csv_path)
-        self._replay_state_by_mac: dict[str, tuple[list[float], int]] = {}
+        self._replay_state_by_ip: dict[str, tuple[list[float], int]] = {}
         self._reconnect_counter = 0
         self._live_ready_sent = False
         self._replay_ready_sent = False
@@ -49,33 +49,33 @@ class ScannerAdapter:
         if enabled:
             self._mode = "replay"
 
-    def get_detected_macs(self) -> list[str]:
+    def get_detected_ips(self) -> list[str]:
         return [
-            mac
-            for mac, _ in sorted(
+            ip
+            for ip, _ in sorted(
                 self._latest_seen.items(),
                 key=lambda item: item[1],
                 reverse=True,
             )
         ]
 
-    def detect_unassigned_mac(self, assigned_macs: set[str]) -> str | None:
-        for mac in self.get_detected_macs():
-            if mac not in assigned_macs:
-                return mac
+    def detect_unassigned_ip(self, assigned_ips: set[str]) -> str | None:
+        for ip in self.get_detected_ips():
+            if ip not in assigned_ips:
+                return ip
         return None
 
     async def start(
         self,
         on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
         on_status_event: Callable[[dict], Awaitable[None] | None],
-        get_target_macs: Callable[[], list[str]],
+        get_target_ips: Callable[[], list[str]],
     ) -> None:
         if self._running:
             return
         self._running = True
         self._task = asyncio.create_task(
-            self._run_loop(on_rssi_event, on_status_event, get_target_macs)
+            self._run_loop(on_rssi_event, on_status_event, get_target_ips)
         )
 
     async def stop(self) -> None:
@@ -89,13 +89,13 @@ class ScannerAdapter:
         self,
         on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
         on_status_event: Callable[[dict], Awaitable[None] | None],
-        get_target_macs: Callable[[], list[str]],
+        get_target_ips: Callable[[], list[str]],
     ) -> None:
         await self._emit_status(on_status_event, "connect", "live", "A ligar ao scanner")
 
         while self._running:
             if self._force_test_mode:
-                await self._tick_replay(on_rssi_event, get_target_macs)
+                await self._tick_replay(on_rssi_event, get_target_ips)
                 if not self._replay_ready_sent:
                     await self._emit_status(
                         on_status_event,
@@ -110,7 +110,7 @@ class ScannerAdapter:
 
             if self._mode == "live":
                 try:
-                    await self._tick_live(on_rssi_event, get_target_macs)
+                    await self._tick_live(on_rssi_event, get_target_ips)
                     if not self._live_ready_sent:
                         await self._emit_status(
                             on_status_event,
@@ -126,7 +126,7 @@ class ScannerAdapter:
                     self._reconnect_counter = 0
                 await asyncio.sleep(self._config.scan_interval_seconds)
             else:
-                await self._tick_replay(on_rssi_event, get_target_macs)
+                await self._tick_replay(on_rssi_event, get_target_ips)
                 if not self._replay_ready_sent:
                     await self._emit_status(
                         on_status_event,
@@ -141,7 +141,7 @@ class ScannerAdapter:
                 if self._reconnect_counter >= 15:
                     self._reconnect_counter = 0
                     try:
-                        await self._tick_live(on_rssi_event, get_target_macs)
+                        await self._tick_live(on_rssi_event, get_target_ips)
                         self._mode = "live"
                         await self._emit_status(
                             on_status_event,
@@ -155,38 +155,38 @@ class ScannerAdapter:
     async def _tick_live(
         self,
         on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
-        get_target_macs: Callable[[], list[str]],
+        get_target_ips: Callable[[], list[str]],
     ) -> None:
         scanner = await self._ensure_live_scanner()
         all_clients = await asyncio.to_thread(scanner.get_all_wifi_clients, False)
         if not isinstance(all_clients, dict):
             raise RuntimeError("Unexpected scanner output")
 
-        target_macs = {m.lower() for m in get_target_macs()}
+        target_ips = {ip.lower() for ip in get_target_ips()}
         aggregated: dict[str, list[float]] = {}
 
         for clients in all_clients.values():
             if not isinstance(clients, list):
                 continue
             for client in clients:
-                mac = str(client.get("mac", "")).lower().strip()
+                ip = str(client.get("ip", "")).lower().strip()
                 rssi_raw = client.get("rssi")
-                if not mac:
+                if not ip:
                     continue
                 try:
                     rssi = float(rssi_raw)
                 except (TypeError, ValueError):
                     continue
-                self._latest_seen[mac] = datetime.now(UTC)
-                aggregated.setdefault(mac, []).append(rssi)
+                self._latest_seen[ip] = datetime.now(UTC)
+                aggregated.setdefault(ip, []).append(rssi)
 
-        for mac, values in aggregated.items():
-            if target_macs and mac not in target_macs:
+        for ip, values in aggregated.items():
+            if target_ips and ip not in target_ips:
                 continue
             avg_rssi = float(sum(values) / len(values))
             event = ScannerEvent(
                 timestamp=datetime.now(UTC),
-                mac=mac,
+                ip=ip,
                 rssi=avg_rssi,
                 source="live",
             )
@@ -197,29 +197,29 @@ class ScannerAdapter:
     async def _tick_replay(
         self,
         on_rssi_event: Callable[[ScannerEvent], Awaitable[None] | None],
-        get_target_macs: Callable[[], list[str]],
+        get_target_ips: Callable[[], list[str]],
     ) -> None:
-        target_macs = get_target_macs()
-        if not target_macs:
+        target_ips = get_target_ips()
+        if not target_ips:
             return
 
-        for mac in target_macs:
+        for ip in target_ips:
             windows = (
                 self._test_replay_windows
                 if self._force_test_mode
                 else self._fallback_replay_windows
             )
-            active_window, idx = self._replay_state_by_mac.get(mac, ([], 0))
+            active_window, idx = self._replay_state_by_ip.get(ip, ([], 0))
             if not active_window or idx >= len(active_window):
                 active_window = random.choice(windows)
                 idx = 0
 
             value = active_window[idx]
-            self._replay_state_by_mac[mac] = (active_window, idx + 1)
-            self._latest_seen[mac] = datetime.now(UTC)
+            self._replay_state_by_ip[ip] = (active_window, idx + 1)
+            self._latest_seen[ip] = datetime.now(UTC)
             event = ScannerEvent(
                 timestamp=datetime.now(UTC),
-                mac=mac,
+                ip=ip,
                 rssi=value,
                 source="replay",
             )

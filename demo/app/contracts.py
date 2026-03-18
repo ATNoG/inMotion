@@ -16,13 +16,13 @@ StatusLiteral = Literal[
 
 class ChildRegisterRequest(BaseModel):
     codename: str = Field(min_length=1, max_length=32)
-    mac: str = Field(min_length=5, max_length=32)
+    ip: str = Field(min_length=3, max_length=64)
 
 
 class ChildSessionView(BaseModel):
     child_id: str
     codename: str
-    mac: str
+    ip: str
     status: StatusLiteral
     sample_count: int
     latest_rssi: float | None
@@ -47,8 +47,8 @@ class TeacherControlResponse(BaseModel):
     monitor: MonitorSessionView
 
 
-class DetectMacResponse(BaseModel):
-    mac: str | None
+class DetectIpResponse(BaseModel):
+    ip: str | None
     source: Literal["live", "replay", "none"]
 
 
@@ -58,7 +58,7 @@ class RSSIEvent(BaseModel):
     session_id: str
     child_id: str
     codename: str
-    mac: str
+    ip: str
     rssi: float
     sample_count: int
     window_size: int
@@ -71,7 +71,7 @@ class PredictionEvent(BaseModel):
     session_id: str
     child_id: str
     codename: str
-    mac: str
+    ip: str
     predicted_class: Literal["AA", "AB", "BA", "BB"]
     confidence: float
     probabilities: dict[str, float]
