@@ -310,6 +310,24 @@ async def test_router_stop() -> dict:
     return {"ok": True, "test_mode": False}
 
 
+@app.post("/api/scanner/live/start")
+async def scanner_live_start() -> dict:
+    try:
+        await scanner.activate_live_mode()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    await _publish(
+        StatusEvent(
+            timestamp=datetime.now(UTC),
+            status="recover",
+            mode="live",
+            message="Scanner real OpenWrt ativado",
+        ).model_dump(mode="json")
+    )
+    return {"ok": True, "mode": scanner.mode}
+
+
 async def _send_stream_events(websocket: WebSocket, child_id: str | None) -> None:
     async for event in hub.subscribe():
         if (

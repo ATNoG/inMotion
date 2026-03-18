@@ -38,7 +38,14 @@ async function fetchJSON(url, options) {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(body || `Pedido falhou: ${response.status}`);
+    let message = body;
+    try {
+      const parsed = JSON.parse(body);
+      message = parsed?.detail || parsed?.message || body;
+    } catch {
+      message = body;
+    }
+    throw new Error(message || `Pedido falhou: ${response.status}`);
   }
   return response.json();
 }
@@ -81,6 +88,7 @@ function iniciarProfessor() {
   const scannerBadge = document.getElementById("scannerBadge");
   const startBtn = document.getElementById("startBtn");
   const stopBtn = document.getElementById("stopBtn");
+  const liveScannerBtn = document.getElementById("liveScannerBtn");
 
   const children = new Map();
 
@@ -121,6 +129,19 @@ function iniciarProfessor() {
     await fetchJSON("/api/teacher/stop", { method: "POST" });
     await refreshState();
   });
+
+  if (liveScannerBtn) {
+    liveScannerBtn.addEventListener("click", async () => {
+      try {
+        await fetchJSON("/api/scanner/live/start", { method: "POST" });
+        await refreshState();
+      } catch (error) {
+        const message =
+          error?.message || "não foi possível ativar o scanner real";
+        stateLabel.textContent = `erro ao ativar scanner real: ${message}`;
+      }
+    });
+  }
 
   const testRouterStartBtn = document.getElementById("testRouterStartBtn");
   const testRouterStopBtn = document.getElementById("testRouterStopBtn");
@@ -226,7 +247,7 @@ function iniciarOverview() {
       scales: {
         y: {
           min: -80,
-          max: -30,
+          max: -10,
           title: { display: true, text: "RSSI (dBm)" },
         },
         x: {
@@ -668,7 +689,7 @@ function iniciarCrianca() {
         scales: {
           y: {
             min: -80,
-            max: -30,
+            max: -10,
             title: { display: true, text: "dBm" },
           },
           x: {

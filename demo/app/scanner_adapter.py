@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import csv
-import importlib.util
 import random
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -12,6 +11,7 @@ from pathlib import Path
 from typing import Literal
 
 from .config import DemoConfig
+from .wifi_scan import OpenWrtWiFiScanner
 
 
 @dataclass
@@ -34,6 +34,7 @@ class ScannerAdapter:
         self._test_replay_windows = self._load_replay_windows(config.test_router_csv_path)
         self._replay_state_by_ip: dict[str, tuple[list[float], int]] = {}
         self._reconnect_counter = 0
+        self._reconnect_attempt_interval = 30
         self._live_ready_sent = False
         self._replay_ready_sent = False
         self._force_test_mode = False
@@ -48,6 +49,17 @@ class ScannerAdapter:
         self._force_test_mode = enabled
         if enabled:
             self._mode = "replay"
+
+    async def activate_live_mode(self) -> None:
+        if not self._config.router_ip:
+            raise RuntimeError("INMOTION_ROUTER_IP não está configurado")
+
+        self._force_test_mode = False
+        self._mode = "live"
+        self._reconnect_counter = 0
+        self._replay_ready_sent = False
+        self._live_ready_sent = False
+        await self._ensure_live_scanner()
 
     def get_detected_ips(self) -> list[str]:
         return [
@@ -121,9 +133,15 @@ class ScannerAdapter:
                         self._live_ready_sent = True
                         self._replay_ready_sent = False
                 except Exception as exc:
-                    await self._emit_status(on_status_event, "error", "live", str(exc))
+                    await self._emit_status(
+                        on_status_event,
+                        "error",
+                        "live",
+                        f"scanner real indisponível ({exc}); a usar fallback replay",
+                    )
                     self._mode = "replay"
                     self._reconnect_counter = 0
+                    self._live_ready_sent = False
                 await asyncio.sleep(self._config.scan_interval_seconds)
             else:
                 await self._tick_replay(on_rssi_event, get_target_ips)
@@ -138,7 +156,7 @@ class ScannerAdapter:
                     self._live_ready_sent = False
                 await asyncio.sleep(self._config.scan_interval_seconds)
                 self._reconnect_counter += 1
-                if self._reconnect_counter >= 15:
+                if self._reconnect_counter >= self._reconnect_attempt_interval:
                     self._reconnect_counter = 0
                     try:
                         await self._tick_live(on_rssi_event, get_target_ips)
@@ -179,6 +197,9 @@ class ScannerAdapter:
                     continue
                 self._latest_seen[ip] = datetime.now(UTC)
                 aggregated.setdefault(ip, []).append(rssi)
+
+        if not aggregated:
+            raise RuntimeError("sem RSSI recebido do router (rede/credenciais)")
 
         for ip, values in aggregated.items():
             if target_ips and ip not in target_ips:
@@ -233,21 +254,7 @@ class ScannerAdapter:
         if not self._config.router_ip:
             raise RuntimeError("Router não configurado; a usar fallback por replay")
 
-        scanner_script = self._config.root_dir / "wavecom_files" / "wifi_scan.py"
-        if not scanner_script.exists():
-            raise RuntimeError("wifi_scan.py não encontrado")
-
-        spec = importlib.util.spec_from_file_location("wifi_scan", scanner_script)
-        if spec is None or spec.loader is None:
-            raise RuntimeError("Não foi possível importar o módulo de scanner WiFi")
-
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        scanner_cls = getattr(module, "OpenWrtWiFiScanner", None)
-        if scanner_cls is None:
-            raise RuntimeError("Classe OpenWrtWiFiScanner em falta")
-
-        self._scanner = scanner_cls(
+        self._scanner = OpenWrtWiFiScanner(
             router_ip=self._config.router_ip,
             username=self._config.router_user,
             password=self._config.router_pass or None,

@@ -43,6 +43,8 @@ def load_config() -> DemoConfig:
     model_path = _resolve_path(
         "INMOTION_MODEL_PATH",
         [
+            Path("/app/models/RandomForest.joblib"),
+            Path("/app/models/GaussianProcess.joblib"),
             demo_dir / "models" / "GaussianProcess.joblib",
             root_dir / "models" / "GaussianProcess.joblib",
         ],

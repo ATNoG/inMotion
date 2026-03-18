@@ -17,7 +17,7 @@ Demo local baseada em FastAPI, com sessões multi-participante, streaming RSSI e
   - primeira previsão após 10 amostras
   - atualizações seguintes por janela deslizante
 - **Resiliência offline**:
-  - modo primário: scanner ao vivo (`wavecom_files/wifi_scan.py`)
+  - modo primário: scanner ao vivo (`demo/app/wifi_scan.py`)
   - fallback: replay de dados locais (`dataset_only_pure.csv`)
 
 ## Bibliotecas usadas (locais, descarregáveis)

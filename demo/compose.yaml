@@ -7,7 +7,14 @@ services:
       - "8005:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - INMOTION_MODEL_PATH=/app/models/RandomForest.joblib
+      # - INMOTION_MODEL_PATH=/app/models/
+      - INMOTION_ROUTER_IP=${INMOTION_ROUTER_IP:-10.30.0.1}
+      - INMOTION_ROUTER_USER=${INMOTION_ROUTER_USER:-admin}
+      - INMOTION_ROUTER_PASS=${INMOTION_ROUTER_PASS:-}
+      - INMOTION_ROUTER_KEY_FILE=${INMOTION_ROUTER_KEY_FILE:-}
+      - INMOTION_ROUTER_PORT=${INMOTION_ROUTER_PORT:-22}
+      - INMOTION_ROUTER_COMMAND_MODE=${INMOTION_ROUTER_COMMAND_MODE:-auto}
+      - INMOTION_SCAN_INTERVAL=${INMOTION_SCAN_INTERVAL:-1.0}
     volumes:
       - ../models:/app/models:ro
       - ../dataset.csv:/app/dataset.csv:ro
