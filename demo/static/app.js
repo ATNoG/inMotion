@@ -1,4 +1,6 @@
-const role = document.querySelector(".page")?.dataset.role;
+const role =
+  document.querySelector(".page")?.dataset.role ||
+  document.querySelector("[data-role]")?.dataset.role;
 
 const traducoesEstado = {
   waiting_registration: "a aguardar registo",
