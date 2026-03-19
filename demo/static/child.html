@@ -151,8 +151,19 @@
         BB: "#8a2f2f",
       };
 
+      const traducoesClasse = {
+        AA: "Manter-se no Autocarro",
+        AB: "Entrar no Autocarro",
+        BA: "Sair do Autocarro",
+        BB: "Manter-se na paragem",
+      };
+
       function traduzEstado(value) {
         return traducoesEstado[value] || value || "";
+      }
+
+      function traduzClasse(value) {
+        return traducoesClasse[value] || value || "—";
       }
 
       async function fetchJSON(url, options) {
@@ -212,7 +223,9 @@
           const rows = [...children.values()]
             .sort((a, b) => (a.codename || "").localeCompare(b.codename || ""))
             .map((child) => {
-              const pred = child.latest_prediction?.predicted_class || "—";
+              const pred = traduzClasse(
+                child.latest_prediction?.predicted_class,
+              );
               return `<tr>
           <td class="py-2">${child.codename}</td>
           <td class="py-2 font-mono text-slate-600">${child.ip}</td>
@@ -380,13 +393,14 @@
             .map((p) => {
               const pred = p.latest_prediction;
               const predClass = pred?.predicted_class ?? "—";
+              const predLabel = traduzClasse(predClass);
               const conf = pred
                 ? `${(pred.confidence * 100).toFixed(1)}%`
                 : "—";
               return `<tr>
           <td class="px-4 py-3 font-medium text-slate-800">${p.codename}</td>
           <td class="px-4 py-3 font-mono text-slate-600">${p.ip}</td>
-          <td class="px-4 py-3"><span class="font-semibold" style="color:${coresClasse[predClass] || "#64748b"}">${predClass}</span></td>
+          <td class="px-4 py-3"><span class="font-semibold" style="color:${coresClasse[predClass] || "#64748b"}">${predLabel}</span></td>
           <td class="px-4 py-3 text-slate-600">${conf}</td>
         </tr>`;
             });
@@ -576,7 +590,7 @@
         }
 
         function aplicarPrevisao(payload) {
-          predMain.textContent = payload.predicted_class;
+          predMain.textContent = traduzClasse(payload.predicted_class);
           predConf.textContent = `confiança: ${(payload.confidence * 100).toFixed(1)}%`;
           predSource.textContent = `origem: ${payload.source || "desconhecida"}`;
           sampleStatus.textContent = "previsão atualizada";
@@ -585,7 +599,7 @@
             .map(
               ([key, value]) => `
           <div class="flex items-center gap-2 mb-1">
-            <div class="w-8 text-xs font-semibold text-slate-700">${key}</div>
+            <div class="w-44 text-xs font-semibold text-slate-700">${traduzClasse(key)}</div>
             <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
               <div class="h-full rounded-full transition-all duration-300" style="width:${Math.max(2, value * 100)}%;background-color:var(--accent,#1f6f5f)"></div>
             </div>
