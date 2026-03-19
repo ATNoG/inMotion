@@ -29,8 +29,8 @@ const coresClasse = {
 
 const traducoesClasse = {
   AA: "Manter-se no Autocarro",
-  AB: "Entrar no Autocarro",
-  BA: "Sair do Autocarro",
+  AB: "Sair do Autocarro",
+  BA: "Entrar no Autocarro",
   BB: "Manter-se na paragem",
 };
 
