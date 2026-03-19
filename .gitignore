@@ -224,7 +224,7 @@ AGENTS.md
 **/paper/*.bbl
 **/paper/*.blg
 
-models**/
-models/
+# models/
+models/*
 !models/GaussianProcess42.joblib
 
