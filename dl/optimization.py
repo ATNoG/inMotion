@@ -217,6 +217,61 @@ def run_nas_study(
     return study, best_model
 
 
+def run_binary_moe_hpo_study(
+    arch_type: str,
+    config: DLConfig,
+    data_loader: DLDataLoader,
+    X_tr: np.ndarray,
+    y_tr_bin: np.ndarray,
+    X_val: np.ndarray,
+    y_val_bin: np.ndarray,
+) -> optuna.Study:
+    """HPO for a single binary MoE expert arch type.
+
+    y_tr_bin / y_val_bin are 0/1 labels (class_k vs rest).
+    Searches arch hyperparams + training hyperparams jointly.
+    Returns the finished study; best_trial.params contains the full param set.
+    """
+    from .models.moe import build_moe_expert_typed
+
+    tr_loader = data_loader.make_loader(X_tr, y_tr_bin, shuffle=True)
+    val_loader = data_loader.make_loader(X_val, y_val_bin, shuffle=False)
+    study_name = f"{config.optuna_study_prefix}_moe_binary_{arch_type}"
+
+    def objective(trial: optuna.Trial) -> float:
+        dropout = trial.suggest_float("dropout", 0.05, 0.6)
+        params: dict = {"dropout": dropout}
+
+        if arch_type in ("gru", "lstm", "rnn"):
+            params["hidden_size"] = trial.suggest_int("hidden_size", 32, 256, log=True)
+            params["num_layers"] = trial.suggest_int("num_layers", 1, 4)
+            params["bidirectional"] = bool(
+                trial.suggest_categorical("bidirectional", [True, False])
+            )
+            if arch_type == "lstm":
+                params["use_attention"] = bool(
+                    trial.suggest_categorical("use_attention", [True, False])
+                )
+        else:  # cnn
+            params["num_filters"] = trial.suggest_int("num_filters", 32, 256, log=True)
+            params["num_blocks"] = trial.suggest_int("num_blocks", 1, 6)
+            params["kernel_set"] = int(trial.suggest_categorical("kernel_set", [0, 1, 2]))
+
+        cfg = copy.copy(config)
+        cfg.num_classes = 2
+        model = build_moe_expert_typed(arch_type, cfg.in_features, params)
+        return _train_and_eval(model, cfg, tr_loader, val_loader, trial)
+
+    study = optuna.create_study(
+        direction="maximize",
+        study_name=study_name,
+        storage=config.optuna_storage,
+        load_if_exists=True,
+    )
+    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+    return study
+
+
 def save_optuna_plots(study: optuna.Study, model_name: str, plots_dir: Path) -> None:
     try:
         from optuna.visualization import (
