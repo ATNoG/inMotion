@@ -55,10 +55,14 @@ HPO_TYPES: list[str] = ["rnn", "gru", "lstm", "cnn", "autoformer"]
 
 # 8 base variants for Deep Stacking (2 configs per arch)
 DS_BASE_NAMES: list[str] = [
-    "DS_RNN_A", "DS_RNN_B",
-    "DS_GRU_A", "DS_GRU_B",
-    "DS_LSTM_A", "DS_LSTM_B",
-    "DS_CNN_A", "DS_CNN_B",
+    "DS_RNN_A",
+    "DS_RNN_B",
+    "DS_GRU_A",
+    "DS_GRU_B",
+    "DS_LSTM_A",
+    "DS_LSTM_B",
+    "DS_CNN_A",
+    "DS_CNN_B",
 ]
 
 
@@ -551,10 +555,7 @@ def main() -> None:
         all_results.append(nas_row)
         curve_data.append({"name": "OptunaNet_NAS", "val_mccs": nas_val_mccs})
         nas_mcc = float(nas_row["test_mcc"])  # type: ignore[arg-type]
-        print(
-            f"  [NAS] {nas_row['device']}  arch={nas_row['best_arch']}  "
-            f"test_mcc={nas_mcc:.4f}"
-        )
+        print(f"  [NAS] {nas_row['device']}  arch={nas_row['best_arch']}  test_mcc={nas_mcc:.4f}")
 
     # ── Phase 4: Mixture-of-Experts ───────────────────────────────────────────
     if not args.no_moe:
@@ -621,20 +622,26 @@ def main() -> None:
         trainer_meta = Trainer(meta_config)
         trainer_meta.fit(meta_model, meta_tr_loader, meta_val_loader)
         moe_metrics = evaluate_model_on_test(
-            meta_model, meta_test_loader, meta_config, classes,
-            "MixtureOfExperts", log_wandb=config.use_wandb,
+            meta_model,
+            meta_test_loader,
+            meta_config,
+            classes,
+            "MixtureOfExperts",
+            log_wandb=config.use_wandb,
         )
         torch.save(meta_model.state_dict(), config.models_dir / f"MoE_meta_seed{config.seed}.pt")
-        all_results.append({
-            "model": "MixtureOfExperts",
-            "type": "moe",
-            "seed": config.seed,
-            "device": devices[0],
-            "test_mcc": moe_metrics["mcc"],
-            "test_acc": moe_metrics["accuracy"],
-            "best_val_mcc": 0.0,
-            "val_mccs": [],
-        })
+        all_results.append(
+            {
+                "model": "MixtureOfExperts",
+                "type": "moe",
+                "seed": config.seed,
+                "device": devices[0],
+                "test_mcc": moe_metrics["mcc"],
+                "test_acc": moe_metrics["accuracy"],
+                "best_val_mcc": 0.0,
+                "val_mccs": [],
+            }
+        )
         mcc_v = float(moe_metrics["mcc"])
         acc_v = float(moe_metrics["accuracy"])
         print(f"  [MoE] test_mcc={mcc_v:.4f}  acc={acc_v:.4f}")
@@ -693,7 +700,7 @@ def main() -> None:
                 [_extract_logits(m, loader, dev0) for m in base_models_loaded], axis=-1
             )
 
-        base_feat_tr = _concat_logits(tr_loader_ds)       # (N, 8*4)
+        base_feat_tr = _concat_logits(tr_loader_ds)  # (N, 8*4)
         base_feat_val = _concat_logits(val_loader_ds)
         base_feat_test = _concat_logits(test_loader_ds)
 
@@ -738,20 +745,26 @@ def main() -> None:
         ds_meta: nn.Module = MetaLearner(config.num_classes, config.num_classes, config.dropout)
         Trainer(meta_ds_config).fit(ds_meta, ds_meta_tr, ds_meta_val)
         ds_metrics = evaluate_model_on_test(
-            ds_meta, ds_meta_test, meta_ds_config, classes,
-            "DeepStackEnsemble", log_wandb=config.use_wandb,
+            ds_meta,
+            ds_meta_test,
+            meta_ds_config,
+            classes,
+            "DeepStackEnsemble",
+            log_wandb=config.use_wandb,
         )
         torch.save(ds_meta.state_dict(), config.models_dir / f"DS_meta_seed{config.seed}.pt")
-        all_results.append({
-            "model": "DeepStackEnsemble",
-            "type": "deep_stack",
-            "seed": config.seed,
-            "device": devices[0],
-            "test_mcc": ds_metrics["mcc"],
-            "test_acc": ds_metrics["accuracy"],
-            "best_val_mcc": 0.0,
-            "val_mccs": [],
-        })
+        all_results.append(
+            {
+                "model": "DeepStackEnsemble",
+                "type": "deep_stack",
+                "seed": config.seed,
+                "device": devices[0],
+                "test_mcc": ds_metrics["mcc"],
+                "test_acc": ds_metrics["accuracy"],
+                "best_val_mcc": 0.0,
+                "val_mccs": [],
+            }
+        )
         ds_mcc = float(ds_metrics["mcc"])
         ds_acc = float(ds_metrics["accuracy"])
         print(f"  [DeepStack] test_mcc={ds_mcc:.4f}  acc={ds_acc:.4f}")

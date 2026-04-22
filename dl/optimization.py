@@ -31,11 +31,19 @@ def _train_and_eval(
     trial: optuna.Trial,
 ) -> float:
     cfg = copy.copy(config)
-    cfg.learning_rate = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
-    cfg.weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-2, log=True)
-    cfg.l1_lambda = trial.suggest_float("l1_lambda", 1e-7, 1e-3, log=True)
+    # LR + regularisation
+    cfg.learning_rate = trial.suggest_float("lr", 5e-5, 5e-2, log=True)
+    cfg.weight_decay = trial.suggest_float("weight_decay", 1e-7, 1e-1, log=True)
+    cfg.l1_lambda = trial.suggest_float("l1_lambda", 1e-8, 1e-2, log=True)
+    cfg.gradient_clip = trial.suggest_float("gradient_clip", 0.5, 5.0)
+    # Loss / optimiser / scheduler
+    cfg.loss_type = trial.suggest_categorical("loss_type", ["ce", "focal"])  # noqa: E501
+    cfg.focal_gamma = trial.suggest_float("focal_gamma", 1.0, 5.0)  # only used when focal
+    cfg.optimizer_type = trial.suggest_categorical("optimizer_type", ["adamw", "sgd", "rmsprop"])  # noqa: E501
+    cfg.momentum = trial.suggest_float("momentum", 0.7, 0.99)  # only used when sgd
+    cfg.scheduler_type = trial.suggest_categorical("scheduler_type", ["cosine", "plateau"])  # noqa: E501
     cfg.use_wandb = False
-    cfg.num_epochs = 80  # faster trials
+    cfg.num_epochs = 80
     cfg.patience = 15
 
     trainer = Trainer(cfg)
@@ -56,7 +64,7 @@ def _make_rnn_hpo_objective(
 
     def objective(trial: optuna.Trial) -> float:
         hidden_size = trial.suggest_int("hidden_size", 32, 256, log=True)
-        num_layers = trial.suggest_int("num_layers", 1, 4)
+        num_layers = trial.suggest_int("num_layers", 1, 8)
         dropout = trial.suggest_float("dropout", 0.1, 0.6)
         bidir = trial.suggest_categorical("bidirectional", [True, False])
         model = RNNClassifier(
@@ -65,7 +73,7 @@ def _make_rnn_hpo_objective(
             num_layers,
             config.num_classes,
             dropout,
-            bidir,  # type: ignore[arg-type]
+            bidir,
         )
         return _train_and_eval(model, config, tr_loader, val_loader, trial)
 
@@ -98,38 +106,38 @@ def run_hpo_study(
     study_name = f"{config.optuna_study_prefix}_{model_type}"
 
     def objective(trial: optuna.Trial) -> float:
-        dropout: float = trial.suggest_float("dropout", 0.1, 0.6)
+        dropout: float = trial.suggest_float("dropout", 0.05, 0.7)
         model: nn.Module
 
         if model_type == "rnn":
-            hidden = trial.suggest_int("hidden_size", 32, 256, log=True)
-            layers = trial.suggest_int("num_layers", 1, 4)
-            bidir: bool = trial.suggest_categorical("bidirectional", [True, False])  # type: ignore[assignment]
+            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
+            layers = trial.suggest_int("num_layers", 1, 8)
+            bidir: bool = bool(trial.suggest_categorical("bidirectional", [True, False]))
             model = RNNClassifier(
                 config.in_features, hidden, layers, config.num_classes, dropout, bidir
             )
 
         elif model_type == "gru":
-            hidden = trial.suggest_int("hidden_size", 32, 256, log=True)
-            layers = trial.suggest_int("num_layers", 1, 4)
-            bidir = trial.suggest_categorical("bidirectional", [True, False])  # type: ignore[assignment]
+            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
+            layers = trial.suggest_int("num_layers", 1, 8)
+            bidir = bool(trial.suggest_categorical("bidirectional", [True, False]))
             model = GRUClassifier(
                 config.in_features, hidden, layers, config.num_classes, dropout, bidir
             )
 
         elif model_type == "lstm":
-            hidden = trial.suggest_int("hidden_size", 32, 256, log=True)
-            layers = trial.suggest_int("num_layers", 1, 4)
-            bidir = trial.suggest_categorical("bidirectional", [True, False])  # type: ignore[assignment]
-            use_attn: bool = trial.suggest_categorical("use_attention", [True, False])  # type: ignore[assignment]
+            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
+            layers = trial.suggest_int("num_layers", 1, 8)
+            bidir = bool(trial.suggest_categorical("bidirectional", [True, False]))
+            use_attn: bool = bool(trial.suggest_categorical("use_attention", [True, False]))
             model = LSTMClassifier(
                 config.in_features, hidden, layers, config.num_classes, dropout, bidir, use_attn
             )
 
         elif model_type == "cnn":
-            num_filters = trial.suggest_int("num_filters", 32, 256, log=True)
-            num_blocks = trial.suggest_int("num_blocks", 1, 4)
-            ks_idx: int = trial.suggest_categorical("kernel_set", [0, 1, 2])  # type: ignore[assignment]
+            num_filters = trial.suggest_int("num_filters", 32, 512, log=True)
+            num_blocks = trial.suggest_int("num_blocks", 1, 12)
+            ks_idx: int = int(trial.suggest_categorical("kernel_set", [0, 1, 2]))
             kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7]]
             model = CNNClassifier(
                 config.in_features,
@@ -141,15 +149,13 @@ def run_hpo_study(
             )
 
         else:  # autoformer
-            # d_model always multiple of 8 → all head choices valid every trial
-            d_model = trial.suggest_int("d_model_mult", 4, 16) * 8  # 32–128
-            n_heads_raw: int = trial.suggest_categorical("n_heads", [1, 2, 4, 8])  # type: ignore[assignment]
-            # clamp to valid divisor (safety, should always divide with mult-of-8)
+            d_model = trial.suggest_int("d_model_mult", 4, 32) * 8  # 32–256
+            n_heads_raw: int = int(trial.suggest_categorical("n_heads", [1, 2, 4, 8]))
             n_heads = n_heads_raw
             while d_model % n_heads != 0:
                 n_heads //= 2
-            enc_layers = trial.suggest_int("num_enc_layers", 1, 4)
-            factor = trial.suggest_int("factor", 1, 3)
+            enc_layers = trial.suggest_int("num_enc_layers", 1, 6)
+            factor = trial.suggest_int("factor", 1, 5)
             model = AutoformerClassifier(
                 config.in_features,
                 d_model,

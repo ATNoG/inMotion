@@ -29,6 +29,13 @@ class DLConfig:
     dropout: float = 0.3
     gradient_clip: float = 1.0
 
+    # Loss / optimiser / scheduler
+    loss_type: str = "ce"  # "ce" | "focal"
+    focal_gamma: float = 2.0
+    optimizer_type: str = "adamw"  # "adamw" | "sgd" | "rmsprop"
+    scheduler_type: str = "cosine"  # "cosine" | "plateau"
+    momentum: float = 0.9  # SGD only
+
     # Model defaults (overridden by Optuna)
     hidden_size: int = 64
     num_layers: int = 2

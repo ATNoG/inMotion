@@ -20,6 +20,7 @@ except ImportError:
     _WANDB_AVAILABLE = False
 
 from .config import DLConfig
+from .losses import FocalLoss
 
 
 class Loggable(Protocol):
@@ -97,15 +98,47 @@ class Trainer:
         save_path: Path | None = None,
     ) -> TrainResult:
         model = model.to(self.device)
-        optimizer = torch.optim.AdamW(
-            model.parameters(),
-            lr=self.config.learning_rate,
-            weight_decay=self.config.weight_decay,
-        )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=self.config.num_epochs, eta_min=1e-6
-        )
-        criterion = nn.CrossEntropyLoss()
+
+        # ── Criterion ─────────────────────────────────────────────────────────
+        criterion: nn.Module
+        if self.config.loss_type == "focal":
+            criterion = FocalLoss(gamma=self.config.focal_gamma)
+        else:
+            criterion = nn.CrossEntropyLoss()
+
+        # ── Optimiser ─────────────────────────────────────────────────────────
+        optimizer: torch.optim.Optimizer
+        if self.config.optimizer_type == "sgd":
+            optimizer = torch.optim.SGD(
+                model.parameters(),
+                lr=self.config.learning_rate,
+                weight_decay=self.config.weight_decay,
+                momentum=self.config.momentum,
+            )
+        elif self.config.optimizer_type == "rmsprop":
+            optimizer = torch.optim.RMSprop(
+                model.parameters(),
+                lr=self.config.learning_rate,
+                weight_decay=self.config.weight_decay,
+            )
+        else:
+            optimizer = torch.optim.AdamW(
+                model.parameters(),
+                lr=self.config.learning_rate,
+                weight_decay=self.config.weight_decay,
+            )
+
+        # ── Scheduler ─────────────────────────────────────────────────────────
+        use_plateau = self.config.scheduler_type == "plateau"
+        scheduler: torch.optim.lr_scheduler.LRScheduler | torch.optim.lr_scheduler.ReduceLROnPlateau
+        if use_plateau:
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer, mode="max", patience=max(5, self.config.patience // 4), factor=0.5
+            )
+        else:
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer, T_max=self.config.num_epochs, eta_min=1e-6
+            )
         result = TrainResult()
         patience_counter = 0
         best_state: dict[str, Tensor] = {}
@@ -137,7 +170,10 @@ class Trainer:
                 model, val_loader, criterion, None, train=False
             )
             val_mcc = float(matthews_corrcoef(val_targets, val_preds))
-            scheduler.step()
+            if use_plateau:
+                scheduler.step(val_mcc)  # type: ignore[arg-type]
+            else:
+                scheduler.step()  # type: ignore[union-attr]
 
             result.train_losses.append(tr_loss)
             result.val_losses.append(val_loss)
