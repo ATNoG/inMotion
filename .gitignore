@@ -228,3 +228,6 @@ AGENTS.md
 models/*
 !models/GaussianProcess42.joblib
 
+wandb/
+
+inMotion**
