@@ -20,7 +20,7 @@ except ImportError:
     _WANDB_AVAILABLE = False
 
 from .config import DLConfig
-from .losses import FocalLoss
+from .losses import FocalLoss, LabelSmoothingCE
 
 
 class Loggable(Protocol):
@@ -32,16 +32,24 @@ class TrainResult:
     train_losses: list[float] = field(default_factory=list)
     val_losses: list[float] = field(default_factory=list)
     val_mccs: list[float] = field(default_factory=list)
-    best_val_mcc: float = 0.0
+    best_val_mcc: float = -1.0
     best_epoch: int = 0
 
 
 class Trainer:
-    def __init__(self, config: DLConfig, run_name: str = "") -> None:
+    def __init__(
+        self,
+        config: DLConfig,
+        run_name: str = "",
+        extra_wandb_config: dict | None = None,
+        class_weights: torch.Tensor | None = None,
+    ) -> None:
         self.config = config
         self.device = config.resolve_device()
         self.run_name = run_name
+        self._extra_wandb_config: dict = extra_wandb_config or {}
         self._wandb_run: object | None = None
+        self._class_weights = class_weights
 
     def _l1_loss(self, model: nn.Module) -> Tensor:
         l1 = torch.tensor(0.0, device=self.device)
@@ -61,16 +69,36 @@ class Trainer:
         total_loss = 0.0
         all_preds: list[int] = []
         all_targets: list[int] = []
+        use_mixup = getattr(self.config, "use_mixup", False) and train
+        mixup_alpha = getattr(self.config, "mixup_alpha", 0.2)
 
         with torch.set_grad_enabled(train):
             for X_batch, y_batch in loader:
                 X_batch = X_batch.to(self.device, non_blocking=True)
                 y_batch = y_batch.to(self.device, non_blocking=True)
 
-                logits = model(X_batch)
-                loss = criterion(logits, y_batch)
+                # ── Mixup augmentation (training only) ────────────────────────
+                if use_mixup and mixup_alpha > 0 and X_batch.size(0) > 1:
+                    lam = float(
+                        torch.distributions.Beta(
+                            torch.tensor(mixup_alpha), torch.tensor(mixup_alpha)
+                        ).sample()
+                    )
+                    idx = torch.randperm(X_batch.size(0), device=X_batch.device)
+                    X_mixed = lam * X_batch + (1.0 - lam) * X_batch[idx]
+                    logits = model(X_mixed)
+                    loss = lam * criterion(logits, y_batch) + (1.0 - lam) * criterion(
+                        logits, y_batch[idx]
+                    )
+                else:
+                    logits = model(X_batch)
+                    loss = criterion(logits, y_batch)
                 if train:
                     loss = loss + self._l1_loss(model)
+                    # Auxiliary load-balance loss for SoftMixtureOfExperts
+                    aux = getattr(model, "last_aux_loss", None)
+                    if aux is not None and isinstance(aux, torch.Tensor) and aux.requires_grad:
+                        loss = loss + aux
 
                 if train and optimizer is not None:
                     optimizer.zero_grad()
@@ -101,10 +129,14 @@ class Trainer:
 
         # ── Criterion ─────────────────────────────────────────────────────────
         criterion: nn.Module
+        label_smoothing = getattr(self.config, "label_smoothing", 0.0)
         if self.config.loss_type == "focal":
             criterion = FocalLoss(gamma=self.config.focal_gamma)
+        elif label_smoothing > 0:
+            criterion = LabelSmoothingCE(self.config.num_classes, label_smoothing)
         else:
-            criterion = nn.CrossEntropyLoss()
+            w = self._class_weights.to(self.device) if self._class_weights is not None else None
+            criterion = nn.CrossEntropyLoss(weight=w)
 
         # ── Optimiser ─────────────────────────────────────────────────────────
         optimizer: torch.optim.Optimizer
@@ -157,6 +189,7 @@ class Trainer:
                         "num_epochs": self.config.num_epochs,
                         "dropout": self.config.dropout,
                         "model": type(model).__name__,
+                        **self._extra_wandb_config,
                     },
                     reinit=True,
                 )

@@ -37,18 +37,24 @@ from dl.evaluation import (
     plot_training_curves,
     save_results_csv,
 )
-from dl.models.autoformer import AutoformerClassifier
 from dl.models.cnn import CNNClassifier
-from dl.models.deep_stack import Level2Net
-from dl.models.ensemble import MetaLearner, StackingEnsemble, VotingEnsemble
+from dl.models.ensemble import StackingEnsemble, VotingEnsemble
 from dl.models.gru import GRUClassifier
 from dl.models.lstm import LSTMClassifier
-from dl.models.moe import MOE_ARCH_TYPES, MOE_COMBOS, build_moe_expert, build_moe_expert_typed
+from dl.models.moe import (
+    MOE_COMBOS,
+    build_moe_expert,
+    build_moe_expert_typed,
+    build_soft_moe,
+)
 from dl.models.rnn import RNNClassifier
+from dl.models.tcn import TCNClassifier
+from dl.models.transformer import TransformerClassifier
 from dl.optimization import (
     init_optuna_db,
     run_binary_moe_hpo_study,
     run_hpo_study,
+    run_moe_multiobjective_study,
     run_nas_study,
     save_optuna_plots,
 )
@@ -56,10 +62,10 @@ from dl.training import Trainer
 from torch import nn
 from torch.utils.data import DataLoader
 
-SINGLE_MODEL_NAMES: list[str] = ["RNN", "GRU", "LSTM", "CNN", "Autoformer"]
-HPO_TYPES: list[str] = ["rnn", "gru", "lstm", "cnn", "autoformer"]
+SINGLE_MODEL_NAMES: list[str] = ["RNN", "GRU", "LSTM", "CNN", "TCN", "Transformer"]
+HPO_TYPES: list[str] = ["rnn", "gru", "lstm", "cnn", "tcn", "transformer"]
 
-# 8 base variants for Deep Stacking (2 configs per arch)
+# 12 base variants for Deep Stacking (2 configs per arch)
 DS_BASE_NAMES: list[str] = [
     "DS_RNN_A",
     "DS_RNN_B",
@@ -69,6 +75,10 @@ DS_BASE_NAMES: list[str] = [
     "DS_LSTM_B",
     "DS_CNN_A",
     "DS_CNN_B",
+    "DS_TCN_A",
+    "DS_TCN_B",
+    "DS_Transformer_A",
+    "DS_Transformer_B",
 ]
 
 
@@ -130,12 +140,21 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
                 num_classes=config.num_classes,
                 dropout=config.dropout,
             )
-        case "Autoformer":
-            return AutoformerClassifier(
+        case "TCN":
+            return TCNClassifier(
                 in_features=config.in_features,
-                d_model=config.d_model,
-                n_heads=config.n_heads,
-                num_layers=config.num_layers,
+                num_channels=128,
+                kernel_size=3,
+                depth=4,
+                num_classes=config.num_classes,
+                dropout=config.dropout,
+            )
+        case "Transformer":
+            return TransformerClassifier(
+                in_features=config.in_features,
+                d_model=64,
+                n_heads=4,
+                num_layers=2,
                 num_classes=config.num_classes,
                 dropout=config.dropout,
             )
@@ -166,6 +185,14 @@ def _build_ds_variant(name: str, config: DLConfig) -> nn.Module:
             return CNNClassifier(config.in_features, 64, 2, config.num_classes, 0.2, [3, 5])
         case "DS_CNN_B":
             return CNNClassifier(config.in_features, 128, 3, config.num_classes, 0.3, [3, 5, 7])
+        case "DS_TCN_A":
+            return TCNClassifier(config.in_features, 128, 3, 4, config.num_classes, 0.2)
+        case "DS_TCN_B":
+            return TCNClassifier(config.in_features, 256, 5, 6, config.num_classes, 0.3)
+        case "DS_Transformer_A":
+            return TransformerClassifier(config.in_features, 64, 4, 2, config.num_classes, 0.1)
+        case "DS_Transformer_B":
+            return TransformerClassifier(config.in_features, 128, 4, 3, config.num_classes, 0.15)
         case _:
             raise ValueError(f"Unknown DS variant: {name}")
 
@@ -238,6 +265,74 @@ def _single_model_worker(
     }
 
 
+def _build_hpo_best_model(model_type: str, config: DLConfig, params: dict) -> nn.Module:
+    """Rebuild the best Optuna model from stored HPO trial params."""
+    dropout = float(params.get("dropout", config.dropout))
+    kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7]]
+    if model_type == "rnn":
+        return RNNClassifier(
+            config.in_features,
+            int(params.get("hidden_size", config.hidden_size)),
+            int(params.get("num_layers", config.num_layers)),
+            config.num_classes,
+            dropout,
+            bool(params.get("bidirectional", False)),
+        )
+    elif model_type == "gru":
+        return GRUClassifier(
+            config.in_features,
+            int(params.get("hidden_size", config.hidden_size)),
+            int(params.get("num_layers", config.num_layers)),
+            config.num_classes,
+            dropout,
+            bool(params.get("bidirectional", False)),
+        )
+    elif model_type == "lstm":
+        return LSTMClassifier(
+            config.in_features,
+            int(params.get("hidden_size", config.hidden_size)),
+            int(params.get("num_layers", config.num_layers)),
+            config.num_classes,
+            dropout,
+            bool(params.get("bidirectional", False)),
+            bool(params.get("use_attention", False)),
+        )
+    elif model_type == "cnn":
+        ks = kernel_sets[int(params.get("kernel_set", 0))]
+        return CNNClassifier(
+            config.in_features,
+            int(params.get("num_filters", 64)),
+            int(params.get("num_blocks", 2)),
+            config.num_classes,
+            dropout,
+            ks,
+        )
+    elif model_type == "tcn":
+        return TCNClassifier(
+            config.in_features,
+            int(params.get("num_channels", 128)),
+            int(params.get("kernel_size", 3)),
+            int(params.get("depth", 4)),
+            config.num_classes,
+            dropout,
+        )
+    elif model_type == "transformer":
+        d_model = int(params.get("d_model", 64))
+        n_heads = int(params.get("n_heads", 4))
+        while d_model % n_heads != 0:
+            n_heads = max(1, n_heads // 2)
+        return TransformerClassifier(
+            config.in_features,
+            d_model,
+            n_heads,
+            int(params.get("num_layers", 2)),
+            config.num_classes,
+            dropout,
+        )
+    else:
+        raise ValueError(f"Unknown HPO model_type: {model_type!r}")
+
+
 def _hpo_worker(
     model_type: str,
     device_str: str,
@@ -246,22 +341,75 @@ def _hpo_worker(
     y_tr: np.ndarray,
     X_val: np.ndarray,
     y_val: np.ndarray,
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    classes: list[str],
 ) -> dict[str, object]:
-    """Run Optuna HPO for one model type on `device_str`."""
+    """Run Optuna HPO, then rebuild best model, train it, and evaluate on test."""
     config = copy.copy(config)
     config.device = device_str
     config.make_dirs()
     dl = DLDataLoader(config)
     study = run_hpo_study(model_type, config, dl, X_tr, y_tr, X_val, y_val)
     save_optuna_plots(study, model_type, config.plots_dir)
+
+    # Rebuild best model and apply best training HPs
+    best_params = study.best_trial.params
+    best_cfg = copy.copy(config)
+    best_cfg.learning_rate = float(best_params.get("lr", config.learning_rate))
+    best_cfg.weight_decay = float(best_params.get("weight_decay", config.weight_decay))
+    best_cfg.l1_lambda = float(best_params.get("l1_lambda", config.l1_lambda))
+    best_cfg.gradient_clip = float(best_params.get("gradient_clip", config.gradient_clip))
+    best_cfg.loss_type = str(best_params.get("loss_type", config.loss_type))
+    best_cfg.focal_gamma = float(best_params.get("focal_gamma", config.focal_gamma))
+    best_cfg.optimizer_type = str(best_params.get("optimizer_type", config.optimizer_type))
+    best_cfg.momentum = float(best_params.get("momentum", config.momentum))
+    best_cfg.scheduler_type = str(best_params.get("scheduler_type", config.scheduler_type))
+
+    model = _build_hpo_best_model(model_type, best_cfg, best_params)
+    tr_loader = dl.make_loader(X_tr, y_tr, shuffle=True)
+    val_loader = dl.make_loader(X_val, y_val, shuffle=False)
+    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
+    model_name = f"HPO_{model_type.upper()}"
+    save_path = best_cfg.models_dir / f"{model_name}_seed{best_cfg.seed}.pt"
+    trainer = Trainer(best_cfg, run_name=model_name)
+    t0 = time.time()
+    result = trainer.fit(model, tr_loader, val_loader, save_path=save_path)
+    elapsed = time.time() - t0
+
+    # ── Final-fit: retrain on X_tr + X_val to close the val→test gap ───────────
+    # After HPO identifies the best params, we squeeze out more signal by
+    # training on the full train+val set for exactly best_epoch iterations.
+    X_full = np.concatenate([X_tr, X_val], axis=0)
+    y_full = np.concatenate([y_tr, y_val], axis=0)
+    full_loader = dl.make_loader(X_full, y_full, shuffle=True)
+    final_cfg = copy.copy(best_cfg)
+    final_cfg.num_epochs = max(result.best_epoch, 10)  # train for exactly best_epoch steps
+    final_cfg.patience = final_cfg.num_epochs + 1  # no early stopping
+    final_cfg.use_wandb = False  # skip WandB for this run
+    final_model = _build_hpo_best_model(model_type, final_cfg, best_params)
+    Trainer(final_cfg, run_name=f"{model_name}_finalfit").fit(
+        final_model, full_loader, full_loader, save_path=save_path
+    )
+    metrics = evaluate_model_on_test(
+        final_model, test_loader, best_cfg, classes, model_name, log_wandb=best_cfg.use_wandb
+    )
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     return {
         "model_type": model_type,
         "device": device_str,
         "best_val_mcc": study.best_value,
-        "best_params": study.best_trial.params,
+        "best_params": best_params,
         "n_trials": len(study.trials),
+        "model": model_name,
+        "type": "hpo",
+        "seed": config.seed,
+        "test_mcc": metrics["mcc"],
+        "test_acc": metrics["accuracy"],
+        "best_epoch": result.best_epoch,
+        "train_time_s": round(elapsed, 1),
+        "val_mccs": result.val_mccs,
     }
 
 
@@ -344,7 +492,10 @@ def _moe_binary_hpo_worker(
     X_val: np.ndarray,
     y_val: np.ndarray,
 ) -> dict[str, object]:
-    """Run binary Optuna HPO for one MoE expert arch type (class 0 vs rest as proxy task)."""
+    """Run binary Optuna HPO for one MoE expert arch type (class 0 vs rest as proxy task).
+
+    Deprecated: use _moe_per_class_hpo_worker for per-class tuning.
+    """
     set_seed(config.seed)
     config = copy.copy(config)
     config.device = device_str
@@ -358,6 +509,46 @@ def _moe_binary_hpo_worker(
         torch.cuda.empty_cache()
     return {
         "arch_type": arch_type,
+        "device": device_str,
+        "best_val_mcc": study.best_value,
+        "best_params": study.best_trial.params,
+    }
+
+
+def _moe_per_class_hpo_worker(
+    arch_type: str,
+    class_idx: int,
+    device_str: str,
+    config: DLConfig,
+    X_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+) -> dict[str, object]:
+    """Run binary Optuna HPO for one MoE expert arch type tuned for a specific class."""
+    set_seed(config.seed)
+    config = copy.copy(config)
+    config.device = device_str
+    config.make_dirs()
+    dl = DLDataLoader(config)
+    y_tr_bin = (y_tr == class_idx).astype(int)
+    y_val_bin = (y_val == class_idx).astype(int)
+    study = run_binary_moe_hpo_study(
+        arch_type,
+        config,
+        dl,
+        X_tr,
+        y_tr_bin,
+        X_val,
+        y_val_bin,
+        study_suffix=f"_c{class_idx}",
+    )
+    save_optuna_plots(study, f"moe_binary_{arch_type}_c{class_idx}", config.plots_dir)
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return {
+        "arch_type": arch_type,
+        "class_idx": class_idx,
         "device": device_str,
         "best_val_mcc": study.best_value,
         "best_params": study.best_trial.params,
@@ -399,7 +590,14 @@ def _moe_typed_expert_worker(
     tr_loader = dl.make_loader(X_tr, y_tr_bin, shuffle=True)
     val_loader = dl.make_loader(X_val, y_val_bin, shuffle=False)
     model = build_moe_expert_typed(arch_type, config.in_features, best_params)
-    trainer = Trainer(config)
+    # Balanced class weights to handle 1:3 imbalance in binary (one-vs-rest) training
+    n = len(y_tr_bin)
+    n_pos = int(y_tr_bin.sum())
+    n_neg = n - n_pos
+    class_weights: torch.Tensor | None = None
+    if n_pos > 0 and n_neg > 0:
+        class_weights = torch.tensor([n / (2.0 * n_neg), n / (2.0 * n_pos)], dtype=torch.float32)
+    trainer = Trainer(config, class_weights=class_weights)
     result = trainer.fit(model, tr_loader, val_loader)
     save_path = (
         config.models_dir / f"MoE_{combo_name}_expert{class_idx}_{arch_type}_seed{config.seed}.pt"
@@ -454,6 +652,138 @@ def _ds_base_worker(
         "best_val_mcc": result.best_val_mcc,
         "val_mccs": result.val_mccs,
         "save_path": str(save_path),
+    }
+
+
+def _moe_mo_hpo_worker(
+    combo_name: str,
+    arch_list: list[str],
+    device_str: str,
+    config: DLConfig,
+    X_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+) -> dict[str, object]:
+    """Spawn-safe worker: run multi-objective (NSGA-II) HPO for one SoftMoE combo."""
+    set_seed(config.seed)
+    config = copy.copy(config)
+    config.device = device_str
+    config.make_dirs()
+    dl = DLDataLoader(config)
+    study, best_params = run_moe_multiobjective_study(
+        arch_list=arch_list,
+        config=config,
+        data_loader=dl,
+        X_tr=X_tr,
+        y_tr=y_tr,
+        X_val=X_val,
+        y_val=y_val,
+        combo_name=combo_name,
+    )
+    pareto = study.best_trials
+    pareto_best_mcc = max((t.values[0] for t in pareto if t.values), default=0.0)
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return {
+        "combo_name": combo_name,
+        "device": device_str,
+        "best_params": best_params,
+        "pareto_best_mcc": pareto_best_mcc,
+        "n_pareto": len(pareto),
+    }
+
+
+def _softmoe_combo_worker(
+    combo_name: str,
+    arch_list: list[str],
+    device_str: str,
+    config: DLConfig,
+    best_params: dict,
+    X_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    classes: list[str],
+) -> dict[str, object]:
+    """Train one SoftMixtureOfExperts combo end-to-end with Optuna-tuned params.
+
+    All experts are full multiclass classifiers. Gating network is jointly trained.
+    Auxiliary load-balance loss (Switch-Transformer style) is handled automatically
+    by the Trainer (reads model.last_aux_loss after each forward pass).
+    """
+    set_seed(config.seed)
+    config = copy.copy(config)
+    config.device = device_str
+    # Apply training HPs from multi-objective HPO
+    config.learning_rate = float(best_params.get("lr", config.learning_rate))
+    config.weight_decay = float(best_params.get("weight_decay", config.weight_decay))
+    config.l1_lambda = float(best_params.get("l1_lambda", config.l1_lambda))
+    config.gradient_clip = float(best_params.get("gradient_clip", config.gradient_clip))
+    config.optimizer_type = str(best_params.get("optimizer_type", "adamw"))
+    config.scheduler_type = str(best_params.get("scheduler_type", config.scheduler_type))
+    config.loss_type = "ce"
+    config.make_dirs()
+    dl = DLDataLoader(config)
+    tr_loader = dl.make_loader(X_tr, y_tr, shuffle=True)
+    val_loader = dl.make_loader(X_val, y_val, shuffle=False)
+    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
+
+    # Expert arch params extracted from HPO best params
+    expert_params: dict = {
+        k: best_params[k]
+        for k in (
+            "dropout",
+            "hidden_size",
+            "num_layers",
+            "bidirectional",
+            "use_attention",
+            "num_filters",
+            "num_blocks",
+            "kernel_set",
+        )
+        if k in best_params
+    }
+
+    gate_hidden = int(best_params.get("gate_hidden", 64))
+    gate_dropout = float(best_params.get("gate_dropout", 0.1))
+    aux_loss_weight = float(best_params.get("aux_loss_weight", 0.01))
+    top_k_raw = best_params.get("top_k", "none")
+    top_k: int | None = None if top_k_raw == "none" else int(top_k_raw)
+    if top_k is not None and top_k >= len(arch_list):
+        top_k = None
+
+    params_per_expert = [dict(expert_params) for _ in arch_list]
+    model = build_soft_moe(
+        arch_list=arch_list,
+        in_features=config.in_features,
+        num_classes=config.num_classes,
+        params_per_expert=params_per_expert,
+        gate_hidden=gate_hidden,
+        gate_dropout=gate_dropout,
+        aux_loss_weight=aux_loss_weight,
+        top_k=top_k,
+    )
+    save_path = config.models_dir / f"{combo_name}_seed{config.seed}.pt"
+    trainer = Trainer(config, run_name=combo_name)
+    result = trainer.fit(model, tr_loader, val_loader, save_path=save_path)
+    metrics = evaluate_model_on_test(
+        model, test_loader, config, classes, combo_name, log_wandb=config.use_wandb
+    )
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return {
+        "model": combo_name,
+        "type": "soft_moe",
+        "seed": config.seed,
+        "device": device_str,
+        "arch_list": "+".join(arch_list),
+        "test_mcc": metrics["mcc"],
+        "test_acc": metrics["accuracy"],
+        "best_val_mcc": result.best_val_mcc,
+        "val_mccs": result.val_mccs,
     }
 
 
@@ -542,7 +872,8 @@ def main() -> None:
         "Ensemble_RNN_GRU": ["RNN", "GRU"],
         "Ensemble_GRU_LSTM": ["GRU", "LSTM"],
         "Ensemble_LSTM_CNN": ["LSTM", "CNN"],
-        "Ensemble_CNN_Autoformer": ["CNN", "Autoformer"],
+        "Ensemble_CNN_TCN": ["CNN", "TCN"],
+        "Ensemble_TCN_Transformer": ["TCN", "Transformer"],
         "Ensemble_RNN_GRU_LSTM": ["RNN", "GRU", "LSTM"],
         "Ensemble_All": SINGLE_MODEL_NAMES,
     }
@@ -615,14 +946,33 @@ def main() -> None:
                     y_tr,
                     X_val,
                     y_val,
+                    X_test,
+                    y_test,
+                    classes,
                 ): model_type
                 for i, model_type in enumerate(HPO_TYPES)
             }
             for future in as_completed(hpo_futures):
                 res = future.result()
+                hpo_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
+                all_results.append(
+                    {
+                        "model": res["model"],
+                        "type": res["type"],
+                        "seed": res["seed"],
+                        "device": res["device"],
+                        "test_mcc": res["test_mcc"],
+                        "test_acc": res["test_acc"],
+                        "best_val_mcc": res["best_val_mcc"],
+                        "best_epoch": res.get("best_epoch", 0),
+                        "train_time_s": res.get("train_time_s", 0.0),
+                    }
+                )
+                curve_data.append({"name": str(res["model"]), "val_mccs": hpo_val_mccs})
                 print(
                     f"  [HPO {res['model_type']}] {res['device']}  "
                     f"best_val_mcc={float(res['best_val_mcc']):.4f}  "
+                    f"test_mcc={float(res['test_mcc']):.4f}  "
                     f"params={res['best_params']}"
                 )
 
@@ -644,144 +994,80 @@ def main() -> None:
         nas_mcc = float(nas_row["test_mcc"])  # type: ignore[arg-type]
         print(f"  [NAS] {nas_row['device']}  arch={nas_row['best_arch']}  test_mcc={nas_mcc:.4f}")
 
-    # ── Phase 4: Mixture-of-Experts (multi-arch, Optuna-tuned) ────────────────
+    # ── Phase 4: Mixture-of-Experts — end-to-end SoftMoE with multi-objective HPO ─
     if not args.no_moe:
         n_combos = len(MOE_COMBOS)
         print(
-            f"\n[Phase 4a] MoE HPO — binary tuning for {len(MOE_ARCH_TYPES)} arch types"
-            f" across {len(devices)} GPU(s)…"
+            f"\n[Phase 4a] SoftMoE multi-objective HPO (NSGA-II) — "
+            f"{n_combos} combos across {len(devices)} GPU(s)…"
         )
-        # Pre-init binary HPO study names in the main process to avoid SQLite spawn races
-        binary_study_names = [
-            f"{config.optuna_study_prefix}_moe_binary_{a}" for a in MOE_ARCH_TYPES
-        ]
-        init_optuna_db(config.optuna_storage, binary_study_names)
+        # Pre-create study entries in DB to avoid spawn-race
+        mo_study_names = [f"{config.optuna_study_prefix}_moe_mo_{name}" for name in MOE_COMBOS]
+        # Multi-objective studies use directions=[] so cannot use init_optuna_db directly;
+        # they are created inside the worker / study call (load_if_exists=True).
 
-        best_params_per_arch: dict[str, dict] = {}
+        # Phase 4a: run multi-objective HPO for each combo in parallel across GPUs
+        combo_best_params: dict[str, dict] = {}
         if not args.no_optuna:
             with ProcessPoolExecutor(max_workers=len(devices), mp_context=ctx) as pool:
-                bin_hpo_futures = {
+                mo_futures = {
                     pool.submit(
-                        _moe_binary_hpo_worker,
-                        arch_type,
+                        _moe_mo_hpo_worker,
+                        combo_name,
+                        arch_list,
                         devices[i % len(devices)],
                         copy.copy(config),
                         X_tr,
                         y_tr,
                         X_val,
                         y_val,
-                    ): arch_type
-                    for i, arch_type in enumerate(MOE_ARCH_TYPES)
+                    ): combo_name
+                    for i, (combo_name, arch_list) in enumerate(MOE_COMBOS.items())
                 }
-                for future in as_completed(bin_hpo_futures):
+                for future in as_completed(mo_futures):
                     res = future.result()
-                    best_params_per_arch[str(res["arch_type"])] = dict(res["best_params"])
+                    combo_best_params[str(res["combo_name"])] = dict(res["best_params"])  # type: ignore[arg-type]
                     print(
-                        f"  [MoE HPO {res['arch_type']}] {res['device']}  "
-                        f"best_val_mcc={float(res['best_val_mcc']):.4f}  "
-                        f"params={res['best_params']}"
+                        f"  [MoE HPO {res['combo_name']}] {res['device']}  "
+                        f"pareto_best_mcc={float(res['pareto_best_mcc']):.4f}  "
+                        f"n_pareto={res['n_pareto']}"
                     )
         else:
-            # No HPO — use sensible defaults for each arch type
-            best_params_per_arch = {a: {} for a in MOE_ARCH_TYPES}
+            combo_best_params = {name: {} for name in MOE_COMBOS}
 
-        print(f"\n[Phase 4b] MoE training — {n_combos} combos across {len(devices)} GPU(s)…")
-        dev0_moe = torch.device(devices[0])
-
-        for combo_name, arch_list in MOE_COMBOS.items():
-            print(f"  [{combo_name}] training {len(arch_list)} experts ({' '.join(arch_list)})…")
-
-            # ── train experts in parallel ──────────────────────────────────────
-            with ProcessPoolExecutor(
-                max_workers=min(len(classes), len(devices)), mp_context=ctx
-            ) as pool:
-                exp_futures = [
-                    pool.submit(
-                        _moe_typed_expert_worker,
-                        class_idx,
-                        class_name,
-                        arch_list[class_idx],
-                        combo_name,
-                        devices[class_idx % len(devices)],
-                        copy.copy(config),
-                        best_params_per_arch[arch_list[class_idx]],
-                        X_tr,
-                        y_tr,
-                        X_val,
-                        y_val,
-                    )
-                    for class_idx, class_name in enumerate(classes)
-                ]
-                combo_expert_infos = [f.result() for f in as_completed(exp_futures)]
-            combo_expert_infos.sort(key=lambda d: int(d["class_idx"]))
-
-            # ── reload experts, extract P(positive) probs ─────────────────────
-            combo_experts: list[nn.Module] = []
-            for info in combo_expert_infos:
-                a = str(info["arch_type"])
-                exp = build_moe_expert_typed(a, config.in_features, best_params_per_arch[a])
-                exp.load_state_dict(
-                    torch.load(str(info["save_path"]), map_location="cpu", weights_only=True)
+        # Phase 4b: train each combo end-to-end with best params
+        print(
+            f"\n[Phase 4b] SoftMoE e2e training — {n_combos} combos across {len(devices)} GPU(s)…"
+        )
+        with ProcessPoolExecutor(max_workers=len(devices), mp_context=ctx) as pool:
+            train_futures = {
+                pool.submit(
+                    _softmoe_combo_worker,
+                    combo_name,
+                    arch_list,
+                    devices[i % len(devices)],
+                    copy.copy(config),
+                    combo_best_params.get(combo_name, {}),
+                    X_tr,
+                    y_tr,
+                    X_val,
+                    y_val,
+                    X_test,
+                    y_test,
+                    classes,
+                ): combo_name
+                for i, (combo_name, arch_list) in enumerate(MOE_COMBOS.items())
+            }
+            for future in as_completed(train_futures):
+                res = future.result()
+                moe_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
+                all_results.append(res)
+                curve_data.append({"name": str(res["model"]), "val_mccs": moe_val_mccs})
+                print(
+                    f"  [{res['model']}] test_mcc={float(res['test_mcc']):.4f}"
+                    f"  acc={float(res['test_acc']):.4f}"
+                    f"  best_val_mcc={float(res['best_val_mcc']):.4f}"
                 )
-                combo_experts.append(exp)
-
-            moe_combo_dl = DLDataLoader(copy.copy(config))
-            tr_loader_moe = moe_combo_dl.make_loader(X_tr, y_tr, shuffle=True)
-            val_loader_moe = moe_combo_dl.make_loader(X_val, y_val, shuffle=False)
-            test_loader_moe = moe_combo_dl.make_loader(X_test, y_test, shuffle=False)
-
-            def _combo_probs(
-                loader: "DataLoader[tuple[torch.Tensor, torch.Tensor]]",
-                experts: list[nn.Module] = combo_experts,
-            ) -> np.ndarray:
-                cols = []
-                for exp in experts:
-                    logits = _extract_logits(exp, loader, dev0_moe)
-                    cols.append(torch.softmax(torch.tensor(logits), dim=-1)[:, 1].numpy())
-                return np.stack(cols, axis=-1)  # (N, num_classes)
-
-            feat_tr_c = _combo_probs(tr_loader_moe)
-            feat_val_c = _combo_probs(val_loader_moe)
-            feat_test_c = _combo_probs(test_loader_moe)
-
-            # ── train meta-learner on expert probs ────────────────────────────
-            meta_cfg_c = copy.copy(config)
-            meta_dl_c = DLDataLoader(meta_cfg_c)
-            meta_tr_c = meta_dl_c.make_loader(feat_tr_c, y_tr, shuffle=True)
-            meta_val_c = meta_dl_c.make_loader(feat_val_c, y_val, shuffle=False)
-            meta_test_c = meta_dl_c.make_loader(feat_test_c, y_test, shuffle=False)
-
-            meta_c: nn.Module = MetaLearner(config.num_classes, config.num_classes, config.dropout)
-            Trainer(meta_cfg_c).fit(meta_c, meta_tr_c, meta_val_c)
-            moe_c_metrics = evaluate_model_on_test(
-                meta_c,
-                meta_test_c,
-                meta_cfg_c,
-                classes,
-                combo_name,
-                log_wandb=config.use_wandb,
-            )
-            torch.save(
-                meta_c.state_dict(),
-                config.models_dir / f"{combo_name}_meta_seed{config.seed}.pt",
-            )
-            all_results.append(
-                {
-                    "model": combo_name,
-                    "type": "moe_typed",
-                    "seed": config.seed,
-                    "device": devices[0],
-                    "test_mcc": moe_c_metrics["mcc"],
-                    "test_acc": moe_c_metrics["accuracy"],
-                    "best_val_mcc": 0.0,
-                    "members": "+".join(arch_list),
-                    "val_mccs": [],
-                }
-            )
-            print(
-                f"  [{combo_name}] test_mcc={float(moe_c_metrics['mcc']):.4f}"
-                f"  acc={float(moe_c_metrics['accuracy']):.4f}"
-            )
 
     # ── Phase 5: Deep Stacking ─────────────────────────────────────────────────
     if not args.no_deepstack:
@@ -822,7 +1108,7 @@ def main() -> None:
 
         ds_base_results.sort(key=lambda d: str(d["model"]))
 
-        # Reload base models and extract concat logits (N, 8*num_classes)
+        # ── Reload base models and extract concat logits (N, n_base * num_classes) ─
         dev0 = torch.device(devices[0])
         base_models_loaded: list[nn.Module] = []
         for info in sorted(ds_base_results, key=lambda d: str(d["model"])):
@@ -837,71 +1123,125 @@ def main() -> None:
                 [_extract_logits(m, loader, dev0) for m in base_models_loaded], axis=-1
             )
 
-        base_feat_tr = _concat_logits(tr_loader_ds)  # (N, 8*4)
+        base_feat_tr = _concat_logits(tr_loader_ds)  # (N, n_base * C)
         base_feat_val = _concat_logits(val_loader_ds)
         base_feat_test = _concat_logits(test_loader_ds)
 
-        n_base_feats = base_feat_tr.shape[1]
+        # ── Stage 1: Freeze base models, train Level2 nets (full multiclass) ──
+        # Level2Net now outputs C classes (not binary), preserving full inter-class signal.
+        from dl.models.deep_stack import DeepMetaMLP as _DeepMetaMLP
+        from dl.models.deep_stack import Level2Net as _Level2Net
+
+        n_base_feats = base_feat_tr.shape[1]  # n_base * C
         l2_config = copy.copy(config)
-        l2_config.num_classes = 2
         l2_dl = DLDataLoader(l2_config)
         level2_nets: list[nn.Module] = []
 
-        for class_idx, cls_name in enumerate(classes):
-            y_tr_bin = (y_tr == class_idx).astype(int)
-            y_val_bin = (y_val == class_idx).astype(int)
-            l2_tr = l2_dl.make_loader(base_feat_tr, y_tr_bin, shuffle=True)
-            l2_val = l2_dl.make_loader(base_feat_val, y_val_bin, shuffle=False)
-            l2_net: nn.Module = Level2Net(n_base_feats, dropout=config.dropout)
+        print("  [DeepStack stage-1] training Level2 nets (multiclass)…")
+        for cls_name in classes:
+            l2_tr = l2_dl.make_loader(base_feat_tr, y_tr, shuffle=True)
+            l2_val = l2_dl.make_loader(base_feat_val, y_val, shuffle=False)
+            l2_net: nn.Module = _Level2Net(n_base_feats, config.num_classes, dropout=config.dropout)
             Trainer(l2_config).fit(l2_net, l2_tr, l2_val)
-            save_path = config.models_dir / f"DS_L2_{cls_name}_seed{config.seed}.pt"
-            torch.save(l2_net.state_dict(), save_path)
+            save_path_l2 = config.models_dir / f"DS_L2_{cls_name}_seed{config.seed}.pt"
+            torch.save(l2_net.state_dict(), save_path_l2)
             level2_nets.append(l2_net)
 
-        # Extract L2 probs (N, 4)
-        def _l2_probs(feats: np.ndarray) -> np.ndarray:
+        # ── Extract Level2 features: concat softmax of each L2 net → (N, n_l2 * C) ──
+        def _l2_feats(feats: np.ndarray) -> np.ndarray:
             feat_t = torch.tensor(feats, dtype=torch.float32).to(dev0)
-            cols = []
+            parts = []
             for l2 in level2_nets:
                 l2.eval().to(dev0)
                 with torch.no_grad():
-                    logits_l2 = l2(feat_t)
-                cols.append(torch.softmax(logits_l2, dim=-1)[:, 1].cpu().numpy())
-            return np.stack(cols, axis=-1)
+                    parts.append(torch.softmax(l2(feat_t), dim=-1).cpu().numpy())
+            return np.concatenate(parts, axis=-1)  # (N, n_l2 * C)
 
-        l2_feat_tr = _l2_probs(base_feat_tr)
-        l2_feat_val = _l2_probs(base_feat_val)
-        l2_feat_test = _l2_probs(base_feat_test)
+        l2_feat_tr = _l2_feats(base_feat_tr)
+        l2_feat_val = _l2_feats(base_feat_val)
+        l2_feat_test = _l2_feats(base_feat_test)
 
+        # ── Train DeepMetaMLP on L2 features ──────────────────────────────────
+        print("  [DeepStack stage-1] training DeepMetaMLP…")
         meta_ds_config = copy.copy(config)
         meta_ds_dl = DLDataLoader(meta_ds_config)
         ds_meta_tr = meta_ds_dl.make_loader(l2_feat_tr, y_tr, shuffle=True)
         ds_meta_val = meta_ds_dl.make_loader(l2_feat_val, y_val, shuffle=False)
         ds_meta_test = meta_ds_dl.make_loader(l2_feat_test, y_test, shuffle=False)
 
-        ds_meta: nn.Module = MetaLearner(config.num_classes, config.num_classes, config.dropout)
-        Trainer(meta_ds_config).fit(ds_meta, ds_meta_tr, ds_meta_val)
+        n_l2_feats = l2_feat_tr.shape[1]  # n_l2 * C
+        ds_meta: nn.Module = _DeepMetaMLP(n_l2_feats, config.num_classes, config.dropout)
+        ds_meta_save = config.models_dir / f"DS_meta_seed{config.seed}.pt"
+        stage1_trainer = Trainer(meta_ds_config, run_name="DeepStackMeta_S1")
+        stage1_result = stage1_trainer.fit(ds_meta, ds_meta_tr, ds_meta_val, save_path=ds_meta_save)
+
+        # ── Stage 2: joint end-to-end fine-tuning (DeepStackEnsemble) ─────────
+        # Reassemble the full pipeline into a single nn.Module for joint fine-tune.
+        # Use a low LR (10× smaller) to avoid overwriting learned representations.
+        print("  [DeepStack stage-2] joint end-to-end fine-tuning…")
+        from dl.models.deep_stack import DeepStackEnsemble as _DeepStackEnsemble
+
+        # Rebuild Level2 nets with loaded state (on CPU initially)
+        l2_nets_loaded: list[nn.Module] = []
+        for cls_name in classes:
+            l2_r = _Level2Net(n_base_feats, config.num_classes, dropout=config.dropout)
+            l2_r.load_state_dict(
+                torch.load(
+                    config.models_dir / f"DS_L2_{cls_name}_seed{config.seed}.pt",
+                    map_location="cpu",
+                    weights_only=True,
+                )
+            )
+            l2_nets_loaded.append(l2_r)
+
+        deep_stack = _DeepStackEnsemble(
+            base_models=base_models_loaded,
+            level2_nets=l2_nets_loaded,
+            num_classes=config.num_classes,
+            dropout=config.dropout,
+        ).to(dev0)
+
+        # Transfer meta weights from stage-1
+        deep_stack.meta.load_state_dict(ds_meta.state_dict())
+
+        # Freeze base models for stage 2 (they are already well-trained)
+        deep_stack.freeze_base_models()
+
+        ft_config = copy.copy(config)
+        ft_config.device = str(dev0)
+        ft_config.learning_rate = config.learning_rate * 0.1  # smaller LR for fine-tuning
+        ft_config.num_epochs = min(50, config.num_epochs // 2)
+        ft_config.patience = 12
+
+        ft_tr = dl_ds.make_loader(X_tr, y_tr, shuffle=True)
+        ft_val = dl_ds.make_loader(X_val, y_val, shuffle=False)
+        ft_test = dl_ds.make_loader(X_test, y_test, shuffle=False)
+
+        ft_trainer = Trainer(ft_config, run_name="DeepStackEnsemble")
+        ft_save = config.models_dir / f"DeepStackEnsemble_seed{config.seed}.pt"
+        ft_result = ft_trainer.fit(deep_stack, ft_tr, ft_val, save_path=ft_save)
+
         ds_metrics = evaluate_model_on_test(
-            ds_meta,
-            ds_meta_test,
-            meta_ds_config,
+            deep_stack,
+            ft_test,
+            ft_config,
             classes,
             "DeepStackEnsemble",
             log_wandb=config.use_wandb,
         )
-        torch.save(ds_meta.state_dict(), config.models_dir / f"DS_meta_seed{config.seed}.pt")
         all_results.append(
             {
                 "model": "DeepStackEnsemble",
                 "type": "deep_stack",
                 "seed": config.seed,
-                "device": devices[0],
+                "device": str(dev0),
                 "test_mcc": ds_metrics["mcc"],
                 "test_acc": ds_metrics["accuracy"],
-                "best_val_mcc": 0.0,
-                "val_mccs": [],
+                "best_val_mcc": ft_result.best_val_mcc,
+                "val_mccs": ft_result.val_mccs,
             }
         )
+        curve_data.append({"name": "DeepStackEnsemble", "val_mccs": ft_result.val_mccs})
         ds_mcc = float(ds_metrics["mcc"])
         ds_acc = float(ds_metrics["accuracy"])
         print(f"  [DeepStack] test_mcc={ds_mcc:.4f}  acc={ds_acc:.4f}")
@@ -947,7 +1287,7 @@ def _write_ai_result(
 ## Deep Learning Results (seed={config.seed})
 
 ### Setup
-- Models: RNN, GRU, LSTM (attention), CNN (multi-scale residual), Autoformer
+- Models: RNN, GRU, LSTM (attention), CNN (multi-scale residual), TCN, Transformer
 - Ensembles: 6 voting combos + stacking meta-learner
 - NAS: Optuna joint arch + HP search (`optuna_dl.db`)
 - GPUs: {devices}

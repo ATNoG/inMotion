@@ -14,6 +14,21 @@ from torch.utils.data import DataLoader, Dataset
 from .config import DLConfig
 
 
+def _expand_features(X_seq: np.ndarray) -> np.ndarray:
+    """Expand (N, T, 1) → (N, T, 4): raw RSSI, velocity (Δ), acceleration (Δ²), window-deviation.
+
+    These four channels give the model positional, temporal, and distributional
+    signal without any external data — a pure feature-engineering boost.
+    """
+    raw = X_seq[:, :, 0].astype(np.float32)  # (N, T)
+    N, T = raw.shape
+    zeros_col = np.zeros((N, 1), dtype=np.float32)
+    diff1 = np.concatenate([zeros_col, np.diff(raw, axis=1)], axis=1)  # velocity
+    diff2 = np.concatenate([zeros_col, np.diff(diff1, axis=1)], axis=1)  # acceleration
+    dev = (raw - raw.mean(axis=1, keepdims=True)).astype(np.float32)  # window deviation
+    return np.stack([raw, diff1, diff2, dev], axis=-1)  # (N, T, 4)
+
+
 class RSSIDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     """PyTorch Dataset for RSSI time-series sequences."""
 
@@ -47,8 +62,9 @@ class DLDataLoader:
         y: np.ndarray = self.label_encoder.fit_transform(y_raw).astype(np.int64)
         self.classes_ = list(self.label_encoder.classes_)
 
-        # Reshape: (N, seq_len, in_features)
-        X_seq = X_scaled.reshape(-1, self.config.seq_len, self.config.in_features)
+        # Always reshape to (N, seq_len, 1) raw, then expand to (N, seq_len, 4)
+        X_seq_raw = X_scaled.reshape(-1, self.config.seq_len, 1)
+        X_seq = _expand_features(X_seq_raw)  # → (N, seq_len, 4)
         return X_seq, y
 
     def train_test_split(

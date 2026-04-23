@@ -13,7 +13,7 @@ class DLConfig:
     feature_cols: list[str] = field(default_factory=lambda: [str(i) for i in range(1, 11)])
     label_col: str = "label"
     seq_len: int = 10
-    in_features: int = 1
+    in_features: int = 4  # 4 engineered channels: raw, Δ, Δ², window-deviation
     num_classes: int = 4
 
     # Reproducibility
@@ -21,13 +21,18 @@ class DLConfig:
 
     # Training
     batch_size: int = 64
-    num_epochs: int = 150
-    patience: int = 20
+    num_epochs: int = 200
+    patience: int = 25
     learning_rate: float = 1e-3
     weight_decay: float = 1e-4  # L2
     l1_lambda: float = 1e-5  # L1
     dropout: float = 0.3
     gradient_clip: float = 1.0
+
+    # Label smoothing + Mixup regularisation
+    label_smoothing: float = 0.1
+    use_mixup: bool = True
+    mixup_alpha: float = 0.2
 
     # Loss / optimiser / scheduler
     loss_type: str = "ce"  # "ce" | "focal"
@@ -47,12 +52,12 @@ class DLConfig:
     n_cv_folds: int = 5
 
     # Optuna
-    n_trials: int = 50
-    optuna_storage: str = "sqlite:///optuna_dl.db"
-    optuna_study_prefix: str = "inMotion_dl"
+    n_trials: int = 100
+    optuna_storage: str = "sqlite:///optuna_dl_2.db"
+    optuna_study_prefix: str = "inMotion_dl_v3"
 
     # WandB
-    wandb_project: str = "inMotion-dl"
+    wandb_project: str = "inMotion-dl-3"
     wandb_entity: str | None = None
     use_wandb: bool = True
 
