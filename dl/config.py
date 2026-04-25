@@ -37,7 +37,7 @@ class DLConfig:
     # Loss / optimiser / scheduler
     loss_type: str = "ce"  # "ce" | "focal"
     focal_gamma: float = 2.0
-    optimizer_type: str = "adamw"  # "adamw" | "sgd" | "rmsprop"
+    optimizer_type: str = "adamw"  # "adamw" | "sgd" | "rmsprop" | "muon"
     scheduler_type: str = "cosine"  # "cosine" | "plateau"
     momentum: float = 0.9  # SGD only
 
@@ -60,6 +60,12 @@ class DLConfig:
     wandb_project: str = "inMotion-dl-3"
     wandb_entity: str | None = None
     use_wandb: bool = True
+
+    # Metadata columns (noise + concurrent path context)
+    noise_col: str = "noise"
+    noise_path_col: str = "concurrent_noise_path"
+    meta_embed_dim: int = 8  # embedding size per metadata token
+    use_metadata: bool = False  # set True to load noise/path cols
 
     # Paths
     models_dir: Path = field(default_factory=lambda: Path("models/dl"))

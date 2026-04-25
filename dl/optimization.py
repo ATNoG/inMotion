@@ -12,9 +12,12 @@ from torch.utils.data import DataLoader
 
 from .config import DLConfig
 from .data_loader import DLDataLoader
+from .models.bilstm import BiLSTMClassifier
 from .models.cnn import CNNClassifier
+from .models.cnn2d_rnn import CNN2DRNNClassifier
 from .models.gru import GRUClassifier
 from .models.lstm import LSTMClassifier
+from .models.mamba import MambaClassifier
 from .models.optuna_net import build_optuna_model
 from .models.rnn import RNNClassifier
 from .models.tcn import TCNClassifier
@@ -184,8 +187,8 @@ def run_hpo_study(
 
         if model_type == "rnn":
             dropout = trial.suggest_float("dropout", 0.05, 0.7)
-            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
-            layers = trial.suggest_int("num_layers", 1, 8)
+            hidden = trial.suggest_int("hidden_size", 32, 1024, log=True)
+            layers = trial.suggest_int("num_layers", 1, 10)
             bidir: bool = bool(trial.suggest_categorical("bidirectional", [True, False]))
             model = RNNClassifier(
                 config.in_features, hidden, layers, config.num_classes, dropout, bidir
@@ -193,8 +196,8 @@ def run_hpo_study(
 
         elif model_type == "gru":
             dropout = trial.suggest_float("dropout", 0.05, 0.7)
-            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
-            layers = trial.suggest_int("num_layers", 1, 8)
+            hidden = trial.suggest_int("hidden_size", 32, 1024, log=True)
+            layers = trial.suggest_int("num_layers", 1, 10)
             bidir = bool(trial.suggest_categorical("bidirectional", [True, False]))
             use_attn_gru: bool = bool(trial.suggest_categorical("use_attention", [True, False]))
             model = GRUClassifier(
@@ -203,8 +206,8 @@ def run_hpo_study(
 
         elif model_type == "lstm":
             dropout = trial.suggest_float("dropout", 0.05, 0.7)
-            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
-            layers = trial.suggest_int("num_layers", 1, 8)
+            hidden = trial.suggest_int("hidden_size", 32, 1024, log=True)
+            layers = trial.suggest_int("num_layers", 1, 10)
             bidir = bool(trial.suggest_categorical("bidirectional", [True, False]))
             use_attn: bool = bool(trial.suggest_categorical("use_attention", [True, False]))
             model = LSTMClassifier(
@@ -213,10 +216,11 @@ def run_hpo_study(
 
         elif model_type == "cnn":
             dropout = trial.suggest_float("dropout", 0.05, 0.7)
-            num_filters = trial.suggest_int("num_filters", 32, 512, log=True)
-            num_blocks = trial.suggest_int("num_blocks", 1, 12)
-            ks_idx: int = int(trial.suggest_categorical("kernel_set", [0, 1, 2]))
-            kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7]]
+            num_filters = trial.suggest_int("num_filters", 32, 1024, log=True)
+            num_blocks = trial.suggest_int("num_blocks", 1, 16)
+            # 4 kernel-set options: [3], [3,5], [3,5,7], [3,5,7,9]
+            ks_idx: int = int(trial.suggest_categorical("kernel_set", [0, 1, 2, 3]))
+            kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7], [3, 5, 7, 9]]
             model = CNNClassifier(
                 config.in_features,
                 num_filters,
@@ -229,9 +233,9 @@ def run_hpo_study(
         elif model_type == "tcn":
             # Constrained dropout — high dropout + SGD destroys TCN
             dropout = trial.suggest_float("dropout", 0.05, 0.4)
-            num_channels = trial.suggest_int("num_channels", 32, 512, log=True)
-            kernel_size = int(trial.suggest_categorical("kernel_size", [3, 5, 7]))
-            depth = trial.suggest_int("depth", 2, 8)
+            num_channels = trial.suggest_int("num_channels", 32, 1024, log=True)
+            kernel_size = int(trial.suggest_categorical("kernel_size", [3, 5, 7, 9, 11]))
+            depth = trial.suggest_int("depth", 2, 12)
             model = TCNClassifier(
                 config.in_features, num_channels, kernel_size, depth, config.num_classes, dropout
             )
@@ -240,13 +244,65 @@ def run_hpo_study(
         elif model_type == "transformer":
             # Narrow dropout for attention stability
             dropout = trial.suggest_float("dropout", 0.05, 0.3)
-            d_model = int(trial.suggest_categorical("d_model", [32, 64, 128, 256]))
-            n_heads = int(trial.suggest_categorical("n_heads", [2, 4, 8]))
-            num_layers = trial.suggest_int("num_layers", 1, 4)
+            d_model = int(trial.suggest_categorical("d_model", [32, 64, 128, 256, 512]))
+            # n_heads must divide d_model — Optuna may pick invalid combos; handled in rebuild
+            n_heads = int(trial.suggest_categorical("n_heads", [2, 4, 8, 16]))
+            num_layers = trial.suggest_int("num_layers", 1, 8)
+            # Fix invalid head count before constructing
+            while d_model % n_heads != 0:
+                n_heads = max(1, n_heads // 2)
             model = TransformerClassifier(
                 config.in_features, d_model, n_heads, num_layers, config.num_classes, dropout
             )
             hpo_mode = "transformer"
+
+        elif model_type == "bilstm":
+            dropout = trial.suggest_float("dropout", 0.05, 0.7)
+            hidden = trial.suggest_int("hidden_size", 32, 1024, log=True)
+            layers = trial.suggest_int("num_layers", 1, 8)
+            use_attn_bi: bool = bool(trial.suggest_categorical("use_attention", [True, False]))
+            model = BiLSTMClassifier(
+                config.in_features, hidden, layers, config.num_classes, dropout, use_attn_bi
+            )
+
+        elif model_type == "cnn2drnn":
+            dropout = trial.suggest_float("dropout", 0.05, 0.5)
+            num_filters = trial.suggest_int("num_filters", 8, 256, log=True)
+            cnn_depth = trial.suggest_int("cnn_depth", 1, 5)
+            hidden = trial.suggest_int("hidden_size", 32, 512, log=True)
+            rnn_layers = trial.suggest_int("num_rnn_layers", 1, 6)
+            rnn_type_trial: str = str(trial.suggest_categorical("rnn_type", ["lstm", "gru"]))
+            bidir_cnn2d: bool = bool(trial.suggest_categorical("bidirectional", [True, False]))
+            model = CNN2DRNNClassifier(
+                in_features=config.in_features,
+                num_filters=num_filters,
+                cnn_depth=cnn_depth,
+                hidden_size=hidden,
+                num_rnn_layers=rnn_layers,
+                num_classes=config.num_classes,
+                dropout=dropout,
+                rnn_type=rnn_type_trial,
+                bidirectional=bidir_cnn2d,
+            )
+
+        elif model_type == "mamba":
+            dropout = trial.suggest_float("dropout", 0.05, 0.4)
+            d_model = int(trial.suggest_categorical("d_model", [32, 64, 128, 256]))
+            d_state = trial.suggest_int("d_state", 8, 128, log=True)
+            num_layers = trial.suggest_int("num_layers", 1, 8)
+            expand = int(trial.suggest_categorical("expand", [2, 4]))
+            mimo_rank = int(trial.suggest_categorical("mimo_rank", [1, 2, 4, 8]))
+            model = MambaClassifier(
+                in_features=config.in_features,
+                d_model=d_model,
+                d_state=d_state,
+                num_layers=num_layers,
+                expand=expand,
+                num_classes=config.num_classes,
+                dropout=dropout,
+                mimo_rank=mimo_rank,
+            )
+            hpo_mode = "transformer"  # small LR, adamw only — same constraints as Transformer
 
         else:
             raise ValueError(f"Unknown model_type for HPO: {model_type!r}")
@@ -255,13 +311,26 @@ def run_hpo_study(
             model, config, tr_loader, val_loader, trial, f"hpo_{model_type}", mode=hpo_mode
         )
 
-    study = optuna.create_study(
-        direction="maximize",
-        study_name=study_name,
-        storage=config.optuna_storage,
-        load_if_exists=True,
-    )
-    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+    def _make_study() -> optuna.Study:
+        return optuna.create_study(
+            direction="maximize",
+            study_name=study_name,
+            storage=config.optuna_storage,
+            load_if_exists=True,
+        )
+
+    study = _make_study()
+    for _attempt in range(2):
+        try:
+            study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+            break
+        except ValueError as exc:
+            if _attempt == 0 and "dynamic value space" in str(exc):
+                # Stale DB: search space changed since last run — delete old study and retry fresh
+                optuna.delete_study(study_name=study_name, storage=config.optuna_storage)
+                study = _make_study()
+            else:
+                raise
     return study
 
 

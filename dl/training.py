@@ -60,7 +60,7 @@ class Trainer:
     def _step(
         self,
         model: nn.Module,
-        loader: DataLoader[tuple[Tensor, Tensor]],
+        loader: DataLoader,  # type: ignore[type-arg]
         criterion: nn.Module,
         optimizer: torch.optim.Optimizer | None,
         train: bool,
@@ -73,11 +73,22 @@ class Trainer:
         mixup_alpha = getattr(self.config, "mixup_alpha", 0.2)
 
         with torch.set_grad_enabled(train):
-            for X_batch, y_batch in loader:
-                X_batch = X_batch.to(self.device, non_blocking=True)
-                y_batch = y_batch.to(self.device, non_blocking=True)
+            for batch in loader:
+                # Support both (X, y) and (X, meta, y) batches
+                if len(batch) == 3:
+                    X_batch, meta_batch, y_batch = batch
+                    X_batch = X_batch.to(self.device, non_blocking=True)
+                    meta_batch = meta_batch.to(self.device, non_blocking=True)
+                    y_batch = y_batch.to(self.device, non_blocking=True)
+                    has_meta = True
+                else:
+                    X_batch, y_batch = batch
+                    X_batch = X_batch.to(self.device, non_blocking=True)
+                    y_batch = y_batch.to(self.device, non_blocking=True)
+                    meta_batch = None
+                    has_meta = False
 
-                # ── Mixup augmentation (training only) ────────────────────────
+                # ── Mixup augmentation (training only, RSSI part only) ──────────────
                 if use_mixup and mixup_alpha > 0 and X_batch.size(0) > 1:
                     lam = float(
                         torch.distributions.Beta(
@@ -86,12 +97,18 @@ class Trainer:
                     )
                     idx = torch.randperm(X_batch.size(0), device=X_batch.device)
                     X_mixed = lam * X_batch + (1.0 - lam) * X_batch[idx]
-                    logits = model(X_mixed)
+                    if has_meta:
+                        logits = model(X_mixed, meta_batch)
+                    else:
+                        logits = model(X_mixed)
                     loss = lam * criterion(logits, y_batch) + (1.0 - lam) * criterion(
                         logits, y_batch[idx]
                     )
                 else:
-                    logits = model(X_batch)
+                    if has_meta:
+                        logits = model(X_batch, meta_batch)
+                    else:
+                        logits = model(X_batch)
                     loss = criterion(logits, y_batch)
                 if train:
                     loss = loss + self._l1_loss(model)
@@ -121,8 +138,8 @@ class Trainer:
     def fit(
         self,
         model: nn.Module,
-        train_loader: DataLoader[tuple[Tensor, Tensor]],
-        val_loader: DataLoader[tuple[Tensor, Tensor]],
+        train_loader: DataLoader,  # type: ignore[type-arg]
+        val_loader: DataLoader,  # type: ignore[type-arg]
         save_path: Path | None = None,
     ) -> TrainResult:
         model = model.to(self.device)
@@ -247,7 +264,7 @@ class Trainer:
     def evaluate(
         self,
         model: nn.Module,
-        loader: DataLoader[tuple[Tensor, Tensor]],
+        loader: DataLoader,  # type: ignore[type-arg]
     ) -> tuple[float, np.ndarray, np.ndarray]:
         """Return (loss, preds, targets)."""
         criterion = nn.CrossEntropyLoss()

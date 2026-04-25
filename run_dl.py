@@ -37,10 +37,14 @@ from dl.evaluation import (
     plot_training_curves,
     save_results_csv,
 )
+from dl.models.bilstm import BiLSTMClassifier
 from dl.models.cnn import CNNClassifier
+from dl.models.cnn2d_rnn import CNN2DRNNClassifier
 from dl.models.ensemble import StackingEnsemble, VotingEnsemble
 from dl.models.gru import GRUClassifier
 from dl.models.lstm import LSTMClassifier
+from dl.models.mamba import MambaClassifier
+from dl.models.meta_fusion import MetaFusionClassifier
 from dl.models.moe import (
     MOE_COMBOS,
     build_moe_expert,
@@ -62,10 +66,34 @@ from dl.training import Trainer
 from torch import nn
 from torch.utils.data import DataLoader
 
-SINGLE_MODEL_NAMES: list[str] = ["RNN", "GRU", "LSTM", "CNN", "TCN", "Transformer"]
-HPO_TYPES: list[str] = ["rnn", "gru", "lstm", "cnn", "tcn", "transformer"]
+SINGLE_MODEL_NAMES: list[str] = [
+    "RNN",
+    "GRU",
+    "LSTM",
+    "CNN",
+    "TCN",
+    "Transformer",
+    "BiLSTM",
+    "CNN2DLSTM",
+    "CNN2DGRU",
+    "Mamba",
+]
+HPO_TYPES: list[str] = [
+    "rnn",
+    "gru",
+    "lstm",
+    "cnn",
+    "tcn",
+    "transformer",
+    "bilstm",
+    "cnn2drnn",
+    "mamba",
+]
 
-# 12 base variants for Deep Stacking (2 configs per arch)
+# Metadata model names — require (X, meta, y) dataloaders
+META_MODEL_NAMES: list[str] = ["MetaFusion_LSTM", "MetaFusion_GRU"]
+
+# 18 base variants for Deep Stacking (2 configs per arch)
 DS_BASE_NAMES: list[str] = [
     "DS_RNN_A",
     "DS_RNN_B",
@@ -79,6 +107,12 @@ DS_BASE_NAMES: list[str] = [
     "DS_TCN_B",
     "DS_Transformer_A",
     "DS_Transformer_B",
+    "DS_BiLSTM_A",
+    "DS_BiLSTM_B",
+    "DS_CNN2DRNN_A",
+    "DS_CNN2DRNN_B",
+    "DS_Mamba_A",
+    "DS_Mamba_B",
 ]
 
 
@@ -103,6 +137,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-moe", action="store_true", help="Skip Mixture-of-Experts phase")
     p.add_argument("--no-deepstack", action="store_true", help="Skip Deep Stacking phase")
     p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--wandb-project", type=str, default=None, help="Override WandB project name")
+    p.add_argument("--no-meta", action="store_true", help="Skip metadata-fusion model phases")
+    p.add_argument(
+        "--models-dir",
+        type=Path,
+        default=None,
+        help="Override output directory for saved models (default: models/dl)",
+    )
     return p.parse_args()
 
 
@@ -132,67 +174,129 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
             return GRUClassifier(**base_kw)  # type: ignore[arg-type]
         case "LSTM":
             return LSTMClassifier(**base_kw, use_attention=True)  # type: ignore[arg-type]
+        case "BiLSTM":
+            return BiLSTMClassifier(**base_kw, use_attention=True)  # type: ignore[arg-type]
         case "CNN":
             return CNNClassifier(
                 in_features=config.in_features,
-                num_filters=64,
-                num_blocks=2,
+                num_filters=128,
+                num_blocks=3,
                 num_classes=config.num_classes,
                 dropout=config.dropout,
             )
         case "TCN":
             return TCNClassifier(
                 in_features=config.in_features,
-                num_channels=128,
+                num_channels=256,
                 kernel_size=3,
-                depth=4,
+                depth=6,
                 num_classes=config.num_classes,
                 dropout=config.dropout,
             )
         case "Transformer":
             return TransformerClassifier(
                 in_features=config.in_features,
-                d_model=64,
-                n_heads=4,
-                num_layers=2,
+                d_model=128,
+                n_heads=8,
+                num_layers=4,
                 num_classes=config.num_classes,
                 dropout=config.dropout,
+            )
+        case "CNN2DLSTM":
+            return CNN2DRNNClassifier(
+                in_features=config.in_features,
+                num_filters=64,
+                cnn_depth=3,
+                hidden_size=config.hidden_size,
+                num_rnn_layers=config.num_layers,
+                num_classes=config.num_classes,
+                dropout=config.dropout,
+                rnn_type="lstm",
+            )
+        case "CNN2DGRU":
+            return CNN2DRNNClassifier(
+                in_features=config.in_features,
+                num_filters=64,
+                cnn_depth=3,
+                hidden_size=config.hidden_size,
+                num_rnn_layers=config.num_layers,
+                num_classes=config.num_classes,
+                dropout=config.dropout,
+                rnn_type="gru",
+            )
+        case "Mamba":
+            return MambaClassifier(
+                in_features=config.in_features,
+                d_model=config.d_model,
+                d_state=16,
+                num_layers=config.num_layers,
+                num_classes=config.num_classes,
+                dropout=config.dropout,
+                mimo_rank=4,
             )
         case _:
             raise ValueError(f"Unknown model: {name}")
 
 
 def _build_ds_variant(name: str, config: DLConfig) -> nn.Module:
-    """Build one of the 8 Deep-Stack base model variants."""
+    """Build one of the Deep-Stack base model variants."""
     match name:
         case "DS_RNN_A":
             return RNNClassifier(config.in_features, 64, 2, config.num_classes, 0.2)
         case "DS_RNN_B":
             return RNNClassifier(
-                config.in_features, 128, 3, config.num_classes, 0.3, bidirectional=True
+                config.in_features, 256, 4, config.num_classes, 0.3, bidirectional=True
             )
         case "DS_GRU_A":
             return GRUClassifier(config.in_features, 64, 2, config.num_classes, 0.2)
         case "DS_GRU_B":
             return GRUClassifier(
-                config.in_features, 128, 2, config.num_classes, 0.3, bidirectional=True
+                config.in_features, 256, 3, config.num_classes, 0.3, bidirectional=True
             )
         case "DS_LSTM_A":
             return LSTMClassifier(config.in_features, 64, 2, config.num_classes, 0.2, False, True)
         case "DS_LSTM_B":
-            return LSTMClassifier(config.in_features, 128, 2, config.num_classes, 0.3, True, False)
+            return LSTMClassifier(config.in_features, 256, 3, config.num_classes, 0.3, True, True)
         case "DS_CNN_A":
             return CNNClassifier(config.in_features, 64, 2, config.num_classes, 0.2, [3, 5])
         case "DS_CNN_B":
-            return CNNClassifier(config.in_features, 128, 3, config.num_classes, 0.3, [3, 5, 7])
+            return CNNClassifier(config.in_features, 256, 4, config.num_classes, 0.3, [3, 5, 7, 9])
         case "DS_TCN_A":
             return TCNClassifier(config.in_features, 128, 3, 4, config.num_classes, 0.2)
         case "DS_TCN_B":
-            return TCNClassifier(config.in_features, 256, 5, 6, config.num_classes, 0.3)
+            return TCNClassifier(config.in_features, 512, 7, 8, config.num_classes, 0.3)
         case "DS_Transformer_A":
             return TransformerClassifier(config.in_features, 64, 4, 2, config.num_classes, 0.1)
         case "DS_Transformer_B":
-            return TransformerClassifier(config.in_features, 128, 4, 3, config.num_classes, 0.15)
+            return TransformerClassifier(config.in_features, 256, 8, 4, config.num_classes, 0.15)
+        case "DS_BiLSTM_A":
+            return BiLSTMClassifier(config.in_features, 64, 2, config.num_classes, 0.2, True)
+        case "DS_BiLSTM_B":
+            return BiLSTMClassifier(config.in_features, 256, 3, config.num_classes, 0.3, True)
+        case "DS_CNN2DRNN_A":
+            return CNN2DRNNClassifier(
+                config.in_features, 32, 2, 64, 2, config.num_classes, 0.2, "lstm"
+            )
+        case "DS_CNN2DRNN_B":
+            return CNN2DRNNClassifier(
+                config.in_features,
+                128,
+                3,
+                256,
+                3,
+                config.num_classes,
+                0.3,
+                "lstm",
+                bidirectional=True,
+            )
+        case "DS_Mamba_A":
+            return MambaClassifier(
+                config.in_features, 64, 16, 2, 2, config.num_classes, 0.2, mimo_rank=4
+            )
+        case "DS_Mamba_B":
+            return MambaClassifier(
+                config.in_features, 256, 32, 4, 2, config.num_classes, 0.3, mimo_rank=8
+            )
         case _:
             raise ValueError(f"Unknown DS variant: {name}")
 
@@ -268,7 +372,7 @@ def _single_model_worker(
 def _build_hpo_best_model(model_type: str, config: DLConfig, params: dict) -> nn.Module:
     """Rebuild the best Optuna model from stored HPO trial params."""
     dropout = float(params.get("dropout", config.dropout))
-    kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7]]
+    kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7], [3, 5, 7, 9]]
     if model_type == "rnn":
         return RNNClassifier(
             config.in_features,
@@ -296,6 +400,15 @@ def _build_hpo_best_model(model_type: str, config: DLConfig, params: dict) -> nn
             dropout,
             bool(params.get("bidirectional", False)),
             bool(params.get("use_attention", False)),
+        )
+    elif model_type == "bilstm":
+        return BiLSTMClassifier(
+            config.in_features,
+            int(params.get("hidden_size", config.hidden_size)),
+            int(params.get("num_layers", config.num_layers)),
+            config.num_classes,
+            dropout,
+            bool(params.get("use_attention", True)),
         )
     elif model_type == "cnn":
         ks = kernel_sets[int(params.get("kernel_set", 0))]
@@ -328,6 +441,29 @@ def _build_hpo_best_model(model_type: str, config: DLConfig, params: dict) -> nn
             int(params.get("num_layers", 2)),
             config.num_classes,
             dropout,
+        )
+    elif model_type == "cnn2drnn":
+        return CNN2DRNNClassifier(
+            in_features=config.in_features,
+            num_filters=int(params.get("num_filters", 32)),
+            cnn_depth=int(params.get("cnn_depth", 2)),
+            hidden_size=int(params.get("hidden_size", config.hidden_size)),
+            num_rnn_layers=int(params.get("num_rnn_layers", 2)),
+            num_classes=config.num_classes,
+            dropout=dropout,
+            rnn_type=str(params.get("rnn_type", "lstm")),
+            bidirectional=bool(params.get("bidirectional", False)),
+        )
+    elif model_type == "mamba":
+        return MambaClassifier(
+            in_features=config.in_features,
+            d_model=int(params.get("d_model", config.d_model)),
+            d_state=int(params.get("d_state", 16)),
+            num_layers=int(params.get("num_layers", config.num_layers)),
+            expand=int(params.get("expand", 2)),
+            num_classes=config.num_classes,
+            dropout=dropout,
+            mimo_rank=int(params.get("mimo_rank", 4)),
         )
     else:
         raise ValueError(f"Unknown HPO model_type: {model_type!r}")
@@ -384,15 +520,33 @@ def _hpo_worker(
     y_full = np.concatenate([y_tr, y_val], axis=0)
     full_loader = dl.make_loader(X_full, y_full, shuffle=True)
     final_cfg = copy.copy(best_cfg)
-    final_cfg.num_epochs = max(result.best_epoch, 10)  # train for exactly best_epoch steps
+    final_cfg.num_epochs = max(result.best_epoch, 10)
     final_cfg.patience = final_cfg.num_epochs + 1  # no early stopping
-    final_cfg.use_wandb = False  # skip WandB for this run
+    final_cfg.use_wandb = False
     final_model = _build_hpo_best_model(model_type, final_cfg, best_params)
-    Trainer(final_cfg, run_name=f"{model_name}_finalfit").fit(
-        final_model, full_loader, full_loader, save_path=save_path
-    )
+    # NOTE: do NOT pass save_path here — the original HPO checkpoint (saved at best
+    # val-MCC on the held-out split) must NOT be overwritten by final-fit which
+    # evaluates on training data and would corrupt the saved checkpoint MCC.
+    Trainer(final_cfg, run_name=f"{model_name}_finalfit").fit(final_model, full_loader, val_loader)
+    # Evaluate both the HPO model (best val-MCC) and the final-fit model on val split,
+    # then overwrite save_path only if final-fit is strictly better.
+    from sklearn.metrics import matthews_corrcoef as _mcc_fn
+
+    _eval_t = Trainer(final_cfg)
+    _, ff_preds, ff_tgts = _eval_t.evaluate(final_model, val_loader)
+    ff_val_mcc = float(_mcc_fn(ff_tgts, ff_preds))
+    if ff_val_mcc > result.best_val_mcc:
+        torch.save(final_model.state_dict(), save_path)
+        final_model_to_eval = final_model
+    else:
+        final_model_to_eval = model
     metrics = evaluate_model_on_test(
-        final_model, test_loader, best_cfg, classes, model_name, log_wandb=best_cfg.use_wandb
+        final_model_to_eval,
+        test_loader,
+        best_cfg,
+        classes,
+        model_name,
+        log_wandb=best_cfg.use_wandb,
     )
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -639,7 +793,7 @@ def _ds_base_worker(
     result = trainer.fit(model, tr_loader, val_loader)
     metrics = evaluate_model_on_test(model, test_loader, config, classes, name, log_wandb=False)
     save_path = config.models_dir / f"{name}_seed{config.seed}.pt"
-    torch.save(model.state_dict(), save_path)
+    torch.save(model, save_path)  # save full model to avoid arch mismatch on reload
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     return {
@@ -787,6 +941,67 @@ def _softmoe_combo_worker(
     }
 
 
+def _meta_model_worker(
+    name: str,
+    device_str: str,
+    config: DLConfig,
+    X_tr: np.ndarray,
+    meta_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_val: np.ndarray,
+    meta_val: np.ndarray,
+    y_val: np.ndarray,
+    X_test: np.ndarray,
+    meta_test: np.ndarray,
+    y_test: np.ndarray,
+    classes: list[str],
+) -> dict[str, object]:
+    """Train one MetaFusion model that also ingests noise/path context."""
+    set_seed(config.seed)
+    config = copy.copy(config)
+    config.device = device_str
+    config.make_dirs()
+
+    dl = DLDataLoader(config)
+    tr_loader = dl.make_meta_loader(X_tr, meta_tr, y_tr, shuffle=True)
+    val_loader = dl.make_meta_loader(X_val, meta_val, y_val, shuffle=False)
+    test_loader = dl.make_meta_loader(X_test, meta_test, y_test, shuffle=False)
+
+    rnn_type = "gru" if "GRU" in name else "lstm"
+    model: nn.Module = MetaFusionClassifier(
+        in_features=config.in_features,
+        hidden_size=config.hidden_size,
+        num_layers=config.num_layers,
+        num_classes=config.num_classes,
+        dropout=config.dropout,
+        meta_embed_dim=config.meta_embed_dim,
+        rnn_type=rnn_type,
+    )
+    save_path = config.models_dir / f"{name}_seed{config.seed}.pt"
+    trainer = Trainer(config, run_name=name)
+    t0 = time.time()
+    result = trainer.fit(model, tr_loader, val_loader, save_path=save_path)
+    elapsed = time.time() - t0
+
+    metrics = evaluate_model_on_test(
+        model, test_loader, config, classes, name, log_wandb=config.use_wandb
+    )
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return {
+        "model": name,
+        "type": "meta_fusion",
+        "seed": config.seed,
+        "device": device_str,
+        "test_mcc": metrics["mcc"],
+        "test_acc": metrics["accuracy"],
+        "best_val_mcc": result.best_val_mcc,
+        "best_epoch": result.best_epoch,
+        "train_time_s": round(elapsed, 1),
+        "val_mccs": result.val_mccs,
+    }
+
+
 def main() -> None:
     args = parse_args()
 
@@ -801,7 +1016,12 @@ def main() -> None:
         n_trials=args.trials,
         batch_size=args.batch_size,
         use_wandb=not args.no_wandb,
+        use_metadata=not args.no_meta,
     )
+    if args.wandb_project:
+        config.wandb_project = args.wandb_project
+    if args.models_dir is not None:
+        config.models_dir = args.models_dir
     config.make_dirs()
     set_seed(config.seed)
 
@@ -850,6 +1070,62 @@ def main() -> None:
                 f"epoch={row['best_epoch']}  {row['train_time_s']}s"
             )
 
+    # ── Phase 1.5: Metadata-fusion models (noise + concurrent_noise_path) ────
+    if config.use_metadata and not args.no_meta:
+        print(
+            f"\n[Phase 1.5] Metadata-fusion models ({len(META_MODEL_NAMES)}) — noise + path context"
+        )
+        meta_dl = DLDataLoader(config)
+        X_m, meta_m, y_m = meta_dl.load_and_preprocess_with_meta()
+        (
+            X_m_train,
+            X_m_test,
+            meta_m_train,
+            meta_m_test,
+            y_m_train,
+            y_m_test,
+        ) = meta_dl.train_test_split_with_meta(X_m, meta_m, y_m)
+        (
+            X_m_tr,
+            X_m_val,
+            meta_m_tr,
+            meta_m_val,
+            y_m_tr,
+            y_m_val,
+        ) = meta_dl.train_test_split_with_meta(X_m_train, meta_m_train, y_m_train)
+
+        with ProcessPoolExecutor(max_workers=len(devices), mp_context=ctx) as pool:
+            meta_futures = {
+                pool.submit(
+                    _meta_model_worker,
+                    name,
+                    devices[i % len(devices)],
+                    config,
+                    X_m_tr,
+                    meta_m_tr,
+                    y_m_tr,
+                    X_m_val,
+                    meta_m_val,
+                    y_m_val,
+                    X_m_test,
+                    meta_m_test,
+                    y_m_test,
+                    classes,
+                ): name
+                for i, name in enumerate(META_MODEL_NAMES)
+            }
+            for future in as_completed(meta_futures):
+                row = future.result()
+                mv: list[float] = row.pop("val_mccs", [])
+                all_results.append(row)
+                curve_data.append({"name": str(row["model"]), "val_mccs": mv})
+                print(
+                    f"  [{row['model']}] {row['device']}  "
+                    f"test_mcc={float(row['test_mcc']):.4f}  "
+                    f"best_val_mcc={float(row['best_val_mcc']):.4f}  "
+                    f"{row['train_time_s']}s"
+                )
+
     # ── Phase 2: Ensembles (main process — reload saved checkpoints) ─────────
     print("\n[Phase 2] Building ensembles…")
     trained_models: dict[str, nn.Module] = {}
@@ -874,6 +1150,8 @@ def main() -> None:
         "Ensemble_LSTM_CNN": ["LSTM", "CNN"],
         "Ensemble_CNN_TCN": ["CNN", "TCN"],
         "Ensemble_TCN_Transformer": ["TCN", "Transformer"],
+        "Ensemble_BiLSTM_LSTM": ["BiLSTM", "LSTM"],
+        "Ensemble_Mamba_LSTM": ["Mamba", "LSTM"],
         "Ensemble_RNN_GRU_LSTM": ["RNN", "GRU", "LSTM"],
         "Ensemble_All": SINGLE_MODEL_NAMES,
     }
@@ -1112,10 +1390,13 @@ def main() -> None:
         dev0 = torch.device(devices[0])
         base_models_loaded: list[nn.Module] = []
         for info in sorted(ds_base_results, key=lambda d: str(d["model"])):
-            m = _build_ds_variant(str(info["model"]), config)
-            m.load_state_dict(
-                torch.load(str(info["save_path"]), map_location="cpu", weights_only=True)
-            )
+            _raw = torch.load(str(info["save_path"]), map_location="cpu", weights_only=False)
+            if isinstance(_raw, nn.Module):
+                m = _raw  # new format: full model saved
+            else:
+                # legacy format: state dict only — rebuild from current arch definition
+                m = _build_ds_variant(str(info["model"]), config)
+                m.load_state_dict(_raw)
             base_models_loaded.append(m)
 
         def _concat_logits(loader: "DataLoader[tuple[torch.Tensor, torch.Tensor]]") -> np.ndarray:
