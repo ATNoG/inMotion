@@ -231,3 +231,5 @@ models/*
 wandb/
 
 inMotion**
+plots/
+results/
