@@ -4,13 +4,15 @@ subtitle: Non-Intrusive Public Transport Monitoring
 author: "\\underline{André Ribeiro}, Guilherme Matos, Julio Corona, Mário Antunes, Diogo Gomes"
 aspectratio: 169
 institute: Instituto de Telecomunicações, Universidade de Aveiro, Portugal
-date: 03/06/206 - EuCNC26
+date: 03/06/2026 - EuCNC26
 section-titles: false
 # toc: true
 # toc-title: "Table of Contents"
 header-includes:
-  - \usetheme[sectionpage=none,numbering=fraction,progressbar=frametitle]{metropolis}
+  - \usetheme[sectionpage=none,numbering=fraction,progressbar=frametitle]{moloch}
   - \setbeamertemplate{navigation symbols}{}
+  - \usepackage[semibold,light]{FiraSans}
+  - \usepackage{FiraMono}
   - \usepackage{longtable,booktabs}
   - \usepackage[table]{xcolor}
   - \usepackage{etoolbox}
@@ -27,7 +29,7 @@ header-includes:
 
 The **inMotion** project aims to bring real-time intelligence to public transport operations.
 
-One of its core goals: understand **how passengers move** through the network: who boards, who alights, and where.
+One of its core goals, understand **how passengers move** through the network: who boards, who alights, and where.
 
 
 Today we present a component of that vision: passenger movement classification using only Wi-Fi signals.
@@ -36,8 +38,8 @@ Today we present a component of that vision: passenger movement classification u
 :::: {.column width="44%"}
 
 \centering
-\includegraphics[width=0.85\linewidth]{./images/experimental_setup.png}
-\small\color{gray}Experimental prototype at Instituto de Telecomunicações
+\includegraphics[width=0.85\linewidth]{./images/smart_bus.png}
+\small\color{gray}Smart bus concept
 
 ::::
 :::
@@ -55,20 +57,41 @@ Today we present a component of that vision: passenger movement classification u
 
 ## The Passenger Counting Gap
 
+::: columns
+:::: {.column width="48%"}
 
-**What operators need:**
+**Without granular passenger data:**
 
-- Accurate passenger flow data for scheduling, fleet sizing, and route planning
-- Coverage across the entire fleet, not just a few instrumented vehicles
-- Low deployment and maintenance cost
+- Routes designed on rough estimates, not actual demand
+- Buses run near-empty on some segments, overcrowded on others
+- Operators cannot justify service adjustments to funders
+- Fleet sizing based on guesswork, not occupancy
+
+::::
+:::: {.column width="48%"}
+
+**The potential of data-driven optimization:**
+
+| Metric | Improvement |
+|--------|------------|
+| Route costs | $\downarrow$ **30–40\%** |
+| Fuel consumption | $\downarrow$ **10–20\%** |
+| Routes needed | $\downarrow$ **29–42\%** |
+
+\vspace{0.3em}
+\footnotesize\color{gray}Sources: UPS ORION (30M liters fuel/year saved); Finmile/Shein/TikTok Shop deployments; industry route optimization benchmarks
+
+::::
+:::
 
 ::: notes
 
 - Accurate passenger counting is fundamental for public transport operations. Without it, operators are flying blind.
 - Traditional systems, infrared beams, pressure mats, cameras, work reasonably well in labs. In the real world, with crowds, occlusion, and dirt, their accuracy drops dramatically — 98% claimed becomes 53% in practice, as Pronello and Ruiz documented.
-- Video-based counting is more robust but introduces privacy issues and still requires cameras on every door.
-- The core problem: coverage. You cannot instrument an entire fleet with these technologies at a reasonable cost.
-- Wi-Fi, however, is already on many buses. The infrastructure is there.
+- But beyond the technology problem, there is a financial case. Why does accurate counting matter? Because data is what enables route optimization.
+- Look at the logistics industry: UPS saved 30 million liters of fuel per year just by optimizing routes with their ORION system. Shein and TikTok Shop cut delivery costs by 30–40% using AI route planning.
+- The same principle applies to public transport. If you know exactly where passengers board and alight, you can right-size vehicles, adjust frequencies, and eliminate empty runs. That is the economic motivation behind this work.
+- Wi-Fi is already on many buses. The infrastructure is there. We just need to extract the signal.
 
 :::
 
@@ -254,7 +277,7 @@ Uses existing Wi-Fi associations passively
 :::: {.column width="55%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/rssi_mean_trajectory_per_class.pdf}
+\includegraphics[width=\linewidth]{./images/rssi_mean_trajectory_per_class_1.pdf}
 \small\color{gray}Mean RSSI trajectory per class over 10 seconds (± 1 std)
 
 ::::
@@ -291,7 +314,7 @@ These contrasting trends are the foundation of the classification.
 :::: {.column width="55%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/tsne_visualization.pdf}
+\includegraphics[width=\linewidth]{./images/tsne_visualization_1.pdf}
 \small\color{gray}t-SNE projection of the 10-dimensional RSSI feature space
 
 ::::
@@ -369,7 +392,7 @@ These contrasting trends are the foundation of the classification.
 :::: {.column width="50%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/mcc_variability.pdf}
+\includegraphics[width=\linewidth]{./images/mcc_variability_1.pdf}
 \small\color{gray}MCC variability across three random seeds (combined dataset)
 
 ::::
@@ -377,7 +400,7 @@ These contrasting trends are the foundation of the classification.
 
 | Classifier       | Combined  | Isolated  | Noisy     |
 | ---------------- | --------- | --------- | --------- |
-| Gaussian Process | **0.756** | 0.414     | 0.755     |
+| GP | **0.756** | 0.414     | 0.755     |
 | SVC (RBF)        | 0.755     | 0.825     | 0.754     |
 | CatBoost         | 0.746     | 0.782     | **0.770** |
 | KNN (k=5)        | 0.692     | **0.907** | 0.704     |
@@ -404,14 +427,14 @@ These contrasting trends are the foundation of the classification.
 ## Gaussian Process on Combined Dataset
 
 ::: columns
-:::: {.column width="54%"}
+:::: {.column width="50%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/confusion_matrix_GaussianProcess.pdf}
+\includegraphics[width=\linewidth]{./images/confusion_matrix_GaussianProcess_1.pdf}
 \small\color{gray}Normalized confusion matrix, Gaussian Process
 
 ::::
-:::: {.column width="42%"}
+:::: {.column width="50%"}
 
 \small
 | Class | Precision | Recall | F1 |
@@ -491,7 +514,7 @@ Per-class F1 above 0.77 with interference. Ensemble methods handle noise best.
 :::: {.column width="50%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/mean_feature_importance.pdf}
+\includegraphics[width=\linewidth]{./images/mean_feature_importance_1.pdf}
 \small\color{gray}Mean feature importance across interpretable classifiers (min-max normalized)
 
 ::::
