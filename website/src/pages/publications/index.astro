@@ -3,24 +3,24 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import CiteBlock from "../../components/CiteBlock.astro";
 
-const paper_bibtex = `@inproceedings{ribeiro2026rssi,
-  title     = {{RSSI-Based Passenger Movement Classification for Non-Intrusive Public Transport Monitoring}},
-  author    = {Ribeiro, André and Matos, Guilherme and Corona, Julio and Antunes, Mário and Gomes, Diogo},
-  booktitle = {2026 Joint European Conference on Networks and Communications \\& 6G Summit (EuCNC/6G Summit)},
-  year      = {2026},
-  address   = {Aveiro, Portugal},
-  note      = {Funded by CENTRO 2030 (CENTRO2030-FEDER-02225900)}
-}`;
+const paper_bibtex = `@INPROCEEDINGS {41897,
+  author={A. Ribeiro and G. Matos and J. C. Corona and M. Antunes and D.Gomes Gomes},
+  doi={},
+  booktitle={EuCNC & 6G Summit},
+  title={RSSI-Based Passenger Movement Classification for Non-Intrusive Public Transport Monitoring},
+  year={2026},
+  month={June},
+  volume={},
+  pages={-} 
+  }`;
 
-const dataset_bibtex = `@misc{ribeiro2026rssidataset,
-  title        = {{RSSI-Based Passenger Movement Classification Dataset}},
-  author       = {Ribeiro, André and Matos, Guilherme and Corona, Julio and Antunes, Mário and Gomes, Diogo},
-  year         = {2026},
-  publisher    = {IEEE Dataport},
-  doi          = {10.21227/55nm-0r91},
-  howpublished = {\\url{https://dx.doi.org/10.21227/55nm-0r91}},
-  note         = {Also available on Zenodo}
-}`;
+const dataset_bibtex = `@data{55nm-0r91-26,
+  doi = {10.21227/55nm-0r91},
+  url = {https://dx.doi.org/10.21227/55nm-0r91},
+  author = {André Ribeiro and Guilherme Matos and Júlio Corona and Mário Antunes and Diogo Gomes},
+  publisher = {IEEE Dataport},
+  title = {WiFi RSSI Passenger Movement Dataset: Boarding, Alighting, and Static Classes in a Simulated Bus Environment},
+  year = {2026} }`;
 ---
 
 <BaseLayout
