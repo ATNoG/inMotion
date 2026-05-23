@@ -78,7 +78,7 @@ Today we present a component of that vision: passenger movement classification u
 | Routes needed    | $\downarrow$ **29–42\%** |
 
 \vspace{0.3em}
-\footnotesize\color{gray}Sources: UPS ORION (30M liters fuel/year saved); Finmile/Shein/TikTok Shop deployments; industry route optimization benchmarks
+\footnotesize\color{gray}Sources: UPS ORION (30M liters fuel/year saved); industry route optimization benchmarks
 
 ::::
 :::
