@@ -31,7 +31,6 @@ The **inMotion** project aims to bring real-time intelligence to public transpor
 
 One of its core goals, understand **how passengers move** through the network: who boards, who alights, and where.
 
-
 Today we present a component of that vision: passenger movement classification using only Wi-Fi signals.
 
 ::::
@@ -72,11 +71,11 @@ Today we present a component of that vision: passenger movement classification u
 
 **The potential of data-driven optimization:**
 
-| Metric | Improvement |
-|--------|------------|
-| Route costs | $\downarrow$ **30–40\%** |
+| Metric           | Improvement              |
+| ---------------- | ------------------------ |
+| Route costs      | $\downarrow$ **30–40\%** |
 | Fuel consumption | $\downarrow$ **10–20\%** |
-| Routes needed | $\downarrow$ **29–42\%** |
+| Routes needed    | $\downarrow$ **29–42\%** |
 
 \vspace{0.3em}
 \footnotesize\color{gray}Sources: UPS ORION (30M liters fuel/year saved); Finmile/Shein/TikTok Shop deployments; industry route optimization benchmarks
@@ -113,7 +112,7 @@ We want to answer a simple question for every passenger interacting with the bus
 | BA    | B $\rightarrow$ A | **Boarding** the bus      |
 | AB    | A $\rightarrow$ B | **Alighting** the bus     |
 
-\footnotesize Zone A = bus interior (near access point) 
+\footnotesize Zone A = bus interior (near access point)
 
 \footnotesize Zone B = bus stop (outside)
 
@@ -121,7 +120,7 @@ We want to answer a simple question for every passenger interacting with the bus
 :::: {.column width="48%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/experimental_setup.png}
+\includegraphics[width=\linewidth]{./images/experimental_setup_arrows.png}
 \small\color{gray}Two-zone environment: door separates A from B
 
 ::::
@@ -190,6 +189,42 @@ Uses existing Wi-Fi associations passively
 
 :::
 
+## Example of expected RSSI patterns
+
+::: columns
+
+::: {.column width="48%"}
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[scale=0.99, every node/.style={scale=0.99}]
+\draw[help lines, color=gray!15, dashed] (0,-6);
+
+    \draw[->, thick, gray!70] (0,-6.5) -- (0,-1.5) node[above, black] {RSSI (dBm)};
+    \foreach \y in {-60,-50,-40,-30,-20} {
+        \draw[gray!70] (1pt,\y/10) -- (-1pt,\y/10) node[anchor=east, black] {\y};
+    }
+
+    \draw[->, thick, gray!70] (-0,-6) -- (10.5,-6) node[midway, below=0.6cm, black] {Samples};
+    \foreach \x in {1,2,3,4,5,6,7,8,9,10} {
+        \draw[gray!70] (\x,-5.9) -- (\x,-6.1) node[anchor=north, black] {\x};
+    }
+
+    \draw[very thick, teal!80!black, smooth] plot coordinates {
+        (1,-5.2) (2,-4.6) (3,-4.5) (4,-5.0) (5,-4.1) (6,-4.0) (7,-2.9) (8,-3.0) (9,-3.3) (10,-3.3)
+    };
+
+\end{tikzpicture}%
+}
+:::
+
+::: {.column width="48%"}
+\centering
+\includegraphics[width=\linewidth]{./images/entering_bus.png}
+
+\small\color{gray}Person entering the bus.
+:::
+:::
+
 # How We Collected the Data
 
 ## Experimental Setup
@@ -198,8 +233,8 @@ Uses existing Wi-Fi associations passively
 :::: {.column width="40%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/experimental_setup.png}
-\small\color{gray}MAYBE CHANGE HERE TO A REAL PHOTO?? Controlled indoor environment at IT Aveiro
+\includegraphics[width=0.8\linewidth]{./images/real_env.jpg}
+\small\color{gray}Controlled indoor environment at IT Aveiro
 
 ::::
 :::: {.column width="60%"}
@@ -236,11 +271,11 @@ Uses existing Wi-Fi associations passively
 
 **1,356 labelled samples** across two conditions:
 
-
 | Condition    | Samples | Description                             |
 | ------------ | ------- | --------------------------------------- |
 | **Isolated** | 160     | One device at a time, clean signals     |
 | **Noisy**    | 1,196   | Four simultaneous devices, interference |
+
 \small Approximately 340 samples per movement class. The dataset is publicly available on IEEE Dataport and Zenodo.
 
 \centering
@@ -250,10 +285,10 @@ Uses existing Wi-Fi associations passively
 \toprule
 \textbf{ID} & \textbf{t1} & \textbf{t2} & \textbf{t3} & \textbf{t4} & \textbf{t5} & \textbf{t6} & \textbf{t7} & \textbf{t8} & \textbf{t9} & \textbf{t10} & \textbf{Class} \\
 \midrule
-1  & −42 & −44 & −48 & −52 & −55 & −58 & −60 & −62 & −63 & −64 & AB \\
-2  & −65 & −63 & −58 & −54 & −50 & −47 & −45 & −43 & −42 & −41 & BA \\
-3  & −40 & −41 & −39 & −42 & −40 & −41 & −39 & −40 & −41 & −40 & AA \\
-4  & −62 & −63 & −61 & −64 & −62 & −63 & −61 & −62 & −63 & −62 & BB \\
+1 & −42 & −44 & −48 & −52 & −55 & −58 & −60 & −62 & −63 & −64 & AB \\
+2 & −65 & −63 & −58 & −54 & −50 & −47 & −45 & −43 & −42 & −41 & BA \\
+3 & −40 & −41 & −39 & −42 & −40 & −41 & −39 & −40 & −41 & −40 & AA \\
+4 & −62 & −63 & −61 & −64 & −62 & −63 & −61 & −62 & −63 & −62 & BB \\
 \bottomrule
 \end{tabular}
 \small\color{gray}Four samples from the dataset: each row is a 10-second RSSI trajectory
@@ -398,12 +433,13 @@ These contrasting trends are the foundation of the classification.
 ::::
 :::: {.column width="50%"}
 
-| Classifier       | Combined  | Isolated  | Noisy     |
-| ---------------- | --------- | --------- | --------- |
-| GP | **0.756** | 0.414     | 0.755     |
-| SVC (RBF)        | 0.755     | 0.825     | 0.754     |
-| CatBoost         | 0.746     | 0.782     | **0.770** |
-| KNN (k=5)        | 0.692     | **0.907** | 0.704     |
+| Classifier | Combined  | Isolated  | Noisy     |
+| ---------- | --------- | --------- | --------- |
+| GP         | **0.756** | 0.414     | 0.755     |
+| SVC (RBF)  | 0.755     | 0.825     | 0.754     |
+| CatBoost   | 0.746     | 0.782     | **0.770** |
+| KNN (k=5)  | 0.692     | **0.907** | 0.704     |
+
 \small Mean MCC ± std across 3 seeds
 
 \vspace{0.5em}
