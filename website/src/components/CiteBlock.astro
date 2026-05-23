@@ -1,0 +1,25 @@
+---
+interface Props {
+  id: string;
+  bibtex: string;
+}
+
+const { id, bibtex } = Astro.props;
+---
+
+<div id={id} class="cite-block hidden">
+  <div class="cite-header">
+    <span>BibTeX</span>
+    <button class="cite-copy" type="button" data-cite-copy>Copy</button>
+  </div>
+  <pre class="cite-pre">{bibtex}</pre>
+</div>
+
+<script>
+  document.querySelectorAll('[data-cite-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.cite-block')?.querySelector('pre');
+      if (pre) navigator.clipboard.writeText(pre.textContent ?? '');
+    });
+  });
+</script>

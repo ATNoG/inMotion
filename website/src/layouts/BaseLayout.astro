@@ -1,0 +1,93 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — inMotion</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="/inMotion/favicon.svg" />
+    <script is:inline>
+      (function() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="container nav-inner">
+        <a href="/inMotion/" class="nav-logo">inMotion</a>
+        <div class="nav-links">
+          <a href="/inMotion/" class:list={["nav-link", { active: currentPath === "/inMotion/" || currentPath === "/inMotion" }]}>Home</a>
+          <a href="/inMotion/project/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/project") }]}>Project</a>
+          <a href="/inMotion/team/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/team") }]}>Team</a>
+          <a href="/inMotion/publications/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/publications") }]}>Publications</a>
+          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" type="button">
+            <span class="theme-icon-light">☀️</span>
+            <span class="theme-icon-dark">🌙</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="footer-funding">
+          Funded by the European Regional Development Fund (FEDER), through the
+          Regional Operational Programme of Centre (CENTRO 2030) of the Portugal 2030 framework
+          [Project inMotion Nr. 21359 (CENTRO2030-FEDER-02225900)]
+        </p>
+        <div class="footer-bottom">
+          <span>inMotion &copy; 2026</span>
+          <div class="footer-links">
+            <a href="https://github.com/ATNoG/inMotion" target="_blank" rel="noopener">GitHub</a>
+            <a href="mailto:andrepedroribeiro@av.it.pt">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .theme-icon-dark { display: inline; }
+  .theme-icon-light { display: none; }
+
+  [data-theme='dark'] .theme-icon-dark { display: none; }
+  [data-theme='dark'] .theme-icon-light { display: inline; }
+</style>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', () => {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+</script>

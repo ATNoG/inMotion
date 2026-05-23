@@ -233,3 +233,4 @@ wandb/
 inMotion**
 plots/
 results/
+.astro/

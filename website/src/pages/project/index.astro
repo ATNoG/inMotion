@@ -1,0 +1,144 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+---
+
+<BaseLayout
+  title="Project"
+  description="The inMotion project — objectives, methodology, system architecture, and data collection."
+>
+  <PageHero
+    title="Project"
+    subtitle="Non-intrusive passenger sensing and AI-powered transit analytics"
+  />
+
+  <div class="container content-section">
+
+    <h2>Objectives</h2>
+    <div class="section-divider"></div>
+    <p>
+      Over 75% of EU citizens live in cities, and inefficient transport contributes to 24%
+      of greenhouse gas emissions. Current ticketing and passenger counting systems do not
+      provide continuous, detailed characterisation of passenger journeys (origin-destination)
+      without intrusive hardware or compromising privacy.
+    </p>
+    <p>
+      inMotion tackles this by combining <strong>Wi-Fi and Bluetooth passive sensing</strong>
+      with <strong>machine learning</strong> to detect passenger movements. The goal: enable
+      transport operators to optimise routes, right-size fleets, and make data-driven decisions
+      — using infrastructure they already have.
+    </p>
+
+    <h2>System Architecture</h2>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>PPS1 — Detection & Tracking</h3>
+        <ul class="content-list">
+          <li>Anonymous Wi-Fi and Bluetooth data capture at bus doors</li>
+          <li>RSSI fingerprinting to infer movement patterns (board, alight, stay)</li>
+          <li>Sensor fusion for multi-modal environments</li>
+          <li>Studies on federated network viability (Eduroam, OpenRoaming) for seamless tracking without manual user association</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>PPS2 — AI Platform</h3>
+        <ul class="content-list">
+          <li>Neural networks and classical ML for route optimisation and demand prediction</li>
+          <li>NLP interface using RAG (Retrieval-Augmented Generation) for operators to query data in natural language</li>
+          <li>Origin-Destination matrix estimation from aggregated tracking events</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Data Collection — RSSI Passenger Classification</h2>
+    <div class="section-divider"></div>
+
+    <p>
+      Our first published study focused on classifying passenger movements using only Wi-Fi
+      signal strength. Here's how we collected the data.
+    </p>
+
+    <h3>Experimental Setup</h3>
+    <p>
+      Two zones to simulate a bus and its door: <strong>Zone A</strong> (inside, a closed
+      room with the access point at the doorway) and <strong>Zone B</strong> (outside, an
+      adjacent corridor representing the bus stop). Four smartphone models from three brands
+      (Samsung Galaxy S20, S23; POCO X7 Pro; Xiaomi Redmi 4) spanning Android 6 to 14.
+    </p>
+
+    <figure class="figure">
+      <img
+        src="/inMotion/images/esquema.png"
+        alt="Experimental setup: Zone A (bus interior) and Zone B (bus stop)"
+        class="figure-img"
+        loading="lazy"
+      />
+    </figure>
+
+    <h3>Movement Classes</h3>
+    <div class="grid-2">
+      <div class="class-item class-aa">
+        <span class="class-tag">AA</span>
+        <div><strong>Inside → Inside</strong><span>Remaining inside the vehicle</span></div>
+      </div>
+      <div class="class-item class-bb">
+        <span class="class-tag">BB</span>
+        <div><strong>Stop → Stop</strong><span>Remaining at the bus stop</span></div>
+      </div>
+      <div class="class-item class-ba">
+        <span class="class-tag">BA</span>
+        <div><strong>Boarding</strong><span>From stop into the vehicle (RSSI rises)</span></div>
+      </div>
+      <div class="class-item class-ab">
+        <span class="class-tag">AB</span>
+        <div><strong>Alighting</strong><span>From vehicle to stop (RSSI drops)</span></div>
+      </div>
+    </div>
+
+    <h3>Collection Protocol</h3>
+    <ul class="content-list">
+      <li>RSSI captured every second over 10-second windows → 10 values per sample</li>
+      <li>Wired Ethernet from access point to laptop; Python script extracts live data</li>
+      <li>Two conditions: <strong>isolated</strong> (1 device, 160 samples) and <strong>noisy</strong> (4 simultaneous devices, 1,196 samples)</li>
+      <li>Scripted movements with known ground truth for labelling</li>
+    </ul>
+
+    <h3>Data Processing</h3>
+    <ul class="content-list">
+      <li>Raw captures: per-second Python dicts with MAC, RSSI, tx/rx bytes</li>
+      <li>Per-device isolation by MAC address</li>
+      <li>10 RSSI readings transposed from rows to columns — each row = one 10-second trajectory</li>
+      <li>Labels assigned: movement class (AA/BB/BA/AB) + noise flag</li>
+      <li>Non-essential fields (bytes, connected time) discarded</li>
+    </ul>
+
+    <div class="callout">
+      <p>
+        The dataset is publicly available on <strong>IEEE Dataport</strong> (10.21227/55nm-0r91)
+        and <strong>Zenodo</strong>. Code and processing scripts on <a href="https://github.com/ATNoG/inMotion">GitHub</a>.
+      </p>
+    </div>
+
+    <h2>Classification Pipeline</h2>
+    <div class="section-divider"></div>
+
+    <p>
+      We evaluated <strong>38 classifiers</strong> across six families: SVMs, ensemble methods (Random
+      Forest, Extra Trees, CatBoost, XGBoost, LightGBM), Gaussian Processes, MLP neural networks,
+      regularised logistic regression (L1/L2/ElasticNet), and stacking/voting ensembles.
+    </p>
+    <ul class="content-list">
+      <li>Bayesian hyperparameter optimisation with <strong>Optuna</strong> (50–1,300+ trials per classifier)</li>
+      <li>Stratified 80/20 split, 5-fold CV, 3 random seeds for reproducibility</li>
+      <li>Primary metric: <strong>Matthews Correlation Coefficient (MCC)</strong></li>
+      <li>Best results: KNN (MCC 0.907, isolated), CatBoost (MCC 0.770, noisy), Gaussian Process (MCC 0.756, combined)</li>
+    </ul>
+
+    <div class="btn-group">
+      <a href="/inMotion/publications/" class="btn btn-primary">Read the paper</a>
+      <a href="https://github.com/ATNoG/inMotion" class="btn btn-outline" target="_blank" rel="noopener">View code</a>
+    </div>
+  </div>
+</BaseLayout>

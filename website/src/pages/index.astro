@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Home"
+  description="inMotion — Integrated AI Platform for Urban Mobility and Transportation. An R&D project by Wavecom and Instituto de Telecomunicações."
+>
+  <div class="home-hero">
+    <div class="container">
+      <span class="badge badge-blue">CENTRO 2030 · FEDER · Portugal 2030</span>
+      <h1>inMotion</h1>
+      <p class="home-hero-subtitle">
+        Integrated AI Platform for Urban Mobility and Transportation
+      </p>
+      <p class="home-hero-desc">
+        An R&D project led by <strong>Wavecom</strong> in collaboration with
+        <strong>Instituto de Telecomunicações</strong> (IT Aveiro).
+        Funded by CENTRO 2030 (CENTRO2030-FEDER-02225900).
+      </p>
+    </div>
+  </div>
+
+  <div class="container content-section">
+    <h2>What we do</h2>
+    <div class="section-divider"></div>
+
+    <p>
+      Public transport operators lack detailed data on how passengers actually move through
+      the network. Ticketing systems tell you that someone bought a pass, not where they got off.
+      Infrared counters and cameras are expensive, inaccurate in real conditions, and raise privacy
+      concerns.
+    </p>
+    <p>
+      inMotion develops non-intrusive sensing using <strong>Wi-Fi and Bluetooth</strong> signals
+      already present on modern buses. By analysing signal strength patterns over time, we infer
+      boarding, alighting, and movement — without cameras, without identifying individuals, and
+      without requiring passengers to install anything.
+    </p>
+
+    <h2>Two core products</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>PPS1 — Passenger Detection & Tracking</h3>
+        <p>
+          Anonymous data collection through Wi-Fi and Bluetooth sensing, combined with sensor fusion.
+          Detects how many people board and alight at each stop, feeding origin-destination models.
+        </p>
+      </div>
+      <div class="card">
+        <h3>PPS2 — AI Platform for Urban Mobility</h3>
+        <p>
+          Machine learning and NLP layer for route optimisation, demand prediction, and
+          operator-facing analytics. Designed to let transit managers query data in natural
+          language through RAG (Retrieval-Augmented Generation).
+        </p>
+      </div>
+    </div>
+
+    <h2>Latest</h2>
+    <p>
+      Our work on <strong>RSSI-based passenger movement classification</strong> was accepted at
+      <strong>EuCNC & 6G Summit 2026</strong>. We evaluated 38 classifiers with Bayesian
+      hyperparameter optimisation using Optuna, achieving MCC 0.907 in clean conditions and
+      0.770 in realistic noisy scenarios.
+      <a href="/inMotion/publications/">See publications →</a>
+    </p>
+  </div>
+</BaseLayout>
