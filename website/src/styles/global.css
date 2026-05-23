@@ -468,7 +468,7 @@ strong {
 
 .class-item span {
   font-size: 0.8rem;
-  color: var(--color-muted);
+  color: var(--color-body);
 }
 
 .class-tag {
