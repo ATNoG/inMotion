@@ -1,5 +1,5 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 
 interface Props {
   title: string;
@@ -23,12 +23,31 @@ const currentPath = Astro.url.pathname;
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" type="image/svg+xml" href="/inMotion/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/inMotion/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/inMotion/favicon-16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/inMotion/favicon-180.png"
+    />
     <script is:inline>
-      (function() {
-        const saved = localStorage.getItem('theme');
-        if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.setAttribute('data-theme', 'dark');
+      (function () {
+        const saved = localStorage.getItem("theme");
+        if (
+          saved === "dark" ||
+          (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
+          document.documentElement.setAttribute("data-theme", "dark");
         }
       })();
     </script>
@@ -38,11 +57,43 @@ const currentPath = Astro.url.pathname;
       <div class="container nav-inner">
         <a href="/inMotion/" class="nav-logo">inMotion</a>
         <div class="nav-links">
-          <a href="/inMotion/" class:list={["nav-link", { active: currentPath === "/inMotion/" || currentPath === "/inMotion" }]}>Home</a>
-          <a href="/inMotion/project/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/project") }]}>Project</a>
-          <a href="/inMotion/team/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/team") }]}>Team</a>
-          <a href="/inMotion/publications/" class:list={["nav-link", { active: currentPath.startsWith("/inMotion/publications") }]}>Publications</a>
-          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" type="button">
+          <a
+            href="/inMotion/"
+            class:list={[
+              "nav-link",
+              {
+                active:
+                  currentPath === "/inMotion/" || currentPath === "/inMotion",
+              },
+            ]}>Home</a
+          >
+          <a
+            href="/inMotion/project/"
+            class:list={[
+              "nav-link",
+              { active: currentPath.startsWith("/inMotion/project") },
+            ]}>Project</a
+          >
+          <a
+            href="/inMotion/team/"
+            class:list={[
+              "nav-link",
+              { active: currentPath.startsWith("/inMotion/team") },
+            ]}>Team</a
+          >
+          <a
+            href="/inMotion/publications/"
+            class:list={[
+              "nav-link",
+              { active: currentPath.startsWith("/inMotion/publications") },
+            ]}>Publications</a
+          >
+          <button
+            class="theme-toggle"
+            id="theme-toggle"
+            aria-label="Toggle dark mode"
+            type="button"
+          >
             <span class="theme-icon-light">☀️</span>
             <span class="theme-icon-dark">🌙</span>
           </button>
@@ -56,15 +107,46 @@ const currentPath = Astro.url.pathname;
 
     <footer class="footer">
       <div class="container">
+        <div class="footer-logos">
+          <img
+            src="/inMotion/InMotion-Logo.png"
+            alt="inMotion"
+            class="footer-logo"
+            loading="lazy"
+          />
+          <img
+            src="/inMotion/IT-logotipo-cores-01.jpg"
+            alt="Instituto de Telecomunicações"
+            class="footer-logo"
+            loading="lazy"
+          />
+          <img
+            src="/inMotion/wavecom-logo.png"
+            alt="Wavecom"
+            class="footer-logo"
+            loading="lazy"
+          />
+          <img
+            src="/inMotion/C2030_Centro2030@3x.png"
+            alt="CENTRO 2030"
+            class="footer-logo"
+            loading="lazy"
+          />
+        </div>
         <p class="footer-funding">
           Funded by the European Regional Development Fund (FEDER), through the
-          Regional Operational Programme of Centre (CENTRO 2030) of the Portugal 2030 framework
-          [Project inMotion Nr. 21359 (CENTRO2030-FEDER-02225900)]
+          Regional Operational Programme of Centre (CENTRO 2030) of the Portugal
+          2030 framework [Project inMotion Nr. 21359
+          (CENTRO2030-FEDER-02225900)]
         </p>
         <div class="footer-bottom">
           <span>inMotion &copy; 2026</span>
           <div class="footer-links">
-            <a href="https://github.com/ATNoG/inMotion" target="_blank" rel="noopener">GitHub</a>
+            <a
+              href="https://github.com/ATNoG/inMotion"
+              target="_blank"
+              rel="noopener">GitHub</a
+            >
             <a href="mailto:andrepedroribeiro@av.it.pt">Contact</a>
           </div>
         </div>
@@ -74,20 +156,28 @@ const currentPath = Astro.url.pathname;
 </html>
 
 <style>
-  .theme-icon-dark { display: inline; }
-  .theme-icon-light { display: none; }
+  .theme-icon-dark {
+    display: inline;
+  }
+  .theme-icon-light {
+    display: none;
+  }
 
-  [data-theme='dark'] .theme-icon-dark { display: none; }
-  [data-theme='dark'] .theme-icon-light { display: inline; }
+  [data-theme="dark"] .theme-icon-dark {
+    display: none;
+  }
+  [data-theme="dark"] .theme-icon-light {
+    display: inline;
+  }
 </style>
 
 <script>
-  const toggle = document.getElementById('theme-toggle');
-  toggle?.addEventListener('click', () => {
+  const toggle = document.getElementById("theme-toggle");
+  toggle?.addEventListener("click", () => {
     const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
+    const current = html.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
   });
 </script>
