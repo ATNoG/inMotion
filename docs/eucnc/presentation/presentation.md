@@ -665,7 +665,7 @@ Per-class F1 above 0.77 with interference. Ensemble methods handle noise best.
 
 \centering
 
-\vspace{2em}
+\vspace{1em}
 
 **This work is supported by the European Regional Development Fund (FEDER)**
 
@@ -673,21 +673,15 @@ through the Regional Operational Programme of Centre (CENTRO 2030)
 
 of the Portugal 2030 framework
 
-\vspace{1em}
+\vspace{0.5em}
 
 Project **inMotion**, Nr. 21359 (CENTRO2030-FEDER-02225900)
 
-\vspace{2em}
-
-\small\textbf{Instituto de Telecomunicações · Universidade de Aveiro}
-
-\vspace{1em}
-
 \normalsize Thank you. Questions?
 
-\vspace{1em}
+\vspace{0.8em}
 
-\footnotesize Dataset: IEEE Dataport (10.21227/55nm-0r91) · Code: github.com/ATNoG/inMotion
+\small \color{gray} Website: atnog.github.io/inMotion · Dataset: IEEE Dataport (10.21227/55nm-0r91) · Code: github.com/ATNoG/inMotion
 
 ::: notes
 
