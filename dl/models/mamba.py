@@ -98,7 +98,19 @@ class _SelectiveSSM(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
-        """x: (B, T, d_model) → (B, T, d_model)."""
+        """x: (B, T, d_model) → (B, T, d_model).
+
+        Gradient-checkpointed: forward activations are NOT retained;
+        the SSM scan is recomputed during backward, trading ~2× compute
+        for ~10× activation-memory savings.  Essential for MIMO (R≥4)
+        configurations to avoid OOM.
+        """
+        return torch.utils.checkpoint.checkpoint(
+            self._forward_impl, x, use_reentrant=False,
+        )
+
+    def _forward_impl(self, x: Tensor) -> Tensor:
+        """Core SSM computation (see ``forward`` for checkpoint rationale)."""
         B, T, d = x.shape
         R = self.mimo_rank
         d_s = self.d_state
@@ -110,26 +122,23 @@ class _SelectiveSSM(nn.Module):
         C_all = BC[..., R * d_s :].reshape(B, T, R, d_s)  # (B, T, R, d_s)
 
         dt = F.softplus(self.dt_proj(dt_raw))  # (B, T, d_model)
-        A = -torch.exp(self.A_log)  # (d_model, d_s) — negative
-        # Ā = exp(Δ · A): same discretisation shared across all MIMO ranks
-        dA = torch.exp(dt.unsqueeze(-1) * A)  # (B, T, d_model, d_s)
+        A = -torch.exp(self.A_log)  # (d_model, d_s) — negative, up to -d_state
+        # Clamp the exponent to prevent underflow in exp(dt·A) for large d_state.
+        # exp(-20) ≈ 2e-9 is safe in float32; below that exp() → 0 and SSM collapses.
+        # The clamp only affects the backward pass through the exponent; A itself is unchanged.
+        dA = torch.exp((dt.unsqueeze(-1) * A).clamp(min=-20.0))  # (B, T, d_model, d_s)
 
         if R == 1:
             # ── SISO fast path ─────────────────────────────────────────────
-            # B̄ = Δ ⊗ B_t  (outer product d_model × d_state)
             dB = dt.unsqueeze(-1) * B_all[:, :, 0].unsqueeze(2)  # (B, T, d_model, d_s)
             h = x.new_zeros(B, d, d_s)
             ys: list[Tensor] = []
             for t in range(T):
-                # h_t = Ā_t h_{t-1} + B̄_t x_t
                 h = dA[:, t] * h + dB[:, t] * x[:, t].unsqueeze(-1)
-                # y_t = C_t · h_t  (dot over d_state)
                 ys.append((h * C_all[:, t, 0].unsqueeze(1)).sum(-1))  # (B, d_model)
             out = torch.stack(ys, dim=1)  # (B, T, d_model)
         else:
             # ── MIMO path: R independent selective scans ───────────────────
-            # Each rank r sees a scaled view of x via learned mimo_x[r].
-            # Outputs are weighted by mimo_o[r] and summed (rank aggregation).
             out = x.new_zeros(B, T, d)
             for r in range(R):
                 x_r = x * self.mimo_x[r]  # (B, T, d_model)
@@ -139,7 +148,6 @@ class _SelectiveSSM(nn.Module):
                 for t in range(T):
                     h_r = dA[:, t] * h_r + dB_r[:, t] * x_r[:, t].unsqueeze(-1)
                     ys_r.append((h_r * C_all[:, t, r].unsqueeze(1)).sum(-1))
-                # Weight rank-r output by mimo_o[r]
                 out = out + torch.stack(ys_r, dim=1) * self.mimo_o[r]
 
         return out + self.D * x  # skip connection

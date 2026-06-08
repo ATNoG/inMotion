@@ -10,7 +10,7 @@ Options:
     --seed INT          Random seed (default 42)
     --epochs INT        Max epochs per model (default 150)
     --trials INT        Optuna trials per study (default 50)
-    --batch-size INT    Batch size (default 64)
+    --batch-size INT    Batch size (default 128)
     --num-gpus INT      GPUs to use, 0 = auto-detect all (default 0)
     --no-wandb          Disable WandB logging
     --no-optuna         Skip Optuna HPO/NAS studies
@@ -26,6 +26,7 @@ import multiprocessing as mp
 import random
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm import tqdm
 from pathlib import Path
 
 import numpy as np
@@ -34,6 +35,7 @@ from dl.config import DLConfig
 from dl.data_loader import DLDataLoader
 from dl.evaluation import (
     evaluate_model_on_test,
+    metrics_to_extended_row,
     plot_training_curves,
     save_results_csv,
 )
@@ -72,21 +74,21 @@ SINGLE_MODEL_NAMES: list[str] = [
     "LSTM",
     "CNN",
     "TCN",
-    "Transformer",
-    "BiLSTM",
+    # "Transformer",     # consistently worst; uncomment if needed
+    # "BiLSTM",          # bottom-2 in augmented + noise
+    # "CNN2DGRU",        # strictly worse than CNN2DLSTM everywhere
     "CNN2DLSTM",
-    "CNN2DGRU",
     "Mamba",
 ]
 HPO_TYPES: list[str] = [
-    "rnn",
+    # "rnn",             # weakest HPO by avg cross-dataset MCC
     "gru",
     "lstm",
     "cnn",
     "tcn",
     "transformer",
     "bilstm",
-    "cnn2drnn",
+    # "cnn2drnn",        # 2nd weakest HPO; redundant to cnn + rnn separately
     "mamba",
 ]
 
@@ -94,22 +96,25 @@ HPO_TYPES: list[str] = [
 META_MODEL_NAMES: list[str] = ["MetaFusion_LSTM", "MetaFusion_GRU"]
 
 # 18 base variants for Deep Stacking (2 configs per arch)
+# Weak architectures commented out to reduce grid time:
+#   LSTM, BiLSTM, Transformer → always bottom-5 across datasets
+#   GRU_B, CNN2DRNN_A → redundant or bottom-tier
 DS_BASE_NAMES: list[str] = [
     "DS_RNN_A",
     "DS_RNN_B",
     "DS_GRU_A",
-    "DS_GRU_B",
-    "DS_LSTM_A",
-    "DS_LSTM_B",
+    # "DS_GRU_B",
+    # "DS_LSTM_A",
+    # "DS_LSTM_B",
     "DS_CNN_A",
     "DS_CNN_B",
     "DS_TCN_A",
     "DS_TCN_B",
-    "DS_Transformer_A",
-    "DS_Transformer_B",
-    "DS_BiLSTM_A",
-    "DS_BiLSTM_B",
-    "DS_CNN2DRNN_A",
+    # "DS_Transformer_A",
+    # "DS_Transformer_B",
+    # "DS_BiLSTM_A",
+    # "DS_BiLSTM_B",
+    # "DS_CNN2DRNN_A",
     "DS_CNN2DRNN_B",
     "DS_Mamba_A",
     "DS_Mamba_B",
@@ -122,7 +127,7 @@ def set_seed(seed: int) -> None:
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.benchmark = True
 
 
 def parse_args() -> argparse.Namespace:
@@ -144,6 +149,23 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Override output directory for saved models (default: models/dl)",
+    )
+    p.add_argument(
+        "--results-dir",
+        type=Path,
+        default=None,
+        help="Override output directory for results CSV (default: results/dl)",
+    )
+    p.add_argument(
+        "--plots-dir",
+        type=Path,
+        default=None,
+        help="Override output directory for plots (default: plots/dl)",
+    )
+    p.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Force retrain even when .pt checkpoint exists. By default, existing checkpoints are reused.",
     )
     return p.parse_args()
 
@@ -330,20 +352,37 @@ def _single_model_worker(
     y_test: np.ndarray,
     classes: list[str],
 ) -> dict[str, object]:
-    """Train one model on `device_str`, save checkpoint, return metrics."""
+    """Train one model on `device_str`, save checkpoint, return metrics.
+
+    Skips training if checkpoint already exists and --no-resume is not set.
+    """
     set_seed(config.seed)
     config = copy.copy(config)
     config.device = device_str
     config.make_dirs()
 
     dl = DLDataLoader(config)
+    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
+    save_path = config.models_dir / f"{name}_seed{config.seed}.pt"
+
+    if not config._force_retrain and save_path.exists():
+        print(f"  [{name}] checkpoint exists, skipping training → {save_path}")
+        model = _build_model_by_name(name, config)
+        state = torch.load(str(save_path), map_location="cpu", weights_only=True)
+        model.load_state_dict(state)
+        metrics = evaluate_model_on_test(
+            model, test_loader, config, classes, name, log_wandb=config.use_wandb,
+        )
+        return metrics_to_extended_row(
+            name, "single", config.seed, device_str, metrics,
+            extra={},
+        )
+
     tr_loader = dl.make_loader(X_tr, y_tr, shuffle=True)
     val_loader = dl.make_loader(X_val, y_val, shuffle=False)
-    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
 
     model = _build_model_by_name(name, config)
     trainer = Trainer(config, run_name=name)
-    save_path = config.models_dir / f"{name}_seed{config.seed}.pt"
 
     t0 = time.time()
     result = trainer.fit(model, tr_loader, val_loader, save_path=save_path)
@@ -355,18 +394,13 @@ def _single_model_worker(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    return {
-        "model": name,
-        "type": "single",
-        "seed": config.seed,
-        "device": device_str,
-        "test_mcc": metrics["mcc"],
-        "test_acc": metrics["accuracy"],
-        "best_val_mcc": result.best_val_mcc,
-        "best_epoch": result.best_epoch,
-        "train_time_s": round(elapsed, 1),
-        "val_mccs": result.val_mccs,
-    }
+    row = metrics_to_extended_row(
+        name, "single", config.seed, device_str, metrics,
+        best_val_mcc=result.best_val_mcc, best_epoch=result.best_epoch,
+        train_time_s=round(elapsed, 1),
+        extra={"val_mccs": result.val_mccs},
+    )
+    return row
 
 
 def _build_hpo_best_model(model_type: str, config: DLConfig, params: dict) -> nn.Module:
@@ -486,6 +520,41 @@ def _hpo_worker(
     config.device = device_str
     config.make_dirs()
     dl = DLDataLoader(config)
+    model_name = f"HPO_{model_type.upper()}"
+    save_path = config.models_dir / f"{model_name}_seed{config.seed}.pt"
+    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
+
+    # ── Shortcut: if both Optuna study and checkpoint exist, skip training ──
+    if not config._force_retrain and save_path.exists():
+        try:
+            import optuna
+            from dl.optimization import _get_optuna_storage
+            study_name = f"{config.optuna_study_prefix}_{model_type}"
+            study = optuna.load_study(study_name=study_name, storage=_get_optuna_storage(config.optuna_storage))
+            if study.trials:
+                best_params = study.best_trial.params
+                print(f"  [HPO {model_type}] study + checkpoint exist, skipping → {save_path}")
+                model = _build_hpo_best_model(model_type, config, best_params)
+                state = torch.load(str(save_path), map_location="cpu", weights_only=True)
+                model.load_state_dict(state)
+                metrics = evaluate_model_on_test(
+                    model, test_loader, config, classes, model_name, log_wandb=config.use_wandb,
+                )
+                return {
+                    "model_type": model_type, "device": device_str,
+                    "best_val_mcc": study.best_value, "best_params": best_params,
+                    "n_trials": len(study.trials), "model": model_name, "type": "hpo",
+                    "seed": config.seed, "test_mcc": metrics["mcc"],
+                    "test_acc": metrics["accuracy"], "precision_macro": metrics["precision_macro"],
+                    "recall_macro": metrics["recall_macro"], "f1_macro": metrics["f1_macro"],
+                    "precision_weighted": metrics["precision_weighted"],
+                    "recall_weighted": metrics["recall_weighted"], "f1_weighted": metrics["f1_weighted"],
+                    "per_class": metrics["per_class"], "confusion_matrix": metrics["confusion_matrix"],
+                    "best_epoch": 0, "train_time_s": 0.0, "val_mccs": [],
+                }
+        except Exception:
+            pass  # fall through to full training
+
     study = run_hpo_study(model_type, config, dl, X_tr, y_tr, X_val, y_val)
     save_optuna_plots(study, model_type, config.plots_dir)
 
@@ -561,6 +630,14 @@ def _hpo_worker(
         "seed": config.seed,
         "test_mcc": metrics["mcc"],
         "test_acc": metrics["accuracy"],
+        "precision_macro": metrics["precision_macro"],
+        "recall_macro": metrics["recall_macro"],
+        "f1_macro": metrics["f1_macro"],
+        "precision_weighted": metrics["precision_weighted"],
+        "recall_weighted": metrics["recall_weighted"],
+        "f1_weighted": metrics["f1_weighted"],
+        "per_class": metrics["per_class"],
+        "confusion_matrix": metrics["confusion_matrix"],
         "best_epoch": result.best_epoch,
         "train_time_s": round(elapsed, 1),
         "val_mccs": result.val_mccs,
@@ -592,17 +669,11 @@ def _nas_worker(
     torch.save(nas_model.state_dict(), config.models_dir / f"OptunaNet_seed{config.seed}.pt")
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    return {
-        "model": "OptunaNet_NAS",
-        "type": "optuna_nas",
-        "seed": config.seed,
-        "device": device_str,
-        "best_arch": json.dumps(study.best_trial.params),
-        "test_mcc": metrics["mcc"],
-        "test_acc": metrics["accuracy"],
-        "best_val_mcc": study.best_value,
-        "val_mccs": [],
-    }
+    return metrics_to_extended_row(
+        "OptunaNet_NAS", "optuna_nas", config.seed, device_str, metrics,
+        best_val_mcc=study.best_value,
+        extra={"best_arch": json.dumps(study.best_trial.params), "val_mccs": []},
+    )
 
 
 def _moe_expert_worker(
@@ -785,6 +856,18 @@ def _ds_base_worker(
     config.device = device_str
     config.make_dirs()
     dl = DLDataLoader(config)
+    save_path = config.models_dir / f"{name}_seed{config.seed}.pt"
+    test_loader = dl.make_loader(X_test, y_test, shuffle=False)
+
+    if not config._force_retrain and save_path.exists():
+        print(f"  [DS {name}] checkpoint exists, skipping → {save_path}")
+        model = torch.load(str(save_path), map_location="cpu", weights_only=False)
+        metrics = evaluate_model_on_test(model, test_loader, config, classes, name, log_wandb=False)
+        return metrics_to_extended_row(
+            name, "ds_base", config.seed, device_str, metrics,
+            extra={"save_path": str(save_path)},
+        )
+
     model = _build_ds_variant(name, config)
     tr_loader = dl.make_loader(X_tr, y_tr, shuffle=True)
     val_loader = dl.make_loader(X_val, y_val, shuffle=False)
@@ -796,17 +879,12 @@ def _ds_base_worker(
     torch.save(model, save_path)  # save full model to avoid arch mismatch on reload
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    return {
-        "model": name,
-        "type": "ds_base",
-        "seed": config.seed,
-        "device": device_str,
-        "test_mcc": metrics["mcc"],
-        "test_acc": metrics["accuracy"],
-        "best_val_mcc": result.best_val_mcc,
-        "val_mccs": result.val_mccs,
-        "save_path": str(save_path),
-    }
+    row = metrics_to_extended_row(
+        name, "ds_base", config.seed, device_str, metrics,
+        best_val_mcc=result.best_val_mcc,
+        extra={"val_mccs": result.val_mccs, "save_path": str(save_path)},
+    )
+    return row
 
 
 def _moe_mo_hpo_worker(
@@ -928,17 +1006,12 @@ def _softmoe_combo_worker(
     )
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    return {
-        "model": combo_name,
-        "type": "soft_moe",
-        "seed": config.seed,
-        "device": device_str,
-        "arch_list": "+".join(arch_list),
-        "test_mcc": metrics["mcc"],
-        "test_acc": metrics["accuracy"],
-        "best_val_mcc": result.best_val_mcc,
-        "val_mccs": result.val_mccs,
-    }
+    row = metrics_to_extended_row(
+        combo_name, "soft_moe", config.seed, device_str, metrics,
+        best_val_mcc=result.best_val_mcc,
+        extra={"arch_list": "+".join(arch_list), "val_mccs": result.val_mccs},
+    )
+    return row
 
 
 def _meta_model_worker(
@@ -988,18 +1061,13 @@ def _meta_model_worker(
     )
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    return {
-        "model": name,
-        "type": "meta_fusion",
-        "seed": config.seed,
-        "device": device_str,
-        "test_mcc": metrics["mcc"],
-        "test_acc": metrics["accuracy"],
-        "best_val_mcc": result.best_val_mcc,
-        "best_epoch": result.best_epoch,
-        "train_time_s": round(elapsed, 1),
-        "val_mccs": result.val_mccs,
-    }
+    row = metrics_to_extended_row(
+        name, "meta_fusion", config.seed, device_str, metrics,
+        best_val_mcc=result.best_val_mcc, best_epoch=result.best_epoch,
+        train_time_s=round(elapsed, 1),
+        extra={"val_mccs": result.val_mccs},
+    )
+    return row
 
 
 def main() -> None:
@@ -1022,6 +1090,12 @@ def main() -> None:
         config.wandb_project = args.wandb_project
     if args.models_dir is not None:
         config.models_dir = args.models_dir
+    if args.results_dir is not None:
+        config.results_dir = args.results_dir
+    if args.plots_dir is not None:
+        config.plots_dir = args.plots_dir
+    if args.no_resume:
+        config._force_retrain = True
     config.make_dirs()
     set_seed(config.seed)
 
@@ -1036,6 +1110,12 @@ def main() -> None:
 
     all_results: list[dict[str, object]] = []
     curve_data: list[dict[str, object]] = []
+
+    # Prevent DataLoader workers from forking after CUDA init → SIGBUS (exit 135)
+    try:
+        torch.multiprocessing.set_start_method("spawn")
+    except RuntimeError:
+        pass  # may already be set by another component
     ctx = mp.get_context("spawn")
 
     # ── Phase 1: Parallel single-model training ──────────────────────────────
@@ -1058,17 +1138,14 @@ def main() -> None:
             ): name
             for i, name in enumerate(SINGLE_MODEL_NAMES)
         }
-        for future in as_completed(futures):
-            row = future.result()
-            val_mccs: list[float] = row.pop("val_mccs", [])
-            all_results.append(row)
-            curve_data.append({"name": str(row["model"]), "val_mccs": val_mccs})
-            print(
-                f"  [{row['model']}] {row['device']}  "
-                f"test_mcc={float(row['test_mcc']):.4f}  "
-                f"best_val_mcc={float(row['best_val_mcc']):.4f}  "
-                f"epoch={row['best_epoch']}  {row['train_time_s']}s"
-            )
+        with tqdm(total=len(futures), desc="Phase 1: single models", unit="model") as pbar:
+            for future in as_completed(futures):
+                row = future.result()
+                val_mccs: list[float] = row.pop("val_mccs", [])
+                all_results.append(row)
+                curve_data.append({"name": str(row["model"]), "val_mccs": val_mccs})
+                pbar.set_postfix_str(f"{row['model']} mcc={float(row['test_mcc']):.3f}")
+                pbar.update(1)
 
     # ── Phase 1.5: Metadata-fusion models (noise + concurrent_noise_path) ────
     if config.use_metadata and not args.no_meta:
@@ -1114,17 +1191,14 @@ def main() -> None:
                 ): name
                 for i, name in enumerate(META_MODEL_NAMES)
             }
-            for future in as_completed(meta_futures):
-                row = future.result()
-                mv: list[float] = row.pop("val_mccs", [])
-                all_results.append(row)
-                curve_data.append({"name": str(row["model"]), "val_mccs": mv})
-                print(
-                    f"  [{row['model']}] {row['device']}  "
-                    f"test_mcc={float(row['test_mcc']):.4f}  "
-                    f"best_val_mcc={float(row['best_val_mcc']):.4f}  "
-                    f"{row['train_time_s']}s"
-                )
+            with tqdm(total=len(meta_futures), desc="Phase 1.5: meta-fusion", unit="model") as pbar:
+                for future in as_completed(meta_futures):
+                    row = future.result()
+                    mv: list[float] = row.pop("val_mccs", [])
+                    all_results.append(row)
+                    curve_data.append({"name": str(row["model"]), "val_mccs": mv})
+                    pbar.set_postfix_str(f"{row['model']} mcc={float(row['test_mcc']):.3f}")
+                    pbar.update(1)
 
     # ── Phase 2: Ensembles (main process — reload saved checkpoints) ─────────
     print("\n[Phase 2] Building ensembles…")
@@ -1149,13 +1223,13 @@ def main() -> None:
         "Ensemble_GRU_LSTM": ["GRU", "LSTM"],
         "Ensemble_LSTM_CNN": ["LSTM", "CNN"],
         "Ensemble_CNN_TCN": ["CNN", "TCN"],
-        "Ensemble_TCN_Transformer": ["TCN", "Transformer"],
-        "Ensemble_BiLSTM_LSTM": ["BiLSTM", "LSTM"],
+        # "Ensemble_TCN_Transformer": ["TCN", "Transformer"],  # Transformer commented out
+        # "Ensemble_BiLSTM_LSTM": ["BiLSTM", "LSTM"],          # BiLSTM commented out
         "Ensemble_Mamba_LSTM": ["Mamba", "LSTM"],
         "Ensemble_RNN_GRU_LSTM": ["RNN", "GRU", "LSTM"],
         "Ensemble_All": SINGLE_MODEL_NAMES,
     }
-    for ens_name, member_names in ensemble_combos.items():
+    for ens_name, member_names in tqdm(ensemble_combos.items(), desc="Phase 2: ensembles", unit="combo"):
         members = [trained_models[n] for n in member_names]
         ensemble = VotingEnsemble(members).to(main_device)
         metrics = evaluate_model_on_test(
@@ -1165,18 +1239,10 @@ def main() -> None:
             ensemble.state_dict(),
             config.models_dir / f"{ens_name}_seed{config.seed}.pt",
         )
-        all_results.append(
-            {
-                "model": ens_name,
-                "type": "voting_ensemble",
-                "seed": config.seed,
-                "device": str(main_device),
-                "members": "+".join(member_names),
-                "test_mcc": metrics["mcc"],
-                "test_acc": metrics["accuracy"],
-            }
-        )
-        print(f"  [{ens_name}] test_mcc={float(metrics['mcc']):.4f}")
+        all_results.append(metrics_to_extended_row(
+            ens_name, "voting_ensemble", config.seed, str(main_device), metrics,
+            extra={"members": "+".join(member_names)},
+        ))
 
     print("  [Stacking_All] training meta-learner…")
     stacking = StackingEnsemble(
@@ -1191,17 +1257,10 @@ def main() -> None:
     metrics = evaluate_model_on_test(
         stacking, test_loader, config, classes, "Stacking_All", log_wandb=config.use_wandb
     )
-    all_results.append(
-        {
-            "model": "Stacking_All",
-            "type": "stacking_ensemble",
-            "seed": config.seed,
-            "device": str(main_device),
-            "test_mcc": metrics["mcc"],
-            "test_acc": metrics["accuracy"],
-            "best_val_mcc": stack_result.best_val_mcc,
-        }
-    )
+    all_results.append(metrics_to_extended_row(
+        "Stacking_All", "stacking_ensemble", config.seed, str(main_device), metrics,
+        best_val_mcc=stack_result.best_val_mcc,
+    ))
     curve_data.append({"name": "Stacking_All", "val_mccs": stack_result.val_mccs})
     print(f"  [Stacking_All] test_mcc={float(metrics['mcc']):.4f}")
 
@@ -1230,11 +1289,13 @@ def main() -> None:
                 ): model_type
                 for i, model_type in enumerate(HPO_TYPES)
             }
-            for future in as_completed(hpo_futures):
-                res = future.result()
-                hpo_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
-                all_results.append(
-                    {
+            with tqdm(total=len(hpo_futures), desc="Phase 3: HPO studies", unit="study") as pbar:
+                for future in as_completed(hpo_futures):
+                    res = future.result()
+                    hpo_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
+                    per_class = res.pop("per_class", {})
+                    cm = res.pop("confusion_matrix", None)
+                    row = {
                         "model": res["model"],
                         "type": res["type"],
                         "seed": res["seed"],
@@ -1244,15 +1305,30 @@ def main() -> None:
                         "best_val_mcc": res["best_val_mcc"],
                         "best_epoch": res.get("best_epoch", 0),
                         "train_time_s": res.get("train_time_s", 0.0),
+                        "precision_macro": res.get("precision_macro", 0.0),
+                        "recall_macro": res.get("recall_macro", 0.0),
+                        "f1_macro": res.get("f1_macro", 0.0),
+                        "precision_weighted": res.get("precision_weighted", 0.0),
+                        "recall_weighted": res.get("recall_weighted", 0.0),
+                        "f1_weighted": res.get("f1_weighted", 0.0),
                     }
-                )
-                curve_data.append({"name": str(res["model"]), "val_mccs": hpo_val_mccs})
-                print(
-                    f"  [HPO {res['model_type']}] {res['device']}  "
-                    f"best_val_mcc={float(res['best_val_mcc']):.4f}  "
-                    f"test_mcc={float(res['test_mcc']):.4f}  "
-                    f"params={res['best_params']}"
-                )
+                    # Per-class metrics
+                    for cls_name, cls_metrics in per_class.items():
+                        row[f"{cls_name}_precision"] = cls_metrics.get("precision", 0)
+                        row[f"{cls_name}_recall"] = cls_metrics.get("recall", 0)
+                        row[f"{cls_name}_f1"] = cls_metrics.get("f1", 0)
+                        row[f"{cls_name}_support"] = cls_metrics.get("support", 0)
+                    # Confusion matrix
+                    if cm is not None:
+                        row["Confusion_Matrix"] = json.dumps(cm.tolist())
+                        classes_list = list(per_class.keys()) or classes
+                        for i, true_cls in enumerate(classes_list):
+                            for j, pred_cls in enumerate(classes_list):
+                                row[f"CM_{true_cls}_pred_{pred_cls}"] = int(cm[i, j])
+                    all_results.append(row)
+                    curve_data.append({"name": str(res["model"]), "val_mccs": hpo_val_mccs})
+                    pbar.set_postfix_str(f"HPO {res['model_type']} mcc={float(res['test_mcc']):.3f}")
+                    pbar.update(1)
 
         print("  [NAS] architecture search…")
         nas_row = _nas_worker(
@@ -1269,8 +1345,9 @@ def main() -> None:
         nas_val_mccs: list[float] = nas_row.pop("val_mccs", [])  # type: ignore[assignment]
         all_results.append(nas_row)
         curve_data.append({"name": "OptunaNet_NAS", "val_mccs": nas_val_mccs})
-        nas_mcc = float(nas_row["test_mcc"])  # type: ignore[arg-type]
-        print(f"  [NAS] {nas_row['device']}  arch={nas_row['best_arch']}  test_mcc={nas_mcc:.4f}")
+        nas_mcc = float(nas_row.get("test_mcc", 0))  # type: ignore[arg-type]
+        nas_arch = nas_row.get("best_arch", "{}")
+        print(f"  [NAS] {nas_row.get('device','cpu')}  arch={nas_arch}  test_mcc={nas_mcc:.4f}")
 
     # ── Phase 4: Mixture-of-Experts — end-to-end SoftMoE with multi-objective HPO ─
     if not args.no_moe:
@@ -1302,14 +1379,12 @@ def main() -> None:
                     ): combo_name
                     for i, (combo_name, arch_list) in enumerate(MOE_COMBOS.items())
                 }
-                for future in as_completed(mo_futures):
-                    res = future.result()
-                    combo_best_params[str(res["combo_name"])] = dict(res["best_params"])  # type: ignore[arg-type]
-                    print(
-                        f"  [MoE HPO {res['combo_name']}] {res['device']}  "
-                        f"pareto_best_mcc={float(res['pareto_best_mcc']):.4f}  "
-                        f"n_pareto={res['n_pareto']}"
-                    )
+                with tqdm(total=len(mo_futures), desc="Phase 4a: MoE HPO", unit="combo") as pbar:
+                    for future in as_completed(mo_futures):
+                        res = future.result()
+                        combo_best_params[str(res["combo_name"])] = dict(res["best_params"])  # type: ignore[arg-type]
+                        pbar.set_postfix_str(f"{res['combo_name']} mcc={float(res['pareto_best_mcc']):.3f}")
+                        pbar.update(1)
         else:
             combo_best_params = {name: {} for name in MOE_COMBOS}
 
@@ -1336,16 +1411,14 @@ def main() -> None:
                 ): combo_name
                 for i, (combo_name, arch_list) in enumerate(MOE_COMBOS.items())
             }
-            for future in as_completed(train_futures):
-                res = future.result()
-                moe_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
-                all_results.append(res)
-                curve_data.append({"name": str(res["model"]), "val_mccs": moe_val_mccs})
-                print(
-                    f"  [{res['model']}] test_mcc={float(res['test_mcc']):.4f}"
-                    f"  acc={float(res['test_acc']):.4f}"
-                    f"  best_val_mcc={float(res['best_val_mcc']):.4f}"
-                )
+            with tqdm(total=len(train_futures), desc="Phase 4b: SoftMoE training", unit="combo") as pbar:
+                for future in as_completed(train_futures):
+                    res = future.result()
+                    moe_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
+                    all_results.append(res)
+                    curve_data.append({"name": str(res["model"]), "val_mccs": moe_val_mccs})
+                    pbar.set_postfix_str(f"{res['model']} mcc={float(res['test_mcc']):.3f}")
+                    pbar.update(1)
 
     # ── Phase 5: Deep Stacking ─────────────────────────────────────────────────
     if not args.no_deepstack:
@@ -1375,14 +1448,13 @@ def main() -> None:
                 for i, name in enumerate(DS_BASE_NAMES)
             }
             ds_base_results: list[dict[str, object]] = []
-            for future in as_completed(ds_futures):
-                res = future.result()
-                ds_base_results.append(res)
-                all_results.append({k: v for k, v in res.items() if k != "save_path"})
-                print(
-                    f"  [DS-base {res['model']}] test_mcc={float(res['test_mcc']):.4f}  "
-                    f"best_val_mcc={float(res['best_val_mcc']):.4f}"
-                )
+            with tqdm(total=len(ds_futures), desc="Phase 5: DS base models", unit="model") as pbar:
+                for future in as_completed(ds_futures):
+                    res = future.result()
+                    ds_base_results.append(res)
+                    all_results.append({k: v for k, v in res.items() if k != "save_path"})
+                    pbar.set_postfix_str(f"{res['model']} mcc={float(res['test_mcc']):.3f}")
+                    pbar.update(1)
 
         ds_base_results.sort(key=lambda d: str(d["model"]))
 
@@ -1419,7 +1491,7 @@ def main() -> None:
         level2_nets: list[nn.Module] = []
 
         print("  [DeepStack stage-1] training Level2 nets (multiclass)…")
-        for cls_name in classes:
+        for cls_name in tqdm(classes, desc="Phase 5: L2 nets", unit="class"):
             l2_tr = l2_dl.make_loader(base_feat_tr, y_tr, shuffle=True)
             l2_val = l2_dl.make_loader(base_feat_val, y_val, shuffle=False)
             l2_net: nn.Module = _Level2Net(n_base_feats, config.num_classes, dropout=config.dropout)
@@ -1510,18 +1582,11 @@ def main() -> None:
             "DeepStackEnsemble",
             log_wandb=config.use_wandb,
         )
-        all_results.append(
-            {
-                "model": "DeepStackEnsemble",
-                "type": "deep_stack",
-                "seed": config.seed,
-                "device": str(dev0),
-                "test_mcc": ds_metrics["mcc"],
-                "test_acc": ds_metrics["accuracy"],
-                "best_val_mcc": ft_result.best_val_mcc,
-                "val_mccs": ft_result.val_mccs,
-            }
-        )
+        all_results.append(metrics_to_extended_row(
+            "DeepStackEnsemble", "deep_stack", config.seed, str(dev0), ds_metrics,
+            best_val_mcc=ft_result.best_val_mcc,
+            extra={"val_mccs": ft_result.val_mccs},
+        ))
         curve_data.append({"name": "DeepStackEnsemble", "val_mccs": ft_result.val_mccs})
         ds_mcc = float(ds_metrics["mcc"])
         ds_acc = float(ds_metrics["accuracy"])
@@ -1543,54 +1608,6 @@ def main() -> None:
         )
     print("=" * 70)
     print(f"\nResults → {results_csv}")
-    _write_ai_result(all_results, config, devices)
-
-
-def _write_ai_result(
-    results: list[dict[str, object]], config: DLConfig, devices: list[str]
-) -> None:
-    path = Path("AI_RESULT.md")
-    sorted_rows = sorted(results, key=lambda r: float(str(r.get("test_mcc", 0))), reverse=True)
-
-    table_lines = [
-        "| Model | Type | Device | Test MCC | Test Acc |",
-        "|-------|------|--------|----------|----------|",
-    ]
-    for row in sorted_rows:
-        mcc_str = str(row.get("test_mcc", 0))
-        acc_str = str(row.get("test_acc", 0))
-        table_lines.append(
-            f"| {row['model']} | {row['type']} | {row.get('device', '-')} "
-            f"| {float(mcc_str):.4f} | {float(acc_str):.4f} |"
-        )
-
-    section = f"""
-## Deep Learning Results (seed={config.seed})
-
-### Setup
-- Models: RNN, GRU, LSTM (attention), CNN (multi-scale residual), TCN, Transformer
-- Ensembles: 6 voting combos + stacking meta-learner
-- NAS: Optuna joint arch + HP search (`optuna_dl.db`)
-- GPUs: {devices}
-- Dataset: {config.num_classes} classes, seq_len=10, in_features=1
-- Regularisation: L1 λ={config.l1_lambda}, AdamW wd={config.weight_decay}, dropout={config.dropout}
-- Primary metric: Matthews Correlation Coefficient (MCC)
-- CV folds: {config.n_cv_folds}
-
-### Results
-
-{chr(10).join(table_lines)}
-
-### Notes
-- Single models trained in parallel (one per GPU, round-robin)
-- HPO studies run in parallel across GPUs
-- All models saved under `models/dl/`
-- Confusion matrices + curves in `plots/dl/`
-- WandB project: `{config.wandb_project}`
-"""
-    mode = "a" if path.exists() else "w"
-    with path.open(mode) as f:
-        f.write(section)
 
 
 if __name__ == "__main__":

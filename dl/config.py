@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import torch
+from random import randint
 
 
 @dataclass
@@ -53,7 +54,7 @@ class DLConfig:
 
     # Optuna
     n_trials: int = 100
-    optuna_storage: str = "sqlite:///optuna_dl_2.db"
+    optuna_storage: str = f"sqlite:///optuna_dl_{randint(1000, 9999)}.db"
     optuna_study_prefix: str = "inMotion_dl_v3"
 
     # WandB
@@ -74,6 +75,9 @@ class DLConfig:
 
     # Device
     device: str = "auto"
+
+    # Internal flags
+    _force_retrain: bool = False  # skip checkpoint reuse when True (--no-resume)
 
     def resolve_device(self) -> torch.device:
         if self.device == "auto":

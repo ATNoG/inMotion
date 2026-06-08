@@ -256,7 +256,42 @@ class Trainer:
             model.load_state_dict(best_state)
 
         if self.config.use_wandb and _WANDB_AVAILABLE and self._wandb_run is not None:
-            wandb.log({"best_val_mcc": result.best_val_mcc, "best_epoch": result.best_epoch})  # type: ignore[union-attr]
+            final_log: dict = {"best_val_mcc": result.best_val_mcc, "best_epoch": result.best_epoch}
+            try:
+                from sklearn.metrics import (
+                    classification_report,
+                    confusion_matrix,
+                    f1_score,
+                    precision_score,
+                    recall_score,
+                )
+                val_loss, val_preds, val_targets = self._step(
+                    model, val_loader, criterion, None, train=False
+                )
+                final_log.update({
+                    "final_val_loss": val_loss,
+                    "final_val_acc": float((val_targets == val_preds).mean()),
+                    "final_val_f1_macro": float(f1_score(val_targets, val_preds, average="macro", zero_division=0)),
+                    "final_val_precision_macro": float(precision_score(val_targets, val_preds, average="macro", zero_division=0)),
+                    "final_val_recall_macro": float(recall_score(val_targets, val_preds, average="macro", zero_division=0)),
+                })
+                try:
+                    classes = getattr(self.config, "_classes", ["AA", "AB", "BA", "BB"])
+                    final_log["final_val_confusion_matrix"] = wandb.plot.confusion_matrix(
+                        probs=None, y_true=val_targets.tolist(), preds=val_preds.tolist(),
+                        class_names=classes,
+                    )
+                    report = classification_report(val_targets, val_preds, target_names=classes,
+                                                    output_dict=True, zero_division=0)
+                    for cls_name, cls_metrics in report.items():
+                        if isinstance(cls_metrics, dict):
+                            for mk, mv in cls_metrics.items():
+                                final_log[f"final_val_per_class/{cls_name}/{mk}"] = mv
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            wandb.log(final_log)  # type: ignore[union-attr]
             wandb.finish()  # type: ignore[union-attr]
 
         return result

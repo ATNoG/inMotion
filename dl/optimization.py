@@ -7,6 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import optuna
+from optuna.storages import RDBStorage
+from sqlalchemy import text
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
@@ -25,6 +27,33 @@ from .models.transformer import TransformerClassifier
 from .training import Trainer
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
+
+
+def _get_optuna_storage(db_url: str) -> RDBStorage:
+    """Return an RDBStorage configured for concurrent multiprocess access.
+
+    - ``timeout=60``: SQLite waits up to 60 s for a busy lock instead of failing immediately.
+    - ``pool_pre_ping=True``: validates stale connections after fork/spawn.
+    - DELETE journal mode: avoids WAL shared-memory file which is unreliable on NFS.
+    - ``synchronous=NORMAL``: trades a bit of crash-safety for much faster writes.
+    """
+    storage = RDBStorage(
+        url=db_url,
+        engine_kwargs={
+            "connect_args": {"timeout": 60},
+            "pool_pre_ping": True,
+        },
+    )
+    # Use DELETE journal mode (traditional rollback journal) instead of WAL.
+    # WAL's shared-memory file (-shm) is mmap-backed and unreliable on network
+    # filesystems (NFS). DELETE mode uses simpler file locking that works better
+    # over NFS while still allowing concurrent readers.
+    with storage.engine.connect() as conn:
+        conn.execute(text("PRAGMA journal_mode=DELETE"))
+        conn.execute(text("PRAGMA synchronous=NORMAL"))
+        conn.commit()
+
+    return storage
 
 
 def _trial_run_name(prefix: str, trial: optuna.Trial) -> str:
@@ -155,14 +184,17 @@ def _make_rnn_hpo_objective(
 
     return objective  # type: ignore[return-value]
 
-
 def init_optuna_db(storage_url: str, study_names: list[str]) -> None:
-    """Pre-create SQLite schema + studies in the main process to avoid spawn race."""
+    """Pre-create SQLite schema + studies in the main process to avoid spawn race.
+
+    Also enables WAL journal mode for concurrent multiprocess access.
+    """
+    storage = _get_optuna_storage(storage_url)
     for name in study_names:
         optuna.create_study(
             direction="maximize",
             study_name=name,
-            storage=storage_url,
+            storage=storage,
             load_if_exists=True,
         )
 
@@ -288,7 +320,7 @@ def run_hpo_study(
         elif model_type == "mamba":
             dropout = trial.suggest_float("dropout", 0.05, 0.4)
             d_model = int(trial.suggest_categorical("d_model", [32, 64, 128, 256]))
-            d_state = trial.suggest_int("d_state", 8, 128, log=True)
+            d_state = trial.suggest_int("d_state", 8, 64, log=True)
             num_layers = trial.suggest_int("num_layers", 1, 8)
             expand = int(trial.suggest_categorical("expand", [2, 4]))
             mimo_rank = int(trial.suggest_categorical("mimo_rank", [1, 2, 4, 8]))
@@ -303,7 +335,6 @@ def run_hpo_study(
                 mimo_rank=mimo_rank,
             )
             hpo_mode = "transformer"  # small LR, adamw only — same constraints as Transformer
-
         else:
             raise ValueError(f"Unknown model_type for HPO: {model_type!r}")
 
@@ -315,7 +346,7 @@ def run_hpo_study(
         return optuna.create_study(
             direction="maximize",
             study_name=study_name,
-            storage=config.optuna_storage,
+            storage=_get_optuna_storage(config.optuna_storage),
             load_if_exists=True,
         )
 
@@ -327,7 +358,7 @@ def run_hpo_study(
         except ValueError as exc:
             if _attempt == 0 and "dynamic value space" in str(exc):
                 # Stale DB: search space changed since last run — delete old study and retry fresh
-                optuna.delete_study(study_name=study_name, storage=config.optuna_storage)
+                optuna.delete_study(study_name=study_name, storage=_get_optuna_storage(config.optuna_storage))
                 study = _make_study()
             else:
                 raise
@@ -354,7 +385,7 @@ def run_nas_study(
     study = optuna.create_study(
         direction="maximize",
         study_name=study_name,
-        storage=config.optuna_storage,
+        storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
     study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
@@ -424,7 +455,7 @@ def run_binary_moe_hpo_study(
     study = optuna.create_study(
         direction="maximize",
         study_name=study_name,
-        storage=config.optuna_storage,
+        storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
     study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
@@ -589,7 +620,7 @@ def run_moe_multiobjective_study(
     study = optuna.create_study(
         directions=["maximize", "minimize"],
         study_name=study_name,
-        storage=config.optuna_storage,
+        storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
         sampler=sampler,
     )
