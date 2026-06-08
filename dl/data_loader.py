@@ -180,7 +180,7 @@ class DLDataLoader:
         X: np.ndarray,
         y: np.ndarray,
         shuffle: bool = True,
-        num_workers: int = 2,
+        num_workers: int = 0,
     ) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
         dataset = RSSIDataset(X, y)
         return DataLoader(
@@ -198,7 +198,7 @@ class DLDataLoader:
         meta: np.ndarray,
         y: np.ndarray,
         shuffle: bool = True,
-        num_workers: int = 2,
+        num_workers: int = 0,
     ) -> DataLoader[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
         """DataLoader that yields (X, meta, y) triples for metadata-fusion models."""
         dataset = MetaRSSIDataset(X, meta, y)
