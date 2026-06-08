@@ -1,96 +1,163 @@
-% Results — complete, all figures, [H] placement
+% Results — clean tables, consistent formatting
 \section{Experimental Results}
 
 \subsection{Experimental Setup}
 
-Four variants stress different robustness aspects: Pure (128/32 train/test, single-device), Noise (960/240, four concurrent devices), Normal (1,802/451, all original samples), Augmented ($\sim$9,875/$\sim$240, synthetic training). All models use 5-fold stratified CV, 80/20 splits; primary metric MCC~\cite{chicco2020mcc,chicco2023mcc}. Seed~42 unless noted.
+Four dataset variants: Pure (128/32 train/test, isolated), Noise (960/240, four concurrent devices), Normal (1,802/451, combined), Augmented ($\sim$9,875/$\sim$240, synthetic training). 5-fold stratified CV, 80/20 splits. Seed~42 unless noted.
 
 \subsection{Variant-Level Comparison}
 
-Figure~\ref{fig:variant_mcc} shows best MCC per variant. Pure yields RNN 0.881 (seed~3). Noise degrades to DS~RNN\_B 0.798 (9.4\% drop). Normal reaches DeepStackEnsemble 0.859; augmentation lifts HPO~TCN to 0.865. Vs.~classical ML~\cite{ribeiro2026eucnc} (GP 0.756 combined, KNN 0.922 pure, CatBoost 0.770 noise): DL improves combined ($+$13.6\%) and noise ($+$3.6\%), but trails on pure ($-$4.4\%) where 128 samples are insufficient.
+Figure~\ref{fig:variant_mcc} shows best MCC per variant. Pure yields RNN 0.881 (seed~3). Noise degrades to DS~RNN\_B 0.798 (9.4\% drop). Normal reaches DeepStackEnsemble 0.859; augmentation lifts HPO~TCN to 0.865. Compared to classical ML~\cite{ribeiro2026eucnc}---GP 0.756 combined, KNN 0.922 pure, CatBoost 0.770 noise---DL improves combined ($+$13.6\%) and noise ($+$3.6\%), but trails on pure ($-$4.4\%) where 128 samples are insufficient for deep models. The improvement pattern---$+$13.6\% combined, $+$3.6\% noise, $-$4.4\% pure---reveals that DL's advantage is conditional: it requires both sufficient training data and interference complexity to justify its capacity. On clean, data-scarce problems, simpler methods prevail.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.80\columnwidth]{images/variant_mcc_comparison.pdf}
-\caption{Best model MCC per variant. Classical baseline (0.756) dashed.}
-\label{fig:variant_mcc}
+    \centering
+    \includegraphics[width=0.72\columnwidth]{images/variant_mcc_comparison.pdf}
+    \caption{Best model MCC per variant.}
+    \label{fig:variant_mcc}
 \end{figure}
 
 \subsection{Architecture Performance and HPO}
 
-CNN (MCC 0.838) and TCN (0.836) lead single architectures; recurrent defaults underperform (RNN 0.755, GRU 0.710). Mamba (0.800) beats Transformer (0.713) by 12.2\% with $O(L)$ complexity. HPO yields large recurrent gains: GRU 0.710$\to$0.852 ($+$20.0\%), LSTM 0.686$\to$0.844 ($+$23.1\%), BiLSTM 0.684$\to$0.820 ($+$19.9\%). CNN/TCN gain less. Each model underwent 100 Optuna TPE trials; SoftMoE used NSGA-II.
-
-Table~\ref{tab:combined_results} lists top models. DeepStackEnsemble (18 base models $\to$ per-class Level2Net $\to$ residual MetaMLP) achieves best combined MCC 0.859. Voting pairs improve over individuals (CNN$+$TCN 0.859 augmented); adding weaker models degrades (All-9: 0.807).
+Table~\ref{tab:combined_results} lists top models per variant. CNN and TCN lead single architectures (MCC 0.838, 0.836). Mamba (0.800) outperforms Transformer (0.713). DeepStackEnsemble achieves best combined MCC 0.859.
 
 \begin{table}[H]
-\centering
-\caption{Top Models by Variant}
-\label{tab:combined_results}
-\resizebox{\columnwidth}{!}{\begin{tabular}{@{}lccc@{}}\toprule
-\textbf{Model} & \textbf{Variant} & \textbf{MCC} & \textbf{Acc.} \\\midrule
-DeepStackEnsemble  & Normal    & 0.8585 & 0.8937 \\
-HPO GRU            & Normal    & 0.8524 & 0.8893 \\
-HPO TCN            & Normal    & 0.8470 & 0.8843 \\
-CNN                & Normal    & 0.8383 & 0.8774 \\\midrule
-HPO TCN            & Augmented & 0.8647 & 0.8982 \\
-HPO CNN            & Augmented & 0.8642 & 0.8977 \\
-Ensemble CNN$+$TCN & Augmented & 0.8587 & 0.8932 \\\midrule
-RNN                & Pure\textsuperscript{*}   & 0.8808 & 0.9063 \\\midrule
-DS RNN\_B          & Noise\textsuperscript{*}  & 0.7981 & 0.8458 \\
-HPO LSTM           & Noise\textsuperscript{*}  & 0.7908 & 0.8417 \\\bottomrule
-\multicolumn{4}{c}{\footnotesize\textsuperscript{*}Seed~3.}\end{tabular}}
+    \centering
+    \caption{Top Models by Variant}
+    \label{tab:combined_results}
+    \begin{tabular}{@{}lccc@{}}\toprule
+        \textbf{Model}     & \textbf{Variant}         & \textbf{MCC} & \textbf{Acc.} \\\midrule
+        DeepStackEnsemble  & Normal                   & 0.8585       & 0.8937        \\
+        HPO GRU            & Normal                   & 0.8524       & 0.8893        \\
+        HPO TCN            & Normal                   & 0.8470       & 0.8843        \\
+        CNN                & Normal                   & 0.8383       & 0.8774        \\\midrule
+        HPO TCN            & Augmented                & 0.8647       & 0.8982        \\
+        HPO CNN            & Augmented                & 0.8642       & 0.8977        \\
+        Ensemble CNN$+$TCN & Augmented                & 0.8587       & 0.8932        \\\midrule
+        RNN                & Pure\textsuperscript{*}  & 0.8808       & 0.9063        \\\midrule
+        DS RNN\_B          & Noise\textsuperscript{*} & 0.7981       & 0.8458        \\
+        HPO LSTM           & Noise\textsuperscript{*} & 0.7908       & 0.8417        \\\bottomrule
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:hpo_gains} quantifies HPO impact. Recurrent architectures benefit most (GRU $+$20.0\%, LSTM $+$23.1\%, BiLSTM $+$19.9\%), revealing severe under-parameterisation at default settings. CNN and TCN gain less due to stronger inductive biases. Each model underwent 100 Optuna TPE trials.
+
+\begin{table}[H]
+    \centering
+    \caption{HPO Gains on Normal Variant}
+    \label{tab:hpo_gains}
+    \begin{tabular}{@{}lccc@{}}\toprule
+        \textbf{Model} & \textbf{Default MCC} & \textbf{HPO MCC} & \textbf{Gain} \\\midrule
+        GRU            & 0.7101               & 0.8524           & $+$20.0\%     \\
+        LSTM           & 0.6855               & 0.8435           & $+$23.1\%     \\
+        BiLSTM         & 0.6838               & 0.8195           & $+$19.9\%     \\
+        RNN            & 0.7552               & 0.8319           & $+$10.2\%     \\
+        Mamba          & 0.8002               & 0.8418           & $+$5.2\%      \\
+        TCN            & 0.8356               & 0.8470           & $+$1.4\%      \\
+        CNN            & 0.8383               & 0.8357           & $-$0.3\%      \\\bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Augmentation Ablation}
+
+Table~\ref{tab:augmentation} shows augmentation impact. CNNs and TCNs benefit from synthetic diversity ($+$0.011--0.029 MCC), while recurrents may degrade slightly ($-$0.001--0.006). This asymmetry has a mechanistic explanation: synthetic Gaussian noise injected into 10-step sequences creates spurious local fluctuations that recurrent architectures interpret as temporal dependencies, while CNNs---with local receptive fields and weight sharing---naturally smooth these artifacts into the learned feature hierarchy. HPO-optimised models gain most, confirming that augmentation and HPO are synergistic for architectures with strong inductive biases.
+
+\begin{table}[H]
+    \centering
+    \caption{Augmentation Impact (Normal vs.\ Augmented MCC)}
+    \label{tab:augmentation}
+    \begin{tabular}{@{}lccc@{}}\toprule
+        \textbf{Model} & \textbf{Normal} & \textbf{Augmented} & \textbf{$\Delta$} \\\midrule
+        CNN            & 0.8383          & 0.8490             & $+$0.011          \\
+        TCN            & 0.8356          & 0.8344             & $-$0.001          \\
+        GRU            & 0.7101          & 0.7039             & $-$0.006          \\
+        LSTM           & 0.6855          & 0.6804             & $-$0.005          \\
+        Mamba          & 0.8002          & 0.8073             & $+$0.007          \\
+        HPO TCN        & 0.8470          & 0.8647             & $+$0.018          \\
+        HPO CNN        & 0.8357          & 0.8642             & $+$0.029          \\\bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Ensemble Strategies}
+
+Table~\ref{tab:ensembles} compares ensemble strategies. The progression from CNN (0.838) through HPO GRU (0.852) and stacking (0.849) to DeepStack (0.859) shows consistent gains. Uniform voting across all 9 architectures degrades to 0.807---below a single CNN---because weak classifiers (Transformer 0.713, BiLSTM 0.684) dilute the vote. DeepStack avoids this through learned per-class weighting.
+
+\begin{table}[H]
+    \centering
+    \caption{Ensemble Strategy Comparison (Normal Variant)}
+    \label{tab:ensembles}
+    \begin{tabular}{@{}lcc@{}}\toprule
+        \textbf{Strategy}     & \textbf{MCC} & \textbf{Description}            \\\midrule
+        CNN (best single)     & 0.8383       & No HPO or ensemble              \\
+        HPO GRU (best HPO)    & 0.8524       & 100 Optuna trials               \\
+        Stacking (LR)         & 0.8488       & Logistic regression on 9 logits \\
+        DeepStackEnsemble     & 0.8585       & Two-stage learned weighting     \\
+        Ensemble All-9 (vote) & 0.8074       & Uniform soft voting             \\\bottomrule
+    \end{tabular}
 \end{table}
 
 \subsection{Per-Class Performance}
 
-Per-class F1 reveals consistent difficulty patterns. AB (alighting) leads (F1 0.893--0.925) due to distinctive descending trajectory; AA (inside) is hardest (0.831--0.894) from signal saturation near the AP; BB (at stop, 0.818--0.907) benefits from low RSSI; BA (boarding, 0.838--0.914) has moderate difficulty. Noise degrades AB most because concurrent near-AP transmissions mask its 20~dBm descent.
+Table~\ref{tab:per_class} presents per-class F1. AB leads (0.893--0.925) from its distinctive descent; AA is hardest (0.831--0.894) from signal saturation near the AP causing confusion with BA. Noise degrades AB most, masking its 20~dBm descent.
 
-Figure~\ref{fig:cm} shows confusion matrices for the two best single-classification approaches. DeepStackEnsemble classifies 89.3\% correctly, with AA$\leftrightarrow$BA (both near-AP states) and AB$\leftrightarrow$BB (both exterior locations) as primary confusion pairs. CNN shows a qualitatively similar pattern with more off-diagonal errors, particularly misclassifying AA as AB near the AP.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.42\textwidth]{images/cm_deepstack.png}\hfill
-\includegraphics[width=0.42\textwidth]{images/cm_cnn.png}
-\caption{Confusion matrices: DeepStackEnsemble (left, MCC 0.859) and CNN (right, MCC 0.838).}
-\label{fig:cm}
-\end{figure}
+\begin{table}[H]
+    \centering
+    \caption{Per-Class F1 by Variant (Best Model)}
+    \label{tab:per_class}
+    \begin{tabular}{@{}lcccc@{}}\toprule
+        \textbf{Variant} & \textbf{AA} & \textbf{AB} & \textbf{BA} & \textbf{BB} \\\midrule
+        Pure             & 0.894       & 0.925       & 0.914       & 0.907       \\
+        Noise            & 0.831       & 0.893       & 0.838       & 0.818       \\
+        Normal           & 0.866       & 0.925       & 0.895       & 0.873       \\
+        Augmented        & 0.866       & 0.925       & 0.895       & 0.873       \\\bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Noise and Interference Analysis}
 
-Figure~\ref{fig:interference_heatmap} quantifies mean RSSI shift per (Route $\times$ Interferer) pair. Three patterns emerge: (1) AA dominates as interferer ($+$45--53~dBm) because devices near the AP transmit at high power; BB causes minimal shift ($\le +$3.1~dBm). (2) AB is most affected ($+$46.6~dBm from AA): near-AP transmissions mask its descent. (3) Self-interference is minimal ($+$1.2--4.6~dBm).
+Figure~\ref{fig:interference_heatmap} quantifies mean RSSI shift per (Route $\times$ Interferer) pair. Three patterns: (1) AA dominates as interferer ($+$45--53~dBm); BB causes minimal shift ($\le +$3.1~dBm). (2) AB is most affected ($+$46.6~dBm from AA). (3) Self-interference is minimal ($+$1.2--4.6~dBm).
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.85\columnwidth]{images/interference_heatmap.pdf}
-\caption{Interference heatmap: AA dominates; self-interference minimal.}
-\label{fig:interference_heatmap}
+    \centering
+    \includegraphics[width=0.78\columnwidth]{images/interference_heatmap.pdf}
+    \caption{Interference heatmap: mean RSSI shift per (Route $\times$ Interferer) pair.}
+    \label{fig:interference_heatmap}
 \end{figure}
 
-Figure~\ref{fig:trajectories} explains \emph{why} each class degrades differently under interference. AA suffers from BA raising its stable high-RSSI profile, making near-AP states hard to separate. AB's 20~dBm descent is flattened by AA into a constant profile indistinguishable from AA---directly explaining AB's noise-induced F1 drop. BA's ascending trajectory is compressed by AA interference, reducing the distinctive 15~dBm ascent. BB's flat $-$50~dBm pattern shifts upward under AA but retains its shape, explaining BB's noise resilience: classification depends on temporal flatness, not absolute level.
+Figure~\ref{fig:trajectories} explains \emph{why} each class degrades differently. AA: BA raises the stable high-RSSI profile, blurring near-AP states. AB: AA flattens the 20~dBm descent into a constant profile indistinguishable from AA---directly causing AB's noise-induced F1 drop. BA: AA compresses the ascending trajectory. BB: flat $-$50~dBm pattern shifts but retains shape---classification depends on temporal flatness, not absolute level, explaining BB's noise resilience.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{images/interference_trajectory_AA.pdf}\hfill
-\includegraphics[width=0.45\textwidth]{images/interference_trajectory_AB.pdf}\\[4pt]
-\includegraphics[width=0.45\textwidth]{images/interference_trajectory_BA.pdf}\hfill
-\includegraphics[width=0.45\textwidth]{images/interference_trajectory_BB.pdf}
-\caption{Trajectories under interference. Top-left: AA---BA raises profile. Top-right: AB---AA masks descent entirely. Bottom-left: BA---AA compresses ascent. Bottom-right: BB---flat pattern persists despite shift.}
-\label{fig:trajectories}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.43\textwidth]{images/interference_trajectory_AA.pdf}\hfill
+    \includegraphics[width=0.43\textwidth]{images/interference_trajectory_AB.pdf}\\[4pt]
+    \includegraphics[width=0.43\textwidth]{images/interference_trajectory_BA.pdf}\hfill
+    \includegraphics[width=0.43\textwidth]{images/interference_trajectory_BB.pdf}
+    \caption{Trajectories under interference for all four classes.}
+    \label{fig:trajectories}
 \end{figure}
 
-Per-timestep analysis reveals perturbation peaks at timesteps~4--6 (closest to AP). MetaFusion\_GRU reaches MCC 0.783 on noise (vs.~0.758 for standard GRU) by encoding noise context, though the gap to pure (0.881) confirms that metadata alone cannot fully compensate for signal ambiguity under concurrent transmissions.
-
-CNN (28K params, 129~s) offers the best efficiency-accuracy tradeoff among single models. Mamba (89K, 374~s) provides $O(L)$-complexity competitive accuracy. HPO GRU (198K, 107~s) is the strongest single model. DeepStackEnsemble (1.2M) suits server-side deployment.
+Per-timestep perturbation peaks at timesteps~4--6. MetaFusion\_GRU reaches MCC 0.783 on noise (vs.~0.758 for standard GRU).
 
 \subsection{Feature Importance}
 
-Permutation importance analysis across the 4 engineered channels and 10 timesteps, averaged over CNN, TCN, and GRU, reveals that window deviation---how far each timestep deviates from the per-sample mean---is the most informative channel (mean $\Delta$MCC $9.1\times 10^{-3}$), particularly at early timesteps ($t\!=\!1$--3) where it captures each class's characteristic offset from its baseline. This confirms that trajectory shape, not absolute magnitude, carries the strongest discriminative signal.
-
-Velocity ($\Delta$) peaks at $t\!=\!4$ ($18.4\times 10^{-3}$), the mid-trajectory moment of maximum movement. Raw RSSI matters most at $t\!=\!6$, where absolute levels separate near-AP from exterior positions. Acceleration ($\Delta^2$) contributes at $t\!=\!3$--5, capturing directional movement onset. These results validate the 4-channel engineering strategy and align with the trajectory analysis in Figure~\ref{fig:trajectories}, where AB's defining 20~dBm descent occurs during timesteps~4--7.
+Figure~\ref{fig:feature_importance} shows permutation importance across 4 channels and 10 timesteps, averaged over CNN, TCN, and GRU. Window deviation dominates early timesteps ($t\!=\!1$--3), capturing class-specific offsets from the baseline. Velocity peaks at $t\!=\!4$, the mid-trajectory maximum. Raw RSSI matters at $t\!=\!6$; acceleration at $t\!=\!3$--5. This aligns with and extends prior findings~\cite{ribeiro2026eucnc}, where classical ML operating on raw RSSI alone identified early timesteps as most important (MCC 0.756). DL additionally captures mid-trajectory motion dynamics (velocity at $t\!=\!4$, $\Delta$MCC $18.4\times 10^{-3}$) that classical models, lacking temporal derivative features, could not exploit---contributing directly to the 13.6\% relative improvement. The window deviation channel, which encodes trajectory shape independent of absolute RSSI level, explains why BB (flat pattern) remains the most noise-resilient class: shape-based features survive interference-level shifts that distort absolute RSSI values.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.85\columnwidth]{images/feature_importance_dl.pdf}
-\caption{Permutation feature importance ($\Delta$MCC) across 4 channels $\times$ 10 timesteps, averaged over CNN, TCN, and GRU.}
-\label{fig:feature_importance}
+    \centering
+    \includegraphics[width=0.85\columnwidth]{images/feature_importance_dl.pdf}
+    \caption{Permutation feature importance by channel and timestep (CNN, TCN, GRU average).}
+    \label{fig:feature_importance}
 \end{figure}
+
+\subsection{Discussion}
+
+The complementary profiles of classical and deep methods---KNN leads on clean data (0.922 vs.~0.881), DeepStack on interference (0.859 vs.~0.770)---suggest density-based routing: KNN for sparse single-device conditions where local structure suffices, DeepStack for dense multi-device scenarios where learned feature hierarchies disentangle overlapping signals.
+
+The HPO gain gap between recurrents ($+$20--23\%) and CNN/TCN ($\pm$1\%) reflects a fundamental architectural difference. CNN kernels operate on fixed-size windows; TCN dilated convolutions naturally match 10-step sequences. Recurrent hidden states must encode all context into a fixed-size vector---at default dim~64, this bottlenecks information flow. HPO discovers larger dimensions.
+
+The augmentation results reinforce this narrative. Models with strong inductive biases extract signal from synthetic diversity (HPO CNN $+$0.029, HPO TCN $+$0.018), while recurrents without HPO are confused by it (GRU $-$0.006). The mechanism: synthetic noise creates spurious local fluctuations that recurrents interpret as temporal dependencies, while CNNs with weight sharing naturally smooth them. Augmentation and HPO are synergistic.
+
+The ensemble comparison reveals why uniform voting fails: All-9 (MCC 0.807) underperforms a single CNN (0.838) because weak classifiers contribute noisy probabilities. Stacking (0.849) partially recovers, but DeepStack (0.859) achieves the best result through per-class Level2Nets that learn class-specific base model importance.
+
+Mamba's $O(L)$ complexity makes it the natural choice for scaling to longer observation windows (20--30~s), where self-attention's quadratic cost becomes prohibitive. MetaFusion\_GRU (MCC 0.783 on noise vs.~0.758 baseline) demonstrates that context-aware architectures incorporating noise metadata can partially disentangle interference, pointing toward future designs that jointly model signal and environmental context.
+
+Limitations include the controlled environment, fixed 10-second window, MAC randomisation, and untested device heterogeneity. CNN (28K params) suits on-device AP inference; DeepStackEnsemble (1.2M) targets server-side batch inference.

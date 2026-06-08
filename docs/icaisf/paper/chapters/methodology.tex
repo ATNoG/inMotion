@@ -1,28 +1,37 @@
-% Methodology — better prose flow
+% Methodology — compact, architectures in table
 \section{Materials and Methods}
 
-\subsection{Dataset Description}
+\subsection{Dataset and Feature Engineering}
 
-The dataset was collected in a controlled environment simulating public transport, as detailed in~\cite{ribeiro2026eucnc}. Zone~A (room) represents the vehicle interior with an AP near the door; Zone~B (corridor) represents the bus stop. Four devices executed four movement patterns---AA (inside vehicle), BB (at stop), BA (boarding), AB (alighting)---producing 10 RSSI readings at 1~s intervals. Two scenarios were collected: pure (single-device, 160 samples) and noise (four concurrent devices, 1,200 samples). The combined dataset contains 2,253 samples with class distribution AA (407), AB (387), BA (399), BB (417).
-
-For DL input, each 10-dimensional RSSI sample is enriched into four channels per time step: raw RSSI $r_t$, velocity $\Delta_t = r_t - r_{t-1}$, acceleration $\Delta^2_t$, and window-deviation $d_t = r_t - \mu_w$ ($\mu_w$ = per-sample mean).
+The dataset simulates public transport in a controlled environment~\cite{ribeiro2026eucnc}: Zone~A (vehicle interior, AP near door) and Zone~B (bus stop, corridor). Four devices execute four movement patterns---AA (inside), BB (at stop), BA (boarding), AB (alighting)---producing 10 RSSI readings at 1~s intervals. Pure (single-device, 160 samples) and noise (four concurrent devices, 1,200 samples) scenarios were collected. The combined dataset contains 2,253 samples: AA (407), AB (387), BA (399), BB (417). Four engineered channels per time step are extracted: raw RSSI $r_t$, velocity $\Delta_t = r_t - r_{t-1}$, acceleration $\Delta^2_t$, and window-deviation $d_t = r_t - \mu_w$ ($\mu_w$ = per-sample mean). These four channels capture complementary physical phenomena: absolute RSSI position, movement speed, acceleration, and trajectory shape relative to the per-sample baseline. Input tensors are $(N, 10, 4)$.
 
 \subsection{Proposed Architectures}
 
-We evaluate 11$+$ architectures for 4-class classification.
+Table~\ref{tab:architectures} summarises the 11$+$ evaluated architectures. All models output 4-class logits through a linear classification head.
 
-Standard recurrent baselines include RNN, GRU~\cite{cho2014gru}, LSTM~\cite{hochreiter1997lstm}, and BiLSTM, each with 2 layers and hidden size 64. TCN~\cite{bai2018tcn} uses dilated causal convolutions with residual connections to capture long-range dependencies through exponentially increasing dilation. A Transformer with 4-head self-attention and sinusoidal position encoding enables global pairwise interactions across the 10-step window.
+\begin{table}[H]
+    \centering
+    \caption{DL Architectures Evaluated}
+    \label{tab:architectures}
+    \resizebox{\columnwidth}{!}{\begin{tabular}{@{}lll@{}}\toprule
+            \textbf{Architecture}               & \textbf{Type}      & \textbf{Key characteristic}                           \\\midrule
+            RNN, GRU, LSTM, BiLSTM              & Recurrent          & 2 layers, hidden 64                                   \\
+            TCN~\cite{bai2018tcn}               & Convolutional      & Dilated causal, residual                              \\
+            Transformer                         & Attention          & 4-head self-attention, sinusoidal PE                  \\
+            MambaClassifier~\cite{gu2026mamba3} & State-space        & $O(L)$ complexity, dual-path, rank-$R$=16             \\
+            CNN2DRNN                            & Hybrid 2D+RNN      & Conv2d $(3,3)$,$(5,3)$ $\to$ LSTM/GRU + attention     \\
+            MetaFusion                          & Context-aware      & LSTM/GRU + noise/path embeddings (dim~8)              \\
+            Multi-Scale CNN                     & Multi-branch       & Kernels $(3,5,7)$ + residual + attention              \\
+            SoftMoE                             & Mixture of Experts & Heterogeneous experts, top-2 gating, 12 configs       \\
+            Autoformer~\cite{wu2021autoformer}  & Decomposition      & FFT auto-correlation, trend-seasonal blocks           \\
+            DeepStackEnsemble                   & Two-stage meta     & 18 bases $\to$ per-class Level2Net $\to$ residual MLP \\\bottomrule
+        \end{tabular}}
+\end{table}
 
-Beyond standard architectures, we propose several specialized models. The MambaClassifier adapts Mamba-3 MIMO~\cite{gu2026mamba3} for sequence classification, leveraging the selective state-space mechanism for $O(L)$-complexity sequence modeling with dual-path CUDA-optimized kernels and rank-$R=16$ input-dependent projections. CNN2DRNN treats $(T,F)$ sequences as 2D images through Conv2d blocks with kernels $(3,3)$ and $(5,3)$, followed by LSTM/GRU temporal aggregation and attention pooling. MetaFusion fuses an LSTM/GRU backbone with learned embeddings (dimension~8) encoding the noise flag and concurrent interference path, enabling context-aware classification that distinguishes true movement from interference artifacts.
-
-For multi-scale and ensemble approaches, a Multi-Scale CNN uses three parallel branches with kernel sizes $(3,5,7)$, each with residual blocks, concatenated through attention pooling. SoftMixtureOfExperts combines heterogeneous experts (GRU, LSTM, RNN, CNN, TCN) with learned top-2 gating and an auxiliary load-balance loss; 12 expert combinations were evaluated. Autoformer~\cite{wu2021autoformer} replaces self-attention with FFT-based auto-correlation and adds series decomposition blocks, adapted for classification with a classifier head.
-
-The DeepStackEnsemble is a two-stage meta-learner: 18 frozen base models (9 architectures $\times$ 2 configurations A/B) produce logit vectors, which feed per-class Level2Nets followed by a 3-layer residual DeepMetaMLP with skip connection. Joint fine-tuning at reduced learning rate further improves calibration.
+The DeepStackEnsemble uses per-class Level2Nets by design: confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). The residual skip connection preserves calibrated per-class logits while the MetaMLP corrects systematic biases.
 
 \subsection{Augmentation and Implementation}
 
-Two strategies expand training data from 2,253 to 10,115 samples. Class-conditioned Gaussian noise adds 6 copies to clean samples ($\sigma=3.0$~dBm) and 4 copies to noisy samples ($\sigma=0.8$~dBm), preserving each subset's noise characteristics. Intra-class Mixup blends 600 random pairs per class as $X_{\text{new}} = \lambda X_1 + (1-\lambda) X_2$ with $\lambda \sim \text{Beta}(0.4, 0.4)$, restricted to same-label pairs.
+Class-conditioned Gaussian noise (clean: 6 copies, $\sigma=3.0$~dBm; noisy: 4 copies, $\sigma=0.8$~dBm) plus intra-class Mixup (600 pairs/class, $\lambda \sim \text{Beta}(0.4,0.4)$) expand training from 2,253 to 10,115 samples.
 
-The pipeline uses PyTorch~2.6 with Optuna~4.7. Training: AdamW, cosine annealing, early stopping (patience~25), label smoothing ($\varepsilon=0.1$), training Mixup ($\alpha=0.2$), L1 ($\lambda=10^{-5}$), L2 ($10^{-4}$), dropout ($p=0.3$), gradient clipping (1.0), batch~64.
-
-HPO: 100 Optuna TPE trials/model searching architecture, training, loss, optimizer, and scheduler hyperparameters. SoftMoE uses NSGA-II. Primary metric: MCC~\cite{chicco2020mcc,chicco2023mcc}. 5-fold stratified CV, 80/20 splits, 3 seeds. $\sim$65 models evaluated.
+PyTorch~2.6, Optuna~4.7. Training: AdamW, cosine annealing, early stopping (patience~25), label smoothing ($\varepsilon=0.1$), Mixup ($\alpha=0.2$), L1 ($\lambda=10^{-5}$), L2 ($10^{-4}$), dropout ($p=0.3$), gradient clip (1.0), batch~64. HPO: 100 Optuna TPE trials/model; SoftMoE uses NSGA-II. Primary metric: MCC~\cite{chicco2020mcc}. 5-fold CV, 80/20 splits, 3 seeds. $\sim$65 models evaluated.
