@@ -1,37 +1,40 @@
-% Methodology — compact, architectures in table
 \section{Materials and Methods}
 
 \subsection{Dataset and Feature Engineering}
 
-The dataset simulates public transport in a controlled environment~\cite{ribeiro2026eucnc}: Zone~A (vehicle interior, AP near door) and Zone~B (bus stop, corridor). Four devices execute four movement patterns---AA (inside), BB (at stop), BA (boarding), AB (alighting)---producing 10 RSSI readings at 1~s intervals. Pure (single-device, 160 samples) and noise (four concurrent devices, 1,200 samples) scenarios were collected. The combined dataset contains 2,253 samples: AA (407), AB (387), BA (399), BB (417). Four engineered channels per time step are extracted: raw RSSI $r_t$, velocity $\Delta_t = r_t - r_{t-1}$, acceleration $\Delta^2_t$, and window-deviation $d_t = r_t - \mu_w$ ($\mu_w$ = per-sample mean). These four channels capture complementary physical phenomena: absolute RSSI position, movement speed, acceleration, and trajectory shape relative to the per-sample baseline. Input tensors are $(N, 10, 4)$.
+The dataset simulates public transport in a controlled environment~\cite{ribeiro2026eucnc}. Zone~A represents the vehicle interior with an access point near the door. Zone~B represents the bus stop in an adjacent corridor. Four devices execute four movement patterns, denoted AA (inside vehicle), BB (at stop), BA (boarding), and AB (alighting). Each device produces 10 RSSI readings at 1~s intervals per observation.
+
+Two scenarios were collected. The pure scenario uses a single device with no interference (160 samples). The noise scenario uses four concurrent devices executing different route combinations (1,200 samples). The combined dataset contains 2,253 labeled samples distributed as AA 407, AB 387, BA 399, and BB 417.
+
+Four engineered channels are extracted from the raw RSSI sequence $r_t$. The raw RSSI $r_t$ provides absolute signal position. Velocity $\Delta_t = r_t - r_{t-1}$ captures movement speed. Acceleration $\Delta^2_t$ captures rate of change. Window deviation $d_t = r_t - \mu_w$, where $\mu_w$ is the per-sample mean, captures trajectory shape independent of absolute RSSI level. These channels yield input tensors of shape $(N, 10, 4)$.
 
 \subsection{Proposed Architectures}
 
-Table~\ref{tab:architectures} summarises the 11$+$ evaluated architectures. All models output 4-class logits through a linear classification head.
+Table~\ref{tab:architectures} lists the 11+ evaluated architectures. All models output 4-class logits through a linear classification head.
 
 \begin{table}[H]
     \centering
     \caption{DL Architectures Evaluated}
     \label{tab:architectures}
     \resizebox{\columnwidth}{!}{\begin{tabular}{@{}lll@{}}\toprule
-            \textbf{Architecture}               & \textbf{Type}      & \textbf{Key characteristic}                           \\\midrule
+            Architecture                        & Type               & Key characteristic                                    \\\midrule
             RNN, GRU, LSTM, BiLSTM              & Recurrent          & 2 layers, hidden 64                                   \\
             TCN~\cite{bai2018tcn}               & Convolutional      & Dilated causal, residual                              \\
             Transformer                         & Attention          & 4-head self-attention, sinusoidal PE                  \\
-            MambaClassifier~\cite{gu2026mamba3} & State-space        & $O(L)$ complexity, dual-path, rank-$R$=16             \\
+            MambaClassifier~\cite{gu2026mamba3} & State-space        & $O(L)$ complexity, rank-$R$=16                        \\
             CNN2DRNN                            & Hybrid 2D+RNN      & Conv2d $(3,3)$,$(5,3)$ $\to$ LSTM/GRU + attention     \\
             MetaFusion                          & Context-aware      & LSTM/GRU + noise/path embeddings (dim~8)              \\
             Multi-Scale CNN                     & Multi-branch       & Kernels $(3,5,7)$ + residual + attention              \\
-            SoftMoE                             & Mixture of Experts & Heterogeneous experts, top-2 gating, 12 configs       \\
+            SoftMoE                             & Mixture of Experts & Heterogeneous experts, top-2 gating                   \\
             Autoformer~\cite{wu2021autoformer}  & Decomposition      & FFT auto-correlation, trend-seasonal blocks           \\
             DeepStackEnsemble                   & Two-stage meta     & 18 bases $\to$ per-class Level2Net $\to$ residual MLP \\\bottomrule
         \end{tabular}}
 \end{table}
 
-The DeepStackEnsemble uses per-class Level2Nets by design: confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). The residual skip connection preserves calibrated per-class logits while the MetaMLP corrects systematic biases.
+The DeepStackEnsemble uses per-class Level2Nets intentionally. Confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). The residual skip connection preserves calibrated per-class logits while the MetaMLP corrects systematic biases.
 
 \subsection{Augmentation and Implementation}
 
-Class-conditioned Gaussian noise (clean: 6 copies, $\sigma=3.0$~dBm; noisy: 4 copies, $\sigma=0.8$~dBm) plus intra-class Mixup (600 pairs/class, $\lambda \sim \text{Beta}(0.4,0.4)$) expand training from 2,253 to 10,115 samples.
+Two strategies expand the training data from 2,253 to 10,115 samples. Class-conditioned Gaussian noise adds 6 copies to clean samples ($\sigma=3.0$~dBm) and 4 copies to noisy samples ($\sigma=0.8$~dBm). Intra-class Mixup blends 600 random pairs per class as $X_{\text{new}} = \lambda X_1 + (1-\lambda) X_2$ with $\lambda \sim \text{Beta}(0.4,0.4)$, restricted to same-label pairs.
 
-PyTorch~2.6, Optuna~4.7. Training: AdamW, cosine annealing, early stopping (patience~25), label smoothing ($\varepsilon=0.1$), Mixup ($\alpha=0.2$), L1 ($\lambda=10^{-5}$), L2 ($10^{-4}$), dropout ($p=0.3$), gradient clip (1.0), batch~64. HPO: 100 Optuna TPE trials/model; SoftMoE uses NSGA-II. Primary metric: MCC~\cite{chicco2020mcc}. 5-fold CV, 80/20 splits, 3 seeds. $\sim$65 models evaluated.
+The pipeline uses PyTorch~2.6 and Optuna~4.7. Training uses AdamW optimizer with cosine annealing, early stopping (patience 25), label smoothing ($\varepsilon=0.1$), Mixup augmentation ($\alpha=0.2$), L1 regularization ($\lambda=10^{-5}$), L2 weight decay ($10^{-4}$), dropout ($p=0.3$), gradient clipping at 1.0, and batch size 64. HPO uses 50 Optuna TPE trials per model. SoftMoE additionally uses NSGA-II multi-objective optimization. The primary metric is MCC~\cite{chicco2020mcc}. All experiments use 5-fold stratified cross-validation with 80/20 splits and 3 random seeds (3, 5, 42). A total of 65 models were evaluated.

@@ -1,18 +1,11 @@
-% Introduction — crisp, no filler
 \section{Introduction}
 
-Public transport systems serve over 75\% of EU urban citizens, yet inefficiencies contribute to 24\% of greenhouse gas emissions. Accurate passenger flow knowledge---boarding, alighting, and occupancy per stop---is fundamental to network optimization and dynamic scheduling.
+Public transport systems serve over 75\% of EU urban citizens, yet inefficiencies contribute to 24\% of greenhouse gas emissions. Accurate passenger flow knowledge, covering boarding, alighting, and occupancy per stop, is fundamental to network optimization and dynamic scheduling.
 
-Traditional Automatic Passenger Counting (APC) relies on cameras, infrared sensors, or manual counting, each facing tradeoffs in cost, privacy, and deployment complexity. Wi-Fi sensing offers a privacy-preserving alternative: by analyzing Received Signal Strength Indicator (RSSI) patterns from passengers' devices, operators can infer movement without active user participation or additional hardware beyond existing access points.
+Traditional Automatic Passenger Counting (APC) relies on cameras, infrared sensors, or manual counting. Each faces tradeoffs in cost, privacy, and deployment complexity. Wi-Fi sensing offers a privacy-preserving alternative. By analyzing Received Signal Strength Indicator (RSSI) patterns from passengers' devices, operators can infer movement without active user participation or additional hardware beyond existing access points.
 
-However, RSSI measurements are inherently noisy, affected by multi-path propagation, device heterogeneity, and interference from concurrent transmissions. In prior work~\cite{ribeiro2026eucnc}, we introduced a controlled dataset simulating four passenger movements---inside vehicle (AA), boarding (BA), alighting (AB), and at stop (BB)---and achieved MCC~$=$~0.756 on combined data using Gaussian Processes from classical machine learning. This paper investigates whether modern deep learning architectures can better capture RSSI temporal dynamics, particularly under noisy multi-device conditions.
+RSSI measurements are inherently noisy, affected by multi-path propagation, device heterogeneity, and interference from concurrent transmissions. In prior work~\cite{ribeiro2026eucnc}, we introduced a controlled dataset simulating four passenger movements (inside vehicle AA, boarding BA, alighting AB, at stop BB). Classical machine learning achieved MCC 0.756 on combined data using Gaussian Processes. This paper investigates whether modern deep learning architectures can better capture RSSI temporal dynamics, particularly under noisy multi-device conditions.
 
-Our main contributions are:
-\begin{enumerate}
-\item Systematic evaluation of 11$+$ DL architectures---including state-space models (Mamba-3), mixture-of-experts, and two-stage stacking ensembles---across four dataset variants with increasing interference complexity.
-\item A class-conditioned data augmentation strategy expanding 2,253 to 10,115 samples through targeted Gaussian noise injection and intra-class Mixup.
-\item Comprehensive hyperparameter optimization via 100 Optuna trials per model spanning 19 search spaces.
-\item Detailed interference analysis quantifying cross-route noise impact through heatmaps, trajectory visualization, and per-timestep perturbation measurements.
-\end{enumerate}
+Our contributions are as follows. First, we systematically evaluate 11+ DL architectures across four dataset variants with increasing interference complexity, including state-space models (Mamba-3), mixture-of-experts, and two-stage stacking ensembles. Second, we propose a class-conditioned data augmentation strategy that expands 2,253 to 10,115 samples through targeted Gaussian noise injection and intra-class Mixup. Third, we conduct comprehensive hyperparameter optimization via 50 Optuna trials per model spanning 19 search spaces. Fourth, we present a detailed interference analysis quantifying cross-route noise impact through heatmaps, trajectory visualization, and per-timestep perturbation measurements.
 
-Our DeepStackEnsemble achieves MCC~$=$~0.859---a 13.6\% relative improvement over classical baselines. The remainder of this paper covers related work (Section~2), dataset and methodology (Section~3), experimental results with noise analysis (Section~4), and conclusions (Section~5).
+Our DeepStackEnsemble achieves MCC 0.859, a 13.6\% relative improvement over classical baselines. The remainder of this paper covers related work (Section~2), dataset and methodology (Section~3), experimental results (Section~4), and conclusions (Section~5).
