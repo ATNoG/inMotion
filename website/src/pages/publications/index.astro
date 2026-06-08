@@ -1,0 +1,141 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import CiteBlock from "../../components/CiteBlock.astro";
+
+const paper_bibtex = `@INPROCEEDINGS {41897,
+  author={A. Ribeiro and G. Matos and J. C. Corona and M. Antunes and D.Gomes Gomes},
+  doi={},
+  booktitle={EuCNC & 6G Summit},
+  title={RSSI-Based Passenger Movement Classification for Non-Intrusive Public Transport Monitoring},
+  year={2026},
+  month={June},
+  volume={},
+  pages={-} 
+  }`;
+
+const dataset_bibtex = `@data{55nm-0r91-26,
+  doi = {10.21227/55nm-0r91},
+  url = {https://dx.doi.org/10.21227/55nm-0r91},
+  author = {André Ribeiro and Guilherme Matos and Júlio Corona and Mário Antunes and Diogo Gomes},
+  publisher = {IEEE Dataport},
+  title = {WiFi RSSI Passenger Movement Dataset: Boarding, Alighting, and Static Classes in a Simulated Bus Environment},
+  year = {2026} }`;
+---
+
+<BaseLayout
+  title="Publications"
+  description="Papers, datasets, and code from the inMotion project."
+>
+  <PageHero
+    title="Publications"
+    subtitle="Papers, datasets, and open-source code"
+  />
+
+  <div class="container content-section">
+    <h2>Papers</h2>
+    <div class="section-divider"></div>
+
+    <div class="card pub-card">
+      <div class="pub-header">
+        <h3>
+          RSSI-Based Passenger Movement Classification for Non-Intrusive Public
+          Transport Monitoring
+        </h3>
+        <span class="badge badge-blue">EuCNC & 6G Summit 2026</span>
+      </div>
+      <p class="pub-authors">
+        André Ribeiro, Guilherme Matos, Julio Corona, Mário Antunes, Diogo Gomes
+      </p>
+      <p class="pub-venue">
+        Instituto de Telecomunicações, Universidade de Aveiro, Portugal
+      </p>
+
+      <div class="btn-group">
+        <a href="/inMotion/paper.pdf" class="btn btn-outline" target="_blank"
+          >PDF</a
+        >
+        <button class="btn btn-outline" type="button" data-toggle-cite="bibtex"
+          >Cite (BibTeX)</button
+        >
+      </div>
+
+      <CiteBlock id="bibtex" bibtex={paper_bibtex} />
+    </div>
+
+    <h2>Datasets</h2>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      <div class="card dataset-card">
+        <h3>RSSI Passenger Movement Dataset</h3>
+        <p>
+          1,356 labelled RSSI samples across four movement classes (AA, BB, BA,
+          AB). Two collection conditions: isolated (160) and noisy (1,196). Four
+          smartphone models, three brands.
+        </p>
+        <div class="dataset-links">
+          <a
+            href="https://dx.doi.org/10.21227/55nm-0r91"
+            class="btn btn-primary"
+            target="_blank"
+            rel="noopener">IEEE Dataport</a
+          >
+          <span class="dataset-doi">10.21227/55nm-0r91</span>
+        </div>
+        <button
+          class="btn btn-outline"
+          style="margin-top: 0.75rem"
+          type="button"
+          data-toggle-cite="cite-dataset">Cite dataset</button
+        >
+
+        <CiteBlock id="cite-dataset" bibtex={dataset_bibtex} />
+      </div>
+
+      <div class="card dataset-card">
+        <h3>Zenodo Mirror</h3>
+        <p>
+          The dataset is also archived on Zenodo with a permanent DOI for
+          long-term citation and reproducibility.
+        </p>
+        <a
+          href="https://zenodo.org/records/19482565"
+          class="btn btn-primary"
+          target="_blank"
+          rel="noopener">Zenodo</a
+        >
+      </div>
+    </div>
+
+    <h2>Code</h2>
+    <div class="section-divider"></div>
+
+    <div class="card dataset-card">
+      <h3>inMotion — Full Pipeline</h3>
+      <p>
+        Data export from Wavecom captures, CSV preprocessing, 38-classifier ML
+        pipeline with Optuna hyperparameter optimisation, deep learning
+        experiments, and all analysis scripts. Hyperparameter optimisation
+        supplementary materials with search spaces and optimal configurations.
+      </p>
+      <a
+        href="https://github.com/ATNoG/inMotion"
+        class="btn btn-primary"
+        target="_blank"
+        rel="noopener">github.com/ATNoG/inMotion</a
+      >
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll("[data-toggle-cite]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = (btn as HTMLElement).dataset.toggleCite;
+      if (!targetId) return;
+      const block = document.getElementById(targetId);
+      block?.classList.toggle("hidden");
+    });
+  });
+</script>

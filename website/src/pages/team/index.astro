@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+interface Member {
+  initials: string;
+  name: string;
+  affiliation: string;
+  email: string;
+}
+
+const team: Member[] = [
+  { initials: "AR", name: "André Ribeiro", affiliation: "Instituto de Telecomunicações", email: "andrepedroribeiro@av.it.pt" },
+  { initials: "GM", name: "Guilherme Matos", affiliation: "Instituto de Telecomunicações", email: "gui.matos@av.it.pt" },
+  { initials: "JC", name: "Julio Corona", affiliation: "Instituto de Telecomunicações", email: "jcamejo@av.it.pt" },
+  { initials: "MA", name: "Mário Antunes", affiliation: "IT / DETI, Univ. de Aveiro", email: "mario.antunes@ua.pt" },
+  { initials: "DG", name: "Diogo Gomes", affiliation: "IT / DETI, Univ. de Aveiro", email: "dgomes@ua.pt" },
+];
+
+const institutions = [
+  { name: "Wavecom", desc: "Project leader. Portuguese company specialising in wireless communications and IoT solutions for intelligent transport systems." },
+  { name: "Instituto de Telecomunicações", desc: "Research partner. One of Portugal's leading R&D institutes in telecommunications, hosted at Universidade de Aveiro." },
+];
+---
+
+<BaseLayout
+  title="Team"
+  description="People and institutions behind the inMotion project."
+>
+  <PageHero title="Team & Partners" subtitle="Researchers, institutions, and industry" />
+
+  <div class="container content-section">
+
+    <h2>Research Team</h2>
+    <div class="section-divider"></div>
+
+    <div class="team-grid">
+      {
+        team.map(m => (
+          <div class="card team-card">
+            <div class="team-avatar">{m.initials}</div>
+            <strong>{m.name}</strong>
+            <span class="team-affiliation">{m.affiliation}</span>
+            <a href={`mailto:${m.email}`}>{m.email}</a>
+          </div>
+        ))
+      }
+    </div>
+
+    <h2>Institutions</h2>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      {institutions.map(inst => (
+        <div class="card">
+          <h3>{inst.name}</h3>
+          <p>{inst.desc}</p>
+        </div>
+      ))}
+    </div>
+
+    <h2>Funding</h2>
+    <div class="section-divider"></div>
+    <div class="card">
+      <p>
+        Project inMotion Nr. 21359 (CENTRO2030-FEDER-02225900) — funded by the European
+        Regional Development Fund (FEDER), through the Regional Operational Programme of
+        Centre (CENTRO 2030) of the Portugal 2030 framework.
+      </p>
+    </div>
+
+  </div>
+</BaseLayout>
