@@ -1,0 +1,10 @@
+% Conclusions — concise, natural future work
+\section{Conclusion}
+
+This paper presented a comprehensive evaluation of deep learning architectures for RSSI-based passenger movement classification in public transport. Building on classical ML baselines (MCC~$=$~0.756), we evaluated 11$+$ architectures spanning recurrent, convolutional, transformer, state-space, and mixture-of-experts models, supported by class-conditioned data augmentation and exhaustive hyperparameter optimization across four dataset variants.
+
+The two-stage DeepStackEnsemble achieved MCC~$=$~0.859 and accuracy 89.4\% on combined data, a 13.6\% relative improvement. State-space models (HPO~Mamba, up to MCC~$=$~0.850) demonstrated competitive performance with $O(L)$ complexity, establishing them as a viable alternative to transformers for resource-constrained deployment.
+
+Cross-route interference analysis revealed a 9.4\% absolute MCC degradation under multi-device noise. Heatmap analysis identified AA as the dominant interferer and AB as the most vulnerable route. Trajectory visualization traced the mechanism: concurrent near-AP transmissions erase AB's characteristic 20~dBm RSSI descent, the primary discriminative feature for alighting detection. BB proved most noise-resilient because its classification signal---temporal flatness---survives interference-level shifts intact.
+
+Future work should explore attention mechanisms that learn to down-weight interfered timesteps, multi-AP fusion to disambiguate near-AP states through spatial diversity, and integration of movement classification with origin-destination matrix inference for end-to-end passenger flow modeling.
