@@ -4,7 +4,7 @@ This paper evaluated deep learning architectures for RSSI-based passenger moveme
 
 The two-stage DeepStackEnsemble achieved MCC 0.859 and accuracy 89.4\% on combined data, a 13.6\% relative improvement. State-space models reached up to MCC 0.850 with $O(L)$ complexity, confirming their viability as an alternative to transformers for resource-constrained deployment.
 
-Cross-route interference analysis revealed a 9.4\% absolute MCC degradation under multi-device noise. Heatmap analysis identified AA as the dominant interferer and AB as the most vulnerable route. Trajectory visualization showed that concurrent near-AP transmissions erase AB's characteristic 20~dBm RSSI descent. BB proved most noise-resilient because its classification signal comes from temporal flatness, which survives interference-level shifts intact.
+Cross-route interference analysis revealed a 9.4\% absolute MCC degradation under multi-device noise. Heatmap analysis showed that AB as interferer produces the largest RSSI shifts, while AB as primary route is most affected. Trajectory visualization showed that concurrent near-AP transmissions erase AB's characteristic 20~dBm RSSI descent. BB proved most noise-resilient because its classification signal comes from temporal flatness, which survives interference-level shifts intact.
 
 Feature importance analysis confirmed and extended prior findings. Classical ML identified early timesteps as most informative. DL additionally captured mid-trajectory motion dynamics through the velocity channel, contributing directly to the 13.6\% improvement. Window deviation emerged as the most informative channel, explaining BB's noise resilience through shape-based classification.
 

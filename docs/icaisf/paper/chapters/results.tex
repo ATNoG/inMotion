@@ -5,16 +5,16 @@
 Table~\ref{tab:variants} describes the four dataset variants. Each stresses a different aspect of model robustness, from clean single-device recording to dense multi-device interference and synthetic augmentation. All models use 5-fold stratified cross-validation with 80/20 splits. Results are reported at seed 42 unless stated otherwise.
 
 \begin{table}[H]
-\centering
-\caption{Dataset Variants}
-\label{tab:variants}
-\begin{tabular}{@{}lccc@{}}\toprule
-Variant    & Train  & Test  & Condition                                      \\\midrule
-Pure       & 128    & 32    & Single device, no interference                 \\
-Noise      & 960    & 240   & Four concurrent devices                        \\
-Normal     & 1,802  & 451   & Original unbalanced combined                   \\
-Augmented  & 8,090  & 2,023 & Synthetic samples added to training            \\\bottomrule
-\end{tabular}
+    \centering
+    \caption{Dataset Variants}
+    \label{tab:variants}
+    \begin{tabular}{@{}lccc@{}}\toprule
+        Variant   & Train & Test  & Condition                           \\\midrule
+        Pure      & 128   & 32    & Single device, no interference      \\
+        Noise     & 960   & 240   & Four concurrent devices             \\
+        Normal    & 1,802 & 451   & Original unbalanced combined        \\
+        Augmented & 8,090 & 2,023 & Synthetic samples added to training \\\bottomrule
+    \end{tabular}
 \end{table}
 
 \subsection{Variant-Level Comparison}
@@ -24,15 +24,15 @@ Figure~\ref{fig:variant_mcc} shows the best model MCC achieved on each variant. 
 Table~\ref{tab:ml_comparison} compares these results against classical ML baselines from our prior work~\cite{ribeiro2026eucnc}. DL improves combined data by 13.6\% and noise by 3.6\%, but trails on pure data by 4.4\%. DL's advantage emerges where both training data and interference complexity are sufficient; on clean, data-scarce problems, simpler methods prevail.
 
 \begin{table}[H]
-\centering
-\caption{DL vs.\ Classical ML (MCC)}
-\label{tab:ml_comparison}
-\begin{tabular}{@{}lccc@{}}\toprule
-Variant  & Classical best           & DL best           & Change   \\\midrule
-Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & +13.6\%  \\
-Pure     & 0.922 (KNN)              & 0.881 (RNN)       & \$-\$4.4\% \\
-Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & +3.6\%   \\\bottomrule
-\end{tabular}
+    \centering
+    \caption{DL vs.\ Classical ML (MCC)}
+    \label{tab:ml_comparison}
+    \begin{tabular}{@{}lccc@{}}\toprule
+        Variant  & Classical best           & DL best           & Change   \\\midrule
+        Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & +13.6\%  \\
+        Pure     & 0.922 (KNN)              & 0.881 (RNN)       & $-$4.4\% \\
+        Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & +3.6\%   \\\bottomrule
+    \end{tabular}
 \end{table}
 
 \begin{figure}[H]
@@ -59,9 +59,9 @@ Table~\ref{tab:combined_results} lists the top models per variant. Among single 
         HPO TCN           & Augmented & 0.8647 & 0.8982 \\
         HPO CNN           & Augmented & 0.8642 & 0.8977 \\
         Ensemble CNN+TCN  & Augmented & 0.8587 & 0.8932 \\\midrule
-        RNN               & Pure*     & 0.8808 & 0.9063 \\\midrule
-        DS RNN\_B         & Noise*    & 0.7981 & 0.8458 \\
-        HPO LSTM          & Noise*    & 0.7908 & 0.8417 \\\bottomrule
+        RNN               & Pure      & 0.8808 & 0.9063 \\\midrule
+        DS RNN\_B         & Noise     & 0.7981 & 0.8458 \\
+        HPO LSTM          & Noise     & 0.7908 & 0.8417 \\\bottomrule
     \end{tabular}
 \end{table}
 
@@ -140,9 +140,9 @@ Table~\ref{tab:per_class} presents per-class F1 scores. AB (alighting) leads at 
 
 \subsection{Noise and Interference Analysis}
 
-Figure~\ref{fig:interference_heatmap} quantifies the mean RSSI shift induced by each concurrent interferer on each primary route. Three patterns stand out. First, AA dominates as interferer, producing shifts of 45 to 53~dBm across all routes. Devices inside the vehicle transmit at high power near the access point. BB causes minimal shift, at most 3.1~dBm, because devices at the stop are farthest from the AP. Second, AB is most affected. AA interference adds 46.6~dBm, masking the characteristic descent. Third, self-interference is minimal. Diagonal entries, where interferer and primary route are the same class executed by different devices, show shifts of only 1.2 to 4.6~dBm.
+Figure~\ref{fig:interference_heatmap} quantifies the mean RSSI shift induced by each concurrent interferer on each primary route. Three patterns stand out. First, AB as interferer produces the largest positive shifts (up to +4.6~dBm on AA), since AB devices start near the AP then move away, creating high initial RSSI that raises the apparent signal of nearby routes. BB as interferer causes the smallest shifts ($-$1.9 to +3.1~dBm). Second, AB is most affected by interference, with shifts of $-$2.4~dBm (AA interferer) and $-$2.8~dBm (BA interferer). Third, diagonal entries are not applicable: a device cannot interfere with itself.
 
-\begin{figure}[H]
+\begin{figure}
     \centering
     \includegraphics[width=0.78\columnwidth]{images/interference_heatmap.pdf}
     \caption{Interference heatmap: mean RSSI shift per (Route $\times$ Interferer) pair.}
@@ -151,7 +151,7 @@ Figure~\ref{fig:interference_heatmap} quantifies the mean RSSI shift induced by 
 
 Figure~\ref{fig:trajectories} shows interference effects per class. AA: BA interference raises the high-RSSI profile, blurring near-AP states. AB: AA flattens the 20~dBm descent into a constant profile, directly causing AB's noise-induced F1 drop. BA: AA compresses the ascent. BB: the flat pattern shifts but retains shape; classification depends on temporal flatness, not absolute level, explaining BB's noise resilience.
 
-\begin{figure}[H]
+\begin{figure}
     \centering
     \includegraphics[width=0.43\textwidth]{images/interference_trajectory_AA.pdf}\hfill
     \includegraphics[width=0.43\textwidth]{images/interference_trajectory_AB.pdf}\\[4pt]
