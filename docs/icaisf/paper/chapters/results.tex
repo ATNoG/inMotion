@@ -41,10 +41,10 @@ Table~\ref{tab:ml_comparison} compares against classical ML~\cite{ribeiro2026euc
     \caption{DL vs.\ Classical ML (MCC)}
     \label{tab:ml_comparison}
     \begin{tabular}{lccc}\toprule
-        Variant  & Classical best           & DL best           & Change   \\\midrule
-        Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & $+$13.6\%  \\
-        Pure     & 0.922 (KNN)              & 0.881 (RNN)       & $-$4.4\% \\
-        Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & $+$3.6\%   \\\bottomrule
+        Variant  & Classical best           & DL best           & Change    \\\midrule
+        Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & $+$13.6\% \\
+        Pure     & 0.922 (KNN)              & 0.881 (RNN)       & $-$4.4\%  \\
+        Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & $+$3.6\%  \\\bottomrule
     \end{tabular}
 \end{table}
 
@@ -72,21 +72,21 @@ Table~\ref{tab:combined_results} lists the top models per variant. Among single 
     \end{tabular}
 \end{table}
 
-Table~\ref{tab:hpo_gains} shows HPO impact. Recurrent architectures benefit most (GRU +20.0\%, LSTM +23.1\%, BiLSTM +19.9\%), revealing severe under-parameterisation at default settings. CNN and TCN gain less due to stronger inductive biases.
+Table~\ref{tab:hpo_gains} shows HPO impact. Recurrent architectures benefit most (GRU +20.0\%, LSTM +23.1\%, BiLSTM +19.9\%), revealing severe under-parameterisation at default settings. CNN and TCN gain less. Complete HPO configurations are provided as supplementary material~\cite{githubrepo}.
 
 \begin{table}[H]
     \centering
     \caption{HPO Gains on Normal Variant}
     \label{tab:hpo_gains}
     \begin{tabular}{lccc}\toprule
-        Model  & Default MCC & HPO MCC & Gain     \\\midrule
-        GRU    & 0.7101      & 0.8524  & $+$20.0\%  \\
-        LSTM   & 0.6855      & 0.8435  & $+$23.1\%  \\
-        BiLSTM & 0.6838      & 0.8195  & $+$19.9\%  \\
-        RNN    & 0.7552      & 0.8319  & $+$10.2\%  \\
-        Mamba  & 0.8002      & 0.8418  & $+$5.2\%   \\
-        TCN    & 0.8356      & 0.8470  & $+$1.4\%   \\
-        CNN    & 0.8383      & 0.8357  & $-$0.3\% \\\bottomrule
+        Model  & Default MCC & HPO MCC & Gain      \\\midrule
+        GRU    & 0.7101      & 0.8524  & $+$20.0\% \\
+        LSTM   & 0.6855      & 0.8435  & $+$23.1\% \\
+        BiLSTM & 0.6838      & 0.8195  & $+$19.9\% \\
+        RNN    & 0.7552      & 0.8319  & $+$10.2\% \\
+        Mamba  & 0.8002      & 0.8418  & $+$5.2\%  \\
+        TCN    & 0.8356      & 0.8470  & $+$1.4\%  \\
+        CNN    & 0.8383      & 0.8357  & $-$0.3\%  \\\bottomrule
     \end{tabular}
 \end{table}
 
@@ -99,7 +99,7 @@ Table~\ref{tab:augmentation} shows augmentation impact. CNNs and TCNs gain from 
     \caption{Augmentation Impact (Normal vs.\ Augmented MCC)}
     \label{tab:augmentation}
     \begin{tabular}{lccc}\toprule
-        Model   & Normal & Augmented & Change   \\\midrule
+        Model   & Normal & Augmented & Change      \\\midrule
         CNN     & 0.8383 & 0.8490    & $+$1.0128\% \\
         TCN     & 0.8356 & 0.8344    & $-$0.9986\% \\
         GRU     & 0.7101 & 0.7039    & $-$0.9913\% \\
@@ -147,7 +147,7 @@ Table~\ref{tab:per_class} presents per-class F1. AB leads (0.872--0.941) from it
 
 \subsection{Noise and Interference Analysis}
 
-Figure~\ref{fig:interference_heatmap} shows the mean RSSI shift per (Route $\times$ Interferer) pair. AB as interferer produces the largest shifts (up to +4.6~dBm on AA). AB is most affected, with shifts of $-$2.4~dBm (AA interferer) and $-$2.8~dBm (BA interferer). Diagonal entries are not applicable.
+Figure~\ref{fig:interference_heatmap} shows RSSI shift per (Route $\times$ Interferer). AB interferer produces largest shifts (up to +4.6~dBm on AA); AB is most affected ($-$2.4~dBm from AA).
 
 \begin{figure}
     \centering
@@ -187,7 +187,7 @@ Classical and deep methods complement each other. KNN leads on clean single-devi
 
 The feature importance analysis (Figure~\ref{fig:feature_importance}) extends prior findings~\cite{ribeiro2026eucnc}, where classical ML on raw RSSI identified early timesteps as most important (MCC 0.756). DL additionally captures mid-trajectory dynamics through the velocity channel ($t=4$, $\Delta$MCC $18.4\times 10^{-3}$), a signal classical models could not exploit. The window deviation channel explains BB's noise resilience: trajectory shape survives interference-level shifts that distort absolute RSSI. The trajectory analysis (Figure~\ref{fig:trajectories}) confirms this mechanism: AA flattens AB's characteristic 20~dBm descent into a constant profile, erasing the primary discriminative feature. BB's flat pattern shifts in magnitude but retains its shape.
 
-The HPO gain gap between recurrent architectures (20--23\%) and CNN/TCN ($\pm$1\%) reflects a fundamental difference in inductive bias. CNN kernels operate on fixed-size windows regardless of sequence length. TCN dilated convolutions naturally match 10-step sequences through exponentially growing receptive fields. Recurrent hidden states must encode all temporal context into a fixed-size vector. At default dimension 64, this creates an information bottleneck. HPO discovers larger hidden dimensions that remove the bottleneck. The augmentation results reinforce this pattern: models with strong inductive biases extract useful signal from synthetic diversity (HPO CNN +0.029, HPO TCN +0.018); recurrents without HPO are confused by it (GRU --0.006).
+The HPO gain gap between recurrent architectures (20--23\%) and CNN/TCN ($\pm$1\%) reflects a fundamental difference in inductive bias. CNN kernels operate on fixed-size windows regardless of sequence length. TCN dilated convolutions naturally match 10-step sequences through exponentially growing receptive fields. Recurrent hidden states must encode all temporal context into a fixed-size vector. At default dimension 64, this creates an information bottleneck. HPO discovers larger hidden dimensions that remove the bottleneck.
 
 Uniform voting across all nine architectures (MCC 0.807) underperforms a single CNN (0.838). Weak classifiers contribute noisy probability estimates that shift the decision boundary. DeepStack (0.859) avoids this through per-class Level2Nets that learn class-specific base model importance. Two findings point toward future work. Mamba's $O(L)$ complexity enables scaling to longer observation windows of 20--30 seconds, where self-attention's quadratic cost becomes prohibitive. MetaFusion\_GRU (MCC 0.783 on noise vs.~0.758 baseline) shows that context-aware architectures can partially disentangle interference.
 
