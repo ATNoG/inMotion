@@ -8,7 +8,7 @@ Table~\ref{tab:variants} describes the four dataset variants. Each stresses a di
     \centering
     \caption{Dataset Variants}
     \label{tab:variants}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Variant   & Train & Test  & Condition                           \\\midrule
         Pure      & 128   & 32    & Single device, no interference      \\
         Noise     & 960   & 240   & Four concurrent devices             \\
@@ -25,7 +25,7 @@ Table~\ref{tab:variant_best} lists the best model per variant. Pure yields RNN a
     \centering
     \caption{Best Model per Variant}
     \label{tab:variant_best}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Variant   & Model             & MCC   & Acc.  \\\midrule
         Pure      & RNN               & 0.881 & 0.906 \\
         Noise     & DS RNN\_B         & 0.798 & 0.846 \\
@@ -40,11 +40,11 @@ Table~\ref{tab:ml_comparison} compares against classical ML~\cite{ribeiro2026euc
     \centering
     \caption{DL vs.\ Classical ML (MCC)}
     \label{tab:ml_comparison}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Variant  & Classical best           & DL best           & Change   \\\midrule
-        Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & +13.6\%  \\
+        Combined & 0.756 (Gaussian Process) & 0.859 (DeepStack) & $+$13.6\%  \\
         Pure     & 0.922 (KNN)              & 0.881 (RNN)       & $-$4.4\% \\
-        Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & +3.6\%   \\\bottomrule
+        Noise    & 0.770 (CatBoost)         & 0.798 (DS RNN\_B) & $+$3.6\%   \\\bottomrule
     \end{tabular}
 \end{table}
 
@@ -56,7 +56,7 @@ Table~\ref{tab:combined_results} lists the top models per variant. Among single 
     \centering
     \caption{Top Models by Variant}
     \label{tab:combined_results}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Model             & Variant   & MCC    & Acc.   \\\midrule
         DeepStackEnsemble & Normal    & 0.8585 & 0.8937 \\
         HPO GRU           & Normal    & 0.8524 & 0.8893 \\
@@ -64,7 +64,7 @@ Table~\ref{tab:combined_results} lists the top models per variant. Among single 
         CNN               & Normal    & 0.8383 & 0.8774 \\\midrule
         HPO TCN           & Augmented & 0.8647 & 0.8982 \\
         HPO CNN           & Augmented & 0.8642 & 0.8977 \\
-        HPO Mamba         & Augmented & 0.850  & 0.887  \\
+        HPO Mamba         & Augmented & 0.850  & 0.8870 \\
         Ensemble CNN+TCN  & Augmented & 0.8587 & 0.8932 \\\midrule
         RNN               & Pure      & 0.8808 & 0.9063 \\\midrule
         DS RNN\_B         & Noise     & 0.7981 & 0.8458 \\
@@ -78,14 +78,14 @@ Table~\ref{tab:hpo_gains} shows HPO impact. Recurrent architectures benefit most
     \centering
     \caption{HPO Gains on Normal Variant}
     \label{tab:hpo_gains}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Model  & Default MCC & HPO MCC & Gain     \\\midrule
-        GRU    & 0.7101      & 0.8524  & +20.0\%  \\
-        LSTM   & 0.6855      & 0.8435  & +23.1\%  \\
-        BiLSTM & 0.6838      & 0.8195  & +19.9\%  \\
-        RNN    & 0.7552      & 0.8319  & +10.2\%  \\
-        Mamba  & 0.8002      & 0.8418  & +5.2\%   \\
-        TCN    & 0.8356      & 0.8470  & +1.4\%   \\
+        GRU    & 0.7101      & 0.8524  & $+$20.0\%  \\
+        LSTM   & 0.6855      & 0.8435  & $+$23.1\%  \\
+        BiLSTM & 0.6838      & 0.8195  & $+$19.9\%  \\
+        RNN    & 0.7552      & 0.8319  & $+$10.2\%  \\
+        Mamba  & 0.8002      & 0.8418  & $+$5.2\%   \\
+        TCN    & 0.8356      & 0.8470  & $+$1.4\%   \\
         CNN    & 0.8383      & 0.8357  & $-$0.3\% \\\bottomrule
     \end{tabular}
 \end{table}
@@ -98,15 +98,15 @@ Table~\ref{tab:augmentation} shows augmentation impact. CNNs and TCNs gain from 
     \centering
     \caption{Augmentation Impact (Normal vs.\ Augmented MCC)}
     \label{tab:augmentation}
-    \begin{tabular}{@{}lccc@{}}\toprule
+    \begin{tabular}{lccc}\toprule
         Model   & Normal & Augmented & Change   \\\midrule
-        CNN     & 0.8383 & 0.8490    & +0.011   \\
-        TCN     & 0.8356 & 0.8344    & $-$0.001 \\
-        GRU     & 0.7101 & 0.7039    & $-$0.006 \\
-        LSTM    & 0.6855 & 0.6804    & $-$0.005 \\
-        Mamba   & 0.8002 & 0.8073    & +0.007   \\
-        HPO TCN & 0.8470 & 0.8647    & +0.018   \\
-        HPO CNN & 0.8357 & 0.8642    & +0.029   \\\bottomrule
+        CNN     & 0.8383 & 0.8490    & $+$1.0128\% \\
+        TCN     & 0.8356 & 0.8344    & $-$0.9986\% \\
+        GRU     & 0.7101 & 0.7039    & $-$0.9913\% \\
+        LSTM    & 0.6855 & 0.6804    & $-$0.9926\% \\
+        Mamba   & 0.8002 & 0.8073    & $+$1.0089\% \\
+        HPO TCN & 0.8470 & 0.8647    & $+$1.0209\% \\
+        HPO CNN & 0.8357 & 0.8642    & $+$1.0341\% \\\bottomrule
     \end{tabular}
 \end{table}
 
@@ -118,7 +118,7 @@ Table~\ref{tab:ensembles} compares ensemble strategies. CNN (0.838) through HPO 
     \centering
     \caption{Ensemble Strategy Comparison (Normal Variant)}
     \label{tab:ensembles}
-    \begin{tabular}{@{}lcc@{}}\toprule
+    \begin{tabular}{lcc}\toprule
         Strategy              & MCC    & Description                     \\\midrule
         CNN (best single)     & 0.8383 & No HPO or ensemble              \\
         HPO GRU (best HPO)    & 0.8524 & 50 Optuna trials                \\
@@ -136,7 +136,7 @@ Table~\ref{tab:per_class} presents per-class F1. AB leads (0.872--0.941) from it
     \centering
     \caption{Per-Class F1 by Variant (Best Model)}
     \label{tab:per_class}
-    \begin{tabular}{@{}lcccc@{}}\toprule
+    \begin{tabular}{lcccc}\toprule
         Variant   & AA    & AB    & BA    & BB    \\\midrule
         Pure      & 0.889 & 0.941 & 0.857 & 0.933 \\
         Noise     & 0.825 & 0.872 & 0.857 & 0.832 \\

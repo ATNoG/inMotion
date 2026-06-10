@@ -39,23 +39,45 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \acrodef{OD}{Origin-Destination}
 
 \begin{document}
-\title{Deep Learning Architectures for RSSI-Based Passenger Movement Classification in Public Transport}
+\title{Deep Learning for RSSI-Based Passenger Movement Classification in Public Transport}
+
 
 \author{
-\IEEEauthorblockN{
-Andr\'{e} Ribeiro\IEEEauthorrefmark{1}, Guilherme Matos\IEEEauthorrefmark{1}, Julio Corona\IEEEauthorrefmark{1},
-M\'{a}rio Antunes\IEEEauthorrefmark{1}\IEEEauthorrefmark{2} and Diogo Gomes\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}}
-\IEEEauthorblockA{
-\IEEEauthorrefmark{1}Instituto de Telecomunica\c{c}\~{o}es, Universidade de Aveiro, Aveiro, Portugal\\
-E-mails: \{andrepedroribeiro,gui.matos,jcamejo,mario.antunes,dgomes\}@av.it.pt\\
-\IEEEauthorrefmark{2}DETI, Universidade de Aveiro, Aveiro, Portugal\\
-E-mails: \{mario.antunes,dgomes\}@ua.pt}
+\IEEEauthorblockN{Guilherme Matos}
+\IEEEauthorblockA{\textit{Instituto de Telecomunica\c{c}\~{o}es} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+gui.matos@av.it.pt}
+\and
+\IEEEauthorblockN{Andr\'{e} Ribeiro}
+\IEEEauthorblockA{\textit{Instituto de Telecomunica\c{c}\~{o}es} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+andrepedroribeiro@av.it.pt}
+\and
+\IEEEauthorblockN{Julio Corona}
+\IEEEauthorblockA{\textit{Instituto de Telecomunica\c{c}\~{o}es} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+jcamejo@av.it.pt}
+\and
+\IEEEauthorblockN{M\'{a}rio Antunes}
+\IEEEauthorblockA{\textit{Instituto de Telecomunica\c{c}\~{o}es \& DETI} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+mario.antunes@av.it.pt, mario.antunes@ua.pt}
+\and
+\IEEEauthorblockN{Diogo Gomes}
+\IEEEauthorblockA{\textit{Instituto de Telecomunica\c{c}\~{o}es \& DETI} \\
+\textit{Universidade de Aveiro}\\
+Aveiro, Portugal \\
+dgomes@av.it.pt, dgomes@ua.pt}
 }
 
 \maketitle
 
 \begin{abstract}
-    Accurate, non-intrusive monitoring of passenger flows is essential for intelligent public transport systems. Prior work demonstrated that temporal sequences of Wi-Fi Received Signal Strength Indicator (RSSI) measurements can classify passenger movements using classical machine learning, achieving a Matthews Correlation Coefficient (MCC) of 0.756 on combined datasets. This paper extends that line of research by systematically evaluating deep learning architectures---including recurrent, convolutional, transformer, state-space, and mixture-of-experts models---for the same classification task across four dataset variants. We introduce 11 novel architectures, a class-conditioned data augmentation strategy expanding 2,253 samples to 10,115, and comprehensive hyperparameter optimization with 50 Optuna trials per model. Our best ensemble model, a two-stage deep stacking architecture, achieves MCC of 0.859 and accuracy of 89.4\% on combined data, a 13.6\% relative improvement over classical baselines. We further analyze the impact of multi-device interference, per-class confusion patterns, and the effectiveness of metadata-aware architectures in distinguishing true movement from environmental noise.
+    Accurate, non-intrusive monitoring of passenger flows is essential for intelligent public transport systems. Prior work demonstrated that temporal sequences of Wi-Fi Received Signal Strength Indicator (RSSI) measurements can classify passenger movements using classical machine learning, achieving a Matthews Correlation Coefficient (MCC) of 0.756 on combined datasets. This paper extends that line of research by systematically evaluating deep learning architectures --- including recurrent, convolutional, transformer, state-space, and mixture-of-experts models --- for the same classification task across four dataset variants. We introduce 11 architectures, a class-conditioned data augmentation strategy expanding 2,253 samples to 10,115, and comprehensive hyperparameter optimization with 50 Optuna trials per model. Our best ensemble model, a two-stage deep stacking architecture, achieves MCC of 0.859 and accuracy of 89.4\% on combined data, a 13.6\% relative improvement over classical baselines. We further analyze the impact of multi-device interference, per-class confusion patterns, and the effectiveness of metadata-aware architectures in distinguishing true movement from environmental noise.
 \end{abstract}
 
 \begin{IEEEkeywords}
