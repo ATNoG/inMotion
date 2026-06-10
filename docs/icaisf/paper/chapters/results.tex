@@ -147,7 +147,7 @@ Table~\ref{tab:per_class} presents per-class F1. AB leads (0.872--0.941) from it
 
 \subsection{Noise and Interference Analysis}
 
-Figure~\ref{fig:interference_heatmap} shows the mean RSSI shift per (Route $\times$ Interferer) pair. AB as interferer produces the largest shifts (up to +4.6~dBm on AA). BB causes the smallest. AB is most affected, with shifts of $-$2.4~dBm (AA interferer) and $-$2.8~dBm (BA interferer). Diagonal entries are not applicable.
+Figure~\ref{fig:interference_heatmap} shows the mean RSSI shift per (Route $\times$ Interferer) pair. AB as interferer produces the largest shifts (up to +4.6~dBm on AA). AB is most affected, with shifts of $-$2.4~dBm (AA interferer) and $-$2.8~dBm (BA interferer). Diagonal entries are not applicable.
 
 \begin{figure}
     \centering
@@ -172,7 +172,7 @@ Per-timestep perturbation peaks at timesteps~4 to 6. MetaFusion\_GRU reaches MCC
 
 \subsection{Feature Importance}
 
-Figure~\ref{fig:feature_importance} shows permutation importance across the four engineered channels and ten timesteps, averaged over CNN, TCN, and GRU. Window deviation dominates early timesteps ($t=1$ to 3), capturing each class's characteristic offset from its own baseline. Velocity peaks at $t=4$, the mid-trajectory moment of maximum movement. Raw RSSI matters most at $t=6$, where absolute levels separate near-AP positions from exterior ones. Acceleration contributes at $t=3$ to 5.
+Permutation importance measures the MCC drop when a given feature's values are randomly shuffled, breaking its relationship with the target while preserving the marginal distribution. Figure~\ref{fig:feature_importance} shows this metric across the four engineered channels and ten timesteps, averaged over CNN, TCN, and GRU. Window deviation dominates early timesteps ($t=1$ to 3). Velocity peaks at $t=4$; raw RSSI at $t=6$; acceleration at $t=3$ to 5.
 
 \begin{figure}[H]
     \centering
@@ -189,6 +189,6 @@ The feature importance analysis (Figure~\ref{fig:feature_importance}) extends pr
 
 The HPO gain gap between recurrent architectures (20--23\%) and CNN/TCN ($\pm$1\%) reflects a fundamental difference in inductive bias. CNN kernels operate on fixed-size windows regardless of sequence length. TCN dilated convolutions naturally match 10-step sequences through exponentially growing receptive fields. Recurrent hidden states must encode all temporal context into a fixed-size vector. At default dimension 64, this creates an information bottleneck. HPO discovers larger hidden dimensions that remove the bottleneck. The augmentation results reinforce this pattern: models with strong inductive biases extract useful signal from synthetic diversity (HPO CNN +0.029, HPO TCN +0.018); recurrents without HPO are confused by it (GRU --0.006).
 
-Uniform voting across all nine architectures (MCC 0.807) underperforms a single CNN (0.838). Weak classifiers contribute noisy probability estimates that shift the decision boundary. DeepStack (0.859) avoids this through per-class Level2Nets that learn class-specific base model importance. Two findings point toward future work. Mamba's $O(L)$ complexity enables scaling to longer observation windows of 20--30 seconds, where self-attention's quadratic cost becomes prohibitive. MetaFusion\_GRU (MCC 0.783 on noise vs.~0.758 baseline) demonstrates that context-aware architectures incorporating noise metadata can partially disentangle interference.
+Uniform voting across all nine architectures (MCC 0.807) underperforms a single CNN (0.838). Weak classifiers contribute noisy probability estimates that shift the decision boundary. DeepStack (0.859) avoids this through per-class Level2Nets that learn class-specific base model importance. Two findings point toward future work. Mamba's $O(L)$ complexity enables scaling to longer observation windows of 20--30 seconds, where self-attention's quadratic cost becomes prohibitive. MetaFusion\_GRU (MCC 0.783 on noise vs.~0.758 baseline) shows that context-aware architectures can partially disentangle interference.
 
 Limitations include the controlled laboratory environment, fixed 10-second window, MAC address randomisation, and untested device heterogeneity across smartphone models. For deployment, CNN (28K parameters) enables real-time on-device inference at the access point. DeepStackEnsemble (1.2M parameters) targets server-side batch inference where latency permits evaluating all 18 base models.

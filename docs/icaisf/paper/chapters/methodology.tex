@@ -23,15 +23,15 @@ Table~\ref{tab:architectures} lists the 11 evaluated architectures. All models o
             Transformer                         & Attention          & 4-head self-attention, sinusoidal PE                  \\
             MambaClassifier~\cite{gu2026mamba3} & State-space        & $O(L)$ complexity, rank-$R$=16                        \\
             CNN2DRNN                            & Hybrid 2D+RNN      & Conv2d $(3,3)$,$(5,3)$ $\to$ LSTM/GRU + attention     \\
-            MetaFusion                          & Context-aware      & LSTM/GRU + noise/path embeddings (dim~8)              \\
+            MetaFusion                        & Context-aware      & LSTM/GRU fused with learned vector representations (dim~8) of noise flag and concurrent interference path
             Multi-Scale CNN                     & Multi-branch       & Kernels $(3,5,7)$ + residual + attention              \\
-            SoftMoE                             & Mixture of Experts & Heterogeneous experts, top-2 gating                   \\
+            SoftMoE                           & Mixture of Experts & Heterogeneous experts, learned top-2 gating routing inputs to best experts
             Autoformer~\cite{wu2021autoformer}  & Decomposition      & FFT auto-correlation, trend-seasonal blocks           \\
             DeepStackEnsemble                   & Two-stage meta     & 18 bases $\to$ per-class Level2Net $\to$ residual MLP \\\bottomrule
         \end{tabular}}
 \end{table}
 
-The DeepStackEnsemble uses per-class Level2Nets: each is a small MLP that receives concatenated logits from all 18 base models and outputs full 4-class logits. The per-class design is intentional: confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). A residual DeepMetaMLP with skip connection then calibrates the Level2Net outputs.
+The DeepStackEnsemble uses per-class Level2Nets: a small MLP per class receiving concatenated logits from all 18 base models and outputting 4-class logits. Confusion pairs such as AA$\leftrightarrow$BA require different base model weighting than AB$\leftrightarrow$BB. A residual DeepMetaMLP with skip connection then calibrates the outputs.
 
 \subsection{Augmentation and Implementation}
 
