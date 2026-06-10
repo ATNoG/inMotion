@@ -10,7 +10,7 @@ Four engineered channels are extracted from the raw RSSI sequence $r_t$. The raw
 
 \subsection{Proposed Architectures}
 
-Table~\ref{tab:architectures} lists the 11+ evaluated architectures. All models output 4-class logits through a linear classification head.
+Table~\ref{tab:architectures} lists the 11 evaluated architectures. All models output 4-class logits through a linear classification head.
 
 \begin{table}[H]
     \centering
@@ -31,7 +31,7 @@ Table~\ref{tab:architectures} lists the 11+ evaluated architectures. All models 
         \end{tabular}}
 \end{table}
 
-The DeepStackEnsemble uses per-class Level2Nets intentionally. Confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). The residual skip connection preserves calibrated per-class logits while the MetaMLP corrects systematic biases.
+The DeepStackEnsemble uses per-class Level2Nets: each is a small MLP that receives concatenated logits from all 18 base models and outputs full 4-class logits. The per-class design is intentional: confusion pairs such as AA$\leftrightarrow$BA (both near-AP) require different base model weighting than AB$\leftrightarrow$BB (both exterior). A residual DeepMetaMLP with skip connection then calibrates the Level2Net outputs.
 
 \subsection{Augmentation and Implementation}
 
