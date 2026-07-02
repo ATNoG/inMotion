@@ -4,7 +4,7 @@
 
 The dataset simulates public transport in a controlled environment~\cite{ribeiro2026eucnc}. Zone~A represents the vehicle interior with an access point near the door. Zone~B represents the bus stop in an adjacent corridor. The same four devices used in the latest experiment \cite{ribeiro2026eucnc} execute four movement patterns, denoted AA (inside vehicle), BB (at stop), BA (boarding), and AB (alighting). Each device produces 10 RSSI readings at 1~s intervals per observation.
 
-Two scenarios were collected. The pure scenario uses a single device with no interference (160 samples). The noise scenario uses four concurrent devices executing different route combinations (1,200 samples). The combined dataset contains 2,251 labeled samples distributed as AA 578, AB 550, BA 546, and BB 577. The noise-only subset contains 1,196 samples (AA 298, AB 300, BA 298, BB 300).
+Two scenarios were collected. The pure scenario uses a single device with no interference (160 samples). The noise scenario uses four concurrent devices executing different route combinations (1,200 samples). The combined dataset contains 2,253 labeled samples distributed as AA 578, AB 550, BA 546, and BB 577. The noise-only subset contains 1,196 samples (AA 298, AB 300, BA 298, BB 300).
 
 Four engineered channels are extracted from the raw RSSI sequence $r_t$. The raw RSSI $r_t$ provides absolute signal position. Velocity $\Delta_t = r_t - r_{t-1}$ captures movement speed. Acceleration $\Delta^2_t$ captures rate of change. Window deviation $d_t = r_t - \mu_w$, where $\mu_w$ is the per-sample mean, captures trajectory shape independent of absolute RSSI level. These channels yield input tensors of shape $(N, 10, 4)$.
 
@@ -31,7 +31,25 @@ Table~\ref{tab:architectures} lists the 11 evaluated architectures. All models o
         \end{tabular}}
 \end{table}
 
-The DeepStackEnsemble uses per-class Level2Nets: a small MLP per class receiving concatenated logits from all 18 base models and outputting 4-class logits. Confusion pairs such as AA$\leftrightarrow$BA require different base model weighting than AB$\leftrightarrow$BB. A residual DeepMetaMLP with skip connection then calibrates the outputs.
+The DeepStackEnsemble uses per-class Level2Nets: small MLPs receiving concatenated logits from the base models and outputting 4-class logits. Table~\ref{tab:ds_bases} lists the 18 base models (2 configurations per architecture) that feed the ensemble.
+
+\begin{table}
+    \centering
+    \caption{DeepStack Base Models}
+    \label{tab:ds_bases}
+    \begin{tabular}{lll}\toprule
+        Architecture & Config A (light) & Config B (heavy) \\\midrule
+        RNN          & dim=64, L=2, d=0.2       & dim=256, L=4, d=0.3, bidir  \\
+        GRU          & dim=64, L=2, d=0.2       & dim=256, L=3, d=0.3, bidir  \\
+        LSTM         & dim=64, L=2, d=0.2       & dim=256, L=3, d=0.3, bidir  \\
+        CNN          & dim=64, blk=2, k=[3,5]     & dim=256, blk=4, k=[3,5,7,9]  \\
+        TCN          & dim=128, d=3, k=4          & dim=512, d=7, k=8            \\
+        Transformer  & dim=64, H=4, L=2           & dim=256, H=8, L=4            \\
+        BiLSTM       & dim=64, L=2, d=0.2        & dim=256, L=3, d=0.3          \\
+        CNN2DRNN     & Conv2d $\to$ GRU, d=0.2   & Conv2d $\to$ LSTM, d=0.3     \\
+        Mamba        & d\_model=64, L=2           & d\_model=256, L=4            \\\bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Augmentation and Implementation}
 
