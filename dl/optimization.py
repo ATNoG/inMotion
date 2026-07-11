@@ -26,7 +26,17 @@ from .models.tcn import TCNClassifier
 from .models.transformer import TransformerClassifier
 from .training import Trainer
 
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+optuna.logging.set_verbosity(optuna.logging.INFO)
+
+
+def _log_trial_callback(study: optuna.Study, trial: optuna.trial.FrozenTrial) -> None:
+    """Log each HPO trial result after completion."""
+    if trial.state == optuna.trial.TrialState.PRUNED:
+        print(f"  [Trial {trial.number:03d}] PRUNED")
+    elif trial.value is not None:
+        print(f"  [Trial {trial.number:03d}] MCC={trial.value:.4f}")
+    else:
+        print(f"  [Trial {trial.number:03d}] FAILED")
 
 
 def _get_optuna_storage(db_url: str) -> RDBStorage:
@@ -353,7 +363,7 @@ def run_hpo_study(
     study = _make_study()
     for _attempt in range(2):
         try:
-            study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+            study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
             break
         except ValueError as exc:
             if _attempt == 0 and "dynamic value space" in str(exc):
@@ -388,7 +398,7 @@ def run_nas_study(
         storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
-    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
 
     best_trial = study.best_trial
     best_model = build_optuna_model(best_trial, config.in_features, config.num_classes)
@@ -458,7 +468,7 @@ def run_binary_moe_hpo_study(
         storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
-    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=False)
+    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
     return study
 
 
@@ -624,7 +634,7 @@ def run_moe_multiobjective_study(
         load_if_exists=True,
         sampler=sampler,
     )
-    study.optimize(objective, n_trials=n_opt, show_progress_bar=False)
+    study.optimize(objective, n_trials=n_opt, show_progress_bar=True, callbacks=[_log_trial_callback])
 
     # Select best from Pareto front: highest MCC among Pareto-optimal trials
     pareto_trials = study.best_trials
