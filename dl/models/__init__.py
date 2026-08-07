@@ -15,28 +15,21 @@ from .tcn import TCNClassifier
 from .t_jepa import TJEPAModel, TJEPAClassifier
 from .transformer import TransformerClassifier
 from .ts_jepa import TSJEPAModel, TSJEPAClassifier
+from .sigreg_classifier import SIGRegClassifier
 from .mamba3_cnn import Mamba3CNN
 from .mamba3_tcn import Mamba3TCN
 from .mamba3_transformer import Mamba3Transformer
 from .mamba3_multiview import Mamba3MultiView
 
 __all__ = [
-    "RNNClassifier",
-    "GRUClassifier",
-    "LSTMClassifier",
-    "BiLSTMClassifier",
-    "CNNClassifier",
-    "CNN2DRNNClassifier",
-    "MambaClassifier",
-    "MetaFusionClassifier",
-    "AutoformerClassifier",
-    "TSJEPAModel",
-    "TSJEPAClassifier",
-    "Mamba3CNN",
-    "Mamba3TCN",
-    "Mamba3Transformer",
-    "Mamba3MultiView",
-    "VotingEnsemble",
-    "StackingEnsemble",
+    "RNNClassifier", "GRUClassifier", "LSTMClassifier", "BiLSTMClassifier",
+    "CNNClassifier", "CNN2DRNNClassifier", "MambaClassifier",
+    "MetaFusionClassifier", "AutoformerClassifier", "TCNClassifier",
+    "TransformerClassifier",
+    "TJEPAModel", "TJEPAClassifier",
+    "TSJEPAModel", "TSJEPAClassifier",
+    "SIGRegClassifier",
+    "Mamba3CNN", "Mamba3TCN", "Mamba3Transformer", "Mamba3MultiView",
+    "VotingEnsemble", "StackingEnsemble",
     "build_optuna_model",
 ]

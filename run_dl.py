@@ -256,6 +256,27 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
                 dropout=config.dropout,
                 mimo_rank=4,
             )
+        case "T-JEPA":
+            # T-JEPA requires pretraining before classification.
+            # This builds the classifier with a randomly-initialized encoder;
+            # pretraining should be done separately via pretrain_t_jepa.py.
+            from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+            pretrained = TJEPAModel(
+                n_features=10,
+                d_model=config.d_model,
+                nhead=4,
+                num_layers=config.num_layers,
+                dim_feedforward=256,
+                n_reg_tokens=2,
+                pred_dim=64,
+                pred_num_layers=2,
+            )
+            return TJEPAClassifier(
+                pretrained=pretrained,
+                num_classes=config.num_classes,
+                pooling="mean",
+                dropout=config.dropout,
+            )
         case _:
             raise ValueError(f"Unknown model: {name}")
 
