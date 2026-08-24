@@ -28,6 +28,7 @@ dependencies = [
     "torchmetrics>=1.7.0",
     "mamba-ssm==2.3.2.post1",
     "causal-conv1d>=1.4.0",
+    "tabpfn>=8.4.0",
 ]
 
 [build-system]

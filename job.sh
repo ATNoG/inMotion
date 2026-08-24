@@ -1,20 +1,31 @@
 #!/bin/bash
 #SBATCH --partition=gpuPartition
-#SBATCH --cpus-per-task=12
-#SBATCH --job-name=inMotion
-#SBATCH --output=inMotion_%j.out
-#SBATCH --error=inMotion_%j.err
+#SBATCH --nodelist=atari
+#SBATCH --cpus-per-task=1
+#SBATCH --threads-per-core=2
+#SBATCH --job-name=inMotion_dl
+#SBATCH --output=logs/inMotion_dl_%j.out
 #SBATCH --gres=gpu:1
 
 
-# Optional but extremely wise:
-set -euo pipefail
+
+
+export WANDB_ENTITY="andreribeiro87-universidade-de-aveiro"
+export WANDB_API_KEY="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"
+
 
 PYTHONUNBUFFERED=1
 
-uv run python run_classification.py --optimize --seed 5 --suffix-after-seed pure --data dataset_only_pure.csv
-uv run python run_classification.py --optimize --seed 42 --suffix-after-seed pure --data dataset_only_pure.csv
+# uv run python run_dl.py --seed 42 --trials 50 --wandb-project inMotion-dl-simple-2 --models-dir models/dl/simple-2 2>&1
 
-uv run python run_classification.py --optimize --seed 3 --suffix-after-seed noise --data dataset_only_noise.csv
-uv run python run_classification.py --optimize --seed 5 --suffix-after-seed noise --data dataset_only_noise.csv
-uv run python run_classification.py --optimize --seed 42 --suffix-after-seed noise --data dataset_only_noise.csv
+# SIGReg (fastest — ~30s/trial)
+# uv run python run_exotic.py --model sigreg --data dataset_augmented3.csv \
+#     --hpo --hpo-trials 50 --batch-size 256
+
+# # TS-JEPA (~3min/trial)
+# uv run python run_exotic.py --model ts_jepa --data dataset_augmented3.csv \
+#     --hpo --hpo-trials 30 --batch-size 256
+
+# # T-JEPA (~3min/trial)
+uv run python run_exotic.py --model t_jepa --data dataset_augmented3.csv \
+    --hpo --hpo-trials 30 --batch-size 256

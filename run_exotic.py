@@ -62,7 +62,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--rich-features", action="store_true",
                    help="Use spectral + statistical + shape channels (14 instead of 4)")
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--batch-size", type=int, default=512)
+    p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--gpu", type=int, default=0, help="GPU device index")
 
     # Pretraining

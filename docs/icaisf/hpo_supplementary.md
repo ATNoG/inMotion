@@ -19,8 +19,7 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay  | 9e-6                |
 | L1            | 0                   |
 | grad_clip     | 4.36                |
-| Database      | `optuna_dl_9010.db` |
-| Best val MCC  | 0.9030              |
+| Best val MCC  | 0.8435              |
 
 ## HPO TCN
 
@@ -37,7 +36,6 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay | 2.7e-5              |
 | L1           | 4.7e-5              |
 | grad_clip    | 1.94                |
-| Database     | `optuna_dl_5592.db` |
 | Best val MCC | 0.8526              |
 
 ## HPO Mamba
@@ -57,7 +55,6 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay | 0                   |
 | L1           | 5e-5                |
 | grad_clip    | 4.48                |
-| Database     | `optuna_dl_9010.db` |
 | Best val MCC | 0.8506              |
 
 ## HPO CNN
@@ -76,7 +73,6 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay | 3.4e-4              |
 | L1           | 1e-6                |
 | grad_clip    | 2.85                |
-| Database     | `optuna_dl_5592.db` |
 | Best val MCC | 0.8488              |
 
 ## HPO LSTM
@@ -96,7 +92,6 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay  | 0.00116             |
 | L1            | 0                   |
 | grad_clip     | 2.13                |
-| Database      | `optuna_dl_5592.db` |
 | Best val MCC  | 0.8388              |
 
 ## HPO BiLSTM
@@ -114,7 +109,6 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay | 1e-6                |
 | L1           | 0                   |
 | grad_clip    | 1.66                |
-| Database     | `optuna_dl_5592.db` |
 | Best val MCC | 0.8410              |
 
 ## HPO RNN
@@ -133,5 +127,4 @@ Best configurations obtained via Optuna with TPE sampler (50 trials per model, N
 | weight_decay  | 8.0e-5         |
 | L1            | 6.2e-6         |
 | grad_clip     | 2.998          |
-| Database      | `optuna_dl.db` |
 | Best val MCC  | 0.6402         |
