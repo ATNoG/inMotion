@@ -1,0 +1,5 @@
+\section{Conclusion}
+
+This paper evaluated deep learning architectures for RSSI-based passenger movement classification in public transport. The two-stage DeepStackEnsemble achieved MCC 0.859 and accuracy 89.4\% on combined data, a 13.6\% relative improvement over classical baselines. State-space models reached up to MCC 0.850 with $O(L)$ complexity. Cross-route interference degraded performance by 9.4\%, with AB identified as both the dominant interferer and the most affected route. Feature importance analysis showed that DL captures mid-trajectory motion dynamics through derivative channels that classical ML could not exploit, contributing directly to the improvement.
+
+Future work should explore attention mechanisms that down-weight interfered timesteps, multi-AP fusion for spatial diversity, and integration with origin-destination inference for end-to-end flow modeling. Context-aware architectures that jointly model signal and environmental metadata offer a promising direction for real-world deployment.
