@@ -32,22 +32,33 @@ TEST_MACS = [
 ]
 
 
-def _build_sigreg() -> torch.nn.Module:
+def _load_features(data_path: Path, device_invariant: bool) -> tuple[np.ndarray, np.ndarray]:
+    cfg = DLConfig()
+    cfg.data_path = data_path
+    cfg.device_invariant = device_invariant
+    cfg.in_features = 9 if device_invariant else 4
+    dl = DLDataLoader(cfg)
+    X, y = dl.load_and_preprocess()
+    return X.astype(np.float32), y
+
+
+def _build_sigreg(in_features: int = 4) -> torch.nn.Module:
     from dl.models.sigreg_classifier import SIGRegClassifier
     return SIGRegClassifier(
-        in_features=4, num_filters=192, num_blocks=3,
+        in_features=in_features, num_filters=192, num_blocks=3,
         latent_dim=128, num_classes=4, sigreg_lambda=0.01,
     )
 
 
-def _load_features(data_path: Path) -> tuple[np.ndarray, np.ndarray]:
-    cfg = DLConfig()
-    cfg.data_path = data_path
-    cfg.rich_features = False
-    cfg.in_features = 4
-    dl = DLDataLoader(cfg)
-    X, y = dl.load_and_preprocess()
-    return X.astype(np.float32), y
+def _build_mlp(in_features: int = 90) -> torch.nn.Module:
+    """Small MLP for small (3.5k) organic data; SIGReg is overkill here."""
+    import torch.nn as nn
+    return nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(in_features, 128), nn.GELU(), nn.Dropout(0.3),
+        nn.Linear(128, 64), nn.GELU(), nn.Dropout(0.3),
+        nn.Linear(64, 4),
+    )
 
 
 def main() -> None:
@@ -56,15 +67,17 @@ def main() -> None:
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--device-invariant", action="store_true", help="Use device-invariant features")
+    p.add_argument("--mlp", action="store_true", help="Use small MLP instead of SIGReg")
     args = p.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     df = pd.read_csv(args.data)
-    X, y = _load_features(args.data)
+    X, y = _load_features(args.data, args.device_invariant)
 
     mac = df["mac"].values
     label = df["label"].values
-    synthetic = df["synthetic"].values
+    synthetic = df["synthetic"].values if "synthetic" in df.columns else np.zeros(len(df), dtype=bool)
 
     test_mask = np.isin(mac, TEST_MACS)
     train_mask = ~test_mask
@@ -96,7 +109,10 @@ def main() -> None:
     val_loader = loader(X_va, y_va, shuffle=False)
     test_loader = loader(X_te, y_te, shuffle=False)
 
-    model = _build_sigreg().to(device)
+    model = _build_sigreg(in_features=X.shape[-1]) if not args.mlp else _build_mlp(
+        in_features=X.shape[-1] * X.shape[1]
+    )
+    model = model.to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
 
@@ -110,8 +126,13 @@ def main() -> None:
         model.train()
         for xb, yb in train_loader:
             xb, yb = xb.to(device), yb.to(device)
-            logits, latents = model(xb)
-            loss, _ = model.compute_loss(logits, latents, yb)
+            out = model(xb)
+            if isinstance(out, tuple):
+                logits, latents = out
+                loss, _ = model.compute_loss(logits, latents, yb)
+            else:
+                logits = out
+                loss = torch.nn.functional.cross_entropy(logits, yb)
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -122,7 +143,8 @@ def main() -> None:
         vp, vt = [], []
         with torch.no_grad():
             for xb, yb in val_loader:
-                logits, _ = model(xb.to(device))
+                out = model(xb.to(device))
+                logits = out[0] if isinstance(out, tuple) else out
                 vp.extend(logits.argmax(1).cpu().tolist())
                 vt.extend(yb.tolist())
         val_mcc = float(matthews_corrcoef(vt, vp))
@@ -142,7 +164,8 @@ def main() -> None:
     tp, tt = [], []
     with torch.no_grad():
         for xb, yb in test_loader:
-            logits, _ = model(xb.to(device))
+            out = model(xb.to(device))
+            logits = out[0] if isinstance(out, tuple) else out
             tp.extend(logits.argmax(1).cpu().tolist())
             tt.extend(yb.tolist())
 

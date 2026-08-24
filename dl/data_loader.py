@@ -99,6 +99,46 @@ def _expand_features_rich(X_seq: np.ndarray) -> np.ndarray:
     return np.concatenate([feats_t, stft_feats], axis=-1)  # (N, T, 18)
 
 
+def _expand_features_device_invariant(X_seq: np.ndarray) -> np.ndarray:
+    """Expand (N, T, 1) → (N, T, C) with device-invariant shape features.
+
+    Absolute RSSI level encodes *which device* produced the reading, not the
+    interference pattern. Standardize each sequence independently, then emit
+    only shape information (normalized deviation, slope, curvature, and spectral
+    shape) so the model cannot rely on per-device level.
+    """
+    raw = X_seq[:, :, 0].astype(np.float32)  # (N, T)
+    N, T = raw.shape
+    eps = 1e-8
+
+    # Per-sequence z-score: removes device-dependent mean and gain.
+    mu = raw.mean(axis=1, keepdims=True)
+    std = raw.std(axis=1, keepdims=True) + eps
+    z = (raw - mu) / std  # (N, T)
+
+    zeros_col = np.zeros((N, 1), dtype=np.float32)
+    dz = np.concatenate([zeros_col, np.diff(z, axis=1)], axis=1)   # slope
+    d2z = np.concatenate([zeros_col, np.diff(dz, axis=1)], axis=1)  # curvature
+
+    # Spectral shape: log-power spectrum of the standardized signal.
+    framed = z * np.hanning(T).astype(np.float32)[None, :]
+    spec = np.abs(np.fft.rfft(framed, axis=1))  # (N, T//2 + 1)
+    spec_norm = spec / (spec.sum(axis=1, keepdims=True) + eps)  # shape, level-free
+
+    # Roll the (T//2+1)-dim spectral shape into a fixed 6-dim summary.
+    n_bins = spec.shape[1]
+    edges = np.linspace(0, n_bins, 7, dtype=np.int64)
+    spec_bands = np.stack(
+        [spec_norm[:, e0:e1].sum(axis=1) for e0, e1 in zip(edges[:-1], edges[1:])],
+        axis=1,
+    )  # (N, 6)
+    spec_bands = np.repeat(spec_bands[:, None, :], T, axis=1)  # (N, T, 6)
+
+    feats = [z, dz, d2z]
+    feats_t = np.stack(feats, axis=-1)  # (N, T, 3)
+    return np.concatenate([feats_t, spec_bands], axis=-1)  # (N, T, 9)
+
+
 # Canonical noise-path label → index mapping (unknown / not-applicable → 4)
 _NOISE_PATH_LABELS: dict[str, int] = {"AA": 0, "AB": 1, "BA": 2, "BB": 3}
 
@@ -158,11 +198,12 @@ class DLDataLoader:
 
         # Always reshape to (N, seq_len, 1) raw, then expand to (N, seq_len, C)
         X_seq_raw = X_scaled.reshape(-1, self.config.seq_len, 1)
-        X_seq = (
-            _expand_features_rich(X_seq_raw)
-            if getattr(self.config, "rich_features", False)
-            else _expand_features(X_seq_raw)
-        )
+        if getattr(self.config, "device_invariant", False):
+            X_seq = _expand_features_device_invariant(X_seq_raw)
+        elif getattr(self.config, "rich_features", False):
+            X_seq = _expand_features_rich(X_seq_raw)
+        else:
+            X_seq = _expand_features(X_seq_raw)
         return X_seq, y
 
     def load_and_preprocess_with_meta(

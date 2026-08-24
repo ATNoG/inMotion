@@ -19,6 +19,7 @@ class DLConfig:
 
     # Feature engineering
     rich_features: bool = False  # True → spectral + statistical + shape channels
+    device_invariant: bool = False  # True → per-sequence standardization, shape-only
 
     # Reproducibility
     seed: int = 42
