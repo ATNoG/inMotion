@@ -135,8 +135,8 @@ class LeJEPAModel(nn.Module):
         self.seq_len = seq_len
         self.sigreg_lambda = sigreg_lambda
 
-        from dl.sigreg import LeJEPASIGReg
-        self.sigreg = LeJEPASIGReg()
+        from dl.sigreg import make_sigreg
+        self.sigreg = make_sigreg()
 
         self.encoder = LeJEPAEncoder(
             seq_len, in_channels, d_model, nhead,

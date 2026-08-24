@@ -234,3 +234,5 @@ inMotion**
 plots/
 results/
 .astro/
+# Model backups (large binaries — not tracked)
+backup/

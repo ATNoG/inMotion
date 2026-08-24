@@ -294,8 +294,8 @@ class TSJEPAModel(nn.Module):
         self.sigreg_lambda = sigreg_lambda
 
         if sigreg_lambda > 0:
-            from dl.sigreg import LeJEPASIGReg
-            self.sigreg = LeJEPASIGReg()
+            from dl.sigreg import make_sigreg
+            self.sigreg = make_sigreg()
 
         # Context encoder
         self.context_encoder = TSJEPAEncoder(

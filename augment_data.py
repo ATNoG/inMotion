@@ -127,4 +127,17 @@ def augment(
 
 
 if __name__ == "__main__":
-    augment()
+    import argparse
+    ap = argparse.ArgumentParser(description="RSSI data augmentation")
+    ap.add_argument("input", nargs="?", default="dataset.csv",
+                    help="input CSV (default: dataset.csv)")
+    ap.add_argument("output", nargs="?", default=None,
+                    help="output CSV (default: <input-stem>_augmented.csv)")
+    args = ap.parse_args()
+    out = args.output or str(
+        __import__("pathlib").Path(args.input).with_name(
+            __import__("pathlib").Path(args.input).stem + "_augmented.csv"
+        )
+    )
+    print(f"Input : {args.input}\nOutput: {out}")
+    augment(args.input, out)

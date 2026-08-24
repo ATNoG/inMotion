@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Exotic model pipeline")
     p.add_argument("--model", type=str, default="t_jepa",
-                   choices=["t_jepa", "ts_jepa", "lejepa", "sigreg",
+                   choices=["t_jepa", "ts_jepa", "lejepa", "cf_jepa", "sigreg",
                             "mamba3_cnn", "mamba3_tcn", "mamba3_transformer",
                             "mamba3_multiview"],
                    help="Model type")
@@ -71,8 +71,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pretrain-wd", type=float, default=1e-4)
     p.add_argument("--probe-cadence", type=int, default=10,
                    help="Pretrain: evaluate linear probe every N epochs")
-    p.add_argument("--probe-patience", type=int, default=5,
-                   help="Pretrain: early-stop after N probe evals without improvement")
+    p.add_argument("--probe-patience", type=int, default=15,
+                   help="Pretrain: early-stop after N probe evals without probe-MCC "
+                        "improvement (15 = 150 epochs of patience at cadence 10)")
 
     # Fine-tuning / Direct supervised
     p.add_argument("--finetune-epochs", type=int, default=50)
@@ -104,7 +105,23 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--jepa-sigreg", type=float, default=0.05,
                    help="T-JEPA pretrain: SIGReg anti-collapse weight on context latents "
                         "(0=off; ~0.05-0.1 prevents latent collapse)")
+    p.add_argument("--sigreg-mode", type=str, default="sigreg",
+                   choices=["sigreg", "rdm"],
+                   help="Anti-collapse regularizer: 'sigreg' (Gaussian) or "
+                        "'rdm' (Rectified Distribution Matching, sparse non-negative)")
+    p.add_argument("--rdm-p", type=float, default=1.5,
+                   help="RDMReg RGG shape parameter (p<2 → sparser than Gaussian)")
     p.add_argument("--pooling", type=str, default="mean")
+
+    # CF-JEPA specific
+    p.add_argument("--cf-horizon-start", type=int, default=1,
+                   help="CF-JEPA: initial prediction horizon (anneals to --cf-horizon-end)")
+    p.add_argument("--cf-horizon-end", type=int, default=3,
+                   help="CF-JEPA: final prediction horizon")
+    p.add_argument("--cf-ctx-min", type=int, default=1,
+                   help="CF-JEPA: min context crop length (patches)")
+    p.add_argument("--cf-ctx-max", type=int, default=3,
+                   help="CF-JEPA: max context crop length (patches)")
 
     # SIGReg specific
     p.add_argument("--latent-dim", type=int, default=128,
@@ -115,6 +132,10 @@ def parse_args() -> argparse.Namespace:
     # HPO
     p.add_argument("--hpo", action="store_true")
     p.add_argument("--hpo-trials", type=int, default=30)
+    p.add_argument("--hpo-objective", type=str, default="mcc",
+                   choices=["mcc", "efficiency", "pareto"],
+                   help="HPO objective: 'mcc' (maximize MCC), 'efficiency' "
+                        "(maximize MCC per M params), 'pareto' (NSGA-II MCC×size frontier)")
 
     # Paths
     p.add_argument("--models-dir", type=Path, default=Path("models/exotic"))
@@ -123,7 +144,7 @@ def parse_args() -> argparse.Namespace:
 
     # WandB
     p.add_argument("--no-wandb", action="store_true")
-    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-2")
+    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-hpo")
     return p.parse_args()
 
 
@@ -272,6 +293,23 @@ def _build_lejepa(args: argparse.Namespace) -> nn.Module:
     )
 
 
+def _build_cf_jepa(args: argparse.Namespace) -> nn.Module:
+    from dl.models.cf_jepa import CFJEPAModel
+    in_channels = 18 if args.rich_features else 4
+    return CFJEPAModel(
+        seq_len=10, patch_size=2, in_channels=in_channels,
+        embed_dim=args.d_model, nhead=args.nhead,
+        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
+        pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
+        horizon_start=getattr(args, "cf_horizon_start", 1),
+        horizon_end=getattr(args, "cf_horizon_end", 3),
+        ctx_min=getattr(args, "cf_ctx_min", 1),
+        ctx_max=getattr(args, "cf_ctx_max", 3),
+        ema_start=args.ema_start, ema_end=args.ema_end,
+        sigreg_lambda=args.jepa_sigreg,
+    )
+
+
 def _build_sigreg(args: argparse.Namespace) -> nn.Module:
     from dl.models.sigreg_classifier import SIGRegClassifier
     return SIGRegClassifier(
@@ -303,6 +341,7 @@ MODEL_BUILDERS: dict[str, callable] = {
     "t_jepa": _build_t_jepa,
     "ts_jepa": _build_ts_jepa,
     "lejepa": _build_lejepa,
+    "cf_jepa": _build_cf_jepa,
     "sigreg": _build_sigreg,
     "mamba3_cnn": lambda a: _build_mamba3("cnn", a),
     "mamba3_tcn": lambda a: _build_mamba3("tcn", a),
@@ -318,10 +357,13 @@ MODEL_BUILDERS: dict[str, callable] = {
 def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.device) -> float:
     """Compute pretrain val loss ONLY at supervised (target) positions.
 
-    Handles both model interfaces:
+    Handles model interfaces:
       - T-JEPA:  forward → (tgt (B,total,D), preds LIST, ctx_mask, tgt_masks list, ctx_latents)
       - TS-JEPA: forward → (tgt_masked (B,M,D), preds TENSOR (B,M,D), mask_idx, non_mask_idx)
+      - CF-JEPA: forward → (targets, predictions, ctx_latents, horizon_mask)
+      - LeJEPA:  forward → (z, z_hat)
     """
+    is_cf = hasattr(model, "horizon_start") or type(model).__name__.startswith("CFJEPA")
     model.eval()
     val_sum, val_n = 0.0, 0
     with torch.no_grad():
@@ -329,7 +371,15 @@ def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.dev
             x = batch[0].to(device)
             out = model.forward(x)
             tgt, preds = out[0], out[1]
-            if getattr(model, "sigreg", None) is not None and not hasattr(model, "context_encoder"):
+            if is_cf:
+                # CF-JEPA: (targets, predictions, ctx_latents, horizon_mask)
+                horizon_mask = out[3]
+                p = torch.nn.functional.normalize(preds, dim=-1)
+                tgt_n = torch.nn.functional.normalize(tgt, dim=-1)
+                diff = (p - tgt_n).abs().mean(dim=-1)  # (B, num_future)
+                val_sum += (diff * horizon_mask).sum().item()
+                val_n += max(horizon_mask.sum().item(), 1)
+            elif getattr(model, "sigreg", None) is not None and not hasattr(model, "context_encoder"):
                 # LeJEPA: (z, z_hat) — next-step prediction MSE
                 z, z_hat = tgt, preds
                 val_sum += torch.nn.functional.mse_loss(z_hat[:, :-1], z[:, 1:]).item() * x.size(0)
@@ -455,6 +505,7 @@ def pretrain_jepa(
     best_probe = -1.0
     best_val_loss = float("inf")
     val_patience_counter = 0
+    probe_patience_counter = 0
 
     print(f"Pretraining {args.pretrain_epochs} epochs ({args.model})...")
     t0 = time.time()
@@ -537,16 +588,26 @@ def pretrain_jepa(
             print(f"  epoch {epoch + 1:3d}/{args.pretrain_epochs} | "
                   f"train={train_loss:.4f} | val={val_loss:.4f} | ema={ema:.4f}{probe_str}")
 
-        # ── Early stopping (on val loss, not probe) ──
+        # ── Early stopping (on PROBE MCC — the representation-health metric) ──
+        # Val loss plateaus quickly for JEPA models while the probe MCC keeps
+        # climbing; early-stopping on val loss kills pretraining prematurely.
+        probe_patience = getattr(args, "probe_patience", 5)
+        if probe_mcc is not None:
+            if probe_mcc > best_probe + 1e-4:
+                best_probe = probe_mcc
+                probe_patience_counter = 0
+            else:
+                probe_patience_counter += 1
+                if probe_patience_counter >= probe_patience and epoch > 50:
+                    print(f"  Early stopping at epoch {epoch + 1} "
+                          f"(probe MCC not improving, best={best_probe:.4f})")
+                    break
+        # Keep the val-loss tracking for logging/checkpoint (best ckpt is by probe)
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             val_patience_counter = 0
         else:
             val_patience_counter += 1
-            if val_patience_counter >= args.patience:
-                print(f"  Early stopping at epoch {epoch + 1} "
-                      f"(val loss not improving, best={best_val_loss:.4f})")
-                break
 
     elapsed = time.time() - t0
     print(f"Pretraining done in {elapsed:.0f}s. Best probe MCC: {best_probe:.4f}")
@@ -588,6 +649,11 @@ def finetune_jepa(
     elif args.model == "lejepa":
         from dl.models.lejepa import LeJEPAClassifier
         clf = LeJEPAClassifier(
+            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+        )
+    elif args.model == "cf_jepa":
+        from dl.models.cf_jepa import CFJEPAClassifier
+        clf = CFJEPAClassifier(
             pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
         )
     else:
@@ -718,6 +784,42 @@ def _efficiency(mcc: float, n_params: int) -> float:
     return (mcc * 1000.0) / max(n_params / 1e6, 0.001)
 
 
+def _hpo_objective_value(mcc: float, n_params: int, objective: str) -> float:
+    """Map a trial's (MCC, params) to the scalar the study maximizes.
+
+    objective == "mcc"        → maximize MCC only (legacy behaviour)
+    objective == "efficiency" → maximize MCC per million params (single scalar)
+    objective == "pareto"     → handled separately via NSGA-II (2 objectives)
+    """
+    if objective == "efficiency":
+        return _efficiency(mcc, n_params)
+    return mcc
+
+
+def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
+    """Create a single-objective study, or a NSGA-II Pareto study."""
+    import optuna
+
+    from dl.optimization import _get_optuna_storage
+    storage = _get_optuna_storage("sqlite:///optuna_exotic.db")
+    if objective == "pareto":
+        return optuna.create_study(
+            directions=["maximize", "minimize"],
+            study_name=study_name,
+            storage=storage,
+            load_if_exists=True,
+            sampler=optuna.samplers.NSGAIISampler(seed=42),
+            pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
+        )
+    return optuna.create_study(
+        direction="maximize",
+        study_name=study_name,
+        storage=storage,
+        load_if_exists=True,
+        pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
+    )
+
+
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
@@ -739,7 +841,7 @@ def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
     print(f"  Train: {len(Xt)} samples, Val: {len(Xv)} samples")
     print(f"{'='*60}")
 
-    if args.model in ("t_jepa", "ts_jepa"):
+    if args.model in ("t_jepa", "ts_jepa", "lejepa", "cf_jepa"):
         _hpo_jepa(args, device, Xt, yt, Xv, yv)
     elif args.model.startswith("mamba3"):
         _hpo_mamba3(args, device, Xt, yt, Xv, yv)
@@ -784,6 +886,8 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
     from torch.utils.data import DataLoader, TensorDataset
 
     is_ts = args.model == "ts_jepa"
+    is_le = args.model == "lejepa"
+    is_cf = args.model == "cf_jepa"
     pt_epochs = 50
     ft_epochs = 20
 
@@ -809,13 +913,26 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                             embed_dim=d_model, nhead=nhead, num_layers=num_layers,
                             dim_feedforward=dim_ff, pred_dim=pred_dim,
                             pred_num_layers=pred_layers, ema_start=ema_start).to(device)
+        elif is_le:
+            from dl.models.lejepa import LeJEPAModel, LeJEPAClassifier
+            m = LeJEPAModel(seq_len=10, in_channels=4, d_model=d_model, nhead=nhead,
+                            num_layers=num_layers, dim_feedforward=dim_ff,
+                            pred_num_layers=pred_layers,
+                            sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
+        elif is_cf:
+            from dl.models.cf_jepa import CFJEPAModel, CFJEPAClassifier
+            m = CFJEPAModel(seq_len=10, patch_size=2, in_channels=4,
+                            embed_dim=d_model, nhead=nhead, num_layers=num_layers,
+                            dim_feedforward=dim_ff, pred_dim=pred_dim,
+                            pred_num_layers=pred_layers, ema_start=ema_start,
+                            sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
         else:
             from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
             m = TJEPAModel(n_timesteps=10, n_channels=4, d_model=d_model, nhead=nhead,
                            num_layers=num_layers, dim_feedforward=dim_ff, pred_dim=pred_dim,
                            pred_num_layers=pred_layers, ema_start=ema_start).to(device)
 
-        n_params = _count_params(m) + _count_params(m.context_encoder)
+        n_params = _count_params(m) + _count_params(m.context_encoder if hasattr(m, "context_encoder") else m.encoder)
 
         # ── WandB: start trial run ────────────────────────────────────
         run = _trial_wandb_start(trial, args, {"n_params": n_params,
@@ -828,7 +945,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         ptds = TensorDataset(torch.tensor(Xp, dtype=torch.float32))
         ptl = DataLoader(ptds, batch_size=args.batch_size, shuffle=True)
 
-        params_list = list(m.context_encoder.parameters()) + list(m.predictor.parameters())
+        params_list = list((m.context_encoder if hasattr(m, "context_encoder") else m.encoder).parameters()) + list(m.predictor.parameters())
         opt = torch.optim.AdamW(params_list, lr=pt_lr)
         for ep in range(pt_epochs):
             m.train()
@@ -837,17 +954,24 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 loss, _ = m.pretrain_step(xb.to(device), ep, pt_epochs)
                 opt.zero_grad(); loss.backward()
                 torch.nn.utils.clip_grad_norm_(params_list, 1.0); opt.step()
-                m._update_target_encoder()
+                if hasattr(m, "_update_target_encoder"):
+                    m._update_target_encoder()
                 pt_loss_sum += loss.item(); pt_n += 1
             avg_pt_loss = pt_loss_sum / max(pt_n, 1)
             if run is not None:
                 import wandb
                 wandb.log({"pretrain/epoch": ep, "pretrain/loss": avg_pt_loss,
-                            "pretrain/ema": m.ema_momentum})
+                            "pretrain/ema": getattr(m, "ema_momentum", 0.0)})
 
         # ── Fine-tune (stage 1: head only, stage 2: full) ────────────
         if is_ts:
             clf = TSJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
+        elif is_le:
+            from dl.models.lejepa import LeJEPAClassifier
+            clf = LeJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
+        elif is_cf:
+            from dl.models.cf_jepa import CFJEPAClassifier
+            clf = CFJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         else:
             clf = TJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
 
@@ -907,18 +1031,23 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             "trial_efficiency": eff,
         }
         _trial_wandb_finish(run, final_metrics)
-        return best_mcc
+        obj = getattr(args, "hpo_objective", "mcc")
+        if obj == "pareto":
+            return best_mcc, float(n_params)
+        return _hpo_objective_value(best_mcc, n_params, obj)
 
-    from dl.optimization import _get_optuna_storage, _log_trial_callback
-    study = optuna.create_study(
-        direction="maximize", study_name=f"exotic_{args.model}",
-        storage=_get_optuna_storage("sqlite:///optuna_exotic.db"), load_if_exists=True,
-        pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
-    )
+    from dl.optimization import _log_trial_callback
+    obj = getattr(args, "hpo_objective", "mcc")
+    study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
     study.optimize(objective, n_trials=args.hpo_trials, show_progress_bar=True,
                    callbacks=[_log_trial_callback])
 
-    _apply_best_jepa_params(args, study)
+    if obj == "pareto":
+        print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
+        for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+    else:
+        _apply_best_jepa_params(args, study)
 
 
 def _apply_best_jepa_params(args, study) -> None:
@@ -987,19 +1116,25 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
         eff = _efficiency(best_mcc, n_params)
         _trial_wandb_finish(run, {"trial_mcc": best_mcc, "trial_n_params": n_params,
                                    "trial_params_M": n_params / 1e6, "trial_efficiency": eff})
-        return best_mcc
+        obj = getattr(args, "hpo_objective", "mcc")
+        if obj == "pareto":
+            return best_mcc, float(n_params)
+        return _hpo_objective_value(best_mcc, n_params, obj)
 
-    from dl.optimization import _get_optuna_storage
-    study = optuna.create_study(direction="maximize", study_name=f"exotic_{args.model}",
-                                storage=_get_optuna_storage("sqlite:///optuna_exotic.db"),
-                                load_if_exists=True)
+    obj = getattr(args, "hpo_objective", "mcc")
+    study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
     study.optimize(objective, n_trials=args.hpo_trials, show_progress_bar=True)
-    bp = study.best_params
-    print(f"\n  Best trial MCC: {study.best_value:.4f}")
-    print(f"  Params: {bp}")
-    for k, v in bp.items():
-        if hasattr(args, k):
-            setattr(args, k, v)
+    if obj == "pareto":
+        print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
+        for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+    else:
+        bp = study.best_params
+        print(f"\n  Best trial MCC: {study.best_value:.4f}")
+        print(f"  Params: {bp}")
+        for k, v in bp.items():
+            if hasattr(args, k):
+                setattr(args, k, v)
 
 
 # ── Mamba-3 HPO ───────────────────────────────────────────────────────────────
@@ -1041,21 +1176,27 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
         eff = _efficiency(mcc, n_params)
         _trial_wandb_finish(run, {"trial_mcc": mcc, "trial_n_params": n_params,
                                    "trial_params_M": n_params / 1e6, "trial_efficiency": eff})
-        return mcc
+        obj = getattr(args, "hpo_objective", "mcc")
+        if obj == "pareto":
+            return mcc, float(n_params)
+        return _hpo_objective_value(mcc, n_params, obj)
 
-    from dl.optimization import _get_optuna_storage, _log_trial_callback
-    study = optuna.create_study(direction="maximize", study_name=f"exotic_{args.model}",
-                                storage=_get_optuna_storage("sqlite:///optuna_exotic.db"),
-                                load_if_exists=True,
-                                pruner=optuna.pruners.MedianPruner(n_warmup_steps=3))
+    from dl.optimization import _log_trial_callback
+    obj = getattr(args, "hpo_objective", "mcc")
+    study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
     study.optimize(objective, n_trials=args.hpo_trials, show_progress_bar=True,
                    callbacks=[_log_trial_callback])
-    bp = study.best_params
-    print(f"\n  Best trial MCC: {study.best_value:.4f}")
-    print(f"  Params: {bp}")
-    for k, v in bp.items():
-        if hasattr(args, k):
-            setattr(args, k, v)
+    if obj == "pareto":
+        print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
+        for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+    else:
+        bp = study.best_params
+        print(f"\n  Best trial MCC: {study.best_value:.4f}")
+        print(f"  Params: {bp}")
+        for k, v in bp.items():
+            if hasattr(args, k):
+                setattr(args, k, v)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1065,6 +1206,13 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
 def main() -> None:
     args = parse_args()
     set_seed(args.seed)
+
+    # Anti-collapse regularizer mode (SigReg vs RDMReg)
+    if args.sigreg_mode == "rdm":
+        from dl.sigreg import set_default_sigreg_mode
+        set_default_sigreg_mode("rdm", p=args.rdm_p)
+        print(f"Using RDMReg (p={args.rdm_p}) for anti-collapse regularization")
+
     device = resolve_device(args.gpu)
     args.models_dir.mkdir(parents=True, exist_ok=True)
     args.results_dir.mkdir(parents=True, exist_ok=True)
@@ -1096,7 +1244,7 @@ def main() -> None:
     pretrained_model: nn.Module | None = None
     viz = None
 
-    is_jepa = args.model in ("t_jepa", "ts_jepa", "lejepa")
+    is_jepa = args.model in ("t_jepa", "ts_jepa", "lejepa", "cf_jepa")
 
     if is_jepa and not args.finetune_only and args.checkpoint is None:
         print(f"\n{'=' * 60}")

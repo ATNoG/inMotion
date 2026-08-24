@@ -30,11 +30,19 @@ optuna.logging.set_verbosity(optuna.logging.INFO)
 
 
 def _log_trial_callback(study: optuna.Study, trial: optuna.trial.FrozenTrial) -> None:
-    """Log each HPO trial result after completion."""
+    """Log each HPO trial result after completion.
+
+    Handles both single-objective (trial.value) and multi-objective
+    (trial.values, e.g. NSGA-II Pareto) studies.
+    """
     if trial.state == optuna.trial.TrialState.PRUNED:
         print(f"  [Trial {trial.number:03d}] PRUNED")
+    elif trial.values is not None and len(trial.values) > 1:
+        # Multi-objective: values = [maximize MCC, minimize params]
+        mcc, n_params = trial.values[0], trial.values[1]
+        print(f"  [Trial {trial.number:03d}] MCC={mcc:.4f} params={n_params/1e6:.2f}M")
     elif trial.value is not None:
-        print(f"  [Trial {trial.number:03d}] MCC={trial.value:.4f}")
+        print(f"  [Trial {trial.number:03d}] value={trial.value:.4f}")
     else:
         print(f"  [Trial {trial.number:03d}] FAILED")
 

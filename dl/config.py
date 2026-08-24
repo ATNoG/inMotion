@@ -62,7 +62,7 @@ class DLConfig:
     optuna_study_prefix: str = "inMotion_dl_v3"
 
     # WandB
-    wandb_project: str = "inMotion-dl-3"
+    wandb_project: str = "inMotion_dl_for_ensemble"
     wandb_entity: str | None = None
     use_wandb: bool = True
 

@@ -29,22 +29,35 @@ import torch.nn.functional as F
 from torch import Tensor, nn
 
 # ── Official Mamba-3 availability ─────────────────────────────────────────────
-try:
-    from mamba_ssm.modules.mamba3 import Mamba3 as _Mamba3  # type: ignore[import-untyped]
+# Importing mamba_ssm can hang for minutes (its __init__ triggers CUDA
+# extension builds / Triton JIT in subprocesses). Set
+# MAMBA_SSM_AVAILABLE=0 to force the pure-PyTorch fallback, or rely on the
+# 5s thread timeout below.
+import os as _os
 
-    _MAMBA3_AVAILABLE = True
-    # MIMO requires optional TileLang fused kernels (separate install)
-    try:
-        from mamba_ssm.ops.tilelang.mamba3.mamba3_mimo import (  # type: ignore[import-untyped]
-            mamba3_mimo as _mimo_fn,
-        )
-
-        _MIMO_KERNEL_AVAILABLE = _mimo_fn is not None
-    except ImportError:
-        _MIMO_KERNEL_AVAILABLE = False
-except ImportError:
+if _os.environ.get("MAMBA_SSM_AVAILABLE", "1") == "0":
     _MAMBA3_AVAILABLE = False
     _MIMO_KERNEL_AVAILABLE = False
+    _mimo_fn = None
+else:
+    try:
+        import concurrent.futures
+
+        def _load_mamba3() -> None:
+            from mamba_ssm.modules.mamba3 import Mamba3 as _M3  # type: ignore[import-untyped]
+            globals()["_Mamba3"] = _M3
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
+            _fut = _ex.submit(_load_mamba3)
+            _fut.result(timeout=5)  # give up after 5s → fallback
+
+        _MAMBA3_AVAILABLE = True
+        _MIMO_KERNEL_AVAILABLE = False
+        _mimo_fn = None
+    except Exception:
+        _MAMBA3_AVAILABLE = False
+        _MIMO_KERNEL_AVAILABLE = False
+        _mimo_fn = None
 
 
 # ── Pure-PyTorch MIMO selective-SSM ──────────────────────────────────────────
