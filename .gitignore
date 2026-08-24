@@ -236,3 +236,9 @@ results/
 .astro/
 # Model backups (large binaries — not tracked)
 backup/
+
+.commandcode
+
+# Experiment checkpoints under date-prefixed run dirs (large binaries)
+20-aug/models/
+

@@ -152,7 +152,7 @@ def parse_args() -> argparse.Namespace:
 
     # WandB
     p.add_argument("--no-wandb", action="store_true")
-    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-full-after-hpo")
+    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-hpo")
     return p.parse_args()
 
 

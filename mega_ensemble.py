@@ -465,8 +465,13 @@ def main() -> None:
     p.add_argument("--steps", type=int, default=100)
     p.add_argument("--no-tabpfn", action="store_true")
     p.add_argument("--no-classical", action="store_true")
-    p.add_argument("--jepa-only", action="store_true",
-                   help="Use only the strong JEPA members (sigreg, ts_jepa, t_jepa)")
+    p.add_argument("--members", type=str, default="all",
+                   choices=["all", "world", "world_bestdl", "best_world", "best_world_bestdl"],
+                   help="Which member subset to run: all, world (JEPA+sigreg), "
+                        "world_bestdl (world + best DL), best_world (top-3 world by test MCC), "
+                        "best_world_bestdl (top-3 world + top DL)")
+    p.add_argument("--select", action="store_true",
+                   help="Greedy member selection on validation MCC (config 6: smart selection)")
     p.add_argument("--size-frontier", action="store_true",
                    help="Greedy ensemble-level size/MCC frontier: at each step add "
                         "the member with best MCC-per-added-param; writes "
@@ -521,9 +526,25 @@ def main() -> None:
     val_probs, test_probs, names = [], [], []
     member_params: list[float] = []   # millions of parameters per member
     print("\n=== DL members (test MCC) ===")
-    if args.jepa_only:
-        dl_specs = [s for s in dl_specs if s["name"] in ("sigreg", "ts_jepa", "t_jepa")]
-        print("  (jepa-only mode)")
+
+    # ── Member subset selection ─────────────────────────────────────────────
+    world_names = {"lejepa", "t_jepa", "ts_jepa", "cf_jepa", "sigreg",
+                   "sigreg_s3", "sigreg_s5"}
+    best_world = ["sigreg", "lejepa", "ts_jepa"]      # top-3 world by test MCC
+    best_dl = ["deepstack", "mamba3_tcn"]             # top-2 DL by test MCC
+    if args.members == "world":
+        dl_specs = [s for s in dl_specs if s["name"] in world_names]
+        print(f"  (world-only mode: {len(dl_specs)} members)")
+    elif args.members == "world_bestdl":
+        dl_specs = [s for s in dl_specs if s["name"] in world_names or s["name"] in best_dl]
+        print(f"  (world + best-DL mode: {len(dl_specs)} members)")
+    elif args.members == "best_world":
+        dl_specs = [s for s in dl_specs if s["name"] in best_world]
+        print(f"  (best-world mode: {best_world})")
+    elif args.members == "best_world_bestdl":
+        dl_specs = [s for s in dl_specs if s["name"] in best_world or s["name"] in best_dl]
+        print(f"  (best-world + best-DL mode: {best_world + best_dl})")
+
     for spec in dl_specs:
         model = _load_checkpoint(spec, device)
         if model is None:
@@ -537,6 +558,46 @@ def main() -> None:
         val_probs.append(vp)
         test_probs.append(tp)
         names.append(spec["name"])
+
+    # ── Config 6: greedy smart member selection on validation MCC ───────────
+    if args.select and len(names) > 2:
+        print("\n=== Greedy smart selection (config 6) ===")
+        n = len(names)
+        chosen: list[int] = []
+        sel_rows = []
+        for step in range(n):
+            best_i, best_vm = -1, -1e9
+            for i in range(n):
+                if i in chosen:
+                    continue
+                cand = chosen + [i]
+                w = np.zeros(n)
+                for j in cand:
+                    w[j] = 1.0 / len(cand)
+                ens = sum(w[j] * val_probs[j] for j in cand)
+                vm = float(matthews_corrcoef(y_val, ens.argmax(1)))
+                if vm > best_vm:
+                    best_i, best_vm = i, vm
+            if best_i < 0:
+                break
+            chosen.append(best_i)
+            # evaluate on TEST (report-only; selection used val)
+            w = np.zeros(n)
+            for j in chosen:
+                w[j] = 1.0 / len(chosen)
+            ens_t = sum(w[j] * test_probs[j] for j in chosen)
+            tm = float(matthews_corrcoef(y_test, ens_t.argmax(1)))
+            sel_rows.append({
+                "step": len(chosen), "members": "+".join(names[j] for j in chosen),
+                "val_mcc": round(best_vm, 4), "test_mcc": round(tm, 4),
+            })
+            print(f"  +{names[best_i]:<12} val={best_vm:.4f} test={tm:.4f}")
+        import csv as _csv
+        with open("results/smart_selection.csv", "w", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=list(sel_rows[0].keys()))
+            w.writeheader()
+            w.writerows(sel_rows)
+        print("Smart selection → results/smart_selection.csv")
 
     # ── Classical ML + TabPFN members (raw RSSI columns, like ml_classification) ──
     if not args.no_classical:
