@@ -1,0 +1,4 @@
+step,members,total_params_M,test_mcc,improved
+1,logreg,0.0,0.5305,True
+2,logreg+lejepa,0.566,0.8694,True
+3,logreg+lejepa+sigreg,1.263,0.8904,True
