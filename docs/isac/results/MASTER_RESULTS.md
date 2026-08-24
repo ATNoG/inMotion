@@ -114,6 +114,33 @@ Param counts for `—` cells not yet loaded in the count script; the HPO and sin
 **Command:** `MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv --seed 42 --no-tabpfn --no-classical --size-frontier`
 **Provenance:** `results/mega_ensemble_results.csv` (append-only), log `/tmp/full_ensemble4.log`.
 
+### 4.0 Ensemble definitions & configurations (EVERY ensemble named)
+
+**Combiner used everywhere:** LR-stack (multinomial LogisticRegression on the
+concatenated per-member class probabilities, i.e. `(n_members × 4)`-dim input),
+`max_iter=5000`, `C` swept over `[0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0,
+2.0, 5.0, 10.0]`, best `C` chosen on **validation** MCC, then evaluated on test.
+LR-stack inputs = each member's **temperature-calibrated** softmax probabilities
+(T fit on validation NLL, per member). Feature channels: rich(18) for
+JEPA models, plain(4) for all others (see §2.3 "rich" column).
+
+| # | Ensemble name | Members | Stacker | C | Used in |
+|---|---|---|---|---|---|
+| E1 | "all 21" (icaisf) | lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, sigreg_s3, sigreg_s5, mamba3_cnn, mamba3_tcn, mamba3_transformer, mamba3_multiview, hpo_gru, hpo_lstm, hpo_cnn, hpo_mamba, deepstack, cnn, tcn, gru, lstm, bilstm | LR-stack, calibrated | 0.005 | §4.1, §4.2 config 5 |
+| E2 | size-frontier subset | logreg + lejepa + sigreg | LR-stack (greedy budget) | — | §4.3 |
+| E3 | "16 members" (dataset.csv / noise / pure) | lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, mamba3_cnn, mamba3_tcn, mamba3_transformer, mamba3_multiview, deepstack, cnn, tcn, hpo_gru, hpo_lstm, hpo_cnn, hpo_mamba | LR-stack, calibrated | 0.5 / 0.1 / 0.005 | §7b |
+| E4 | config 1 world-only | lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, sigreg_s3, sigreg_s5 | equal-weight mean | — | §4.2 |
+| E5 | config 2 world+best-DL | E4 + deepstack, mamba3_tcn | equal-weight mean | — | §4.2 |
+| E6 | config 3 best-world | sigreg, lejepa, ts_jepa | equal-weight mean | — | §4.2 |
+| E7 | config 4 best-world+best-DL | sigreg, lejepa, ts_jepa + deepstack, mamba3_tcn | equal-weight mean | — | §4.2 |
+| E8 | config 6 greedy-selected | 16 members chosen greedily on val (see §4.2 list) | equal-weight mean | — | §4.2 |
+
+**Note on E1 vs E3:** E1 = full 21-member list incl. weak recurrents
+(gru/lstm/bilstm) and extra sigreg seeds → 0.8873 on icaisf. E3 = the 16
+strong, non-redundant members (drops gru/lstm/bilstm/sigreg_s3/sigreg_s5;
+hpo_tcn excluded — arch mismatch) → 0.9232 on dataset.csv. Both are LR-stacks
+but over different member sets; the paper must cite the exact set per number.
+
 ### 4.1 Ensemble combiner scores (all 21 DL members)
 
 | Combiner | Test MCC |
@@ -130,14 +157,15 @@ Param counts for `—` cells not yet loaded in the count script; the HPO and sin
 
 | Config | Members | Val MCC | Test MCC |
 |---|---|---|---|
-| 1. World only | 7 (JEPA+sigreg) | 0.9063 | 0.8872 |
-| 2. World + best DL | 9 | 0.9178 | 0.8872 |
-| 3. Best world | 3 (sigreg, lejepa, ts_jepa) | 0.9183 | 0.8784 |
-| 4. Best world + best DL | 5 | 0.9069 | 0.8872 |
-| 5. All 21 | 21 | 0.9008 | 0.8814 |
-| 6. Greedy smart selection | 16 | 0.9240 | 0.8873 |
+| 1. World only (E4) | lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, sigreg_s3, sigreg_s5 | 0.9063 | 0.8872 |
+| 2. World + best DL (E5) | E4 + deepstack, mamba3_tcn | 0.9178 | 0.8872 |
+| 3. Best world (E6) | sigreg, lejepa, ts_jepa | 0.9183 | 0.8784 |
+| 4. Best world + best DL (E7) | sigreg, lejepa, ts_jepa + deepstack, mamba3_tcn | 0.9069 | 0.8872 |
+| 5. All 21 (E1) | full 21-member list | 0.9008 | 0.8814 |
+| 6. Greedy smart selection (E8) | lejepa, mamba3_multiview, mamba3_transformer, ts_jepa, sigreg, cf_jepa, mamba3_cnn, sigreg_s3, mamba3_tcn, t_jepa, hpo_lstm, sigreg_s5, deepstack, hpo_cnn, hpo_mamba, hpo_gru (greedily added on val MCC) | 0.9240 | 0.8873 |
 
 **Provenance:** `/tmp/six_configs.log` (computed 2026-08-23).
+**Configs 1-6 all use equal-weight mean of member softmax probs (no calibration, no LR).**
 
 ### 4.3 Ensemble size frontier (deployment tradeoff)
 
@@ -243,7 +271,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | sigreg_s3 | 0.4237 | 0.4832 | 0.697 |
 | sigreg_s5 | 0.4469 | 0.4775 | 0.697 |
 
-**Ensemble (LR-stack, 16 members): test MCC = 0.9232 (C=0.5)** — above 0.9 ✓
+**Ensemble E3 (LR-stack, 16 members: lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, mamba3_cnn, mamba3_tcn, mamba3_transformer, mamba3_multiview, deepstack, cnn, tcn, hpo_gru, hpo_lstm, hpo_cnn, hpo_mamba): test MCC = 0.9232 (C=0.5)** — above 0.9 ✓
 
 ### 7b.2 `dataset_only_noise.csv` (val 120 / test 240)
 
@@ -255,7 +283,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | t_jepa | 0.8031 | 0.9005 |
 | ts_jepa | 0.8671 | 0.8838 |
 
-**Ensemble (LR-stack, 16 members): test MCC = 0.9563 (C=0.1)** ✓
+**Ensemble E3 (same 16 members as 7b.1): test MCC = 0.9563 (C=0.1)** ✓
 
 ### 7b.3 `dataset_only_pure.csv` (val 16 / test 32 — small set)
 
@@ -267,7 +295,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | cf_jepa | 0.9215 | 0.8366 |
 | sigreg | 0.8377 | 0.8410 |
 
-**Ensemble (LR-stack, 16 members): test MCC = 0.9179 (C=0.005)** ✓
+**Ensemble E3 (same 16 members as 7b.1): test MCC = 0.9179 (C=0.005)** ✓
 
 ### 7b.4 Key finding
 
@@ -281,11 +309,11 @@ The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `data
 |---|---|---|
 | Best single world model (test MCC) | **0.8858** (sigreg) / **0.8850** (lejepa) | §2.3 |
 | Best single DL model (test MCC) | **0.8585** (DeepStack) / 0.8524 (HPO_GRU) | §3 |
-| Best ensemble (LR-stack, all members) | **0.8873** | §4.1 |
-| Best ensemble subset (size frontier) | **0.8904** @ 1.26M params | §4.3 |
+| Best ensemble (LR-stack, all members) | **0.8873** (E1, 21 members) | §4.1 |
+| Best ensemble subset (size frontier) | **0.8904** @ 1.26M params (E2) | §4.3 |
 | Best validation MCC (world+DL, config 2) | **0.9178** | §4.2 |
 | Best validation MCC (greedy, config 6) | **0.9240** | §4.2 |
-| **Ensemble test MCC on `dataset.csv`** | **0.9232** (LR-stack, 16 members) | §7b.1 |
-| **Ensemble test MCC on noise** | **0.9563** | §7b.2 |
-| **Ensemble test MCC on pure** | **0.9179** | §7b.3 |
+| **Ensemble test MCC on `dataset.csv`** | **0.9232** (E3, 16 members, C=0.5) | §7b.1 |
+| **Ensemble test MCC on noise** | **0.9563** (E3, C=0.1) | §7b.2 |
+| **Ensemble test MCC on pure** | **0.9179** (E3, C=0.005) | §7b.3 |
 | Best single on `dataset.csv` | **0.9194** (ts_jepa) | §7b.1 |
