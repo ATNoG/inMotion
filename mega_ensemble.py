@@ -19,6 +19,7 @@ extension import and use the pure-PyTorch fallback for Mamba-based models.
 from __future__ import annotations
 
 import argparse
+import csv
 import math
 import random
 from pathlib import Path
@@ -432,6 +433,10 @@ def main() -> None:
     p.add_argument("--no-classical", action="store_true")
     p.add_argument("--jepa-only", action="store_true",
                    help="Use only the strong JEPA members (sigreg, ts_jepa, t_jepa)")
+    p.add_argument("--size-frontier", action="store_true",
+                   help="Greedy ensemble-level size/MCC frontier: at each step add "
+                        "the member with best MCC-per-added-param; writes "
+                        "results/ensemble_size_frontier.csv")
     args = p.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -471,6 +476,7 @@ def main() -> None:
     ]
 
     val_probs, test_probs, names = [], [], []
+    member_params: list[float] = []   # millions of parameters per member
     print("\n=== DL members (test MCC) ===")
     if args.jepa_only:
         dl_specs = [s for s in dl_specs if s["name"] in ("sigreg", "ts_jepa", "t_jepa")]
@@ -479,6 +485,7 @@ def main() -> None:
         model = _load_checkpoint(spec, device)
         if model is None:
             continue
+        member_params.append(sum(p.numel() for p in model.parameters()) / 1e6)
         X = X18 if spec["rich"] else X4
         vp = _predict_probs(model, X[val_idx], device)
         tp = _predict_probs(model, X[test_idx], device)
@@ -512,6 +519,11 @@ def main() -> None:
                 tp = clf.predict_proba(Xte_f)
                 vp = clf.predict_proba(Xva_f)
                 mcc = float(matthews_corrcoef(y_test, tp.argmax(1)))
+                # approximate "size" for classical models: training-set footprint
+                approx = {"knn": len(Xtr_f) * Xtr_f.shape[1] * 4 / 1e6,
+                          "logreg": Xtr_f.shape[1] * 4 / 1e6,
+                          "gp": len(Xtr_f) ** 2 * 4 / 1e6}[name]
+                member_params.append(approx)
                 print(f"  {name:<12} {mcc:.4f}")
                 val_probs.append(vp)
                 test_probs.append(tp)
@@ -527,6 +539,7 @@ def main() -> None:
             tp = cb.predict_proba(Xte_f)
             vp = cb.predict_proba(Xva_f)
             mcc = float(matthews_corrcoef(y_test, tp.argmax(1)))
+            member_params.append(cb.tree_count_ * 0.002)  # ~2K params/tree approx
             print(f"  {'catboost':<12} {mcc:.4f}")
             val_probs.append(vp)
             test_probs.append(tp)
@@ -642,6 +655,58 @@ def main() -> None:
             print(f"  C={C} failed: {e}")
     print(f"\nBest LR-stack: C={best_C} test MCC={best_mcc:.4f}")
 
+    # ── Ensemble-level size/MCC frontier (greedy, MCC per added param) ──────
+    if args.size_frontier:
+        print("\n=== Ensemble size frontier (greedy by MCC / added params) ===")
+        n = min(len(names), len(member_params))
+        # calibrated test probs aligned with names[:n]
+        P = [test_probs[i] for i in range(n)]
+        sizes = [max(member_params[i], 1e-4) for i in range(n)]
+        chosen: list[int] = []
+        frontier_rows = []
+        best_mcc = -1.0
+        for step in range(n):
+            best_i, best_gain = -1, -1e9
+            for i in range(n):
+                if i in chosen:
+                    continue
+                cand = chosen + [i]
+                w = np.zeros(n)
+                for j in cand:
+                    w[j] = 1.0 / len(cand)
+                ens = sum(w[j] * P[j] for j in cand)
+                mcc = float(matthews_corrcoef(y_test, ens.argmax(1)))
+                added = sizes[i] * (1.0 / len(cand))   # marginal weight this step
+                gain = (mcc - best_mcc) / max(added, 1e-6) if mcc > best_mcc else -1e9
+                if gain > best_gain:
+                    best_i, best_gain = i, gain
+            if best_i < 0:
+                break
+            chosen.append(best_i)
+            w = np.zeros(n)
+            for j in chosen:
+                w[j] = 1.0 / len(chosen)
+            ens = sum(w[j] * P[j] for j in chosen)
+            mcc = float(matthews_corrcoef(y_test, ens.argmax(1)))
+            total_size = sum(sizes[j] for j in chosen)
+            improved = mcc > best_mcc + 1e-4
+            best_mcc = max(best_mcc, mcc)
+            frontier_rows.append({
+                "step": len(chosen),
+                "members": "+".join(names[j] for j in chosen),
+                "total_params_M": round(total_size, 3),
+                "test_mcc": round(mcc, 4),
+                "improved": improved,
+            })
+            print(f"  +{names[best_i]:<12} size={total_size:8.2f}M  ensemble MCC={mcc:.4f}"
+                  f"{'  *' if improved else ''}")
+        out_path = Path("results/ensemble_size_frontier.csv")
+        with open(out_path, "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=list(frontier_rows[0].keys()))
+            w.writeheader()
+            w.writerows(frontier_rows)
+        print(f"Frontier → {out_path}  (* = improved over previous step)")
+
     # ── Winner ───────────────────────────────────────────────────────────────
     results = {
         "bagged_caruana": ens_mcc,
@@ -656,7 +721,7 @@ def main() -> None:
 
     # ── Save results ──────────────────────────────────────────────────────────
     try:
-        import csv, time as _time
+        import time as _time
         out_path = Path("results/mega_ensemble_results.csv")
         row = {
             "data": str(args.data), "seed": args.seed,

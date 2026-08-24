@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import random
 import time
 from pathlib import Path
@@ -136,6 +137,13 @@ def parse_args() -> argparse.Namespace:
                    choices=["mcc", "efficiency", "pareto"],
                    help="HPO objective: 'mcc' (maximize MCC), 'efficiency' "
                         "(maximize MCC per M params), 'pareto' (NSGA-II MCC×size frontier)")
+    p.add_argument("--hpo-pareto-train", type=int, default=0,
+                   help="pareto only: fully retrain the N selected frontier points "
+                        "(0 = just print the frontier)")
+    p.add_argument("--hpo-pareto-select", type=str, default="spread",
+                   choices=["spread", "top"],
+                   help="pareto only: how to pick the N points — 'spread' evenly "
+                        "spaced across the size range, 'top' best-MCC first")
 
     # Paths
     p.add_argument("--models-dir", type=Path, default=Path("models/exotic"))
@@ -1046,6 +1054,24 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
             print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+
+        n_train = getattr(args, "hpo_pareto_train", 0)
+        if n_train > 0:
+            pts = _select_pareto_points(study, n_train,
+                                        getattr(args, "hpo_pareto_select", "spread"))
+            print(f"\n  Training {len(pts)} selected frontier point(s) "
+                  f"({getattr(args, 'hpo_pareto_select', 'spread')} selection)...")
+            manifest_path = args.results_dir / "pareto_runs.csv"
+            rows = []
+            for rank, trial in enumerate(pts):
+                rows.append(_train_pareto_point(args, device, trial, rank))
+                # reset checkpoint arg so the next point pretrains fresh
+                args.checkpoint = None
+            with open(manifest_path, "w", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+                w.writeheader()
+                w.writerows(rows)
+            print(f"\nManifest → {manifest_path}")
     else:
         _apply_best_jepa_params(args, study)
 
@@ -1066,6 +1092,97 @@ def _apply_best_jepa_params(args, study) -> None:
     for sk, ak in _map.items():
         if sk in bp:
             setattr(args, ak, bp[sk])
+
+
+def _select_pareto_points(study, n: int, mode: str) -> list:
+    """Pick N trials from a pareto study's frontier.
+
+    spread: sort by params ascending, take evenly spaced points
+            (smallest, knee-ish, largest) for max coverage of the tradeoff.
+    top:    best-MCC first.
+    """
+    pts = [t for t in study.best_trials if t.values and len(t.values) == 2]
+    if not pts:
+        return []
+    if mode == "top":
+        pts = sorted(pts, key=lambda t: t.values[0], reverse=True)
+    else:  # spread by size
+        pts = sorted(pts, key=lambda t: t.values[1])
+        if len(pts) > n:
+            idx = np.linspace(0, len(pts) - 1, n).round().astype(int)
+            pts = [pts[i] for i in dict.fromkeys(idx.tolist())]
+    return pts[:n]
+
+
+def _train_pareto_point(args, device, trial, rank: int) -> dict:
+    """Full pretrain + finetune at one frontier point's hyperparameters.
+
+    Checkpoint name encodes HPO MCC + param count so deployment tradeoffs are
+    visible without opening the manifest. Returns a manifest row.
+    """
+    bp = trial.params
+    mcc_hpo, n_params_hpo = trial.values[0], int(trial.values[1])
+    tag = f"mcc{mcc_hpo:.3f}_p{n_params_hpo/1e6:.2f}M"
+
+    # Apply this point's params to args (same mapping as _apply_best_jepa_params)
+    for k in ("d_model", "nhead", "num_layers", "dim_ff", "pred_dim",
+              "pred_layers", "pretrain_lr", "finetune_lr", "ema_start"):
+        if k in bp and hasattr(args, k):
+            setattr(args, k, bp[k])
+
+    print(f"\n{'='*60}\n  Pareto point {rank}: MCC(hpo)={mcc_hpo:.4f} "
+          f"params={n_params_hpo/1e6:.2f}M\n  {bp}\n{'='*60}")
+
+    # ── Full SSL pretraining ──────────────────────────────────────────────
+    pt_config = DLConfig()
+    pt_config.data_path = args.data
+    pt_config.seed = args.seed
+    pt_config.batch_size = args.batch_size
+    pt_config.device = str(device)
+    pt_config.rich_features = args.rich_features
+    if args.rich_features:
+        pt_config.in_features = 18
+
+    (pt_train, pt_val, probe_tr, probe_va) = load_pretrain_data(pt_config)
+    model = MODEL_BUILDERS[args.model](args)
+
+    ckpt_path = pretrain_jepa(args, model, pt_train, pt_val, probe_tr, probe_va,
+                              device, args.models_dir)
+    args.checkpoint = ckpt_path
+
+    # ── Full fine-tuning (reuses main()'s path via a fresh load) ─────────
+    config = DLConfig()
+    config.data_path = args.data
+    config.seed = args.seed
+    config.batch_size = args.batch_size
+    config.device = str(device)
+    config.use_wandb = False
+    config.rich_features = args.rich_features
+    if args.rich_features:
+        config.in_features = 18
+    if args.wandb_project:
+        config.wandb_project = args.wandb_project
+
+    train_loader, val_loader, test_loader, classes = load_supervised_data(config)
+    metrics = finetune_jepa(args, model, config, train_loader, val_loader,
+                            test_loader, classes, device, args.models_dir)
+
+    # Rename the ft checkpoint to encode the tradeoff point
+    run_name = f"{args.model}_pareto-{tag}_seed{args.seed}"
+    src = args.models_dir / f"{args.model}_ft_seed{args.seed}.pt"
+    dst = args.models_dir / f"{run_name}.pt"
+    if src.exists():
+        src.rename(dst)
+
+    row = {
+        "model": args.model, "point": rank,
+        "mcc_hpo": round(mcc_hpo, 4), "params_M": round(n_params_hpo / 1e6, 3),
+        "test_mcc": metrics.get("mcc"), "test_acc": metrics.get("accuracy"),
+        "checkpoint": str(dst), "params": json.dumps(bp),
+        "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+    }
+    print(f"  → {dst}  test_mcc={row['test_mcc']}")
+    return row
 
 
 # ── SIGReg HPO ────────────────────────────────────────────────────────────────
