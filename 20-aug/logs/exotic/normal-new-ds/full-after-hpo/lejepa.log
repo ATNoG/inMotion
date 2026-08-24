@@ -1,0 +1,50 @@
+Device: cuda:0
+Model:  lejepa
+Data:   dataset_augmented3.csv
+Seed:   42
+
+============================================================
+Phase 1: SSL Pretraining (lejepa)
+============================================================
+Pretraining 500 epochs (lejepa)...
+  epoch   1/500 | train=1.0499 | val=0.2719 | ema=0.0000
+  epoch  10/500 | train=0.1541 | val=0.0278 | ema=0.0000 | probe=0.604
+  epoch  20/500 | train=0.1189 | val=0.0168 | ema=0.0000 | probe=0.588
+  epoch  21/500 | train=0.1180 | val=0.0180 | ema=0.0000
+  epoch  30/500 | train=0.1074 | val=0.0156 | ema=0.0000 | probe=0.586
+  epoch  40/500 | train=0.0995 | val=0.0126 | ema=0.0000 | probe=0.565
+  epoch  41/500 | train=0.0991 | val=0.0122 | ema=0.0000
+  epoch  50/500 | train=0.0911 | val=0.0115 | ema=0.0000 | probe=0.530
+  epoch  60/500 | train=0.0890 | val=0.0099 | ema=0.0000 | probe=0.537
+  epoch  61/500 | train=0.0888 | val=0.0102 | ema=0.0000
+  epoch  70/500 | train=0.0852 | val=0.0093 | ema=0.0000 | probe=0.526
+  epoch  80/500 | train=0.0822 | val=0.0088 | ema=0.0000 | probe=0.534
+  epoch  81/500 | train=0.0815 | val=0.0081 | ema=0.0000
+  epoch  90/500 | train=0.0786 | val=0.0078 | ema=0.0000 | probe=0.554
+  epoch 100/500 | train=0.0758 | val=0.0080 | ema=0.0000 | probe=0.517
+  epoch 101/500 | train=0.0763 | val=0.0078 | ema=0.0000
+  epoch 110/500 | train=0.0738 | val=0.0076 | ema=0.0000 | probe=0.500
+  epoch 120/500 | train=0.0714 | val=0.0068 | ema=0.0000 | probe=0.478
+  epoch 121/500 | train=0.0718 | val=0.0063 | ema=0.0000
+  epoch 130/500 | train=0.0710 | val=0.0065 | ema=0.0000 | probe=0.459
+  epoch 140/500 | train=0.0700 | val=0.0078 | ema=0.0000 | probe=0.472
+  epoch 141/500 | train=0.0715 | val=0.0069 | ema=0.0000
+  epoch 150/500 | train=0.0688 | val=0.0065 | ema=0.0000 | probe=0.440
+  Early stopping at epoch 150 (probe MCC not improving, best=0.6040)
+Pretraining done in 898s. Best probe MCC: 0.6040
+Checkpoint: 20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_pretrain_best.pt
+Visualization summary: models/exotic/viz/lejepa_seed42/pretrain_summary.png
+
+============================================================
+Phase 2: Fine-tuning (lejepa)
+============================================================
+Stage 1: Training classification head (encoder frozen)...
+[WandB] init failed (No API key configured. Use `wandb login` to log in.), continuing without logging.
+  Stage 1 best val MCC: 0.7067 (134s)
+Stage 2: Full fine-tuning (encoder unfrozen)...
+[WandB] init failed (No API key configured. Use `wandb login` to log in.), continuing without logging.
+Fine-tuning done in 749s.
+  Best val MCC: 0.8714
+  Test MCC:     0.8675709197583611
+
+Results appended to 20-aug/results/exotic/normal-new-ds/full-after-hpo/exotic_results.csv

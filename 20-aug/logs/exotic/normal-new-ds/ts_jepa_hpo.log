@@ -1,0 +1,1452 @@
+[I 2026-08-22 07:08:54,154] A new study created in RDB with name: exotic_ts_jepa_pareto
+Device: cuda:0
+Model:  ts_jepa
+Data:   dataset_augmented3.csv
+Seed:   42
+
+============================================================
+HPO: ts_jepa — 30 trials
+  Train: 28671 samples, Val: 7168 samples
+============================================================
+  0%|          | 0/30 [00:00<?, ?it/s]wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: andreribeiro87 (andreribeiro87-universidade-de-aveiro) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Using a boolean value for 'reinit' is deprecated. Use 'return_previous' or 'finish_previous' instead.
+wandb: setting up run v77tc2rf
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_070856-v77tc2rf
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial000
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/v77tc2rf
+wandb: updating run metadata
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▆▆▆▇▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▂▄▅▆▆▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇▇▇█████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.6465
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.67225
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.70558
+wandb:  trial_efficiency 586.38849
+wandb:         trial_mcc 0.67225
+wandb:    trial_n_params 1146432
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial000 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/v77tc2rf
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_070856-v77tc2rf/logs
+                                        0%|          | 0/30 [23:08<?, ?it/s]  3%|▎         | 1/30 [23:08<11:11:17, 1388.89s/it]wandb: setting up run yj0caw9l
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_073204-yj0caw9l
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial001
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/yj0caw9l
+wandb: updating run metadata
+wandb: uploading history steps 63-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▆▆▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▅▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.69779
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.77999
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.7517
+wandb:  trial_efficiency 740.18565
+wandb:         trial_mcc 0.78021
+wandb:    trial_n_params 1054080
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial001 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/yj0caw9l
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_073204-yj0caw9l/logs
+                                                     3%|▎         | 1/30 [45:55<11:11:17, 1388.89s/it]  7%|▋         | 2/30 [45:55<10:42:04, 1375.87s/it]wandb: setting up run 5v2vcgt9
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_075451-5v2vcgt9
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial002
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/5v2vcgt9
+wandb: updating run metadata
+wandb: uploading history steps 56-70, summary
+wandb: uploading wandb-summary.json
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▅▆▆▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄▃▃▃▃▂▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.69492
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.74656
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.69269
+wandb:  trial_efficiency 772.81934
+wandb:         trial_mcc 0.74656
+wandb:    trial_n_params 966016
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial002 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/5v2vcgt9
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_075451-5v2vcgt9/logs
+                                                     7%|▋         | 2/30 [1:08:20<10:42:04, 1375.87s/it] 10%|█         | 3/30 [1:08:20<10:12:40, 1361.51s/it]wandb: setting up run 9fy34t08
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_081715-9fy34t08
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial003
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/9fy34t08
+wandb: updating run metadata
+wandb: uploading history steps 67-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▄▆▆▇▆██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▄▅▆▆▇███
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▂▂▂▂▂▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.77512
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.80249
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.66418
+wandb:  trial_efficiency 177.16302
+wandb:         trial_mcc 0.80727
+wandb:    trial_n_params 4556672
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial003 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/9fy34t08
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_081715-9fy34t08/logs
+                                                      10%|█         | 3/30 [1:32:52<10:12:40, 1361.51s/it] 13%|█▎        | 4/30 [1:32:52<10:08:53, 1405.12s/it]wandb: setting up run gumcon65
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_084147-gumcon65
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial004
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/gumcon65
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▅▆▆▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▄▆▇▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.66763
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.80237
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.70885
+wandb:  trial_efficiency 379.59826
+wandb:         trial_mcc 0.80237
+wandb:    trial_n_params 2113728
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial004 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/gumcon65
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_084147-gumcon65/logs
+                                                      13%|█▎        | 4/30 [1:57:42<10:08:53, 1405.12s/it] 17%|█▋        | 5/30 [1:57:42<9:58:20, 1436.01s/it] wandb: setting up run zix38q13
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_090638-zix38q13
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial005
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/zix38q13
+wandb: updating run metadata
+wandb: uploading history steps 69-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▃▅▅▆▇▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▅▇▇▇█▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▄▄▄▃▃▃▃▃▃▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75982
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.84917
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.61633
+wandb:  trial_efficiency 533.9798
+wandb:         trial_mcc 0.84917
+wandb:    trial_n_params 1590272
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial005 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/zix38q13
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_090638-zix38q13/logs
+                                                     17%|█▋        | 5/30 [2:21:23<9:58:20, 1436.01s/it] 20%|██        | 6/30 [2:21:23<9:32:19, 1430.82s/it]wandb: setting up run 2ibgufxn
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_093019-2ibgufxn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial006
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2ibgufxn
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml; uploading history steps 63-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▅▆▆▇▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▃▄▄▆▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▄▄▄▄▅▅▅▅▅▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▄▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.65351
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.78509
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.67268
+wandb:  trial_efficiency 439.1762
+wandb:         trial_mcc 0.78509
+wandb:    trial_n_params 1787648
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial006 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2ibgufxn
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_093019-2ibgufxn/logs
+                                                     20%|██        | 6/30 [2:45:02<9:32:19, 1430.82s/it] 23%|██▎       | 7/30 [2:45:02<9:06:56, 1426.80s/it]wandb: setting up run ol4o7rvm
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_095357-ol4o7rvm
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial007
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ol4o7rvm
+wandb: updating run metadata
+wandb: uploading history steps 65-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▂▄▆▆▆▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▆▆▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.72492
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.78702
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.75048
+wandb:  trial_efficiency 2463.39445
+wandb:         trial_mcc 0.78702
+wandb:    trial_n_params 319488
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial007 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ol4o7rvm
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_095357-ol4o7rvm/logs
+                                                     23%|██▎       | 7/30 [3:07:31<9:06:56, 1426.80s/it] 27%|██▋       | 8/30 [3:07:31<8:34:08, 1402.20s/it]wandb: setting up run 4y7hkqf2
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_101627-4y7hkqf2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial008
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/4y7hkqf2
+wandb: updating run metadata
+wandb: uploading config.yaml
+wandb: uploading history steps 68-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▃▄▅▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▁▄▄▅▅▆▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.71728
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.82411
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.67084
+wandb:  trial_efficiency 612.21619
+wandb:         trial_mcc 0.82411
+wandb:    trial_n_params 1346112
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial008 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/4y7hkqf2
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_101627-4y7hkqf2/logs
+                                                     27%|██▋       | 8/30 [3:31:14<8:34:08, 1402.20s/it] 30%|███       | 9/30 [3:31:14<8:12:58, 1408.52s/it]wandb: setting up run 2nwhu7cj
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_104009-2nwhu7cj
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial009
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2nwhu7cj
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▄▅▅▆▇▇███
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▃▄▅▆▇▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▅▄▄▄▃▃▃▃▃▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.65534
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.7088
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.68843
+wandb:  trial_efficiency 387.6061
+wandb:         trial_mcc 0.7088
+wandb:    trial_n_params 1828672
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial009 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2nwhu7cj
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_104009-2nwhu7cj/logs
+                                                     30%|███       | 9/30 [3:54:58<8:12:58, 1408.52s/it] 33%|███▎      | 10/30 [3:54:58<7:51:08, 1413.43s/it]wandb: setting up run zw1tt8e0
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_110354-zw1tt8e0
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial010
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/zw1tt8e0
+wandb: updating run metadata
+wandb: uploading history steps 66-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▄▅▆▆▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▅▆▆▇▇███
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.76665
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.8367
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.68256
+wandb:  trial_efficiency 249.81121
+wandb:         trial_mcc 0.8367
+wandb:    trial_n_params 3349344
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial010 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/zw1tt8e0
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_110354-zw1tt8e0/logs
+                                                      33%|███▎      | 10/30 [4:19:34<7:51:08, 1413.43s/it] 37%|███▋      | 11/30 [4:19:34<7:33:37, 1432.48s/it]wandb: setting up run 9v1taoiy
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_112829-9v1taoiy
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial011
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/9v1taoiy
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▅▅▆▇▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▁▃▄▄▆▆▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.63833
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.67881
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.74818
+wandb:  trial_efficiency 696.43978
+wandb:         trial_mcc 0.67881
+wandb:    trial_n_params 974688
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial011 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/9v1taoiy
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_112829-9v1taoiy/logs
+                                                      37%|███▋      | 11/30 [4:42:25<7:33:37, 1432.48s/it] 40%|████      | 12/30 [4:42:25<7:04:12, 1414.03s/it]wandb: setting up run b34b7cqo
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_115121-b34b7cqo
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial012
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/b34b7cqo
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▄▅▆▇▇█▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▃▄▅▅▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▅▅▅▅▅▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.63564
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.69379
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.6746
+wandb:  trial_efficiency 534.95817
+wandb:         trial_mcc 0.69379
+wandb:    trial_n_params 1296896
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial012 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/b34b7cqo
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_115121-b34b7cqo/logs
+                                                      40%|████      | 12/30 [5:06:58<7:04:12, 1414.03s/it] 43%|████▎     | 13/30 [5:06:58<6:45:40, 1431.80s/it]wandb: setting up run jb169sgp
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_121554-jb169sgp
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial013
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/jb169sgp
+wandb: updating run metadata
+wandb: uploading history steps 60-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▄▅▆▆▇▇▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▆▇█▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▄▃▃▃▃▂▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.65505
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.68138
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.68794
+wandb:  trial_efficiency 639.43244
+wandb:         trial_mcc 0.68138
+wandb:    trial_n_params 1065600
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial013 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/jb169sgp
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_121554-jb169sgp/logs
+                                                      43%|████▎     | 13/30 [5:29:49<6:45:40, 1431.80s/it] 47%|████▋     | 14/30 [5:29:49<6:16:55, 1413.44s/it]wandb: setting up run fm6kdk5k
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_123845-fm6kdk5k
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial014
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/fm6kdk5k
+wandb: uploading history steps 63-68, summary; updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 69-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▃▄▅▆▆▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▄▅▆▆▇▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75014
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.8457
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.70439
+wandb:  trial_efficiency 331.76228
+wandb:         trial_mcc 0.8457
+wandb:    trial_n_params 2549120
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial014 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/fm6kdk5k
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_123845-fm6kdk5k/logs
+                                                      47%|████▋     | 14/30 [5:53:36<6:16:55, 1413.44s/it] 50%|█████     | 15/30 [5:53:36<5:54:20, 1417.39s/it]wandb: setting up run 8s79jpdc
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_130232-8s79jpdc
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial015
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8s79jpdc
+wandb: updating run metadata
+wandb: uploading history steps 66-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▄▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▂▃▄▅▆▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb:     pretrain/loss █▄▄▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.66184
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.78427
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.66252
+wandb:  trial_efficiency 265.69809
+wandb:         trial_mcc 0.78427
+wandb:    trial_n_params 2951744
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial015 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8s79jpdc
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_130232-8s79jpdc/logs
+                                                      50%|█████     | 15/30 [6:18:25<5:54:20, 1417.39s/it] 53%|█████▎    | 16/30 [6:18:25<5:35:46, 1439.04s/it]wandb: setting up run kiuo0mcv
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_132721-kiuo0mcv
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial016
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/kiuo0mcv
+wandb: updating run metadata
+wandb: uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▃▅▅▆▇▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▄▆▆▇████
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇█
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▂▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.74763
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.83005
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.65305
+wandb:  trial_efficiency 366.21484
+wandb:         trial_mcc 0.83005
+wandb:    trial_n_params 2266560
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial016 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/kiuo0mcv
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_132721-kiuo0mcv/logs
+                                                      53%|█████▎    | 16/30 [6:42:59<5:35:46, 1439.04s/it] 57%|█████▋    | 17/30 [6:42:59<5:14:05, 1449.63s/it]wandb: setting up run lciwlwzo
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_135155-lciwlwzo
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial017
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/lciwlwzo
+wandb: updating run metadata
+wandb: uploading history steps 67-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▅▅▆▆▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▄▅▆▇▇███
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.71313
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.83619
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.66461
+wandb:  trial_efficiency 284.73515
+wandb:         trial_mcc 0.83619
+wandb:    trial_n_params 2936736
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial017 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/lciwlwzo
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_135155-lciwlwzo/logs
+                                                      57%|█████▋    | 17/30 [7:07:00<5:14:05, 1449.63s/it] 60%|██████    | 18/30 [7:07:00<4:49:23, 1446.92s/it]wandb: setting up run x8eypx7l
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_141556-x8eypx7l
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial018
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/x8eypx7l
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▅▅▆▆▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▅▅▆▇▇▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▄▃▃▃▂▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75127
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.84749
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.6659
+wandb:  trial_efficiency 437.93926
+wandb:         trial_mcc 0.84749
+wandb:    trial_n_params 1935168
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial018 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/x8eypx7l
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_141556-x8eypx7l/logs
+                                                      60%|██████    | 18/30 [7:30:06<4:49:23, 1446.92s/it] 63%|██████▎   | 19/30 [7:30:06<4:21:53, 1428.54s/it]wandb: setting up run x5bvo8gk
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_143901-x5bvo8gk
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial019
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/x5bvo8gk
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▄▅▆▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▃▄▅▅▆▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.65217
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.73298
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.72621
+wandb:  trial_efficiency 672.9074
+wandb:         trial_mcc 0.73298
+wandb:    trial_n_params 1089280
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial019 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/x5bvo8gk
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_143901-x5bvo8gk/logs
+                                                      63%|██████▎   | 19/30 [7:53:29<4:21:53, 1428.54s/it] 67%|██████▋   | 20/30 [7:53:29<3:56:50, 1421.03s/it]wandb: setting up run 1t47vgql
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_150225-1t47vgql
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial020
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/1t47vgql
+wandb: updating run metadata
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▅▆▇▇▇▇███
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▃▄▅▅▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.64157
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.71301
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.67649
+wandb:  trial_efficiency 314.5623
+wandb:         trial_mcc 0.71301
+wandb:    trial_n_params 2266688
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial020 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/1t47vgql
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_150225-1t47vgql/logs
+                                                      67%|██████▋   | 20/30 [8:17:10<3:56:50, 1421.03s/it] 70%|███████   | 21/30 [8:17:10<3:33:09, 1421.00s/it]wandb: setting up run 0c9p4pah
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_152606-0c9p4pah
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial021
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/0c9p4pah
+wandb: uploading history steps 60-68, summary; updating run metadata
+wandb: uploading history steps 69-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▃▅▅▆▇▇▇█
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▆▆▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▅▄▄▄▄▃▃▃▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.71101
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.8314
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.649
+wandb:  trial_efficiency 834.04585
+wandb:         trial_mcc 0.8314
+wandb:    trial_n_params 996832
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial021 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/0c9p4pah
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_152606-0c9p4pah/logs
+                                                      70%|███████   | 21/30 [8:40:34<3:33:09, 1421.00s/it] 73%|███████▎  | 22/30 [8:40:34<3:08:47, 1415.93s/it]wandb: setting up run 92vsjo33
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_154930-92vsjo33
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial022
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/92vsjo33
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▆▆▇▇███
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▅▅▆▇▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▂▂▁▁
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.74929
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.81035
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.66307
+wandb:  trial_efficiency 884.32214
+wandb:         trial_mcc 0.81035
+wandb:    trial_n_params 916352
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial022 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/92vsjo33
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_154930-92vsjo33/logs
+                                                      73%|███████▎  | 22/30 [9:04:52<3:08:47, 1415.93s/it] 77%|███████▋  | 23/30 [9:04:52<2:46:39, 1428.44s/it]wandb: W&B API key is configured. Use `wandb login --relogin` to force relogin
+wandb: setting up run xdaci3kq
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_161353-xdaci3kq
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial023
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/xdaci3kq
+wandb: uploading history steps 63-68, summary; updating run metadata
+wandb: uploading history steps 69-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▅▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▅▆▆▇████
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▆▅▅▄▄▄▄▄▄▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75206
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.85771
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.64991
+wandb:  trial_efficiency 497.02383
+wandb:         trial_mcc 0.85771
+wandb:    trial_n_params 1725696
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial023 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/xdaci3kq
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_161353-xdaci3kq/logs
+                                                     [I 2026-08-22 07:32:03,036] Trial 0 finished with values: [0.6722545336678779, 1146432.0] and parameters: {'d_model': 192, 'nhead': 4, 'num_layers': 1, 'dim_ff': 512, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 2.6587543983272695e-05, 'finetune_lr': 0.0002310201887845295, 'ema_start': 0.9916506405886809}.
+  [Trial 000] MCC=0.6723 params=1.15M
+[I 2026-08-22 07:54:49,786] Trial 1 finished with values: [0.7802148918920935, 1054080.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 1, 'dim_ff': 768, 'pred_dim': 64, 'pred_layers': 2, 'pretrain_lr': 1.2385137298860926e-05, 'finetune_lr': 0.0016409286730647919, 'ema_start': 0.9915347171131856}.
+  [Trial 001] MCC=0.7802 params=1.05M
+[I 2026-08-22 08:17:14,216] Trial 2 finished with values: [0.746555851400782, 966016.0] and parameters: {'d_model': 256, 'nhead': 4, 'num_layers': 1, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 1, 'pretrain_lr': 0.00021137059440645722, 'finetune_lr': 0.0004201672054372534, 'ema_start': 0.9946806121906003}.
+  [Trial 002] MCC=0.7466 params=0.97M
+[I 2026-08-22 08:41:46,199] Trial 3 finished with values: [0.8072737648851203, 4556672.0] and parameters: {'d_model': 256, 'nhead': 8, 'num_layers': 4, 'dim_ff': 512, 'pred_dim': 128, 'pred_layers': 2, 'pretrain_lr': 3.488976654890367e-05, 'finetune_lr': 0.004544383960336014, 'ema_start': 0.9932107799402423}.
+  [Trial 003] MCC=0.8073 params=4.56M
+[I 2026-08-22 09:06:36,979] Trial 4 finished with values: [0.8023674716436243, 2113728.0] and parameters: {'d_model': 192, 'nhead': 4, 'num_layers': 4, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 3, 'pretrain_lr': 1.4063366777718176e-05, 'finetune_lr': 0.0005211124595788264, 'ema_start': 0.9910428215357262}.
+  [Trial 004] MCC=0.8024 params=2.11M
+[I 2026-08-22 09:30:17,722] Trial 5 finished with values: [0.8491731312577502, 1590272.0] and parameters: {'d_model': 128, 'nhead': 8, 'num_layers': 2, 'dim_ff': 768, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 0.0001326033192269654, 'finetune_lr': 0.003482846706526885, 'ema_start': 0.9944441603672796}.
+  [Trial 005] MCC=0.8492 params=1.59M
+[I 2026-08-22 09:53:56,246] Trial 6 finished with values: [0.7850924466891454, 1787648.0] and parameters: {'d_model': 128, 'nhead': 4, 'num_layers': 3, 'dim_ff': 768, 'pred_dim': 128, 'pred_layers': 1, 'pretrain_lr': 1.425475704402744e-05, 'finetune_lr': 0.0003797544798678418, 'ema_start': 0.991450991585286}.
+  [Trial 006] MCC=0.7851 params=1.79M
+[I 2026-08-22 10:16:25,762] Trial 7 finished with values: [0.7870249663298046, 319488.0] and parameters: {'d_model': 128, 'nhead': 4, 'num_layers': 1, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 1, 'pretrain_lr': 7.148510793512978e-05, 'finetune_lr': 0.00432543242796456, 'ema_start': 0.9977465752493071}.
+  [Trial 007] MCC=0.7870 params=0.32M
+[I 2026-08-22 10:40:08,194] Trial 8 finished with values: [0.8241115575302114, 1346112.0] and parameters: {'d_model': 192, 'nhead': 4, 'num_layers': 2, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 3.188339735100187e-05, 'finetune_lr': 0.0009874088417386245, 'ema_start': 0.9927079047883509}.
+  [Trial 008] MCC=0.8241 params=1.35M
+[I 2026-08-22 11:03:52,610] Trial 9 finished with values: [0.7088044288416673, 1828672.0] and parameters: {'d_model': 256, 'nhead': 4, 'num_layers': 2, 'dim_ff': 256, 'pred_dim': 96, 'pred_layers': 3, 'pretrain_lr': 0.00033361013094697806, 'finetune_lr': 0.00029872741995638395, 'ema_start': 0.9965539471375068}.
+  [Trial 009] MCC=0.7088 params=1.83M
+[I 2026-08-22 11:28:28,278] Trial 10 finished with values: [0.8367036806889954, 3349344.0] and parameters: {'d_model': 256, 'nhead': 4, 'num_layers': 4, 'dim_ff': 256, 'pred_dim': 96, 'pred_layers': 2, 'pretrain_lr': 2.8378638146176247e-05, 'finetune_lr': 0.0019513967655934471, 'ema_start': 0.9915692978610449}.
+  [Trial 010] MCC=0.8367 params=3.35M
+[I 2026-08-22 11:51:20,099] Trial 11 finished with values: [0.6788114938636222, 974688.0] and parameters: {'d_model': 256, 'nhead': 8, 'num_layers': 1, 'dim_ff': 256, 'pred_dim': 96, 'pred_layers': 2, 'pretrain_lr': 3.0458224385894053e-05, 'finetune_lr': 0.00015353434324857047, 'ema_start': 0.99807494182158}.
+  [Trial 011] MCC=0.6788 params=0.97M
+[I 2026-08-22 12:15:52,792] Trial 12 finished with values: [0.6937851071132277, 1296896.0] and parameters: {'d_model': 128, 'nhead': 8, 'num_layers': 4, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 2, 'pretrain_lr': 1.0432637161302079e-05, 'finetune_lr': 0.00015956700210656633, 'ema_start': 0.9959715159219725}.
+  [Trial 012] MCC=0.6938 params=1.30M
+[I 2026-08-22 12:38:43,809] Trial 13 finished with values: [0.6813792098372092, 1065600.0] and parameters: {'d_model': 256, 'nhead': 4, 'num_layers': 1, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 2, 'pretrain_lr': 0.00013696739838480054, 'finetune_lr': 0.00015393931002140855, 'ema_start': 0.9933094422275349}.
+  [Trial 013] MCC=0.6814 params=1.07M
+[I 2026-08-22 13:02:30,371] Trial 14 finished with values: [0.8457018658158497, 2549120.0] and parameters: {'d_model': 256, 'nhead': 8, 'num_layers': 3, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 1, 'pretrain_lr': 1.1184895551664498e-05, 'finetune_lr': 0.001954090133022007, 'ema_start': 0.9915939961146635}.
+  [Trial 014] MCC=0.8457 params=2.55M
+[I 2026-08-22 13:27:19,685] Trial 15 finished with values: [0.7842727430493214, 2951744.0] and parameters: {'d_model': 192, 'nhead': 4, 'num_layers': 4, 'dim_ff': 512, 'pred_dim': 64, 'pred_layers': 3, 'pretrain_lr': 4.303720019143251e-05, 'finetune_lr': 0.00021826570038901196, 'ema_start': 0.9950112113621251}.
+  [Trial 015] MCC=0.7843 params=2.95M
+[I 2026-08-22 13:51:53,934] Trial 16 finished with values: [0.8300479165423181, 2266560.0] and parameters: {'d_model': 128, 'nhead': 8, 'num_layers': 4, 'dim_ff': 768, 'pred_dim': 64, 'pred_layers': 2, 'pretrain_lr': 3.86530428803215e-05, 'finetune_lr': 0.004156447611486069, 'ema_start': 0.9972910205521126}.
+  [Trial 016] MCC=0.8300 params=2.27M
+[I 2026-08-22 14:15:54,552] Trial 17 finished with values: [0.8361919691241846, 2936736.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 3, 'dim_ff': 768, 'pred_dim': 96, 'pred_layers': 2, 'pretrain_lr': 1.1800069021089958e-05, 'finetune_lr': 0.0008534852819566894, 'ema_start': 0.9948838017123682}.
+  [Trial 017] MCC=0.8362 params=2.94M
+[I 2026-08-22 14:39:00,272] Trial 18 finished with values: [0.8474860449710282, 1935168.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 2, 'dim_ff': 768, 'pred_dim': 96, 'pred_layers': 1, 'pretrain_lr': 0.00011553385460530907, 'finetune_lr': 0.0012057860169848358, 'ema_start': 0.9957368691134838}.
+  [Trial 018] MCC=0.8475 params=1.94M
+[I 2026-08-22 15:02:23,789] Trial 19 finished with values: [0.7329845699482569, 1089280.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 2, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 2, 'pretrain_lr': 2.2212049883899376e-05, 'finetune_lr': 0.0002055294619639017, 'ema_start': 0.9922521860834813}.
+  [Trial 019] MCC=0.7330 params=1.09M
+[I 2026-08-22 15:26:04,730] Trial 20 finished with values: [0.7130145991703578, 2266688.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 3, 'dim_ff': 512, 'pred_dim': 128, 'pred_layers': 1, 'pretrain_lr': 1.706653206390032e-05, 'finetune_lr': 0.00012359624712587392, 'ema_start': 0.9903665592208707}.
+  [Trial 020] MCC=0.7130 params=2.27M
+[I 2026-08-22 15:49:28,822] Trial 21 finished with values: [0.8314035906734984, 996832.0] and parameters: {'d_model': 128, 'nhead': 8, 'num_layers': 2, 'dim_ff': 512, 'pred_dim': 96, 'pred_layers': 2, 'pretrain_lr': 0.0001785335461982821, 'finetune_lr': 0.0010145478086525616, 'ema_start': 0.9977084085706949}.
+  [Trial 021] MCC=0.8314 params=1.00M
+[I 2026-08-22 16:13:46,458] Trial 22 finished with values: [0.8103503605061428, 916352.0] and parameters: {'d_model': 128, 'nhead': 4, 'num_layers': 3, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 3, 'pretrain_lr': 5.9184131047454885e-05, 'finetune_lr': 0.008363366476207685, 'ema_start': 0.9981481557776045}.
+  [Trial 022] MCC=0.8104 params=0.92M
+[I 2026-08-22 16:37:30,832] Trial 23 finished with values: [0.8577120370555967, 1725696.0] and parameters: {'d_model': 128, 'nhead': 8, 'num_layers': 3, 'dim_ff': 768, 'pred_dim': 96, 'pred_layers': 1, 'pretrain_lr': 0.00024744252044213834, 'finetune_lr': 0.0018108634100884495, 'ema_start': 0.9978972481217435}. 77%|███████▋  | 23/30 [9:28:36<2:46:39, 1428.44s/it] 80%|████████  | 24/30 [9:28:36<2:22:43, 1427.22s/it]wandb: setting up run y9uuhfvu
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_163732-y9uuhfvu
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial024
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/y9uuhfvu
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▄▆▆▆▇███
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▄▃▃▃▃▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.76494
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.84844
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.6458
+wandb:  trial_efficiency 363.03365
+wandb:         trial_mcc 0.84844
+wandb:    trial_n_params 2337088
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial024 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/y9uuhfvu
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_163732-y9uuhfvu/logs
+                                                      80%|████████  | 24/30 [9:53:30<2:22:43, 1427.22s/it] 83%|████████▎ | 25/30 [9:53:30<2:00:35, 1447.20s/it]wandb: setting up run aciikaex
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_170226-aciikaex
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial025
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/aciikaex
+wandb: updating run metadata
+wandb: uploading wandb-summary.json
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▃▅▅▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▃▅▆▆▇▇▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▄▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▅▄▄▄▃▃▃▃▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75105
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.85167
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.63145
+wandb:  trial_efficiency 207.14739
+wandb:         trial_mcc 0.85167
+wandb:    trial_n_params 4111424
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial025 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/aciikaex
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_170226-aciikaex/logs
+                                                      83%|████████▎ | 25/30 [10:18:24<2:00:35, 1447.20s/it] 87%|████████▋ | 26/30 [10:18:24<1:37:24, 1461.19s/it]wandb: setting up run 6k0psmbl
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_172719-6k0psmbl
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial026
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/6k0psmbl
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading wandb-summary.json; uploading config.yaml; uploading history steps 66-70, summary
+wandb: uploading data
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▃▄▅▆▆▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇██
+wandb:     pretrain/loss █▇▆▅▄▄▃▃▃▃▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▄▃▃▃▃▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.66131
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.79111
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.65881
+wandb:  trial_efficiency 173.61465
+wandb:         trial_mcc 0.79111
+wandb:    trial_n_params 4556672
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial026 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/6k0psmbl
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_172719-6k0psmbl/logs
+                                                       87%|████████▋ | 26/30 [10:43:03<1:37:24, 1461.19s/it] 90%|█████████ | 27/30 [10:43:03<1:13:19, 1466.57s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_175159-rxq09h07
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial027
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/rxq09h07
+wandb: updating run metadata
+wandb: uploading history steps 66-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▄▅▅▆▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▅▆▆▇██
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▅▆▆▆▇▇▇▇▇▇██████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss ▆▁▁▁▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▄▄▄▄▄▄▄█▇▇▆▆▆▆▆▆▆▆▆▆
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.67791
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.8105
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.817
+wandb:  trial_efficiency 686.10554
+wandb:         trial_mcc 0.8105
+wandb:    trial_n_params 1181312
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial027 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/rxq09h07
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_175159-rxq09h07/logs
+                                                       90%|█████████ | 27/30 [11:07:54<1:13:19, 1466.57s/it] 93%|█████████▎| 28/30 [11:07:54<49:07, 1473.90s/it]  wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_181650-hrehhsv6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial028
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/hrehhsv6
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▃▄▅▆▆▇▇██
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▄▅▆▇▇█▇▇█
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▄▃▃▃▂▂▂▂▂▂▂▂▂▂
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.75056
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.84265
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.70523
+wandb:  trial_efficiency 196.18225
+wandb:         trial_mcc 0.84525
+wandb:    trial_n_params 4308480
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial028 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/hrehhsv6
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_181650-hrehhsv6/logs
+                                                     93%|█████████▎| 28/30 [11:32:11<49:07, 1473.90s/it] 97%|█████████▋| 29/30 [11:32:11<24:28, 1468.79s/it]wandb: setting up run inckbm3u
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_184107-inckbm3u
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_ts_jepa_trial029
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/inckbm3u
+wandb: updating run metadata
+wandb: uploading wandb-summary.json
+wandb: uploading history steps 68-70, summary
+wandb: 
+wandb: Run history:
+wandb:   ft/stage1_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage1_val_mcc ▁▂▄▅▆▆████
+wandb:   ft/stage2_epoch ▁▂▃▃▄▅▆▆▇█
+wandb: ft/stage2_val_mcc ▁▂▃▄▆▆▆██▇
+wandb:      pretrain/ema ▁▁▁▁▁▁▁▂▂▂▂▂▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇▇▇▇███████
+wandb:    pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:     pretrain/loss █▄▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▅▄▄▃▃▃▃▃▃▃▃▃▃
+wandb:  trial_efficiency ▁
+wandb:         trial_mcc ▁
+wandb:    trial_n_params ▁
+wandb:                +1 ...
+wandb: 
+wandb: Run summary:
+wandb:   ft/stage1_epoch 9
+wandb: ft/stage1_val_mcc 0.74026
+wandb:   ft/stage2_epoch 9
+wandb: ft/stage2_val_mcc 0.79788
+wandb:      pretrain/ema 0.999
+wandb:    pretrain/epoch 49
+wandb:     pretrain/loss 0.64871
+wandb:  trial_efficiency 463.57292
+wandb:         trial_mcc 0.81429
+wandb:    trial_n_params 1756544
+wandb:                +1 ...
+wandb: 
+wandb: 🚀 View run hpo_ts_jepa_trial029 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/inckbm3u
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_184107-inckbm3u/logs
+                                                     97%|█████████▋| 29/30 [11:56:29<24:28, 1468.79s/it]100%|██████████| 30/30 [11:56:29<00:00, 1465.52s/it]100%|██████████| 30/30 [11:56:29<00:00, 1432.97s/it]
+wandb: setting up run yl4grm9c
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_190524-yl4grm9c
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run ts_jepa_pretrain_seed42
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/yl4grm9c
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading output.log; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb: pretrain/best_probe_mcc ▁
+wandb:            pretrain/ema ▁▁▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▆▆▆▇▇▇██
+wandb:          pretrain/epoch ▁▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▃▃▄▄▄▄▅▅▅▅▅▅▅▆▆▆▆▆▇▇▇██
+wandb:             pretrain/lr ████████▇▇▇▇▇▇▇▆▆▆▆▆▅▅▅▅▅▄▄▄▄▄▃▃▃▃▂▂▂▁▁▁
+wandb:      pretrain/probe_mcc ▁▃▄▄▆▆▇▇█▇█▅▆▅▅
+wandb:     pretrain/train_loss █▆▆▆▆▆▆▆▆▅▅▅▅▅▅▄▄▄▄▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     pretrain/uniformity ▁▁▁▁▁▁▁▇▇▇▇▇▇▇▇▇██████████▇▇▇▇██████████
+wandb:       pretrain/val_loss ▆▇██████▇▇▇▇▇▇▆▆▆▄▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb: pretrain/best_probe_mcc 0.62449
+wandb:            pretrain/ema 0.99298
+wandb:          pretrain/epoch 149
+wandb:             pretrain/lr 0.00015
+wandb:      pretrain/probe_mcc 0.60535
+wandb:     pretrain/train_loss 0.37614
+wandb:     pretrain/uniformity 3.65151
+wandb:       pretrain/val_loss 0.00062
+wandb: 
+wandb: 🚀 View run ts_jepa_pretrain_seed42 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/yl4grm9c
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_190524-yl4grm9c/logs
+wandb: setting up run m7ba8lxn
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_202704-m7ba8lxn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run ts_jepa_ft_seed42_s1
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/m7ba8lxn
+wandb: updating run metadata; uploading artifact run-m7ba8lxn-final_val_confusion_matrix_table
+wandb: uploading artifact run-m7ba8lxn-final_val_confusion_matrix_table
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:                       best_epoch ▁
+wandb:                     best_val_mcc ▁
+wandb:                            epoch ▁▂▂▃▄▄▅▅▆▇▇█
+wandb:                    final_val_acc ▁
+wandb:               final_val_f1_macro ▁
+wandb:                   final_val_loss ▁
+wandb:  final_val_per_class/AA/f1-score ▁
+wandb: final_val_per_class/AA/precision ▁
+wandb:    final_val_per_class/AA/recall ▁
+wandb:   final_val_per_class/AA/support ▁
+wandb:                              +25 ...
+wandb: 
+wandb: Run summary:
+wandb:                       best_epoch 10
+wandb:                     best_val_mcc 0.68413
+wandb:                            epoch 12
+wandb:                    final_val_acc 0.76256
+wandb:               final_val_f1_macro 0.7634
+wandb:                   final_val_loss 0.86968
+wandb:  final_val_per_class/AA/f1-score 0.72225
+wandb: final_val_per_class/AA/precision 0.70137
+wandb:    final_val_per_class/AA/recall 0.74442
+wandb:   final_val_per_class/AA/support 896
+wandb:                              +25 ...
+wandb: 
+wandb: 🚀 View run ts_jepa_ft_seed42_s1 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/m7ba8lxn
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_202704-m7ba8lxn/logs
+wandb: setting up run 8fbvzx9z
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260822_202729-8fbvzx9z
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run ts_jepa_ft_seed42_s2
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8fbvzx9z
+wandb: updating run metadata; uploading artifact run-8fbvzx9z-final_val_confusion_matrix_table
+wandb: uploading artifact run-8fbvzx9z-final_val_confusion_matrix_table
+wandb: uploading config.yaml; uploading media/table/final_val_confusion_matrix_table_38_9a59c69d864131febb05.table.json; uploading wandb-summary.json
+wandb: uploading history steps 35-38, summary
+wandb: 
+wandb: Run history:
+wandb:                       best_epoch ▁
+wandb:                     best_val_mcc ▁
+wandb:                            epoch ▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb:                    final_val_acc ▁
+wandb:               final_val_f1_macro ▁
+wandb:                   final_val_loss ▁
+wandb:  final_val_per_class/AA/f1-score ▁
+wandb: final_val_per_class/AA/precision ▁
+wandb:    final_val_per_class/AA/recall ▁
+wandb:   final_val_per_class/AA/support ▁
+wandb:                              +25 ...
+wandb: 
+wandb: Run summary:
+wandb:                       best_epoch 29
+wandb:                     best_val_mcc 0.85264
+wandb:                            epoch 38
+wandb:                    final_val_acc 0.88895
+wandb:               final_val_f1_macro 0.88941
+wandb:                   final_val_loss 0.66376
+wandb:  final_val_per_class/AA/f1-score 0.86938
+wandb: final_val_per_class/AA/precision 0.83539
+wandb:    final_val_per_class/AA/recall 0.90625
+wandb:   final_val_per_class/AA/support 896
+wandb:                              +25 ...
+wandb: 
+wandb: 🚀 View run ts_jepa_ft_seed42_s2 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8fbvzx9z
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260822_202729-8fbvzx9z/logs
+
+  [Trial 023] MCC=0.8577 params=1.73M
+[I 2026-08-22 17:02:24,627] Trial 24 finished with values: [0.8484415803156746, 2337088.0] and parameters: {'d_model': 192, 'nhead': 8, 'num_layers': 4, 'dim_ff': 256, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 7.21087645427261e-05, 'finetune_lr': 0.0031749883464243815, 'ema_start': 0.9967908858667621}.
+  [Trial 024] MCC=0.8484 params=2.34M
+[I 2026-08-22 17:27:18,455] Trial 25 finished with values: [0.8516707447633536, 4111424.0] and parameters: {'d_model': 192, 'nhead': 4, 'num_layers': 4, 'dim_ff': 768, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 0.0001402412507055007, 'finetune_lr': 0.0018351620695519345, 'ema_start': 0.9940360096978049}.
+  [Trial 025] MCC=0.8517 params=4.11M
+[I 2026-08-22 17:51:57,593] Trial 26 finished with values: [0.7911050201643388, 4556672.0] and parameters: {'d_model': 256, 'nhead': 8, 'num_layers': 4, 'dim_ff': 512, 'pred_dim': 128, 'pred_layers': 2, 'pretrain_lr': 1.714486354167326e-05, 'finetune_lr': 0.00019318943133016047, 'ema_start': 0.9968535956854573}.
+  [Trial 026] MCC=0.7911 params=4.56M
+[I 2026-08-22 18:16:48,577] Trial 27 finished with values: [0.8105047072107995, 1181312.0] and parameters: {'d_model': 128, 'nhead': 4, 'num_layers': 4, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 3, 'pretrain_lr': 0.0007843269804336331, 'finetune_lr': 0.00937566600133442, 'ema_start': 0.9967804036673305}.
+  [Trial 027] MCC=0.8105 params=1.18M
+[I 2026-08-22 18:41:05,468] Trial 28 finished with values: [0.84524728153205, 4308480.0] and parameters: {'d_model': 256, 'nhead': 4, 'num_layers': 4, 'dim_ff': 512, 'pred_dim': 64, 'pred_layers': 1, 'pretrain_lr': 0.00019880193364014653, 'finetune_lr': 0.003105201294430152, 'ema_start': 0.9952503188858745}.
+  [Trial 028] MCC=0.8452 params=4.31M
+[I 2026-08-22 19:05:23,353] Trial 29 finished with values: [0.8142862328559346, 1756544.0] and parameters: {'d_model': 128, 'nhead': 4, 'num_layers': 4, 'dim_ff': 512, 'pred_dim': 128, 'pred_layers': 1, 'pretrain_lr': 0.00012814703696157852, 'finetune_lr': 0.008681705931439066, 'ema_start': 0.9947078805975313}.
+  [Trial 029] MCC=0.8143 params=1.76M
+
+  Pareto frontier (5 points):
+    MCC=0.8577  params=1.73M  {'d_model': 128, 'nhead': 8, 'num_layers': 3, 'dim_ff': 768, 'pred_dim': 96, 'pred_layers': 1, 'pretrain_lr': 0.00024744252044213834, 'finetune_lr': 0.0018108634100884495, 'ema_start': 0.9978972481217435}
+    MCC=0.8492  params=1.59M  {'d_model': 128, 'nhead': 8, 'num_layers': 2, 'dim_ff': 768, 'pred_dim': 128, 'pred_layers': 3, 'pretrain_lr': 0.0001326033192269654, 'finetune_lr': 0.003482846706526885, 'ema_start': 0.9944441603672796}
+    MCC=0.8314  params=1.00M  {'d_model': 128, 'nhead': 8, 'num_layers': 2, 'dim_ff': 512, 'pred_dim': 96, 'pred_layers': 2, 'pretrain_lr': 0.0001785335461982821, 'finetune_lr': 0.0010145478086525616, 'ema_start': 0.9977084085706949}
+    MCC=0.8104  params=0.92M  {'d_model': 128, 'nhead': 4, 'num_layers': 3, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 3, 'pretrain_lr': 5.9184131047454885e-05, 'finetune_lr': 0.008363366476207685, 'ema_start': 0.9981481557776045}
+    MCC=0.7870  params=0.32M  {'d_model': 128, 'nhead': 4, 'num_layers': 1, 'dim_ff': 256, 'pred_dim': 64, 'pred_layers': 1, 'pretrain_lr': 7.148510793512978e-05, 'finetune_lr': 0.00432543242796456, 'ema_start': 0.9977465752493071}
+
+============================================================
+Phase 1: SSL Pretraining (ts_jepa)
+============================================================
+Pretraining 300 epochs (ts_jepa)...
+  epoch   1/300 | train=0.7025 | val=0.0016 | ema=0.9900
+  epoch  10/300 | train=0.5950 | val=0.0018 | ema=0.9900 | probe=0.572
+  epoch  20/300 | train=0.5923 | val=0.0019 | ema=0.9901 | probe=0.585
+  epoch  21/300 | train=0.5901 | val=0.0018 | ema=0.9901
+  epoch  30/300 | train=0.5789 | val=0.0018 | ema=0.9901 | probe=0.592
+  epoch  40/300 | train=0.5584 | val=0.0016 | ema=0.9902 | probe=0.596
+  epoch  41/300 | train=0.5574 | val=0.0016 | ema=0.9903
+  epoch  50/300 | train=0.5344 | val=0.0015 | ema=0.9904 | probe=0.609
+  epoch  60/300 | train=0.5021 | val=0.0013 | ema=0.9906 | probe=0.611
+  epoch  61/300 | train=0.4968 | val=0.0013 | ema=0.9906
+  epoch  70/300 | train=0.4596 | val=0.0011 | ema=0.9908 | probe=0.620
+  epoch  80/300 | train=0.4251 | val=0.0009 | ema=0.9910 | probe=0.619
+  epoch  81/300 | train=0.4198 | val=0.0009 | ema=0.9910
+  epoch  90/300 | train=0.4003 | val=0.0008 | ema=0.9912 | probe=0.624
+  epoch 100/300 | train=0.3854 | val=0.0007 | ema=0.9915 | probe=0.616
+  epoch 101/300 | train=0.3861 | val=0.0007 | ema=0.9915
+  epoch 110/300 | train=0.3802 | val=0.0007 | ema=0.9918 | probe=0.622
+  epoch 120/300 | train=0.3762 | val=0.0007 | ema=0.9921 | probe=0.603
+  epoch 121/300 | train=0.3771 | val=0.0007 | ema=0.9921
+  epoch 130/300 | train=0.3743 | val=0.0007 | ema=0.9924 | probe=0.606
+  epoch 140/300 | train=0.3774 | val=0.0007 | ema=0.9927 | probe=0.600
+  epoch 141/300 | train=0.3771 | val=0.0007 | ema=0.9927
+  epoch 150/300 | train=0.3761 | val=0.0006 | ema=0.9930 | probe=0.605
+  Early stopping at epoch 150 (probe MCC not improving, best=0.6245)
+Pretraining done in 4897s. Best probe MCC: 0.6245
+Checkpoint: 20-aug/models/exotic/normal-new-ds/ts_jepa_pretrain_best.pt
+Visualization summary: models/exotic/viz/ts_jepa_seed42/pretrain_summary.png
+
+============================================================
+Phase 2: Fine-tuning (ts_jepa)
+============================================================
+Stage 1: Training classification head (encoder frozen)...
+  Stage 1 best val MCC: 0.6841 (25s)
+Stage 2: Full fine-tuning (encoder unfrozen)...
+Fine-tuning done in 153s.
+  Best val MCC: 0.8526
+  Test MCC:     0.8468871631035295
+
+Results appended to 20-aug/results/exotic/normal-new-ds/exotic_results.csv

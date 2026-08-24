@@ -1,0 +1,23 @@
+Device: cuda:0
+Model:  sigreg
+Data:   dataset_augmented3.csv
+Seed:   42
+
+============================================================
+Phase 2: Direct supervised (sigreg)
+============================================================
+Training 300 epochs...
+  epoch   1: val_mcc=0.6783
+  epoch  21: val_mcc=0.8608
+  epoch  41: val_mcc=0.8607
+  epoch  61: val_mcc=0.8537
+  epoch  81: val_mcc=0.8556
+  epoch 101: val_mcc=0.8566
+  epoch 121: val_mcc=0.8540
+  epoch 141: val_mcc=0.8535
+  epoch 161: val_mcc=0.8551
+  Early stopping at epoch 179 (patience=150, best=0.8740)
+  Best val MCC: 0.8740
+  Test MCC:     0.8651879461760327
+
+Results appended to 20-aug/results/exotic/normal-new-ds/full-after-hpo/exotic_results.csv

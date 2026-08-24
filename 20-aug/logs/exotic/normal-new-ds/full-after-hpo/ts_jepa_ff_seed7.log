@@ -1,0 +1,19 @@
+Device: cuda:0
+Model:  ts_jepa
+Data:   dataset.icaisf.csv
+Seed:   7
+
+Loading checkpoint: 20-aug/models/exotic/normal-new-ds/full-after-hpo/ts_jepa_pretrain_best.pt
+  Loaded epoch 69
+
+============================================================
+Phase 2: Fine-tuning (ts_jepa)
+============================================================
+Stage 1: Training classification head (encoder frozen)...
+  Stage 1 best val MCC: 0.5795 (52s)
+Stage 2: Full fine-tuning (encoder unfrozen)...
+Fine-tuning done in 44s.
+  Best val MCC: 0.5748
+  Test MCC:     0.5646136446939585
+
+Results appended to 20-aug/results/exotic/normal-new-ds/full-after-hpo/exotic_results.csv

@@ -1,0 +1,1097 @@
+[I 2026-08-23 03:00:06,076] Using an existing study with name 'exotic_sigreg_pareto' instead of creating a new one.
+Device: cuda:0
+Model:  sigreg
+Data:   dataset_augmented3.csv
+Seed:   42
+
+============================================================
+HPO: sigreg — 30 trials
+  Train: 28671 samples, Val: 7168 samples
+============================================================
+  0%|          | 0/30 [00:00<?, ?it/s]wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: andreribeiro87 (andreribeiro87-universidade-de-aveiro) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Using a boolean value for 'reinit' is deprecated. Use 'return_previous' or 'finish_previous' instead.
+wandb: setting up run ae70lw44
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_030008-ae70lw44
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial003
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ae70lw44
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▇▇▆▆▇▆▅▄▅▄▄▄▃▄▄▃▂▃▄▂▃▃▃▂▃▂▃▂▃▂▄▃▃▃▁▂▂▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss ██▆▆▅▅▄▄▅▃▄▃▃▄▃▃▃▃▃▂▂▂▂▂▃▃▂▃▂▂▁▂▁▁▂▁▂▂▂▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▁▃▃▄▅▅▆▆▆▇▇▇▇▇▇▇█▇▇▇█▇████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.48651
+wandb:            epoch 39
+wandb:      sigreg_loss 6.34902
+wandb: trial_efficiency 1238.10956
+wandb:        trial_mcc 0.86284
+wandb:   trial_n_params 696900
+wandb:   trial_params_M 0.6969
+wandb:          val_mcc 0.86106
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial003 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ae70lw44
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_030008-ae70lw44/logs
+                                        0%|          | 0/30 [02:11<?, ?it/s]  3%|▎         | 1/30 [02:11<1:03:21, 131.08s/it]wandb: setting up run h2uu3dqd
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_030218-h2uu3dqd
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial004
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/h2uu3dqd
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▅▆▅▆▆▄▅▅▅▃▅▄▅▂▅▅▄▃▃▃▃▃▃▄▂▃▃▄▂▂▃▁▂▁▂▂▂▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▆▇▆▃▄▃▃▃▃▂▃▃▃▂▃▃▂▃▂▂▁▃▂▁▁▂▂▁▂▂▂▂▂▁▁▂▁▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▆▆▇▇▇█▇▇██████████████████▇▇▇▇█▇█▇▇█▇█
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.38899
+wandb:            epoch 39
+wandb:      sigreg_loss 2.57177
+wandb: trial_efficiency 945.45032
+wandb:        trial_mcc 0.86909
+wandb:   trial_n_params 919236
+wandb:   trial_params_M 0.91924
+wandb:          val_mcc 0.85792
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial004 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/h2uu3dqd
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_030218-h2uu3dqd/logs
+                                                   3%|▎         | 1/30 [04:55<1:03:21, 131.08s/it]  7%|▋         | 2/30 [04:55<1:10:26, 150.95s/it]wandb: setting up run ulm6ldvf
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_030503-ulm6ldvf
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial005
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ulm6ldvf
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ██▆█▄▅▄▅▃▄▄▄▄▃▄▄▃▃▁▄▂▄▂▃▃▃▂▂▂▂▃▂▂▁▄▂▄▂▄▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▆▅▅▅▄▄▅▃▃▃▃▃▃▃▃▃▂▂▂▂▂▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▃▃▅▆▆▆▆▇▇▇▇▇▇▇▇▇███████████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.52774
+wandb:            epoch 39
+wandb:      sigreg_loss 1.80085
+wandb: trial_efficiency 1841.98594
+wandb:        trial_mcc 0.87414
+wandb:   trial_n_params 474564
+wandb:   trial_params_M 0.47456
+wandb:          val_mcc 0.86863
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial005 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ulm6ldvf
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_030503-ulm6ldvf/logs
+                                                   7%|▋         | 2/30 [06:52<1:10:26, 150.95s/it] 10%|█         | 3/30 [06:52<1:00:55, 135.39s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_030700-8fi3ewtb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial006
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8fi3ewtb
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 38-40, summary
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▆▅▃▅▃▅▃▄▃▃▃▃▃▃▄▃▂▃▂▂▂▃▄▃▃▃▂▂▂▃▃▁▂▂▁▃▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▅▆▃▄▃▄▃▃▃▂▃▂▂▂▂▂▁▂▂▂▂▁▂▂▁▂▁▂▁▂▁▂▂▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▃▅▆▆▇▇▇█▇██████████████████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.50504
+wandb:            epoch 39
+wandb:      sigreg_loss 1.05896
+wandb: trial_efficiency 1246.25284
+wandb:        trial_mcc 0.86851
+wandb:   trial_n_params 696900
+wandb:   trial_params_M 0.6969
+wandb:          val_mcc 0.86408
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial006 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8fi3ewtb
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_030700-8fi3ewtb/logs
+                                                  10%|█         | 3/30 [09:07<1:00:55, 135.39s/it] 13%|█▎        | 4/30 [09:07<58:28, 134.94s/it]  wandb: setting up run 8wos1nkq
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_030914-8wos1nkq
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial007
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8wos1nkq
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▆▆▅▅▄▃▃▄▆▃▂▄▃▄▂▄▃▂▃▁▃▄▃▂▃▃▂▁▄▂▂▂▂▃▂▂▂▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▄▄▄▃▄▃▃▃▃▃▃▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▂▂▂▁▂▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▁▂▄▄▅▆▆▆▇▇▇▇▇▇▇▇▇▇█▇███████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.56517
+wandb:            epoch 39
+wandb:      sigreg_loss 1.01775
+wandb: trial_efficiency 535.15895
+wandb:        trial_mcc 0.86619
+wandb:   trial_n_params 1618572
+wandb:   trial_params_M 1.61857
+wandb:          val_mcc 0.86253
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial007 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8wos1nkq
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_030914-8wos1nkq/logs
+                                                13%|█▎        | 4/30 [11:35<58:28, 134.94s/it] 17%|█▋        | 5/30 [11:35<58:18, 139.95s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_031143-4jt91eem
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial008
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/4jt91eem
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▆▄▅▄▅▄▄▄▃▄▃▂▂▂▃▂▂▃▂▁▃▁▂▃▃▁▁▂▁▃▂▂▁▂▂▂▁▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▅▆▅▆▅▅▄▅▄▄▃▃▃▃▃▃▃▃▂▂▂▂▃▂▂▂▂▂▁▂▂▁▂▁▂▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▃▃▄▅▅▆▆▆▆▇▇▇▇▇▇▇▇██████████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.46214
+wandb:            epoch 39
+wandb:      sigreg_loss 2.06577
+wandb: trial_efficiency 918.39122
+wandb:        trial_mcc 0.86761
+wandb:   trial_n_params 944708
+wandb:   trial_params_M 0.94471
+wandb:          val_mcc 0.86744
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial008 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/4jt91eem
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_031143-4jt91eem/logs
+                                                17%|█▋        | 5/30 [14:16<58:18, 139.95s/it] 20%|██        | 6/30 [14:16<58:47, 147.00s/it]wandb: setting up run uzf9sblk
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_031424-uzf9sblk
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial009
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/uzf9sblk
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▅▄▅▆▆▅▃▅▄▃▄▃▃▄▃▃▃▃▃▁▂▃▃▂▂▂▁▂▂▃▃▂▂▁▁▂▂▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▃▃▃▂▃▂▂▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▃▄▅▅▆▆▆▇▆▇▇▇▇▇█▇▇▇██▇███▇███▇████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.49433
+wandb:            epoch 39
+wandb:      sigreg_loss 1.47941
+wandb: trial_efficiency 535.7475
+wandb:        trial_mcc 0.86715
+wandb:   trial_n_params 1618572
+wandb:   trial_params_M 1.61857
+wandb:          val_mcc 0.85795
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial009 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/uzf9sblk
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_031424-uzf9sblk/logs
+                                                20%|██        | 6/30 [16:56<58:47, 147.00s/it] 23%|██▎       | 7/30 [16:56<57:55, 151.09s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_031703-i9vpu6xu
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial010
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/i9vpu6xu
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▇█▅▆▄▄▄▄▅▅▄▃▃▃▄▃▃▄▄▃▃▂▃▄▂▄▃▂▂▁▁▃▃▃▄▃▂▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▃▃▃▄▃▃▂▂▃▂▂▂▂▃▂▃▁▂▁▂▂▁▂▂▂▂▁▁▂▂▁▂▁▂▁▂▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▃▄▄▅▅▆▆▇▆▇▇▇▇▇▇▇▇▇▇▇█▇████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.59152
+wandb:            epoch 39
+wandb:      sigreg_loss 1.05601
+wandb: trial_efficiency 1818.31663
+wandb:        trial_mcc 0.86291
+wandb:   trial_n_params 474564
+wandb:   trial_params_M 0.47456
+wandb:          val_mcc 0.85961
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial010 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/i9vpu6xu
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_031703-i9vpu6xu/logs
+                                                23%|██▎       | 7/30 [18:52<57:55, 151.09s/it] 27%|██▋       | 8/30 [18:52<51:23, 140.17s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_031900-b77ft35y
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial011
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/b77ft35y
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▅▄▄▄▃▄▄▃▂▃▂▃▂▃▂▄▂▂▂▂▁▂▂▃▂▁▃▁▂▂▂▁▂▂▂▁▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▃▃▂▄▃▂▂▂▂▂▂▂▂▂▂▁▁▁▂▂▁▁▂▂▂▁▂▁▁▁▁▂▁▁▂▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▄▆▆▆▇▇▇▇▇▇█▇██████▇███████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.45465
+wandb:            epoch 39
+wandb:      sigreg_loss 1.02137
+wandb: trial_efficiency 922.86507
+wandb:        trial_mcc 0.87184
+wandb:   trial_n_params 944708
+wandb:   trial_params_M 0.94471
+wandb:          val_mcc 0.86574
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial011 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/b77ft35y
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_031900-b77ft35y/logs
+                                                27%|██▋       | 8/30 [21:44<51:23, 140.17s/it] 30%|███       | 9/30 [21:44<52:26, 149.85s/it]wandb: setting up run 2q7tz30j
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_032151-2q7tz30j
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial012
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2q7tz30j
+wandb: updating run metadata
+wandb: uploading wandb-summary.json
+wandb: uploading history steps 37-40, summary
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▅▆▄▄▄▅▂▃▃▂▂▂▂▂▃▂▂▄▄▃▃▃▂▂▂▂▁▂▂▁▂▂▁▂▂▁▁▁▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▅▆▄▅▄▃▄▃▃▃▂▂▃▂▂▃▃▄▂▂▂▂▁▂▂▂▂▂▁▁▁▁▁▁▂▂▁▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▃▆▆▇▇▇▇▇▇████████████████████████▇█▇▇█▇
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.46669
+wandb:            epoch 39
+wandb:      sigreg_loss 1.54052
+wandb: trial_efficiency 1251.97396
+wandb:        trial_mcc 0.8725
+wandb:   trial_n_params 696900
+wandb:   trial_params_M 0.6969
+wandb:          val_mcc 0.86033
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial012 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2q7tz30j
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_032151-2q7tz30j/logs
+                                                30%|███       | 9/30 [24:01<52:26, 149.85s/it] 33%|███▎      | 10/30 [24:01<48:41, 146.06s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_032409-15zlybu4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial013
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/15zlybu4
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ██▆▆▅▆▅▅▅▄▃▄▅▂▄▃▃▃▃▃▂▂▃▂▂▂▃▂▂▃▂▂▁▂▁▃▁▁▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▃▄▄▃▃▃▃▃▂▃▂▂▂▂▂▂▂▁▁▂▂▂▁▁▁▂▁▁▁▂▁▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▁▁▃▂▃▃▄▅▅▅▆▆▆▇▆▇▇▇▇▇▇█▇████▇███████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.59796
+wandb:            epoch 39
+wandb:      sigreg_loss 1.11112
+wandb: trial_efficiency 6278.26304
+wandb:        trial_mcc 0.85759
+wandb:   trial_n_params 136596
+wandb:   trial_params_M 0.1366
+wandb:          val_mcc 0.85703
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial013 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/15zlybu4
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_032409-15zlybu4/logs
+                                                 33%|███▎      | 10/30 [25:42<48:41, 146.06s/it] 37%|███▋      | 11/30 [25:42<41:53, 132.30s/it]wandb: setting up run 8r63l7lb
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_032550-8r63l7lb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial014
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8r63l7lb
+wandb: updating run metadata
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇█▅▇▅▄▆▅▄▃▃▃▂▄▃▂▂▃▃▁▃▂▂▃▃▁▂▁▂▂▂▂▁▃▁▁▂▂▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▄▃▃▂▃▃▃▂▃▂▂▂▂▂▂▁▂▂▂▁▂▂▁▂▂▁▂▁▁▁▂▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▁▃▃▅▅▅▅▆▆▇▇▇▇▇▇▇▇▇▇█▇██████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.5026
+wandb:            epoch 39
+wandb:      sigreg_loss 0.95218
+wandb: trial_efficiency 2728.75503
+wandb:        trial_mcc 0.86627
+wandb:   trial_n_params 317460
+wandb:   trial_params_M 0.31746
+wandb:          val_mcc 0.86624
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial014 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/8r63l7lb
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_032550-8r63l7lb/logs
+                                                 37%|███▋      | 11/30 [27:55<41:53, 132.30s/it] 40%|████      | 12/30 [27:55<39:44, 132.49s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_032803-c4ymnv68
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial015
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/c4ymnv68
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▇▇▅▅▄▄▃▅▄▄▃▄▃▂▅▃▃▂▃▄▂▂▁▂▃▂▃▂▃▂▂▂▂▂▁▃▃▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss ██▅▆▄▄▅▄▃▅▃▃▃▃▃▂▃▂▃▂▂▂▂▂▂▂▂▁▁▁▂▁▂▁▂▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▁▂▃▂▄▄▆▆▅▆▆▇▆▇▇▇▇▇▇▇▇▇▇████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.5606
+wandb:            epoch 39
+wandb:      sigreg_loss 2.1083
+wandb: trial_efficiency 6307.28177
+wandb:        trial_mcc 0.86155
+wandb:   trial_n_params 136596
+wandb:   trial_params_M 0.1366
+wandb:          val_mcc 0.86155
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial015 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/c4ymnv68
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_032803-c4ymnv68/logs
+                                                 40%|████      | 12/30 [29:34<39:44, 132.49s/it] 43%|████▎     | 13/30 [29:34<34:38, 122.26s/it]wandb: setting up run 5k5u1w1g
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_032941-5k5u1w1g
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial016
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/5k5u1w1g
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▆▅▄▅▃▄▄▄▄▄▆▅▃▃▅▃▃▃▄▂▃▄▃▃▄▂▁▂▂▂▂▂▂▂▂▂▁▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▄▄▄▃▃▃▂▂▃▃▂▃▃▂▂▂▂▂▂▁▂▂▂▂▂▁▂▂▂▁▂▁▂▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▆▇▇▇▇▇██▇████████████████▇██▇█▇▇▇██▇▇▇
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.40981
+wandb:            epoch 39
+wandb:      sigreg_loss 1.35503
+wandb: trial_efficiency 2094.14293
+wandb:        trial_mcc 0.87228
+wandb:   trial_n_params 416532
+wandb:   trial_params_M 0.41653
+wandb:          val_mcc 0.85593
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial016 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/5k5u1w1g
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_032941-5k5u1w1g/logs
+                                                 43%|████▎     | 13/30 [32:20<34:38, 122.26s/it] 47%|████▋     | 14/30 [32:20<36:09, 135.58s/it]wandb: setting up run uj1398n8
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_033228-uj1398n8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial017
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/uj1398n8
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 39-40, summary
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇▇█▆▆▅▅▄▅▅▅▃▅▄▃▃▄▃▄▃▂▄▄▄▃▂▃▂▄▃▂▃▁▂▁▃▃▃▂▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▆▄▄▃▃▃▃▃▂▂▂▂▂▂▃▂▂▂▂▂▂▂▁▁▁▂▂▁▁▁▁▁▁▁▁▂▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▂▄▃▄▅▅▆▆▆▆▇▇▇▇▇▇▇▇▇▇▇███▇████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.53388
+wandb:            epoch 39
+wandb:      sigreg_loss 0.97488
+wandb: trial_efficiency 2074.15837
+wandb:        trial_mcc 0.86395
+wandb:   trial_n_params 416532
+wandb:   trial_params_M 0.41653
+wandb:          val_mcc 0.85981
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial017 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/uj1398n8
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_033228-uj1398n8/logs
+                                                 47%|████▋     | 14/30 [35:01<36:09, 135.58s/it] 50%|█████     | 15/30 [35:01<35:46, 143.13s/it]wandb: setting up run q82y8hbt
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_033508-q82y8hbt
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial018
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/q82y8hbt
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇▆█▆▆▅▅▄▅▃▅▄▄▃▄▂▃▃▃▂▂▁▃▃▂▂▂▂▁▂▁▂▂▁▂▁▂▁▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▆▄▄▄▃▃▃▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▁▂▃▃▃▄▄▅▅▆▆▇▇▇▇▇▇▇▇▇▇▇█▇██▇██▇████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.55329
+wandb:            epoch 39
+wandb:      sigreg_loss 1.19771
+wandb: trial_efficiency 3083.43879
+wandb:        trial_mcc 0.85627
+wandb:   trial_n_params 277700
+wandb:   trial_params_M 0.2777
+wandb:          val_mcc 0.85434
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial018 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/q82y8hbt
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_033508-q82y8hbt/logs
+                                                 50%|█████     | 15/30 [36:41<35:46, 143.13s/it] 53%|█████▎    | 16/30 [36:41<30:24, 130.31s/it]wandb: setting up run ow5kc9wi
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_033649-ow5kc9wi
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial019
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ow5kc9wi
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▆▇█▇▅▇█▅▅▇▅▅▃▅▃▄▃▄▄▄▄▄▄▅▃▄▃▄▂▃▃▂▄▃▂▁▂▂▃▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▄▄▃▃▃▃▃▂▃▂▃▂▂▂▂▂▂▂▂▂▂▁▁▁▂▁▂▂▁▁▁▂▁▁▂▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▆▅▅▆▆▆▆▆▇▆▇▇▆▇█▇▇▇▇▇███
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.59069
+wandb:            epoch 39
+wandb:      sigreg_loss 1.29694
+wandb: trial_efficiency 3006.32884
+wandb:        trial_mcc 0.83486
+wandb:   trial_n_params 277700
+wandb:   trial_params_M 0.2777
+wandb:          val_mcc 0.83486
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial019 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/ow5kc9wi
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_033649-ow5kc9wi/logs
+                                                 53%|█████▎    | 16/30 [38:20<30:24, 130.31s/it] 57%|█████▋    | 17/30 [38:20<26:10, 120.82s/it]wandb: setting up run k0digjtq
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_033827-k0digjtq
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial020
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/k0digjtq
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▅▅▃▄▃▃▃▃▂▂▃▂▂▃▂▂▃▃▂▂▂▃▃▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▇▅▅▅▄▄▄▄▃▃▃▃▃▄▃▃▃▂▃▃▂▂▂▂▂▂▂▂▁▁▂▂▂▂▂▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▄▆▇▇▇▇▇████████████████▇██████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.44285
+wandb:            epoch 39
+wandb:      sigreg_loss 1.21461
+wandb: trial_efficiency 944.18661
+wandb:        trial_mcc 0.86793
+wandb:   trial_n_params 919236
+wandb:   trial_params_M 0.91924
+wandb:          val_mcc 0.86005
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial020 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/k0digjtq
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_033827-k0digjtq/logs
+                                                 57%|█████▋    | 17/30 [40:56<26:10, 120.82s/it] 60%|██████    | 18/30 [40:56<26:14, 131.22s/it]wandb: setting up run 2l8qq6x8
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_034103-2l8qq6x8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial021
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2l8qq6x8
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ██▆▆▅▆▅▇▅▄▃▅▃▄▃▃▄▃▂▂▂▃▃▁▁▂▃▄▄▄▂▃▁▂▃▃▂▃▁▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▄▄▃▃▄▃▂▂▃▂▃▂▂▂▂▃▂▁▁▂▂▂▂▂▂▂▁▁▁▂▁▁▂▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▃▄▄▅▅▆▆▆▆▇▇▇▇▇▇▇▇▇▇▇▇▇████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.56874
+wandb:            epoch 39
+wandb:      sigreg_loss 1.09388
+wandb: trial_efficiency 686.80663
+wandb:        trial_mcc 0.86365
+wandb:   trial_n_params 1257484
+wandb:   trial_params_M 1.25748
+wandb:          val_mcc 0.8611
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial021 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2l8qq6x8
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_034103-2l8qq6x8/logs
+                                                 60%|██████    | 18/30 [43:10<26:14, 131.22s/it] 63%|██████▎   | 19/30 [43:10<24:14, 132.23s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_034318-vyam9og3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial022
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vyam9og3
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇█▇▆▇▅▄▄▄▄▄▂▃▂▄▂▃▂▂▂▂▃▂▂▂▁▂▂▁▁▂▂▂▂▃▂▁▂▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss ▇█▆▆▄▅▅▄▄▃▃▃▂▂▃▂▂▃▂▂▂▂▃▂▂▁▂▁▂▁▁▁▁▁▁▁▂▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▂▃▃▄▄▅▆▆▆▇▇▇▇▇▇▇▇▇▇██████▇██▇████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.50517
+wandb:            epoch 39
+wandb:      sigreg_loss 3.13747
+wandb: trial_efficiency 1852.71583
+wandb:        trial_mcc 0.86703
+wandb:   trial_n_params 467980
+wandb:   trial_params_M 0.46798
+wandb:          val_mcc 0.86427
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial022 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vyam9og3
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_034318-vyam9og3/logs
+                                                 63%|██████▎   | 19/30 [44:52<24:14, 132.23s/it] 67%|██████▋   | 20/30 [44:52<20:30, 123.08s/it]wandb: setting up run o6g7vyj8
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_034459-o6g7vyj8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial023
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o6g7vyj8
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▆▅▅▄▅▃▄▂▃▄▃▄▃▄▃▂▃▃▂▃▂▃▂▁▃▂▂▂▂▂▂▂▂▂▁▂▁▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▆▅▆▃▅▃▃▃▄▂▃▄▂▃▂▂▂▂▂▃▂▂▂▂▂▂▂▂▂▁▂▁▂▂▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▅▆▆▇▇▇▇█▇█████████████████████████▇▇▇▇
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.4216
+wandb:            epoch 39
+wandb:      sigreg_loss 1.6067
+wandb: trial_efficiency 694.38408
+wandb:        trial_mcc 0.87318
+wandb:   trial_n_params 1257484
+wandb:   trial_params_M 1.25748
+wandb:          val_mcc 0.85858
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial023 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o6g7vyj8
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_034459-o6g7vyj8/logs
+                                                 67%|██████▋   | 20/30 [47:04<20:30, 123.08s/it] 70%|███████   | 21/30 [47:04<18:51, 125.77s/it]wandb: setting up run do1ixjq2
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_034712-do1ixjq2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial024
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/do1ixjq2
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▅▅▅▅▄▄▃▄▃▃▄▃▃▃▃▄▃▂▂▂▁▂▃▁▂▁▁▃▃▂▂▂▁▂▃▁▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▅▅▅▄▄▃▃▃▂▃▃▃▂▃▂▃▂▃▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▂▁▂▂▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▃▃▃▄▄▅▅▄▆▆▆▆▇▇▇▇▇▇█▇▇▇▇█▇▇██▇█████▇▇██
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.56806
+wandb:            epoch 39
+wandb:      sigreg_loss 1.39327
+wandb: trial_efficiency 1972.74983
+wandb:        trial_mcc 0.8568
+wandb:   trial_n_params 434316
+wandb:   trial_params_M 0.43432
+wandb:          val_mcc 0.84361
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial024 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/do1ixjq2
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_034712-do1ixjq2/logs
+                                                 70%|███████   | 21/30 [48:43<18:51, 125.77s/it] 73%|███████▎  | 22/30 [48:43<15:41, 117.68s/it]wandb: setting up run 2u1ei8q2
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_034850-2u1ei8q2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial025
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2u1ei8q2
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇██▅▇▇█▇▆▇▅▄▆▄▄▄▄▃▄▃▂▃▂▃▂▃▁▂▂▂▂▂▁▁▃▂▂▂▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▅▅▅▄▃▃▃▃▂▃▂▂▂▂▂▂▂▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▂▂▃▃▃▃▄▄▄▅▅▆▆▆▇▆▇▇▇▇▇▇▇██▇███████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.60416
+wandb:            epoch 39
+wandb:      sigreg_loss 0.92426
+wandb: trial_efficiency 1949.56352
+wandb:        trial_mcc 0.84673
+wandb:   trial_n_params 434316
+wandb:   trial_params_M 0.43432
+wandb:          val_mcc 0.83782
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial025 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/2u1ei8q2
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_034850-2u1ei8q2/logs
+                                                 73%|███████▎  | 22/30 [50:24<15:41, 117.68s/it] 77%|███████▋  | 23/30 [50:24<13:08, 112.64s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_035031-vdb5964k
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial026
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vdb5964k
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇█▇█▅▅▄▃▅▅▄▂▄▂▁▂▃▃▂▂▃▁▁▂▂▃▁▂▂▁▃▂▁▂▂▁▂▂▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss ██▇▅▄▅▄▄▄▅▃▅▄▄▃▃▃▃▂▃▃▃▃▂▁▃▃▂▂▂▂▃▂▃▂▃▂▂▂▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▃▃▄▅▅▆▅▇▇▇▇▇▇▇▇▇▇▇▇█▇▇███▇▇█▇████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.54802
+wandb:            epoch 39
+wandb:      sigreg_loss 4.90339
+wandb: trial_efficiency 710.50952
+wandb:        trial_mcc 0.86954
+wandb:   trial_n_params 1223820
+wandb:   trial_params_M 1.22382
+wandb:          val_mcc 0.85812
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial026 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vdb5964k
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_035031-vdb5964k/logs
+                                                 77%|███████▋  | 23/30 [52:35<13:08, 112.64s/it] 80%|████████  | 24/30 [52:35<11:49, 118.24s/it]wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_035242-vhahzleg
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial027
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vhahzleg
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▇▆▆▇▇▅█▆▃▄▃▃▃▄▄▂▃▂▄▁▂▃▂▂▁▃▃▂▂▂▃▃▄▃▂▂▃▂▁▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▆▅▄▃▃▄▂▃▂▂▂▂▂▂▁▂▂▂▁▂▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▂▂▃▄▄▄▅▅▅▆▆▆▆▆▇▇▇▇▇▇▇███▇████▇████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.50761
+wandb:            epoch 39
+wandb:      sigreg_loss 1.03701
+wandb: trial_efficiency 3637.54732
+wandb:        trial_mcc 0.85725
+wandb:   trial_n_params 235668
+wandb:   trial_params_M 0.23567
+wandb:          val_mcc 0.85725
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial027 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/vhahzleg
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_035242-vhahzleg/logs
+                                                 80%|████████  | 24/30 [54:31<11:49, 118.24s/it] 83%|████████▎ | 25/30 [54:31<09:48, 117.69s/it]wandb: setting up run eyicz4re
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_035439-eyicz4re
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial028
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/eyicz4re
+wandb: updating run metadata
+wandb: uploading config.yaml; uploading wandb-summary.json
+wandb: uploading wandb-summary.json
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▇▇▆▅▅▅▃▄▄▃▄▄▄▂▃▃▃▂▃▂▃▂▃▂▂▃▂▂▂▃▃▁▂▃▃▂▃▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▇▅▄▃▄▃▂▃▂▄▂▂▂▁▃▂▂▂▂▂▁▂▂▂▁▁▂▁▁▁▂▂▁▂▁▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▃▃▄▄▆▆▆▇▆▇▇▇▇▇▇▇▇▇▇▇██▇▇██████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.45782
+wandb:            epoch 39
+wandb:      sigreg_loss 4.31169
+wandb: trial_efficiency 2078.68422
+wandb:        trial_mcc 0.86584
+wandb:   trial_n_params 416532
+wandb:   trial_params_M 0.41653
+wandb:          val_mcc 0.86584
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial028 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/eyicz4re
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_035439-eyicz4re/logs
+                                                 83%|████████▎ | 25/30 [57:15<09:48, 117.69s/it] 87%|████████▋ | 26/30 [57:15<08:46, 131.54s/it]wandb: W&B API key is configured. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_035723-rt95m544
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial029
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/rt95m544
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▆▆▄▅▅▄▃▄▄▃▃▄▃▃▃▃▂▃▃▃▃▂▃▂▃▂▃▂▂▂▃▂▂▂▄▂▁▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▅▅▄▂▄▃▃▃▂▂▃▂▂▂▂▁▂▁▁▂▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▂▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▄▅▆▆▇▆▇▇▇▇▇███████████████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.48423
+wandb:            epoch 39
+wandb:      sigreg_loss 1.04821
+wandb: trial_efficiency 710.93304
+wandb:        trial_mcc 0.87005
+wandb:   trial_n_params 1223820
+wandb:   trial_params_M 1.22382
+wandb:          val_mcc 0.86551
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial029 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/rt95m544
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_035723-rt95m544/logs
+                                                 87%|████████▋ | 26/30 [59:29<08:46, 131.54s/it] 90%|█████████ | 27/30 [59:29<06:36, 132.16s/it]wandb: setting up run 7fswkn6x
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_035936-7fswkn6x
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial030
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/7fswkn6x
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▇▇▆▄▄▅▃▃▄▅▄▃▃▃▃▂▄▂▂▂▄▃▄▄▁▂▂▃▂▂▂▂▃▂▂▁▂▁▃
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss ██▆▆▆▅▆▆▆▅▆▆▆▆▄▃▄▄▅▄▄▃▄▃▄▃▃▃▂▂▃▂▂▁▂▁▂▂▁▂
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▃▃▅▅▆▇▇▇▇▇▇▇████▇▇██▇█▇███████████▇████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.54022
+wandb:            epoch 39
+wandb:      sigreg_loss 3.6169
+wandb: trial_efficiency 945.77938
+wandb:        trial_mcc 0.86939
+wandb:   trial_n_params 919236
+wandb:   trial_params_M 0.91924
+wandb:          val_mcc 0.86312
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial030 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/7fswkn6x
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_035936-7fswkn6x/logs
+                                                 90%|█████████ | 27/30 [1:02:11<06:36, 132.16s/it] 93%|█████████▎| 28/30 [1:02:11<04:42, 141.14s/it]wandb: setting up run o6xhbcmq
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_040218-o6xhbcmq
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial031
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o6xhbcmq
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:          ce_loss ▆▇█▇▆▆▅▅▄▆▄▃▄▄▄▃▃▆▃▃▄▃▃▂▃▃▂▂▃▂▂▁▂▂▃▄▂▂▁▂
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▇▇▇▄▄▄▅▃▄▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▂▂▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▂▃▃▄▄▅▅▆▆▆▆▆▇▆▇▇▇▇▇█▇█▇█▇██████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.51113
+wandb:            epoch 39
+wandb:      sigreg_loss 0.98915
+wandb: trial_efficiency 1045.02618
+wandb:        trial_mcc 0.8664
+wandb:   trial_n_params 829068
+wandb:   trial_params_M 0.82907
+wandb:          val_mcc 0.86455
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial031 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o6xhbcmq
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_040218-o6xhbcmq/logs
+                                                   93%|█████████▎| 28/30 [1:04:07<04:42, 141.14s/it] 97%|█████████▋| 29/30 [1:04:07<02:13, 133.53s/it]wandb: setting up run n1j9am8p
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_040414-n1j9am8p
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run hpo_sigreg_trial032
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/n1j9am8p
+wandb: updating run metadata
+wandb: uploading wandb-summary.json
+wandb: uploading history steps 38-40, summary
+wandb: 
+wandb: Run history:
+wandb:          ce_loss █▅▅▅▅▄▄▃▃▃▂▂▃▂▃▄▃▂▂▂▃▃▂▂▃▂▃▃▁▂▂▂▂▂▁▁▁▂▂▁
+wandb:            epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:      sigreg_loss █▅▄▄▃▃▃▃▂▂▃▃▂▂▂▁▂▂▁▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▂▁▁▁
+wandb: trial_efficiency ▁
+wandb:        trial_mcc ▁
+wandb:   trial_n_params ▁
+wandb:   trial_params_M ▁
+wandb:          val_mcc ▁▄▅▅▇▇▇▇▇▇██████████████████████████████
+wandb: 
+wandb: Run summary:
+wandb:          ce_loss 0.47227
+wandb:            epoch 39
+wandb:      sigreg_loss 1.06513
+wandb: trial_efficiency 2744.65561
+wandb:        trial_mcc 0.87132
+wandb:   trial_n_params 317460
+wandb:   trial_params_M 0.31746
+wandb:          val_mcc 0.86508
+wandb: 
+wandb: 🚀 View run hpo_sigreg_trial032 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/n1j9am8p
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_040414-n1j9am8p/logs
+                                                   97%|█████████▋| 29/30 [1:06:18<02:13, 133.53s/it]100%|██████████| 30/30 [1:06:18<00:00, 132.74s/it]100%|██████████| 30/30 [1:06:18<00:00, 132.60s/it]
+[I 2026-08-23 03:02:17,180] Trial 3 finished with values: [0.8628385519912272, 696900.0] and parameters: {'d_model': 192, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.001434715951720141, 'lr': 0.005399484409787433}.
+[I 2026-08-23 03:05:02,050] Trial 4 finished with values: [0.8690919720016186, 919236.0] and parameters: {'d_model': 192, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.003095566460242371, 'lr': 0.00023270677083837802}.
+[I 2026-08-23 03:06:58,909] Trial 5 finished with values: [0.874140216812612, 474564.0] and parameters: {'d_model': 192, 'num_layers': 2, 'latent_dim': 128, 'sigreg_lambda': 0.00614454378558747, 'lr': 0.0005404103854647331}.
+[I 2026-08-23 03:09:13,163] Trial 6 finished with values: [0.8685136018226446, 696900.0] and parameters: {'d_model': 192, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.04362599362560559, 'lr': 0.00021930485556643703}.
+[I 2026-08-23 03:11:41,990] Trial 7 finished with values: [0.866193292734531, 1618572.0] and parameters: {'d_model': 256, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.07026263205443048, 'lr': 0.0007591104805282694}.
+[I 2026-08-23 03:14:22,670] Trial 8 finished with values: [0.8676115287423397, 944708.0] and parameters: {'d_model': 192, 'num_layers': 4, 'latent_dim': 256, 'sigreg_lambda': 0.006939031266619744, 'lr': 0.001096821720752952}.
+[I 2026-08-23 03:17:02,186] Trial 9 finished with values: [0.8671458995686334, 1618572.0] and parameters: {'d_model': 256, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.041087915453240795, 'lr': 0.0069782812651260325}.
+[I 2026-08-23 03:18:58,984] Trial 10 finished with values: [0.862907612011314, 474564.0] and parameters: {'d_model': 192, 'num_layers': 2, 'latent_dim': 128, 'sigreg_lambda': 0.17247957710046016, 'lr': 0.0005170191786366995}.
+[I 2026-08-23 03:21:50,111] Trial 11 finished with values: [0.8718380116257101, 944708.0] and parameters: {'d_model': 192, 'num_layers': 4, 'latent_dim': 256, 'sigreg_lambda': 0.12141307774357366, 'lr': 0.00024970737145052745}.
+[I 2026-08-23 03:24:07,675] Trial 12 finished with values: [0.8725006551511704, 696900.0] and parameters: {'d_model': 192, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.009278723835524695, 'lr': 0.0001705053926026929}.
+[I 2026-08-23 03:25:48,783] Trial 13 finished with values: [0.8575856186390803, 136596.0] and parameters: {'d_model': 128, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.0931504999849916, 'lr': 0.0018841476921545091}.
+[I 2026-08-23 03:28:01,702] Trial 14 finished with values: [0.8662705705743656, 317460.0] and parameters: {'d_model': 128, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.12045290903541855, 'lr': 0.0009718319944817398}.
+[I 2026-08-23 03:29:40,438] Trial 15 finished with values: [0.8615494610481309, 136596.0] and parameters: {'d_model': 128, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.007054030995136232, 'lr': 0.0010402587615883842}.
+[I 2026-08-23 03:32:26,791] Trial 16 finished with values: [0.8722775428499355, 416532.0] and parameters: {'d_model': 128, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.006053833609355681, 'lr': 0.0002101079931010357}.
+[I 2026-08-23 03:35:07,414] Trial 17 finished with values: [0.8639533328869871, 416532.0] and parameters: {'d_model': 128, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.2564424775342913, 'lr': 0.0011986281799901185}.
+[I 2026-08-23 03:36:47,967] Trial 18 finished with values: [0.8562709515180664, 277700.0] and parameters: {'d_model': 192, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.16136053172804796, 'lr': 0.005265761277157428}.
+[I 2026-08-23 03:38:26,693] Trial 19 finished with values: [0.8348575178607275, 277700.0] and parameters: {'d_model': 192, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.35065901428687846, 'lr': 0.00044300218067679835}.
+[I 2026-08-23 03:41:02,120] Trial 20 finished with values: [0.8679303262117769, 919236.0] and parameters: {'d_model': 192, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.02198157476233291, 'lr': 0.0003997206819121809}.
+[I 2026-08-23 03:43:16,709] Trial 21 finished with values: [0.8636483467456907, 1257484.0] and parameters: {'d_model': 256, 'num_layers': 3, 'latent_dim': 256, 'sigreg_lambda': 0.2827368285260592, 'lr': 0.00030138649046798047}.
+[I 2026-08-23 03:44:58,459] Trial 22 finished with values: [0.8670339555105769, 467980.0] and parameters: {'d_model': 256, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.004379016717149333, 'lr': 0.0028604390429824616}.
+[I 2026-08-23 03:47:10,490] Trial 23 finished with values: [0.8731768680713826, 1257484.0] and parameters: {'d_model': 256, 'num_layers': 3, 'latent_dim': 256, 'sigreg_lambda': 0.007341347358329406, 'lr': 0.00023606794572813083}.
+[I 2026-08-23 03:48:49,325] Trial 24 finished with values: [0.8567968137331325, 434316.0] and parameters: {'d_model': 256, 'num_layers': 1, 'latent_dim': 128, 'sigreg_lambda': 0.05511908619816377, 'lr': 0.00022321987366901572}.
+[I 2026-08-23 03:50:30,204] Trial 25 finished with values: [0.8467266284812958, 434316.0] and parameters: {'d_model': 256, 'num_layers': 1, 'latent_dim': 128, 'sigreg_lambda': 0.3131268715143098, 'lr': 0.005684322462212271}.
+[I 2026-08-23 03:52:41,503] Trial 26 finished with values: [0.8695357620551569, 1223820.0] and parameters: {'d_model': 256, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.0017835347589260702, 'lr': 0.00622918911318856}.
+[I 2026-08-23 03:54:37,898] Trial 27 finished with values: [0.8572535012278959, 235668.0] and parameters: {'d_model': 128, 'num_layers': 2, 'latent_dim': 256, 'sigreg_lambda': 0.24786753644700055, 'lr': 0.003628700225554068}.
+[I 2026-08-23 03:57:21,746] Trial 28 finished with values: [0.8658384960243878, 416532.0] and parameters: {'d_model': 128, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.0018787485157309544, 'lr': 0.002123261760236048}.
+[I 2026-08-23 03:59:35,368] Trial 29 finished with values: [0.870054067092426, 1223820.0] and parameters: {'d_model': 256, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.08358923605804226, 'lr': 0.0002981935017114937}.
+[I 2026-08-23 04:02:17,445] Trial 30 finished with values: [0.8693944536580555, 919236.0] and parameters: {'d_model': 192, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.00178988607175397, 'lr': 0.000543790487365709}.
+[I 2026-08-23 04:04:13,225] Trial 31 finished with values: [0.8663977632096785, 829068.0] and parameters: {'d_model': 256, 'num_layers': 2, 'latent_dim': 128, 'sigreg_lambda': 0.13969210681599276, 'lr': 0.0010122183035228775}.
+[I 2026-08-23 04:06:24,122] Trial 32 finished with values: [0.8713183701527939, 317460.0] and parameters: {'d_model': 128, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.05522177540399061, 'lr': 0.00022605876925380287}.
+
+  Pareto frontier (4 points):
+    MCC=0.8741  params=0.47M  {'d_model': 192, 'num_layers': 2, 'latent_dim': 128, 'sigreg_lambda': 0.00614454378558747, 'lr': 0.0005404103854647331}
+    MCC=0.8723  params=0.42M  {'d_model': 128, 'num_layers': 4, 'latent_dim': 128, 'sigreg_lambda': 0.006053833609355681, 'lr': 0.0002101079931010357}
+    MCC=0.8713  params=0.32M  {'d_model': 128, 'num_layers': 3, 'latent_dim': 128, 'sigreg_lambda': 0.05522177540399061, 'lr': 0.00022605876925380287}
+    MCC=0.8615  params=0.14M  {'d_model': 128, 'num_layers': 1, 'latent_dim': 256, 'sigreg_lambda': 0.007054030995136232, 'lr': 0.0010402587615883842}
+
+  Applying best frontier point for full training: {'d_model': 192, 'num_layers': 2, 'latent_dim': 128, 'sigreg_lambda': 0.00614454378558747, 'lr': 0.0005404103854647331}
+
+============================================================
+Phase 2: Direct supervised (sigreg)
+============================================================
+Training 150 epochs...
+  epoch   1: val_mcc=0.6419
+  epoch  21: val_mcc=0.8577
+  epoch  41: val_mcc=0.8689
+  epoch  61: val_mcc=0.8529
+  Early stopping at epoch 64 (patience=25, best=0.8710)
+  Best val MCC: 0.8710
+  Test MCC:     0.8640069814687048
+
+Results appended to 20-aug/results/exotic/normal-new-ds/exotic_results.csv

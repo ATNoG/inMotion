@@ -1,0 +1,167 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: andreribeiro87 (andreribeiro87-universidade-de-aveiro) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Using a boolean value for 'reinit' is deprecated. Use 'return_previous' or 'finish_previous' instead.
+wandb: setting up run jkomlyjc
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_140523-jkomlyjc
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run cf_jepa_pretrain_seed42
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/jkomlyjc
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb: pretrain/best_probe_mcc ▁
+wandb:            pretrain/ema ▁▁▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇██
+wandb:          pretrain/epoch ▁▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇██
+wandb:             pretrain/lr ███████████▇▇▇▇▇▇▆▆▆▆▅▅▅▅▅▄▄▄▄▃▃▂▂▂▂▂▁▁▁
+wandb:      pretrain/probe_mcc █▆▆█▅▆▇█▅▇▆▅▄▄▁
+wandb:     pretrain/train_loss █▇▆▆▆▅▅▅▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▁▂▁▁▁▁▁▁
+wandb:     pretrain/uniformity ▁▁▁▁▁▁▁▁▁▅▅▅▅▆▆▆▆▆▆▆▆▆▆▆▇▇▇▇▇▇▇▇▇███████
+wandb:       pretrain/val_loss █▄▄▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb: pretrain/best_probe_mcc 0.58881
+wandb:            pretrain/ema 0.99249
+wandb:          pretrain/epoch 149
+wandb:             pretrain/lr 1e-05
+wandb:      pretrain/probe_mcc 0.5698
+wandb:     pretrain/train_loss 0.17243
+wandb:     pretrain/uniformity 3.55943
+wandb:       pretrain/val_loss 0.01324
+wandb: 
+wandb: 🚀 View run cf_jepa_pretrain_seed42 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/jkomlyjc
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_140523-jkomlyjc/logs
+wandb: setting up run sg2pkc6b
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_143647-sg2pkc6b
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run cf_jepa_ft_seed42_s1
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/sg2pkc6b
+wandb: updating run metadata; uploading artifact run-sg2pkc6b-final_val_confusion_matrix_table
+wandb: uploading artifact run-sg2pkc6b-final_val_confusion_matrix_table
+wandb: uploading media/table/final_val_confusion_matrix_table_50_77bf00cfced9747cb1ce.table.json; uploading wandb-summary.json; uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:                       best_epoch ▁
+wandb:                     best_val_mcc ▁
+wandb:                            epoch ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:                    final_val_acc ▁
+wandb:               final_val_f1_macro ▁
+wandb:                   final_val_loss ▁
+wandb:  final_val_per_class/AA/f1-score ▁
+wandb: final_val_per_class/AA/precision ▁
+wandb:    final_val_per_class/AA/recall ▁
+wandb:   final_val_per_class/AA/support ▁
+wandb:                              +25 ...
+wandb: 
+wandb: Run summary:
+wandb:                       best_epoch 41
+wandb:                     best_val_mcc 0.68865
+wandb:                            epoch 50
+wandb:                    final_val_acc 0.7659
+wandb:               final_val_f1_macro 0.76689
+wandb:                   final_val_loss 0.87276
+wandb:  final_val_per_class/AA/f1-score 0.73758
+wandb: final_val_per_class/AA/precision 0.71444
+wandb:    final_val_per_class/AA/recall 0.76228
+wandb:   final_val_per_class/AA/support 896
+wandb:                              +25 ...
+wandb: 
+wandb: 🚀 View run cf_jepa_ft_seed42_s1 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/sg2pkc6b
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_143647-sg2pkc6b/logs
+wandb: setting up run o7ezsl1t
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /slurm_shared/home/andrepedroribeiro@av.it.pt/inMotion/wandb/run-20260823_143807-o7ezsl1t
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run cf_jepa_ft_seed42_s2
+wandb: ⭐️ View project at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: 🚀 View run at https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o7ezsl1t
+wandb: updating run metadata; uploading artifact run-o7ezsl1t-final_val_confusion_matrix_table
+wandb: uploading artifact run-o7ezsl1t-final_val_confusion_matrix_table
+wandb: uploading config.yaml
+wandb: 
+wandb: Run history:
+wandb:                       best_epoch ▁
+wandb:                     best_val_mcc ▁
+wandb:                            epoch ▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇████
+wandb:                    final_val_acc ▁
+wandb:               final_val_f1_macro ▁
+wandb:                   final_val_loss ▁
+wandb:  final_val_per_class/AA/f1-score ▁
+wandb: final_val_per_class/AA/precision ▁
+wandb:    final_val_per_class/AA/recall ▁
+wandb:   final_val_per_class/AA/support ▁
+wandb:                              +25 ...
+wandb: 
+wandb: Run summary:
+wandb:                       best_epoch 44
+wandb:                     best_val_mcc 0.82619
+wandb:                            epoch 69
+wandb:                    final_val_acc 0.86914
+wandb:               final_val_f1_macro 0.86973
+wandb:                   final_val_loss 0.69099
+wandb:  final_val_per_class/AA/f1-score 0.83989
+wandb: final_val_per_class/AA/precision 0.8123
+wandb:    final_val_per_class/AA/recall 0.86942
+wandb:   final_val_per_class/AA/support 896
+wandb:                              +25 ...
+wandb: 
+wandb: 🚀 View run cf_jepa_ft_seed42_s2 at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo/runs/o7ezsl1t
+wandb: ⭐️ View project at: https://wandb.ai/andreribeiro87-universidade-de-aveiro/inMotion-exotic-hpo
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260823_143807-o7ezsl1t/logs
+Device: cuda:0
+Model:  cf_jepa
+Data:   dataset_augmented3.csv
+Seed:   42
+
+============================================================
+Phase 1: SSL Pretraining (cf_jepa)
+============================================================
+Pretraining 500 epochs (cf_jepa)...
+  epoch   1/500 | train=0.7672 | val=0.0558 | ema=0.9916
+  epoch  10/500 | train=0.5211 | val=0.0209 | ema=0.9916 | probe=0.588
+  epoch  20/500 | train=0.4717 | val=0.0150 | ema=0.9916 | probe=0.585
+  epoch  21/500 | train=0.4660 | val=0.0147 | ema=0.9916
+  epoch  30/500 | train=0.4251 | val=0.0135 | ema=0.9916 | probe=0.582
+  epoch  40/500 | train=0.3901 | val=0.0128 | ema=0.9917 | probe=0.588
+  epoch  41/500 | train=0.3926 | val=0.0127 | ema=0.9917
+  epoch  50/500 | train=0.3682 | val=0.0125 | ema=0.9917 | probe=0.582
+  epoch  60/500 | train=0.3342 | val=0.0126 | ema=0.9917 | probe=0.582
+  epoch  61/500 | train=0.3260 | val=0.0126 | ema=0.9917
+  epoch  70/500 | train=0.3083 | val=0.0127 | ema=0.9918 | probe=0.585
+  epoch  80/500 | train=0.2847 | val=0.0128 | ema=0.9919 | probe=0.589
+  epoch  81/500 | train=0.2857 | val=0.0128 | ema=0.9919
+  epoch  90/500 | train=0.2606 | val=0.0129 | ema=0.9919 | probe=0.580
+  epoch 100/500 | train=0.2411 | val=0.0130 | ema=0.9920 | probe=0.585
+  epoch 101/500 | train=0.2406 | val=0.0130 | ema=0.9920
+  epoch 110/500 | train=0.2289 | val=0.0131 | ema=0.9921 | probe=0.583
+  epoch 120/500 | train=0.2144 | val=0.0132 | ema=0.9922 | probe=0.581
+  epoch 121/500 | train=0.2092 | val=0.0132 | ema=0.9922
+  epoch 130/500 | train=0.1985 | val=0.0135 | ema=0.9923 | probe=0.578
+  epoch 140/500 | train=0.1829 | val=0.0133 | ema=0.9924 | probe=0.577
+  epoch 141/500 | train=0.1822 | val=0.0133 | ema=0.9924
+  epoch 150/500 | train=0.1724 | val=0.0132 | ema=0.9925 | probe=0.570
+  Early stopping at epoch 150 (probe MCC not improving, best=0.5888)
+Pretraining done in 1880s. Best probe MCC: 0.5888
+Checkpoint: 20-aug/models/exotic/normal-new-ds/full-after-hpo/cf_jepa_pretrain_best.pt
+Visualization summary: models/exotic/viz/cf_jepa_seed42/pretrain_summary.png
+
+============================================================
+Phase 2: Fine-tuning (cf_jepa)
+============================================================
+Stage 1: Training classification head (encoder frozen)...
+  Stage 1 best val MCC: 0.6886 (80s)
+Stage 2: Full fine-tuning (encoder unfrozen)...
+Fine-tuning done in 199s.
+  Best val MCC: 0.8262
+  Test MCC:     0.8118196298435217
+
+Results appended to 20-aug/results/exotic/normal-new-ds/full-after-hpo/exotic_results.csv

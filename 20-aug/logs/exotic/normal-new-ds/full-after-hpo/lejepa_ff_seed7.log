@@ -1,0 +1,19 @@
+Device: cuda:0
+Model:  lejepa
+Data:   dataset.icaisf.csv
+Seed:   7
+
+Loading checkpoint: 20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_pretrain_best.pt
+  Loaded epoch 9
+
+============================================================
+Phase 2: Fine-tuning (lejepa)
+============================================================
+Stage 1: Training classification head (encoder frozen)...
+  Stage 1 best val MCC: 0.5856 (49s)
+Stage 2: Full fine-tuning (encoder unfrozen)...
+Fine-tuning done in 50s.
+  Best val MCC: 0.5863
+  Test MCC:     0.5979882976637926
+
+Results appended to 20-aug/results/exotic/normal-new-ds/full-after-hpo/exotic_results.csv
