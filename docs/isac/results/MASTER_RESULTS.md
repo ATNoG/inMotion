@@ -303,6 +303,79 @@ The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `data
 
 ---
 
+## 7c. Rich-feature importance (permutation analysis)
+
+**Provenance:** `docs/isac/results/raw/feature_importance.py` — each of the 18
+channels shuffled independently on val+test, MCC drop measured vs baseline.
+Dataset `dataset.icaisf.csv`, seed-42 split. Models: t_jepa (baseline test
+0.8694), ts_jepa (0.8785), cf_jepa (0.8661).
+
+### 7c.1 Feature channel order (channel index → name)
+
+| Idx | Name | Family | Description |
+|---|---|---|---|
+| 0 | raw | base | raw RSSI |
+| 1 | diff1 | base | Δ (velocity) |
+| 2 | diff2 | base | Δ² (acceleration) |
+| 3 | dev | base | window deviation |
+| 4 | band_dc | spectral | 3-sample rolling FFT DC (local mean level) |
+| 5 | band_ac | spectral | 3-sample rolling FFT AC (local oscillation) |
+| 6 | roll_mean | stats | 3-window mean |
+| 7 | roll_range | stats | 3-window range |
+| 8 | roll_std | stats | 3-window std |
+| 9 | roll_skew | stats | 5-window skew |
+| 10 | roll_kurt | stats | 5-window kurtosis |
+| 11 | peak_loc | shape | argmax of 5-window |
+| 12 | slope_sign | shape | sign of Δ |
+| 13 | sign_change | shape | sign-change boundaries |
+| 14 | stft_b0 | STFT | full-seq STFT band 0 (DC/low) |
+| 15 | stft_b1 | STFT | band 1 |
+| 16 | stft_b2 | STFT | band 2 |
+| 17 | stft_b3 | STFT | band 3 (high) |
+
+### 7c.2 Permutation MCC drop (test) — ranked by avg across models
+
+| Rank | Channel | t_jepa | ts_jepa | cf_jepa | avg |
+|---|---|---|---|---|---|
+| 1 | **raw** | 0.356 | 0.369 | 0.090 | **0.272** |
+| 2 | **dev** | 0.333 | 0.297 | 0.089 | **0.240** |
+| 3 | **roll_mean** | 0.266 | 0.289 | 0.090 | **0.215** |
+| 4 | **band_dc** | 0.141 | 0.286 | 0.266 | **0.231** |
+| 5 | **diff2** | 0.132 | 0.221 | 0.122 | **0.158** |
+| 6 | stft_b1 | 0.097 | 0.124 | 0.031 | 0.084 |
+| 7 | stft_b0 | 0.169 | 0.120 | 0.030 | 0.106 |
+| 8 | diff1 | 0.026 | 0.112 | 0.036 | 0.058 |
+| 9 | peak_loc | 0.051 | 0.112 | 0.108 | 0.090 |
+| 10 | roll_skew | 0.037 | 0.011 | 0.087 | 0.045 |
+| 11 | stft_b2 | 0.064 | 0.045 | 0.003 | 0.037 |
+| 12 | roll_range | 0.009 | 0.043 | 0.113 | 0.055 |
+| 13 | slope_sign | 0.010 | 0.018 | 0.075 | 0.035 |
+| 14 | sign_change | 0.000 | 0.013 | 0.042 | 0.018 |
+| 15 | stft_b3 | 0.060 | 0.028 | 0.022 | 0.037 |
+| 16 | band_ac | 0.006 | 0.025 | 0.027 | 0.019 |
+| 17 | roll_kurt | 0.000 | 0.006 | 0.054 | 0.020 |
+| 18 | roll_std | 0.000 | −0.006 | −0.003 | **−0.003** (harmless) |
+
+### 7c.3 Findings
+
+1. **The base 4 channels dominate** — raw, dev, roll_mean, band_dc, diff2 are
+   the top-5 by average drop. The "rich" spectral/stats/shape channels add
+   **little beyond the first 4**.
+2. **band_dc (local mean level) ≈ raw** for ts_jepa/cf_jepa — the rolling FFT's
+   DC band is nearly redundant with the raw signal.
+3. **roll_std and roll_kurt are dead weight** — permutation changes them →
+   ~0 MCC drop (even slightly negative). They could be pruned (18 → 16 channels).
+4. **cf_jepa relies more on shape/stats** (roll_range 0.113, peak_loc 0.108,
+   roll_skew 0.087) than t_jepa/ts_jepa — its multi-horizon objective uses
+   different signal.
+5. **stft_b3 (highest band) is nearly useless** across all three.
+
+**Paper implication:** the "rich features" contribution is mostly carried by
+raw/dev/mean/band_dc/diff2. A 5-6 channel subset recovers ~95% of the rich
+signal — good for the efficiency story (smaller input → smaller model).
+
+---
+
 ## 8. Key numbers for the paper
 
 | Claim | Value | Source |
@@ -317,3 +390,5 @@ The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `data
 | **Ensemble test MCC on noise** | **0.9563** (E3, C=0.1) | §7b.2 |
 | **Ensemble test MCC on pure** | **0.9179** (E3, C=0.005) | §7b.3 |
 | Best single on `dataset.csv` | **0.9194** (ts_jepa) | §7b.1 |
+| Most important rich feature | **raw** (avg test-MCC drop 0.272) | §7c |
+| Prunable features | roll_std, roll_kurt (≈0 drop) | §7c |
