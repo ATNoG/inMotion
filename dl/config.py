@@ -17,6 +17,9 @@ class DLConfig:
     in_features: int = 4  # 4 engineered channels: raw, Δ, Δ², window-deviation
     num_classes: int = 4
 
+    # Feature engineering
+    rich_features: bool = False  # True → spectral + statistical + shape channels
+
     # Reproducibility
     seed: int = 42
 

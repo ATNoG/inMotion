@@ -54,11 +54,13 @@ if TYPE_CHECKING:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Exotic model pipeline")
     p.add_argument("--model", type=str, default="t_jepa",
-                   choices=["t_jepa", "ts_jepa", "sigreg",
+                   choices=["t_jepa", "ts_jepa", "lejepa", "sigreg",
                             "mamba3_cnn", "mamba3_tcn", "mamba3_transformer",
                             "mamba3_multiview"],
                    help="Model type")
     p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--rich-features", action="store_true",
+                   help="Use spectral + statistical + shape channels (14 instead of 4)")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--batch-size", type=int, default=512)
     p.add_argument("--gpu", type=int, default=0, help="GPU device index")
@@ -78,6 +80,9 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--patience", type=int, default=25,
                    help="Early stopping patience for direct supervised models")
     p.add_argument("--finetune-lr", type=float, default=1e-3)
+    p.add_argument("--mixup-alpha", type=float, default=0.4,
+                   help="Mixup alpha for supervised fine-tuning (0 disables)")
+    p.add_argument("--label-smoothing", type=float, default=0.1)
     p.add_argument("--lr", type=float, default=1e-3,
                    help="Learning rate for direct supervised models (SIGReg, Mamba)")
     p.add_argument("--finetune-only", action="store_true")
@@ -228,8 +233,9 @@ def load_supervised_data(
 
 def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.t_jepa import TJEPAModel
+    n_channels = 18 if args.rich_features else 4
     return TJEPAModel(
-        n_timesteps=10, n_channels=4,
+        n_timesteps=10, n_channels=n_channels,
         d_model=args.d_model, nhead=args.nhead,
         num_layers=args.num_layers, dim_feedforward=args.dim_ff,
         n_reg_tokens=args.n_reg_tokens,
@@ -243,13 +249,26 @@ def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
 
 def _build_ts_jepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.ts_jepa import TSJEPAModel
+    in_channels = 18 if args.rich_features else 4
     return TSJEPAModel(
-        seq_len=10, patch_size=2, in_channels=4,
+        seq_len=10, patch_size=2, in_channels=in_channels,
         embed_dim=args.d_model, nhead=args.nhead,
         num_layers=args.num_layers, dim_feedforward=args.dim_ff,
         pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
         mask_ratio_start=0.4, mask_ratio_end=0.7,
         ema_start=args.ema_start, ema_end=args.ema_end,
+    )
+
+
+def _build_lejepa(args: argparse.Namespace) -> nn.Module:
+    from dl.models.lejepa import LeJEPAModel
+    in_channels = 18 if args.rich_features else 4
+    return LeJEPAModel(
+        seq_len=10, in_channels=in_channels,
+        d_model=args.d_model, nhead=args.nhead,
+        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
+        pred_num_layers=args.pred_layers,
+        sigreg_lambda=args.jepa_sigreg,
     )
 
 
@@ -283,6 +302,7 @@ def _build_mamba3(variant: str, args: argparse.Namespace) -> nn.Module:
 MODEL_BUILDERS: dict[str, callable] = {
     "t_jepa": _build_t_jepa,
     "ts_jepa": _build_ts_jepa,
+    "lejepa": _build_lejepa,
     "sigreg": _build_sigreg,
     "mamba3_cnn": lambda a: _build_mamba3("cnn", a),
     "mamba3_tcn": lambda a: _build_mamba3("tcn", a),
@@ -309,7 +329,12 @@ def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.dev
             x = batch[0].to(device)
             out = model.forward(x)
             tgt, preds = out[0], out[1]
-            if isinstance(preds, (list, tuple)):
+            if getattr(model, "sigreg", None) is not None and not hasattr(model, "context_encoder"):
+                # LeJEPA: (z, z_hat) — next-step prediction MSE
+                z, z_hat = tgt, preds
+                val_sum += torch.nn.functional.mse_loss(z_hat[:, :-1], z[:, 1:]).item() * x.size(0)
+                val_n += x.size(0)
+            elif isinstance(preds, (list, tuple)):
                 # T-JEPA: (tgt, preds list, ctx_mask, tgt_masks list, ctx_latents)
                 tgt_masks = out[3]
                 for p, tm in zip(preds, tgt_masks):
@@ -345,14 +370,15 @@ def _probe_mcc(
     from sklearn.metrics import matthews_corrcoef
 
     d = getattr(model, "d_model", None) or getattr(model, "embed_dim")
-    n_reg = getattr(model.context_encoder, "n_reg_tokens", 0)
+    encoder = getattr(model, "encoder", None) or getattr(model, "context_encoder")
+    n_reg = getattr(encoder, "n_reg_tokens", 0)
 
     probe = nn.Linear(d, 4).to(device)
     opt = torch.optim.AdamW(probe.parameters(), lr=lr)
     ce = nn.CrossEntropyLoss()
 
     def pool(x: Tensor) -> Tensor:
-        z = model.context_encoder(x)  # (B, N, D)
+        z = encoder(x)  # (B, N, D)
         if n_reg:
             z = z[:, n_reg:, :]
         return z.mean(dim=1)  # (B, D)
@@ -402,7 +428,8 @@ def pretrain_jepa(
     """
     model.to(device)
 
-    params = list(model.context_encoder.parameters()) + list(model.predictor.parameters())
+    encoder = getattr(model, "context_encoder", None) or getattr(model, "encoder")
+    params = list(encoder.parameters()) + list(model.predictor.parameters())
     opt = torch.optim.AdamW(params, lr=args.pretrain_lr, weight_decay=args.pretrain_wd)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.pretrain_epochs,
                                                       eta_min=args.pretrain_lr * 0.01)
@@ -443,7 +470,8 @@ def pretrain_jepa(
             loss.backward()
             torch.nn.utils.clip_grad_norm_(params, 1.0)
             opt.step()
-            model._update_target_encoder()
+            if hasattr(model, "_update_target_encoder"):
+                model._update_target_encoder()
             train_loss += loss.item()
         sch.step()
         train_loss /= max(len(train_loader), 1)
@@ -457,13 +485,17 @@ def pretrain_jepa(
             probe_mcc = _probe_mcc(model, probe_train_loader, probe_val_loader, device)
             if probe_mcc > best_probe:
                 best_probe = probe_mcc
-                torch.save({
+                ckpt = {
                     "epoch": epoch,
                     "probe_mcc": probe_mcc,
-                    "context_encoder": model.context_encoder.state_dict(),
-                    "target_encoder": model.target_encoder.state_dict(),
                     "predictor": model.predictor.state_dict(),
-                }, best_path)
+                }
+                if hasattr(model, "context_encoder"):
+                    ckpt["context_encoder"] = model.context_encoder.state_dict()
+                    ckpt["target_encoder"] = model.target_encoder.state_dict()
+                else:
+                    ckpt["encoder"] = model.encoder.state_dict()
+                torch.save(ckpt, best_path)
 
         # ── Visualization ──
         ema = getattr(model, "ema_momentum", 0.0)
@@ -548,11 +580,14 @@ def finetune_jepa(
 
     Uses progressive unfreezing: freeze encoder → train head → unfreeze → full fine-tune.
     """
-    is_t_jepa = args.model == "t_jepa"
-
-    if is_t_jepa:
+    if args.model == "t_jepa":
         from dl.models.t_jepa import TJEPAClassifier
         clf = TJEPAClassifier(
+            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+        )
+    elif args.model == "lejepa":
+        from dl.models.lejepa import LeJEPAClassifier
+        clf = LeJEPAClassifier(
             pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
         )
     else:
@@ -569,6 +604,9 @@ def finetune_jepa(
     wrapped = W(clf)
 
     config.use_wandb = not args.no_wandb
+    config.mixup_alpha = args.mixup_alpha
+    config.use_mixup = args.mixup_alpha > 0
+    config.label_smoothing = args.label_smoothing
     run_name = f"{args.model}_ft_seed{args.seed}"
     save_path = save_dir / f"{run_name}.pt"
 
@@ -1042,6 +1080,9 @@ def main() -> None:
     config.batch_size = args.batch_size
     config.device = str(device)
     config.use_wandb = not args.no_wandb
+    config.rich_features = args.rich_features
+    if args.rich_features:
+        config.in_features = 18
     if args.wandb_project:
         config.wandb_project = args.wandb_project
     config.models_dir = args.models_dir
@@ -1055,7 +1096,7 @@ def main() -> None:
     pretrained_model: nn.Module | None = None
     viz = None
 
-    is_jepa = args.model in ("t_jepa", "ts_jepa")
+    is_jepa = args.model in ("t_jepa", "ts_jepa", "lejepa")
 
     if is_jepa and not args.finetune_only and args.checkpoint is None:
         print(f"\n{'=' * 60}")
@@ -1073,6 +1114,9 @@ def main() -> None:
         pt_config.seed = args.seed
         pt_config.batch_size = args.batch_size
         pt_config.device = str(device)
+        pt_config.rich_features = args.rich_features
+        if args.rich_features:
+            pt_config.in_features = 18
 
         (pt_train_loader, pt_val_loader,
          probe_train_loader, probe_val_loader) = load_pretrain_data(pt_config)
@@ -1096,7 +1140,10 @@ def main() -> None:
         print(f"\nLoading checkpoint: {args.checkpoint}")
         pretrained_model = MODEL_BUILDERS[args.model](args)
         ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
-        pretrained_model.context_encoder.load_state_dict(ckpt["context_encoder"])
+        if hasattr(pretrained_model, "context_encoder"):
+            pretrained_model.context_encoder.load_state_dict(ckpt["context_encoder"])
+        else:
+            pretrained_model.encoder.load_state_dict(ckpt["encoder"])
         pretrained_model.to(device)
         print(f"  Loaded epoch {ckpt['epoch']}")
 

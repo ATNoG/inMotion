@@ -29,6 +29,76 @@ def _expand_features(X_seq: np.ndarray) -> np.ndarray:
     return np.stack([raw, diff1, diff2, dev], axis=-1)  # (N, T, 4)
 
 
+def _expand_features_rich(X_seq: np.ndarray) -> np.ndarray:
+    """Expand (N, T, 1) → (N, T, C) with spectral, statistical, and shape features.
+
+    The base 4 channels (raw, Δ, Δ², deviation) are deterministic transforms of
+    one signal. These add genuinely new information: frequency content, window
+    shape, and distributional statistics that raw values and their differences
+    cannot express.
+    """
+    raw = X_seq[:, :, 0].astype(np.float32)  # (N, T)
+    N, T = raw.shape
+
+    # --- base temporal channels (same as _expand_features) ---
+    zeros_col = np.zeros((N, 1), dtype=np.float32)
+    diff1 = np.concatenate([zeros_col, np.diff(raw, axis=1)], axis=1)
+    diff2 = np.concatenate([zeros_col, np.diff(diff1, axis=1)], axis=1)
+    dev = raw - raw.mean(axis=1, keepdims=True)
+
+    # --- spectral content: rolling FFT band energies ---
+    # 3-sample window at each position; captures local frequency signature.
+    pad = np.pad(raw, ((0, 0), (1, 1)), mode="edge")  # (N, T+2)
+    windows = np.stack([pad[:, :-2], pad[:, 1:-1], pad[:, 2:]], axis=-1)  # (N, T, 3)
+    spec = np.abs(np.fft.rfft(windows, axis=-1))  # (N, T, 2)
+    band_dc = spec[:, :, 0]                       # mean level
+    band_ac = spec[:, :, 1]                       # local oscillation energy
+
+    # --- window statistics (rolling) ---
+    roll_mean = windows.mean(axis=-1)
+    roll_range = windows.max(axis=-1) - windows.min(axis=-1)
+    roll_std = windows.std(axis=-1)
+    # skew/kurtosis over a 3-sample window are near-degenerate; use a wider 5-sample
+    # window for higher moments so the statistic actually varies.
+    pad5 = np.pad(raw, ((0, 0), (2, 2)), mode="edge")
+    win5 = np.stack([pad5[:, :-4], pad5[:, 1:-3], pad5[:, 2:-2], pad5[:, 3:-1], pad5[:, 4:]], axis=-1)
+    mu = win5.mean(axis=-1, keepdims=True)
+    s = win5.std(axis=-1, keepdims=True) + 1e-8
+    roll_skew = ((win5 - mu) ** 3).mean(axis=-1) / (s[..., 0] ** 3)
+    roll_kurt = ((win5 - mu) ** 4).mean(axis=-1) / (s[..., 0] ** 4)
+
+    # --- cross-timestep shape ---
+    peak_loc = np.argmax(np.abs(win5), axis=-1)      # 0..4 within window
+    slope_sign = np.sign(diff1)                       # +1 / 0 / -1 per step
+    sign_change = np.abs(np.diff(slope_sign, axis=1))  # 0/1/2 per boundary
+    sign_change = np.concatenate([zeros_col, sign_change], axis=1)  # align to T
+
+    # --- full-sequence STFT (4 frequency-band energies) ---
+    # Sequence-level spectrum, broadcast to every timestep. Captures global
+    # frequency structure the 3-sample rolling FFT cannot see.
+    window = np.hanning(T).astype(np.float32)
+    framed = raw * window[None, :]
+    stft = np.abs(np.fft.rfft(framed, axis=1))  # (N, T//2 + 1)
+    # 4 log-energy bands split across the positive frequencies
+    n_bins = stft.shape[1]
+    edges = np.linspace(0, n_bins, 5, dtype=np.int64)
+    bands = []
+    for i in range(4):
+        b = stft[:, edges[i]:edges[i + 1]]
+        bands.append(np.log1p(b.mean(axis=1)))  # (N,)
+    stft_feats = np.stack(bands, axis=1)  # (N, 4)
+    stft_feats = np.repeat(stft_feats[:, None, :], T, axis=1)  # (N, T, 4)
+
+    feats = [
+        raw, diff1, diff2, dev,      # base 4
+        band_dc, band_ac,            # local spectral 2
+        roll_mean, roll_range, roll_std, roll_skew, roll_kurt,  # stats 5
+        peak_loc.astype(np.float32), slope_sign.astype(np.float32), sign_change.astype(np.float32),  # shape 3
+    ]
+    feats_t = np.stack(feats, axis=-1)  # (N, T, 14)
+    return np.concatenate([feats_t, stft_feats], axis=-1)  # (N, T, 18)
+
+
 # Canonical noise-path label → index mapping (unknown / not-applicable → 4)
 _NOISE_PATH_LABELS: dict[str, int] = {"AA": 0, "AB": 1, "BA": 2, "BB": 3}
 
@@ -86,9 +156,13 @@ class DLDataLoader:
         y: np.ndarray = self.label_encoder.fit_transform(y_raw).astype(np.int64)
         self.classes_ = list(self.label_encoder.classes_)
 
-        # Always reshape to (N, seq_len, 1) raw, then expand to (N, seq_len, 4)
+        # Always reshape to (N, seq_len, 1) raw, then expand to (N, seq_len, C)
         X_seq_raw = X_scaled.reshape(-1, self.config.seq_len, 1)
-        X_seq = _expand_features(X_seq_raw)  # → (N, seq_len, 4)
+        X_seq = (
+            _expand_features_rich(X_seq_raw)
+            if getattr(self.config, "rich_features", False)
+            else _expand_features(X_seq_raw)
+        )
         return X_seq, y
 
     def load_and_preprocess_with_meta(
@@ -104,7 +178,11 @@ class DLDataLoader:
         self.classes_ = list(self.label_encoder.classes_)
 
         X_seq_raw = X_scaled.reshape(-1, self.config.seq_len, 1)
-        X_seq = _expand_features(X_seq_raw)
+        X_seq = (
+            _expand_features_rich(X_seq_raw)
+            if getattr(self.config, "rich_features", False)
+            else _expand_features(X_seq_raw)
+        )
 
         # ── Metadata encoding ─────────────────────────────────────────────────
         noise_col = self.config.noise_col
