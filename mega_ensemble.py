@@ -46,19 +46,21 @@ from dl.data_loader import DLDataLoader
 
 def _build_lejepa():
     from dl.models.lejepa import LeJEPAModel, LeJEPAClassifier
+    # full-after-hpo Pareto winner (0.8676): d_model=128 ff=256 layers=4 pred_layers=3
     pretrained = LeJEPAModel(
-        seq_len=10, in_channels=4, d_model=256, nhead=8,
-        num_layers=4, dim_feedforward=512, pred_num_layers=2, sigreg_lambda=0.1,
+        seq_len=10, in_channels=4, d_model=128, nhead=4,
+        num_layers=4, dim_feedforward=256, pred_num_layers=3, sigreg_lambda=0.05,
     )
     return LeJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_t_jepa():
     from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+    # full-after-hpo Pareto winner (0.8445): d_model=128 layers=4 ff=256 pred_layers=3
     pretrained = TJEPAModel(
-        n_timesteps=10, n_channels=18, d_model=512, nhead=8,
-        num_layers=4, dim_feedforward=512, n_reg_tokens=2,
-        pred_dim=128, pred_num_layers=2,
+        n_timesteps=10, n_channels=18, d_model=128, nhead=4,
+        num_layers=4, dim_feedforward=256, n_reg_tokens=2,
+        pred_dim=64, pred_num_layers=3,
     )
     return TJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
@@ -74,9 +76,11 @@ def _build_ts_jepa():
 
 def _build_cf_jepa():
     from dl.models.cf_jepa import CFJEPAModel, CFJEPAClassifier
+    # full-after-hpo best frontier point (manual run): embed 256, layers 3,
+    # ff 256, pred_dim 128, pred_layers 1, 18-channel rich features
     pretrained = CFJEPAModel(
-        seq_len=10, patch_size=2, in_channels=4, embed_dim=256, nhead=8,
-        num_layers=4, dim_feedforward=512, pred_dim=128, pred_num_layers=2,
+        seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
+        num_layers=3, dim_feedforward=256, pred_dim=128, pred_num_layers=1,
         horizon_start=1, horizon_end=3, ctx_min=1, ctx_max=3,
         ema_start=0.996, ema_end=0.999, sigreg_lambda=0.05,
     )
@@ -117,6 +121,33 @@ def _build_sigreg():
     return _TupleWrap(m)
 
 
+def _build_sigreg_full():
+    """sigreg full-after-hpo checkpoint: encoder 128 filters / 3 blocks."""
+    from dl.models.sigreg_classifier import SIGRegClassifier
+    m = SIGRegClassifier(
+        in_features=4, num_filters=128, num_blocks=3, latent_dim=128,
+        num_classes=4, sigreg_lambda=0.01,
+    )
+    return _TupleWrap(m)
+
+
+def _make_hpo_builder(model_type: str):
+    """Builder that rebuilds an HPO_* checkpoint's architecture from its
+    winning Optuna trial params (stored in optuna_dl_9344.db)."""
+    import optuna
+
+    def build():
+        from run_dl import _build_hpo_best_model
+        from dl.config import DLConfig
+        study = optuna.load_study(
+            study_name=f"inMotion_dl_v3_{model_type}",
+            storage="sqlite:///optuna_dl_9344.db",
+        )
+        return _build_hpo_best_model(model_type, DLConfig(), study.best_trial.params)
+
+    return build
+
+
 def _build_mamba3_cnn():
     from dl.models.mamba3_cnn import Mamba3CNN
     return Mamba3CNN(
@@ -127,24 +158,27 @@ def _build_mamba3_cnn():
 
 def _build_mamba3_tcn():
     from dl.models.mamba3_tcn import Mamba3TCN
+    # backup checkpoint: tcn/d_model=128
     return Mamba3TCN(
-        in_features=4, tcn_channels=192, d_model=192, d_state=16,
+        in_features=4, tcn_channels=128, d_model=128, d_state=16,
         n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
     )
 
 
 def _build_mamba3_transformer():
     from dl.models.mamba3_transformer import Mamba3Transformer
+    # backup checkpoint: d_model=128
     return Mamba3Transformer(
-        in_features=4, d_model=192, d_state=16, nhead=4,
+        in_features=4, d_model=128, d_state=16, nhead=4,
         num_blocks=3, num_classes=4, dropout=0.2, mimo_rank=4,
     )
 
 
 def _build_mamba3_multiview():
     from dl.models.mamba3_multiview import Mamba3MultiView
+    # backup checkpoint: d_model=256
     return Mamba3MultiView(
-        in_features=4, d_model=192, d_state=16,
+        in_features=4, d_model=256, d_state=16,
         n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
     )
 
@@ -456,17 +490,26 @@ def main() -> None:
 
     # ── Deep learning members ────────────────────────────────────────────────
     dl_specs = [
-        {"name": "lejepa", "rich": False, "build": _build_lejepa, "ckpt": "models/exotic/lejepa_ft_seed42.pt"},
-        {"name": "t_jepa", "rich": True, "build": _build_t_jepa, "ckpt": "models/exotic/t_jepa_ft_seed42.pt"},
-        {"name": "ts_jepa", "rich": True, "build": _build_ts_jepa, "ckpt": "models/exotic/ts_jepa_ft_seed42.pt"},
-        {"name": "cf_jepa", "rich": False, "build": _build_cf_jepa, "ckpt": "models/exotic/cf_jepa_ft_seed42.pt"},
-        {"name": "sigreg", "rich": False, "build": _build_sigreg, "ckpt": "models/exotic/sigreg_seed42.pt", "prefix": "m."},
-        {"name": "mamba3_cnn", "rich": False, "build": _build_mamba3_cnn, "ckpt": "models/exotic/mamba3_cnn_seed42.pt"},
-        {"name": "mamba3_tcn", "rich": False, "build": _build_mamba3_tcn, "ckpt": "20-aug/models/exotic/mamba3_tcn_seed42.pt"},
-        {"name": "mamba3_transformer", "rich": False, "build": _build_mamba3_transformer, "ckpt": "20-aug/models/exotic/mamba3_transformer_seed42.pt"},
-        {"name": "mamba3_multiview", "rich": False, "build": _build_mamba3_multiview, "ckpt": "20-aug/models/exotic/mamba3_multiview_seed42.pt"},
-        {"name": "sigreg_s3", "rich": False, "build": _build_sigreg, "ckpt": "20-aug/models/exotic/sigreg_seed3.pt", "prefix": "m."},
-        {"name": "sigreg_s5", "rich": False, "build": _build_sigreg, "ckpt": "20-aug/models/exotic/sigreg_seed5.pt", "prefix": "m."},
+        # ── Best-of-family exotic (20-aug full-after-hpo, dataset_augmented3) ──
+        {"name": "lejepa", "rich": False, "build": _build_lejepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_ft_seed42.pt"},
+        {"name": "t_jepa", "rich": True, "build": _build_t_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/t_jepa_ft_seed42.pt"},
+        {"name": "ts_jepa", "rich": True, "build": _build_ts_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/ts_jepa_ft_seed42.pt"},
+        {"name": "cf_jepa", "rich": True, "build": _build_cf_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/cf_jepa_ft_seed42.pt", "prefix": "c."},
+        # sigreg: use best icaisf-trained backup (0.8795) — the full-after-hpo
+        # sigreg (augmented3) does not transfer to icaisf (0.0185 there).
+        {"name": "sigreg", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed42.pt", "prefix": "m."},
+        {"name": "sigreg_s3", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed3.pt", "prefix": "m."},
+        {"name": "sigreg_s5", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed5.pt", "prefix": "m."},
+        # ── Mamba-3 family (backup/, trained on dataset.icaisf) ──
+        {"name": "mamba3_cnn", "rich": False, "build": _build_mamba3_cnn, "ckpt": "backup/mamba3_cnn_seed42.pt"},
+        {"name": "mamba3_tcn", "rich": False, "build": _build_mamba3_tcn, "ckpt": "backup/mamba3_tcn_seed42.pt"},
+        {"name": "mamba3_transformer", "rich": False, "build": _build_mamba3_transformer, "ckpt": "backup/mamba3_transformer_seed42.pt"},
+        {"name": "mamba3_multiview", "rich": False, "build": _build_mamba3_multiview, "ckpt": "backup/mamba3_multiview_seed42.pt"},
+        # ── HPO DL models (20-aug, optuna_dl_9344.db architectures) ──
+        {"name": "hpo_gru", "rich": False, "build": _make_hpo_builder("gru"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_GRU_seed42.pt"},
+        {"name": "hpo_lstm", "rich": False, "build": _make_hpo_builder("lstm"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_LSTM_seed42.pt"},
+        {"name": "hpo_cnn", "rich": False, "build": _make_hpo_builder("cnn"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_CNN_seed42.pt"},
+        {"name": "hpo_mamba", "rich": False, "build": _make_hpo_builder("mamba"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_MAMBA_seed42.pt"},
         {"name": "deepstack", "rich": False, "build": _build_ds_ensemble, "ckpt": "models/dl/augmented/DeepStackEnsemble_seed42.pt"},
         {"name": "cnn", "rich": False, "build": _build_cnn, "ckpt": "models/dl/CNN_seed42.pt"},
         {"name": "tcn", "rich": False, "build": _build_tcn, "ckpt": "models/dl/TCN_seed42.pt"},
@@ -664,7 +707,7 @@ def main() -> None:
         sizes = [max(member_params[i], 1e-4) for i in range(n)]
         chosen: list[int] = []
         frontier_rows = []
-        best_mcc = -1.0
+        frontier_best_mcc = -1.0
         for step in range(n):
             best_i, best_gain = -1, -1e9
             for i in range(n):
@@ -677,7 +720,7 @@ def main() -> None:
                 ens = sum(w[j] * P[j] for j in cand)
                 mcc = float(matthews_corrcoef(y_test, ens.argmax(1)))
                 added = sizes[i] * (1.0 / len(cand))   # marginal weight this step
-                gain = (mcc - best_mcc) / max(added, 1e-6) if mcc > best_mcc else -1e9
+                gain = (mcc - frontier_best_mcc) / max(added, 1e-6) if mcc > frontier_best_mcc else -1e9
                 if gain > best_gain:
                     best_i, best_gain = i, gain
             if best_i < 0:
@@ -689,8 +732,8 @@ def main() -> None:
             ens = sum(w[j] * P[j] for j in chosen)
             mcc = float(matthews_corrcoef(y_test, ens.argmax(1)))
             total_size = sum(sizes[j] for j in chosen)
-            improved = mcc > best_mcc + 1e-4
-            best_mcc = max(best_mcc, mcc)
+            improved = mcc > frontier_best_mcc + 1e-4
+            frontier_best_mcc = max(frontier_best_mcc, mcc)
             frontier_rows.append({
                 "step": len(chosen),
                 "members": "+".join(names[j] for j in chosen),
