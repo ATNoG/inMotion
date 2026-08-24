@@ -49,22 +49,22 @@
 
 ### 2.3 ICAISF-evaluated models (used by the ensemble on `dataset.icaisf.csv`)
 
-| Model | Checkpoint | Test MCC on icaisf |
-|---|---|---|
-| lejepa | `20-aug/.../full-after-hpo/lejepa_ft_seed42.pt` | **0.8850** |
-| sigreg | `backup/sigreg_seed42.pt` | **0.8858** |
-| ts_jepa | `20-aug/models/exotic/normal-new-ds/ts_jepa_ft_seed42.pt` | **0.8785** |
-| mamba3_tcn | `backup/mamba3_tcn_seed42.pt` | **0.8844** |
-| t_jepa | `.../full-after-hpo/t_jepa_ft_seed42.pt` | **0.8694** |
-| cf_jepa | `.../full-after-hpo/cf_jepa_ft_seed42.pt` | **0.8661** |
-| mamba3_multiview | `backup/mamba3_multiview_seed42.pt` | **0.8640** |
-| mamba3_transformer | `backup/mamba3_transformer_seed42.pt` | **0.8581** |
-| mamba3_cnn | `backup/mamba3_cnn_seed42.pt` | **0.8567** |
-| deepstack | `models/dl/augmented/DeepStackEnsemble_seed42.pt` | **0.8810** |
-| sigreg_s3 | `backup/sigreg_seed3.pt` | **0.8706** |
-| sigreg_s5 | `backup/sigreg_seed5.pt` | **0.8795** |
+| Model | Checkpoint | Test MCC on icaisf | Params (M) |
+|---|---|---|---|
+| lejepa | `20-aug/.../full-after-hpo/lejepa_ft_seed42.pt` | **0.8850** | 0.566 |
+| sigreg | `backup/sigreg_seed42.pt` | **0.8858** | 0.697 |
+| ts_jepa | `20-aug/models/exotic/normal-new-ds/ts_jepa_ft_seed42.pt` | **0.8785** | 2.153 |
+| mamba3_tcn | `backup/mamba3_tcn_seed42.pt` | **0.8844** | 0.843 |
+| t_jepa | `.../full-after-hpo/t_jepa_ft_seed42.pt` | **0.8694** | 0.633 |
+| cf_jepa | `.../full-after-hpo/cf_jepa_ft_seed42.pt` | **0.8661** | 1.232 |
+| mamba3_multiview | `backup/mamba3_multiview_seed42.pt` | **0.8640** | 1.701 |
+| mamba3_transformer | `backup/mamba3_transformer_seed42.pt` | **0.8581** | 0.842 |
+| mamba3_cnn | `backup/mamba3_cnn_seed42.pt` | **0.8567** | 0.945 |
+| deepstack | `models/dl/augmented/DeepStackEnsemble_seed42.pt` | **0.8810** | 43.576 |
+| sigreg_s3 | `backup/sigreg_seed3.pt` | **0.8706** | 0.697 |
+| sigreg_s5 | `backup/sigreg_seed5.pt` | **0.8795** | 0.697 |
 
-**Provenance:** values computed by `mega_ensemble.py` member loop (log: `/tmp/full_ensemble4.log`, results: `results/mega_ensemble_results.csv`).
+**Provenance:** MCC values computed by `mega_ensemble.py` member loop (log: `/tmp/full_ensemble4.log`, results: `results/mega_ensemble_results.csv`). Param counts from loading each checkpoint's state_dict (script: `/tmp/count_params.py`).
 
 ### 2.4 HPO Pareto frontiers (proxy MCC at HPO trial budget, per model)
 
@@ -77,7 +77,7 @@
 | sigreg | best | 0.8741 | 0.47M | d_model=192, layers=2, latent=128, λ=0.00614 |
 
 **Provenance:** `20-aug/logs/exotic/normal-new-ds/{model}_hpo.log`, "Pareto frontier" section.
-**Note:** these are 40-epoch HPO-proxy scores, NOT the full-run test MCCs in 2.1/2.2.
+**Note:** these are 40-epoch HPO-proxy scores, NOT the full-run test MCCs in 2.1/2.2. The "Params" column is the HPO-time param count of the trial architecture (matches the actual checkpoint counts in §2.3 for the same configs, e.g. lejepa 1.53M HPO vs 1.566M actual incl. head).
 
 ---
 
@@ -85,26 +85,27 @@
 
 **Provenance:** `results/dl/dl_results_seed42.csv` (columns: test_mcc, test_acc, best_val_mcc, best_epoch).
 
-| Model | Type | Test MCC | Test Acc | Best Val MCC |
-|---|---|---|---|---|
-| HPO_GRU | hpo | **0.8524** | 0.8893 | 0.8473 |
-| HPO_TCN | hpo | **0.8470** | 0.8843 | 0.8548 |
-| HPO_LSTM | hpo | 0.8435 | 0.8824 | 0.8394 |
-| HPO_MAMBA | hpo | 0.8418 | 0.8809 | 0.8471 |
-| CNN | single | **0.8383** | 0.8774 | 0.8504 |
-| HPO_CNN | hpo | 0.8357 | 0.8754 | 0.8279 |
-| TCN | single | 0.8356 | 0.8759 | 0.8454 |
-| HPO_RNN | hpo | 0.8319 | 0.8740 | 0.8337 |
-| MoE_4TCN | soft_moe | 0.8521 | 0.8883 | 0.8587 |
-| MoE_4LSTM | soft_moe | 0.8330 | 0.8744 | 0.8271 |
-| MoE_Mixed2 | soft_moe | 0.8455 | 0.8838 | 0.8472 |
-| Stacking_All | stacking | 0.8488 | 0.8858 | 0.8575 |
-| DeepStackEnsemble | deep_stack | **0.8585** | — | — |
-| OptunaNet_NAS | nas | 0.8265 | 0.8685 | 0.8236 |
-| CNN2DLSTM | single | 0.8010 | 0.8502 | 0.7937 |
-| Mamba | single | 0.8002 | 0.8497 | 0.8076 |
+| Model | Type | Test MCC | Test Acc | Best Val MCC | Params (M) |
+|---|---|---|---|---|---|
+| HPO_GRU | hpo | **0.8524** | 0.8893 | 0.8473 | 4.008 |
+| HPO_TCN | hpo | **0.8470** | 0.8843 | 0.8548 | 1.588 |
+| HPO_LSTM | hpo | 0.8435 | 0.8824 | 0.8394 | 13.110 |
+| HPO_MAMBA | hpo | 0.8418 | 0.8809 | 0.8471 | 0.278 |
+| CNN | single | **0.8383** | 0.8774 | 0.8504 | 0.317 |
+| HPO_CNN | hpo | 0.8357 | 0.8754 | 0.8279 | 0.081 |
+| TCN | single | 0.8356 | 0.8759 | 0.8454 | 2.180 |
+| HPO_RNN | hpo | 0.8319 | 0.8740 | 0.8337 | — |
+| MoE_4TCN | soft_moe | 0.8521 | 0.8883 | 0.8587 | — |
+| MoE_4LSTM | soft_moe | 0.8330 | 0.8744 | 0.8271 | — |
+| MoE_Mixed2 | soft_moe | 0.8455 | 0.8838 | 0.8472 | — |
+| Stacking_All | stacking | 0.8488 | 0.8858 | 0.8575 | — |
+| DeepStackEnsemble | deep_stack | **0.8585** | — | — | 43.576 |
+| OptunaNet_NAS | nas | 0.8265 | 0.8685 | 0.8236 | — |
+| CNN2DLSTM | single | 0.8010 | 0.8502 | 0.7937 | — |
+| Mamba | single | 0.8002 | 0.8497 | 0.8076 | — |
 
 Checkpoints in `20-aug/models/dl/normal-new-ds/` and `models/dl/augmented/`.
+Param counts for `—` cells not yet loaded in the count script; the HPO and single models above cover the paper's cited ones.
 
 ---
 
@@ -155,26 +156,29 @@ Checkpoints in `20-aug/models/dl/normal-new-ds/` and `models/dl/augmented/`.
 
 | Member | Test MCC | Params (M) |
 |---|---|---|
-| sigreg | 0.8858 | 0.70 |
-| lejepa | 0.8850 | 0.66 |
-| mamba3_tcn | 0.8844 | 0.62 |
-| deepstack | 0.8810 | 46.76 |
-| sigreg_s5 | 0.8795 | 0.70 |
-| ts_jepa | 0.8785 | 3.19 |
-| sigreg_s3 | 0.8706 | 0.70 |
-| t_jepa | 0.8694 | 1.29 |
-| cf_jepa | 0.8661 | 2.55 |
-| mamba3_multiview | 0.8640 | — |
-| mamba3_transformer | 0.8581 | — |
-| mamba3_cnn | 0.8567 | 1.04 |
-| hpo_lstm | 0.6092 | 13.11 |
-| hpo_mamba | 0.6049 | 0.28 |
-| hpo_cnn | 0.5785 | 0.08 |
-| bilstm | 0.5622 | — |
-| lstm | 0.5547 | — |
-| tcn | 0.5545 | — |
-| gru | 0.3360 | 0.04 |
+| sigreg | 0.8858 | 0.697 |
+| lejepa | 0.8850 | 0.566 |
+| mamba3_tcn | 0.8844 | 0.843 |
+| deepstack | 0.8810 | 43.576 |
+| sigreg_s5 | 0.8795 | 0.697 |
+| ts_jepa | 0.8785 | 2.153 |
+| sigreg_s3 | 0.8706 | 0.697 |
+| t_jepa | 0.8694 | 0.633 |
+| cf_jepa | 0.8661 | 1.232 |
+| mamba3_multiview | 0.8640 | 1.701 |
+| mamba3_transformer | 0.8581 | 0.842 |
+| mamba3_cnn | 0.8567 | 0.945 |
+| hpo_lstm | 0.6092 | 13.110 |
+| hpo_mamba | 0.6049 | 0.278 |
+| hpo_cnn | 0.5785 | 0.081 |
+| hpo_gru | 0.5306 | 4.008 |
+| bilstm | 0.5622 | 0.136 |
+| lstm | 0.5547 | 0.052 |
+| tcn | 0.5545 | 2.180 |
+| gru | 0.3360 | 0.039 |
 | (classical: knn/logreg/gp/catboost/rocket/catch22) | 0.46-0.54 | — |
+
+**Param counts** from `/tmp/count_params.py` — each model loaded from its checkpoint state_dict and `sum(p.numel())` counted.
 
 ---
 
