@@ -213,6 +213,68 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 
 ---
 
+## 7b. All models scored on `dataset.csv` (+ noise/pure variants)
+
+**Provenance:** `docs/isac/results/raw/score_dataset_csv.py`, `score_variants.py` — each checkpoint loaded with its `mega_ensemble.py` builder, evaluated with the standard 80/20 split (seed 42) on val and test.
+
+### 7b.1 `dataset.csv` (val 351 / test 703)
+
+| Model | Val MCC | Test MCC | Params (M) |
+|---|---|---|---|
+| **ts_jepa** | 0.8799 | **0.9194** | 2.153 |
+| **lejepa** | 0.8954 | **0.9143** | 0.566 |
+| cf_jepa | 0.8531 | 0.9083 | 1.232 |
+| t_jepa | 0.8907 | 0.8982 | 0.633 |
+| sigreg | 0.4398 | 0.4872 | 0.697 |
+| mamba3_multiview | 0.7129 | 0.7853 | 1.701 |
+| mamba3_tcn | 0.7499 | 0.7816 | 0.843 |
+| deepstack | 0.7705 | 0.7811 | 43.576 |
+| mamba3_cnn | 0.7582 | 0.7703 | 0.945 |
+| mamba3_transformer | 0.7241 | 0.7626 | 0.842 |
+| hpo_lstm | 0.6744 | 0.6256 | 13.110 |
+| hpo_cnn | 0.6227 | 0.6225 | 0.081 |
+| hpo_mamba | 0.6361 | 0.6135 | 0.278 |
+| cnn | 0.6035 | 0.6201 | 0.317 |
+| tcn | 0.5678 | 0.6056 | 2.180 |
+| bilstm | 0.5597 | 0.6035 | 0.136 |
+| lstm | 0.5952 | 0.6014 | 0.052 |
+| hpo_gru | 0.6206 | 0.5746 | 4.008 |
+| gru | 0.3430 | 0.3554 | 0.039 |
+| sigreg_s3 | 0.4237 | 0.4832 | 0.697 |
+| sigreg_s5 | 0.4469 | 0.4775 | 0.697 |
+
+**Ensemble (LR-stack, 16 members): test MCC = 0.9232 (C=0.5)** — above 0.9 ✓
+
+### 7b.2 `dataset_only_noise.csv` (val 120 / test 240)
+
+| Model | Val MCC | Test MCC |
+|---|---|---|
+| lejepa | 0.9351 | **0.9285** |
+| sigreg | 0.9021 | **0.9117** |
+| cf_jepa | 0.8677 | 0.9114 |
+| t_jepa | 0.8031 | 0.9005 |
+| ts_jepa | 0.8671 | 0.8838 |
+
+**Ensemble (LR-stack, 16 members): test MCC = 0.9563 (C=0.1)** ✓
+
+### 7b.3 `dataset_only_pure.csv` (val 16 / test 32 — small set)
+
+| Model | Val MCC | Test MCC |
+|---|---|---|
+| lejepa | 0.9215 | **0.8784** |
+| t_jepa | 1.0000 | 0.8761 |
+| ts_jepa | 0.9215 | 0.8388 |
+| cf_jepa | 0.9215 | 0.8366 |
+| sigreg | 0.8377 | 0.8410 |
+
+**Ensemble (LR-stack, 16 members): test MCC = 0.9179 (C=0.005)** ✓
+
+### 7b.4 Key finding
+
+The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `dataset.csv` than sigreg/mamba3/DL** — the SSL-pretrained encoders generalize across dataset variants. The 16-member ensemble clears **0.9 on every variant** (0.9232 / 0.9563 / 0.9179 test MCC).
+
+---
+
 ## 8. Key numbers for the paper
 
 | Claim | Value | Source |
@@ -223,3 +285,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | Best ensemble subset (size frontier) | **0.8904** @ 1.26M params | §4.3 |
 | Best validation MCC (world+DL, config 2) | **0.9178** | §4.2 |
 | Best validation MCC (greedy, config 6) | **0.9240** | §4.2 |
+| **Ensemble test MCC on `dataset.csv`** | **0.9232** (LR-stack, 16 members) | §7b.1 |
+| **Ensemble test MCC on noise** | **0.9563** | §7b.2 |
+| **Ensemble test MCC on pure** | **0.9179** | §7b.3 |
+| Best single on `dataset.csv` | **0.9194** (ts_jepa) | §7b.1 |
