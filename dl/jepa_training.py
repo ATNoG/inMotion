@@ -187,6 +187,7 @@ class JEPATrainer:
                 # Gradient clipping
                 torch.nn.utils.clip_grad_norm_(params, max_norm=1.0)
                 optimizer.step()
+                self.model._update_target_encoder()
 
                 epoch_loss += loss.item()
                 n_batches += 1

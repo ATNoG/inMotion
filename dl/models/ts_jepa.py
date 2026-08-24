@@ -279,6 +279,7 @@ class TSJEPAModel(nn.Module):
         mask_ratio_end: float = 0.7,
         ema_start: float = 0.996,
         ema_end: float = 0.999,
+        sigreg_lambda: float = 0.05,
     ) -> None:
         super().__init__()
         self.seq_len = seq_len
@@ -290,6 +291,11 @@ class TSJEPAModel(nn.Module):
         self.ema_start = ema_start
         self.ema_end = ema_end
         self.ema_momentum = ema_start
+        self.sigreg_lambda = sigreg_lambda
+
+        if sigreg_lambda > 0:
+            from dl.sigreg import LeJEPASIGReg
+            self.sigreg = LeJEPASIGReg()
 
         # Context encoder
         self.context_encoder = TSJEPAEncoder(
@@ -329,7 +335,7 @@ class TSJEPAModel(nn.Module):
 
     def forward(
         self, x: Tensor, epoch: int = 0, total_epochs: int = 100
-    ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    ) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
         """Pretraining forward pass.
 
         Args:
@@ -340,6 +346,7 @@ class TSJEPAModel(nn.Module):
             target_latents: (B, M, embed_dim)
             predictions: (B, M, embed_dim)
             mask_indices, non_mask_indices
+            ctx_latents: (B, K, embed_dim) — for anti-collapse SIGReg
         """
         B, device = x.size(0), x.device
         mask_ratio = self._mask_ratio(epoch, total_epochs)
@@ -351,7 +358,6 @@ class TSJEPAModel(nn.Module):
         # Target encoder: encode ALL patches, extract masked → (B, M, D)
         with torch.no_grad():
             tgt_all = self.target_encoder(x, keep_indices=None)
-            tgt_all = F.layer_norm(tgt_all, (tgt_all.size(-1),))
             tgt_masked = _gather_by_index(tgt_all, mask_indices)
 
         # Context encoder: encode only unmasked patches → (B, K, D)
@@ -360,7 +366,7 @@ class TSJEPAModel(nn.Module):
         # Predictor: predict masked latents → (B, M, D)
         predictions = self.predictor(ctx_encoded, mask_indices, non_mask_indices)
 
-        return tgt_masked, predictions, mask_indices, non_mask_indices
+        return tgt_masked, predictions, mask_indices, non_mask_indices, ctx_encoded
 
     def pretrain_step(
         self, x: Tensor, epoch: int, total_epochs: int
@@ -371,10 +377,13 @@ class TSJEPAModel(nn.Module):
             1.0 + math.cos(math.pi * progress)
         ) / 2.0
 
-        tgt_masked, predictions, _, _ = self.forward(x, epoch, total_epochs)
+        tgt_masked, predictions, _, _, ctx_latents = self.forward(x, epoch, total_epochs)
         loss = F.l1_loss(predictions, tgt_masked)
 
-        self._update_target_encoder()
+        if self.sigreg_lambda > 0:
+            pooled = ctx_latents.mean(dim=1)
+            loss = loss + self.sigreg_lambda * self.sigreg(pooled)
+
         return loss, {"pretrain_loss": loss.item()}
 
     @torch.no_grad()
@@ -401,7 +410,7 @@ class TSJEPAClassifier(nn.Module):
     ) -> None:
         super().__init__()
         self.encoder = pretrained.context_encoder
-        self.pool = nn.AdaptiveAvgPool1d(1)
+        self.attn = nn.Linear(pretrained.embed_dim, 1)
         self.head = nn.Sequential(
             nn.Linear(pretrained.embed_dim, hidden_dim),
             nn.GELU(),
@@ -412,5 +421,6 @@ class TSJEPAClassifier(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         """x: (B, seq_len, in_channels) → (B, num_classes)."""
         latents = self.encoder(x, keep_indices=None)  # (B, num_patches, embed_dim)
-        pooled = self.pool(latents.transpose(1, 2)).squeeze(-1)
+        w = self.attn(latents).softmax(dim=1)
+        pooled = (latents * w).sum(dim=1)
         return self.head(pooled)

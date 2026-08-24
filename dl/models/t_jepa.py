@@ -51,23 +51,20 @@ def generate_masks(
     tgt_masks = [torch.zeros(batch_size, total, device=device)
                  for _ in range(n_target_masks)]
 
+    n_mask = max(1, int(n_timesteps * mask_ratio))
     for b in range(batch_size):
+        start = torch.randint(0, n_timesteps - n_mask + 1, (1,)).item()
         tgt = torch.zeros(n_timesteps, n_channels, device=device)
-        for c in range(n_channels):
-            n_mask = max(1, int(n_timesteps * mask_ratio))
-            start = torch.randint(0, n_timesteps - n_mask + 1, (1,)).item()
-            tgt[start : start + n_mask, c] = 1.0
+        tgt[start : start + n_mask, :] = 1.0
         tgt_flat = tgt.reshape(-1)
         ctx_mask[b] = 1.0 - tgt_flat
         tgt_masks[0][b] = tgt_flat
 
-        # Extra target masks (if n_target_masks > 1): shifted blocks
+        # Extra target masks (if n_target_masks > 1): different block
         for k in range(1, n_target_masks):
+            start = torch.randint(0, n_timesteps - n_mask + 1, (1,)).item()
             tgt_k = torch.zeros(n_timesteps, n_channels, device=device)
-            for c in range(n_channels):
-                n_mask = max(1, int(n_timesteps * mask_ratio))
-                start = torch.randint(0, n_timesteps - n_mask + 1, (1,)).item()
-                tgt_k[start : start + n_mask, c] = 1.0
+            tgt_k[start : start + n_mask, :] = 1.0
             tgt_masks[k][b] = tgt_k.reshape(-1)
 
     return ctx_mask, tgt_masks
@@ -365,6 +362,7 @@ class TJEPAModel(nn.Module):
         pred_num_layers: int = 2,
         mask_ratio: float = 0.3,
         n_target_masks: int = 1,
+        sigreg_lambda: float = 0.0,
         ema_start: float = 0.996,
         ema_end: float = 1.0,
     ) -> None:
@@ -375,9 +373,17 @@ class TJEPAModel(nn.Module):
         self.d_model = d_model
         self.mask_ratio = mask_ratio
         self.n_target_masks = n_target_masks
+        self.sigreg_lambda = sigreg_lambda
         self.ema_start = ema_start
         self.ema_end = ema_end
         self.ema_momentum = ema_start
+
+        # Anti-collapse regularizer (LeWM mechanism): pushes the context
+        # latent distribution toward N(0,I), preventing the encoder from
+        # collapsing to a low-rank cluster (the T-JEPA failure mode).
+        if sigreg_lambda > 0:
+            from dl.sigreg import LeJEPASIGReg
+            self.sigreg = LeJEPASIGReg()
 
         # Context encoder — trained by gradient descent
         self.context_encoder = TJEPAEncoder(
@@ -407,7 +413,7 @@ class TJEPAModel(nn.Module):
         ):
             p_tgt.data.mul_(m).add_(p_ctx.data, alpha=1.0 - m)
 
-    def forward(self, x: Tensor) -> tuple[Tensor, list[Tensor], Tensor, list[Tensor]]:
+    def forward(self, x: Tensor) -> tuple[Tensor, list[Tensor], Tensor, list[Tensor], Tensor]:
         """Pretraining forward pass.
 
         Args:
@@ -418,6 +424,7 @@ class TJEPAModel(nn.Module):
             predictions: list of (B, total_features, d_model) — one per target mask
             ctx_mask: (B, total_features) — 1=context
             tgt_masks: list of K (B, total_features) — 1=target
+            ctx_latents: (B, n_kept, d_model) — context encoder output
         """
         B, device = x.size(0), x.device
 
@@ -429,7 +436,6 @@ class TJEPAModel(nn.Module):
         # Target encoder: encode ALL features → (B, n_reg + total, d_model)
         with torch.no_grad():
             tgt_full = self.target_encoder(x, mask=None)
-            tgt_full = F.layer_norm(tgt_full, (tgt_full.size(-1),))
             tgt_latents = tgt_full[:, self.context_encoder.n_reg_tokens:, :]
 
         # Context encoder: encode only unmasked features
@@ -441,7 +447,7 @@ class TJEPAModel(nn.Module):
             for tgt_mask in tgt_masks
         ]
 
-        return tgt_latents, predictions, ctx_mask, tgt_masks
+        return tgt_latents, predictions, ctx_mask, tgt_masks, ctx_latents
 
     def pretrain_step(
         self, x: Tensor, epoch: int, total_epochs: int
@@ -453,18 +459,25 @@ class TJEPAModel(nn.Module):
             1.0 + math.cos(math.pi * progress)
         ) / 2.0
 
-        tgt, preds, _, tgt_masks = self.forward(x)
+        tgt, preds, _, tgt_masks, ctx_latents = self.forward(x)
 
-        # L2 loss over target positions only, across all K target masks
+        # L2 loss on unit-norm latents (both sides) — keeps the objective
+        # bounded instead of letting latent magnitude drift upward.
         loss = torch.tensor(0.0, device=x.device)
         n = 0
         for p, tgt_mask in zip(preds, tgt_masks):
-            diff = (p - tgt).pow(2).sum(dim=-1)
+            p = F.normalize(p, dim=-1)
+            tgt_n = F.normalize(tgt, dim=-1)
+            diff = (p - tgt_n).pow(2).sum(dim=-1)
             loss = loss + (diff * tgt_mask).sum()
             n += tgt_mask.sum()
         loss = loss / max(n, 1)
 
-        self._update_target_encoder()
+        # Anti-collapse: SIGReg on pooled context latents (if enabled)
+        if self.sigreg_lambda > 0:
+            pooled = ctx_latents.mean(dim=1)  # (B, d_model)
+            loss = loss + self.sigreg_lambda * self.sigreg(pooled)
+
         return loss, {"pretrain_loss": loss.item()}
 
     @torch.no_grad()
@@ -496,7 +509,7 @@ class TJEPAClassifier(nn.Module):
     ) -> None:
         super().__init__()
         self.encoder = pretrained.context_encoder
-        self.pool = nn.AdaptiveAvgPool1d(1)
+        self.attn = nn.Linear(pretrained.d_model, 1)
         self.head = nn.Sequential(
             nn.Linear(pretrained.d_model, hidden_dim),
             nn.GELU(),
@@ -507,7 +520,8 @@ class TJEPAClassifier(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         """x: (B, n_timesteps, n_channels) → (B, num_classes)."""
         latents = self.encoder(x, mask=None)  # (B, n_reg+total, d_model)
-        # Pool all features except REG tokens
+        # Pool all features except REG tokens with learned attention
         latents = latents[:, self.encoder.n_reg_tokens:, :]  # (B, total, d_model)
-        pooled = self.pool(latents.transpose(1, 2)).squeeze(-1)  # (B, d_model)
+        w = self.attn(latents).softmax(dim=1)  # (B, total, 1)
+        pooled = (latents * w).sum(dim=1)  # (B, d_model)
         return self.head(pooled)

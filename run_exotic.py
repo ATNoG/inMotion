@@ -67,10 +67,16 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pretrain-epochs", type=int, default=300)
     p.add_argument("--pretrain-lr", type=float, default=3e-4)
     p.add_argument("--pretrain-wd", type=float, default=1e-4)
+    p.add_argument("--probe-cadence", type=int, default=10,
+                   help="Pretrain: evaluate linear probe every N epochs")
+    p.add_argument("--probe-patience", type=int, default=5,
+                   help="Pretrain: early-stop after N probe evals without improvement")
 
     # Fine-tuning / Direct supervised
     p.add_argument("--finetune-epochs", type=int, default=50)
     p.add_argument("--epochs", type=int, default=150, help="Direct supervised epochs")
+    p.add_argument("--patience", type=int, default=25,
+                   help="Early stopping patience for direct supervised models")
     p.add_argument("--finetune-lr", type=float, default=1e-3)
     p.add_argument("--lr", type=float, default=1e-3,
                    help="Learning rate for direct supervised models (SIGReg, Mamba)")
@@ -86,10 +92,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--n-reg-tokens", type=int, default=2)
     p.add_argument("--pred-dim", type=int, default=128)
     p.add_argument("--pred-layers", type=int, default=2)
-    p.add_argument("--ema-start", type=float, default=0.996)
-    p.add_argument("--ema-end", type=float, default=1.0)
+    p.add_argument("--ema-start", type=float, default=0.99)
+    p.add_argument("--ema-end", type=float, default=0.996)
     p.add_argument("--n-preds", type=int, default=1,
                    help="T-JEPA: number of target masks per context (1 works best at this scale)")
+    p.add_argument("--jepa-sigreg", type=float, default=0.05,
+                   help="T-JEPA pretrain: SIGReg anti-collapse weight on context latents "
+                        "(0=off; ~0.05-0.1 prevents latent collapse)")
     p.add_argument("--pooling", type=str, default="mean")
 
     # SIGReg specific
@@ -109,7 +118,7 @@ def parse_args() -> argparse.Namespace:
 
     # WandB
     p.add_argument("--no-wandb", action="store_true")
-    p.add_argument("--wandb-project", type=str, default="inMotion-exotic")
+    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-2")
     return p.parse_args()
 
 
@@ -137,13 +146,16 @@ def resolve_device(gpu: int) -> torch.device:
 
 def load_pretrain_data(
     config: DLConfig,
-) -> tuple[DataLoader, DataLoader | None]:
-    """Load data for SSL pretraining (no labels).
+) -> tuple[DataLoader, DataLoader | None, DataLoader, DataLoader]:
+    """Load data for SSL pretraining.
 
-    Returns (train_loader, val_loader) with multi-channel input (B, 10, 4).
+    Returns (train_loader, val_loader, probe_train_loader, probe_val_loader).
+    The probe loaders carry labels — used by the linear probe that monitors
+    representation quality during pretraining (probe MCC drives early
+    stopping and checkpoint selection, not the raw val loss).
     """
     loader = DLDataLoader(config)
-    X_all, _ = loader.load_and_preprocess()
+    X_all, y_all = loader.load_and_preprocess()
     X_all = X_all.astype(np.float32)
 
     # Z-score normalize per channel
@@ -155,8 +167,9 @@ def load_pretrain_data(
     n = len(X_norm)
     n_train = int(n * 0.8)
     indices = np.random.RandomState(config.seed).permutation(n)
-    X_train = torch.from_numpy(X_norm[indices[:n_train]])
-    X_val = torch.from_numpy(X_norm[indices[n_train:]])
+    train_idx, val_idx = indices[:n_train], indices[n_train:]
+    X_train = torch.from_numpy(X_norm[train_idx])
+    X_val = torch.from_numpy(X_norm[val_idx])
 
     from torch.utils.data import TensorDataset
     train_loader = DataLoader(
@@ -167,7 +180,18 @@ def load_pretrain_data(
         TensorDataset(X_val), batch_size=config.batch_size, shuffle=False,
         pin_memory=True, drop_last=False,
     ) if len(X_val) > 0 else None
-    return train_loader, val_loader
+
+    # Labeled loaders for the probe (smaller batch, capped size)
+    probe_batch = min(config.batch_size, 256)
+    probe_train_loader = DataLoader(
+        RSSIDataset(X_norm[train_idx], y_all[train_idx]),
+        batch_size=probe_batch, shuffle=True, drop_last=False,
+    )
+    probe_val_loader = DataLoader(
+        RSSIDataset(X_norm[val_idx], y_all[val_idx]),
+        batch_size=probe_batch, shuffle=False, drop_last=False,
+    )
+    return train_loader, val_loader, probe_train_loader, probe_val_loader
 
 
 def load_supervised_data(
@@ -212,6 +236,7 @@ def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
         pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
         mask_ratio=0.3,
         n_target_masks=getattr(args, "n_preds", 1),
+        sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
         ema_start=args.ema_start, ema_end=args.ema_end,
     )
 
@@ -270,11 +295,96 @@ MODEL_BUILDERS: dict[str, callable] = {
 # Pretraining
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.device) -> float:
+    """Compute pretrain val loss ONLY at supervised (target) positions.
+
+    Handles both model interfaces:
+      - T-JEPA:  forward → (tgt (B,total,D), preds LIST, ctx_mask, tgt_masks list, ctx_latents)
+      - TS-JEPA: forward → (tgt_masked (B,M,D), preds TENSOR (B,M,D), mask_idx, non_mask_idx)
+    """
+    model.eval()
+    val_sum, val_n = 0.0, 0
+    with torch.no_grad():
+        for batch in val_loader:
+            x = batch[0].to(device)
+            out = model.forward(x)
+            tgt, preds = out[0], out[1]
+            if isinstance(preds, (list, tuple)):
+                # T-JEPA: (tgt, preds list, ctx_mask, tgt_masks list, ctx_latents)
+                tgt_masks = out[3]
+                for p, tm in zip(preds, tgt_masks):
+                    p = torch.nn.functional.normalize(p, dim=-1)
+                    tgt_n = torch.nn.functional.normalize(tgt, dim=-1)
+                    diff = (p - tgt_n).pow(2).sum(dim=-1) * tm
+                    val_sum += diff.sum().item()
+                    val_n += tm.sum().item()
+            else:
+                # TS-JEPA: (tgt_masked, preds tensor, mask_idx, non_mask_idx)
+                # predictions already only at masked patches
+                p = torch.nn.functional.normalize(preds, dim=-1)
+                tgt_n = torch.nn.functional.normalize(tgt, dim=-1)
+                val_sum += (p - tgt_n).pow(2).mean().item() * tgt.size(0)
+                val_n += tgt.size(0)
+    return val_sum / max(val_n, 1)
+
+
+def _probe_mcc(
+    model: nn.Module,
+    probe_train_loader: DataLoader,
+    probe_val_loader: DataLoader,
+    device: torch.device,
+    epochs: int = 3,
+    lr: float = 1e-3,
+) -> float:
+    """Train a linear probe on frozen encoder latents, return val MCC.
+
+    Pooled per-sample latents (mean over token dim) → Linear → 4 classes.
+    This is the health metric for pretraining: a collapsed encoder scores
+    near random (~0.25), a good one climbs toward 0.8+.
+    """
+    from sklearn.metrics import matthews_corrcoef
+
+    d = getattr(model, "d_model", None) or getattr(model, "embed_dim")
+    n_reg = getattr(model.context_encoder, "n_reg_tokens", 0)
+
+    probe = nn.Linear(d, 4).to(device)
+    opt = torch.optim.AdamW(probe.parameters(), lr=lr)
+    ce = nn.CrossEntropyLoss()
+
+    def pool(x: Tensor) -> Tensor:
+        z = model.context_encoder(x)  # (B, N, D)
+        if n_reg:
+            z = z[:, n_reg:, :]
+        return z.mean(dim=1)  # (B, D)
+
+    model.eval()
+    for _ in range(epochs):
+        for xb, yb in probe_train_loader:
+            with torch.no_grad():
+                z = pool(xb.to(device))
+            loss = ce(probe(z), yb.to(device))
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+
+    # Evaluate
+    probe.eval()
+    preds_all, y_all = [], []
+    with torch.no_grad():
+        for xb, yb in probe_val_loader:
+            z = pool(xb.to(device))
+            preds_all.extend(probe(z).argmax(1).cpu().tolist())
+            y_all.extend(yb.tolist())
+    return float(matthews_corrcoef(y_all, preds_all))
+
+
 def pretrain_jepa(
     args: argparse.Namespace,
     model: nn.Module,
     train_loader: DataLoader,
     val_loader: DataLoader | None,
+    probe_train_loader: DataLoader,
+    probe_val_loader: DataLoader,
     device: torch.device,
     save_dir: Path,
     viz: JEPAVisualizer | None = None,
@@ -283,6 +393,10 @@ def pretrain_jepa(
 
     Both models share the same pretrain_step interface:
         loss, metrics = model.pretrain_step(x, epoch, total_epochs)
+
+    Early stopping and checkpoint selection use a LINEAR PROBE MCC
+    (representation quality), NOT the raw val loss. The val loss is
+    logged for curves but is unreliable for model selection.
 
     Returns path to best checkpoint.
     """
@@ -309,9 +423,11 @@ def pretrain_jepa(
         except Exception:
             pass
 
-    best_val = float("inf")
     best_path = save_dir / f"{args.model}_pretrain_best.pt"
-    patience, patience_counter = 25, 0
+    probe_cadence = getattr(args, "probe_cadence", 10)
+    best_probe = -1.0
+    best_val_loss = float("inf")
+    val_patience_counter = 0
 
     print(f"Pretraining {args.pretrain_epochs} epochs ({args.model})...")
     t0 = time.time()
@@ -327,27 +443,31 @@ def pretrain_jepa(
             loss.backward()
             torch.nn.utils.clip_grad_norm_(params, 1.0)
             opt.step()
+            model._update_target_encoder()
             train_loss += loss.item()
         sch.step()
         train_loss /= max(len(train_loader), 1)
 
-        # ── Validation ──
-        val_loss = float("inf")
-        if val_loader is not None:
-            model.eval()
-            val_sum = 0.0
-            with torch.no_grad():
-                for batch in val_loader:
-                    x = batch[0].to(device)
-                    tgt, preds, _, _ = model.forward(x)
-                    for p in preds:
-                        val_sum += (p - tgt).pow(2).mean().item()
-            val_loss = val_sum / max(len(val_loader), 1)
+        # ── Validation (masked, target positions only) ──
+        val_loss = _masked_val_loss(model, val_loader, device) if val_loader is not None else float("inf")
+
+        # ── Probe every N epochs (logging only, not used for stopping) ──
+        probe_mcc = None
+        if (epoch + 1) % probe_cadence == 0:
+            probe_mcc = _probe_mcc(model, probe_train_loader, probe_val_loader, device)
+            if probe_mcc > best_probe:
+                best_probe = probe_mcc
+                torch.save({
+                    "epoch": epoch,
+                    "probe_mcc": probe_mcc,
+                    "context_encoder": model.context_encoder.state_dict(),
+                    "target_encoder": model.target_encoder.state_dict(),
+                    "predictor": model.predictor.state_dict(),
+                }, best_path)
 
         # ── Visualization ──
         ema = getattr(model, "ema_momentum", 0.0)
         if viz is not None:
-            # Extract latents every 20 epochs
             latents = None
             if epoch % 20 == 0 and val_loader is not None:
                 with torch.no_grad():
@@ -357,8 +477,6 @@ def pretrain_jepa(
                         all_latents.append(model.get_latents(x))
                     latents = torch.cat(all_latents, dim=0)
             viz.log_pretrain(epoch, train_loss, val_loss, latents, ema)
-
-            # Save latent space snapshot every 50 epochs
             if epoch % 50 == 0 and latents is not None:
                 viz.save_checkpoint_snapshot(
                     epoch, latents,
@@ -368,45 +486,43 @@ def pretrain_jepa(
         # ── WandB ──
         if pretrain_wandb is not None:
             import wandb
-            wandb.log({
+            log = {
                 "pretrain/train_loss": train_loss,
                 "pretrain/val_loss": val_loss,
                 "pretrain/ema": ema,
                 "pretrain/lr": sch.get_last_lr()[0],
                 "pretrain/epoch": epoch,
-            })
+            }
+            if probe_mcc is not None:
+                log["pretrain/probe_mcc"] = probe_mcc
             if viz and viz.uniformity_scores:
-                wandb.log({"pretrain/uniformity": viz.uniformity_scores[-1]})
+                log["pretrain/uniformity"] = viz.uniformity_scores[-1]
+            wandb.log(log)
 
         # ── Logging ──
-        if epoch % 20 == 0 or epoch == args.pretrain_epochs - 1:
+        if epoch % 20 == 0 or epoch == args.pretrain_epochs - 1 or probe_mcc is not None:
+            probe_str = f" | probe={probe_mcc:.3f}" if probe_mcc is not None else ""
             print(f"  epoch {epoch + 1:3d}/{args.pretrain_epochs} | "
-                  f"train={train_loss:.4f} | val={val_loss:.4f} | ema={ema:.4f}")
+                  f"train={train_loss:.4f} | val={val_loss:.4f} | ema={ema:.4f}{probe_str}")
 
-        # ── Checkpoint ──
-        if val_loss < best_val:
-            best_val = val_loss
-            patience_counter = 0
-            torch.save({
-                "epoch": epoch,
-                "context_encoder": model.context_encoder.state_dict(),
-                "target_encoder": model.target_encoder.state_dict(),
-                "predictor": model.predictor.state_dict(),
-            }, best_path)
+        # ── Early stopping (on val loss, not probe) ──
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            val_patience_counter = 0
         else:
-            patience_counter += 1
-
-        if patience_counter >= patience:
-            print(f"  Early stopping at epoch {epoch + 1}")
-            break
+            val_patience_counter += 1
+            if val_patience_counter >= args.patience:
+                print(f"  Early stopping at epoch {epoch + 1} "
+                      f"(val loss not improving, best={best_val_loss:.4f})")
+                break
 
     elapsed = time.time() - t0
-    print(f"Pretraining done in {elapsed:.0f}s. Best val loss: {best_val:.4f}")
+    print(f"Pretraining done in {elapsed:.0f}s. Best probe MCC: {best_probe:.4f}")
     print(f"Checkpoint: {best_path}")
 
     if pretrain_wandb is not None:
         import wandb
-        wandb.log({"pretrain/best_val_loss": best_val})
+        wandb.log({"pretrain/best_probe_mcc": best_probe})
         wandb.finish()
 
     return best_path
@@ -456,10 +572,11 @@ def finetune_jepa(
     run_name = f"{args.model}_ft_seed{args.seed}"
     save_path = save_dir / f"{run_name}.pt"
 
-    # Stage 1: Freeze encoder, train head only
+    # Stage 1: Freeze encoder, train head only (short warmup)
     for p in clf.encoder.parameters():
         p.requires_grad = False
-    config.num_epochs = args.finetune_epochs // 2
+    stage1_epochs = max(1, args.finetune_epochs // 4)
+    config.num_epochs = stage1_epochs
     config.learning_rate = args.finetune_lr
     print("Stage 1: Training classification head (encoder frozen)...")
     t0 = time.time()
@@ -468,10 +585,10 @@ def finetune_jepa(
                  ).fit(wrapped, train_loader, val_loader)
     print(f"  Stage 1 best val MCC: {r1.best_val_mcc:.4f} ({time.time() - t0:.0f}s)")
 
-    # Stage 2: Unfreeze encoder, lower LR
+    # Stage 2: Unfreeze encoder, lower LR, use the remaining budget
     for p in clf.encoder.parameters():
         p.requires_grad = True
-    config.num_epochs = args.finetune_epochs - args.finetune_epochs // 2
+    config.num_epochs = args.finetune_epochs - stage1_epochs
     config.learning_rate = args.finetune_lr * 0.1
     print("Stage 2: Full fine-tuning (encoder unfrozen)...")
     t0 = time.time()
@@ -682,6 +799,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 loss, _ = m.pretrain_step(xb.to(device), ep, pt_epochs)
                 opt.zero_grad(); loss.backward()
                 torch.nn.utils.clip_grad_norm_(params_list, 1.0); opt.step()
+                m._update_target_encoder()
                 pt_loss_sum += loss.item(); pt_n += 1
             avg_pt_loss = pt_loss_sum / max(pt_n, 1)
             if run is not None:
@@ -956,12 +1074,14 @@ def main() -> None:
         pt_config.batch_size = args.batch_size
         pt_config.device = str(device)
 
-        pt_train_loader, pt_val_loader = load_pretrain_data(pt_config)
+        (pt_train_loader, pt_val_loader,
+         probe_train_loader, probe_val_loader) = load_pretrain_data(pt_config)
         pretrained_model = MODEL_BUILDERS[args.model](args)
 
         ckpt_path = pretrain_jepa(
             args, pretrained_model,
             pt_train_loader, pt_val_loader,
+            probe_train_loader, probe_val_loader,
             device, args.models_dir, viz,
         )
         args.checkpoint = ckpt_path
@@ -1047,8 +1167,9 @@ def main() -> None:
             if epoch % 20 == 0:
                 print(f"  epoch {epoch + 1:3d}: val_mcc={val_mcc:.4f}")
 
-            if patience_counter >= config.patience:
-                print(f"  Early stopping at epoch {epoch + 1}")
+            if patience_counter >= args.patience:
+                print(f"  Early stopping at epoch {epoch + 1} "
+                      f"(patience={args.patience}, best={best_val_mcc:.4f})")
                 break
         # Load best and evaluate — wrap to return logits only
         model.load_state_dict(torch.load(save_path, map_location=device, weights_only=False))
