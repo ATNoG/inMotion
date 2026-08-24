@@ -152,7 +152,7 @@ def parse_args() -> argparse.Namespace:
 
     # WandB
     p.add_argument("--no-wandb", action="store_true")
-    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-hpo")
+    p.add_argument("--wandb-project", type=str, default="inMotion-exotic-full-after-hpo")
     return p.parse_args()
 
 
@@ -502,7 +502,8 @@ def pretrain_jepa(
                 name=f"{args.model}_pretrain_seed{args.seed}",
                 config={"model": args.model, "phase": "pretrain",
                         "pretrain_epochs": args.pretrain_epochs,
-                        "batch_size": args.batch_size, "lr": args.pretrain_lr},
+                        "batch_size": args.batch_size, "lr": args.pretrain_lr,
+                        "model_size_M": sum(p.numel() for p in model.parameters()) / 1e6},
                 reinit=True,
             )
         except Exception:
@@ -692,8 +693,11 @@ def finetune_jepa(
     config.learning_rate = args.finetune_lr
     print("Stage 1: Training classification head (encoder frozen)...")
     t0 = time.time()
+    ft_params = sum(p.numel() for p in clf.parameters()) / 1e6
+    ft_size_cfg = {"stage": 1, "model": args.model, "pretrained": True,
+                   "model_size_M": ft_params, "n_params": int(ft_params * 1e6)}
     r1 = Trainer(config, run_name=f"{run_name}_s1",
-                 extra_wandb_config={"stage": 1, "model": args.model, "pretrained": True}
+                 extra_wandb_config=ft_size_cfg
                  ).fit(wrapped, train_loader, val_loader)
     print(f"  Stage 1 best val MCC: {r1.best_val_mcc:.4f} ({time.time() - t0:.0f}s)")
 
@@ -703,9 +707,10 @@ def finetune_jepa(
     config.num_epochs = args.finetune_epochs - stage1_epochs
     config.learning_rate = args.finetune_lr * 0.1
     print("Stage 2: Full fine-tuning (encoder unfrozen)...")
+    ft_size_cfg["stage"] = 2
     t0 = time.time()
     r2 = Trainer(config, run_name=f"{run_name}_s2",
-                 extra_wandb_config={"stage": 2, "model": args.model, "pretrained": True}
+                 extra_wandb_config=ft_size_cfg
                  ).fit(wrapped, train_loader, val_loader, save_path=save_path)
 
     # Evaluate on test set
@@ -1072,8 +1077,21 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 w.writeheader()
                 w.writerows(rows)
             print(f"\nManifest → {manifest_path}")
+        else:
+            # No pareto-train: apply best-MCC frontier point to args so the
+            # fall-through full pretrain+finetune uses the winner's params.
+            best_pt = max(study.best_trials, key=lambda t: t.values[0])
+            print(f"\n  Applying best frontier point for full training: {best_pt.params}")
+            _apply_trial_params(args, best_pt.params)
     else:
         _apply_best_jepa_params(args, study)
+
+
+def _apply_trial_params(args, params: dict) -> None:
+    """Copy a trial's hyperparams onto args (keys matching CLI arg names)."""
+    for k, v in params.items():
+        if hasattr(args, k):
+            setattr(args, k, v)
 
 
 def _apply_best_jepa_params(args, study) -> None:
@@ -1081,9 +1099,7 @@ def _apply_best_jepa_params(args, study) -> None:
     bp = study.best_params
     print(f"\n  Best trial MCC: {study.best_value:.4f}")
     print(f"  Params: {bp}")
-    for k, v in bp.items():
-        if hasattr(args, k):
-            setattr(args, k, v)
+    _apply_trial_params(args, bp)
     # Map study params to CLI arg names
     _map = {"d_model": "d_model", "nhead": "nhead", "num_layers": "num_layers",
             "dim_ff": "dim_ff", "pred_dim": "pred_dim", "pred_layers": "pred_layers",
@@ -1245,13 +1261,16 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
             print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+        # Apply the best-MCC frontier point so the fall-through training
+        # run after HPO uses the winner's hyperparameters.
+        best_pt = max(study.best_trials, key=lambda t: t.values[0])
+        print(f"\n  Applying best frontier point for full training: {best_pt.params}")
+        _apply_trial_params(args, best_pt.params)
     else:
         bp = study.best_params
         print(f"\n  Best trial MCC: {study.best_value:.4f}")
         print(f"  Params: {bp}")
-        for k, v in bp.items():
-            if hasattr(args, k):
-                setattr(args, k, v)
+        _apply_trial_params(args, bp)
 
 
 # ── Mamba-3 HPO ───────────────────────────────────────────────────────────────
@@ -1307,13 +1326,14 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
             print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+        best_pt = max(study.best_trials, key=lambda t: t.values[0])
+        print(f"\n  Applying best frontier point for full training: {best_pt.params}")
+        _apply_trial_params(args, best_pt.params)
     else:
         bp = study.best_params
         print(f"\n  Best trial MCC: {study.best_value:.4f}")
         print(f"  Params: {bp}")
-        for k, v in bp.items():
-            if hasattr(args, k):
-                setattr(args, k, v)
+        _apply_trial_params(args, bp)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
