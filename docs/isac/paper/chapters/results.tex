@@ -7,24 +7,24 @@ This section evaluates the self-supervised world models, supervised sequence bas
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{images/transfer_mcc.pdf}
-\caption{Cross-collection generalization and single-model test \ac{MCC}. Self-supervised JEPA world models demonstrate positive transfer on the extended collection, whereas supervised classifiers and state-space architectures degrade.}
+\caption{Cross-collection generalization and single-model test \ac{MCC}. Self-supervised JEPA world models demonstrate positive transfer on the new collection, whereas supervised classifiers and state-space architectures degrade.}
 \label{fig:transfer}
 \end{figure}
 
-Models were evaluated across both dataset collections. Table~\ref{tab:single} reports the test \ac{MCC} of each model family on the earlier 2,251-sample dataset and on the extended 3,511-sample dataset, along with the performance differential $\Delta$. On the extended collection, the four self-supervised world models achieve the top results: TS-JEPA reaches an \ac{MCC} of 0.9194, LeJEPA obtains 0.9143, CF-JEPA achieves 0.9083, and T-JEPA attains 0.8982. Every evaluated \ac{JEPA} architecture substantially exceeds the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.
+Models were evaluated across both dataset collections. Table~\ref{tab:single} reports the test \ac{MCC} of each model family on the prior 2,251-sample dataset and on the new 3,511-sample dataset, along with the performance differential $\Delta$. On the new collection, the four self-supervised world models achieve the top results: TS-JEPA reaches an \ac{MCC} of 0.9194, LeJEPA obtains 0.9143, CF-JEPA achieves 0.9083, and T-JEPA attains 0.8982. Every evaluated \ac{JEPA} architecture substantially exceeds the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.
 
-By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised SIGReg classifier drops to 0.4872 despite leading the earlier dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Figure~\ref{fig:transfer} illustrates this cross-collection transfer behavior.
+By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised SIGReg classifier drops to 0.4872 despite leading the prior dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Figure~\ref{fig:transfer} illustrates this cross-collection transfer behavior.
 
 Multi-seed evaluations across five independent runs (seeds 3, 5, 7, 123, 2024) confirm protocol stability, with standard deviations constrained within narrow bounds ($\sigma \approx 0.008$ for SIGReg). Full pretraining over 300 to 500 epochs is mandatory: fine-tuning from early checkpoints (below 100 epochs) collapses test \ac{MCC} to 0.49--0.60 across all seeds.
 
 \begin{table}[t]
-\caption{Single-model test \ac{MCC} on earlier \cite{matos2026icaisf} and extended collections. $\Delta$ denotes the test \ac{MCC} difference.}
+\caption{Single-model test \ac{MCC} on prior \cite{matos2026icaisf} and new collections. $\Delta$ denotes the test \ac{MCC} difference.}
 \label{tab:single}
 \centering
 \small
 \begin{tabular}{lccc}
 \toprule
-Model Architecture & Earlier & Extended & $\Delta$ \\
+Model Architecture & Prior & New & $\Delta$ \\
 \midrule
 TS-JEPA & 0.8785 & 0.9194 & +0.041 \\
 LeJEPA & 0.8850 & 0.9143 & +0.029 \\
@@ -40,9 +40,9 @@ HPO GRU & 0.8524 & 0.5746 & $-0.28$ \\
 
 \subsection{Cross-Collection Generalization and Transfer Invariance}
 
-The cross-collection results in Figure~\ref{fig:transfer} and Table~\ref{tab:single} highlight a key finding: while all self-supervised world models exhibit positive transfer from the earlier to the extended collection (gaining +0.029 to +0.042 in \ac{MCC}), supervised models and state-space architectures degrade.
+The cross-collection results in Figure~\ref{fig:transfer} and Table~\ref{tab:single} highlight a key finding: while all self-supervised world models exhibit positive transfer from the prior to the new collection (gaining +0.029 to +0.042 in \ac{MCC}), supervised models and state-space architectures degrade.
 
-The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes the vulnerability of purely supervised regularizers to environmental radio shifts. In SIGReg, the Empirical Characteristic Function regularizer penalizes deviations from an isotropic Gaussian latent prior conditioned strictly on the class labels of the training split. Under the richer multi-device interference and channel fading of the extended collection, this supervised constraint creates brittle decision boundaries tailored to training artifacts. Conversely, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly over radio sequence dynamics without label guidance, extracting latent motion invariants that generalize robustly across collection environments.
+The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes the vulnerability of purely supervised regularizers to environmental radio shifts. In SIGReg, the Empirical Characteristic Function regularizer penalizes deviations from an isotropic Gaussian latent prior conditioned strictly on the class labels of the training split. Under the richer multi-device interference and channel fading of the new collection, this supervised constraint creates brittle decision boundaries tailored to training artifacts. Conversely, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly over radio sequence dynamics without label guidance, extracting latent motion invariants that generalize robustly across collection environments.
 
 \subsection{Calibrated Ensemble Performance and Pareto Efficiency}
 
@@ -53,11 +53,11 @@ The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes t
 \label{fig:params}
 \end{figure}
 
-Table~\ref{tab:ensemble} summarizes ensemble performance across datasets. Softmax probabilities are temperature-calibrated on validation \ac{NLL} before fusion. On the earlier collection, multinomial logistic regression stacking ($C = 0.005$) and entropy-weighted probability averaging both achieve an \ac{MCC} of 0.8873, outperforming uniform probability averaging (0.8814) and Caruana selection (0.8706), whereas rank averaging fails ($-0.316$) due to noisy rank permutations.
+Table~\ref{tab:ensemble} summarizes ensemble performance across datasets. Softmax probabilities are temperature-calibrated on validation \ac{NLL} before fusion. On the prior collection, multinomial logistic regression stacking ($C = 0.005$) and entropy-weighted probability averaging both achieve an \ac{MCC} of 0.8873, outperforming uniform probability averaging (0.8814) and Caruana selection (0.8706), whereas rank averaging fails ($-0.316$) due to noisy rank permutations.
 
-On the extended collection, a 16-member calibrated logistic regression stack attains an overall test \ac{MCC} of 0.9232, scoring 0.9563 on the multi-device noise subset and 0.9179 on the pure single-device subset.
+On the new collection, a 16-member calibrated logistic regression stack attains an overall test \ac{MCC} of 0.9232, scoring 0.9563 on the multi-device noise subset and 0.9179 on the pure single-device subset.
 
-Figure~\ref{fig:params} plots test \ac{MCC} against parameter counts spanning four orders of magnitude (0.039~M for GRU to 43.576~M for DeepStack). Self-supervised world models cluster in a high-performing region between 0.566~M and 2.153~M parameters. Applying greedy Pareto selection on the earlier collection identifies a minimal three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 \ac{MCC} with only 1.26~M parameters, surpassing the full 21-member ensemble while reducing parameter footprint by 97\%.
+Figure~\ref{fig:params} plots test \ac{MCC} against parameter counts spanning four orders of magnitude (0.039~M for GRU to 43.576~M for DeepStack). Self-supervised world models cluster in a high-performing region between 0.566~M and 2.153~M parameters. Applying greedy Pareto selection on the prior collection identifies a minimal three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 \ac{MCC} with only 1.26~M parameters, surpassing the full 21-member ensemble while reducing parameter footprint by 97\%.
 
 \begin{table}[t]
 \caption{Ensemble classification performance across dataset collections.}
@@ -68,11 +68,11 @@ Figure~\ref{fig:params} plots test \ac{MCC} against parameter counts spanning fo
 \toprule
 Ensemble Configuration & Members & Collection & Test \ac{MCC} \\
 \midrule
-21-member full stack & 21 & earlier & 0.8873 \\
-Three-member Pareto subset & 3 & earlier & 0.8904 \\
-16-member full stack & 16 & extended & 0.9232 \\
-16-member stack (noise) & 16 & extended & 0.9563 \\
-16-member stack (pure) & 16 & extended & 0.9179 \\
+21-member full stack & 21 & prior & 0.8873 \\
+Three-member Pareto subset & 3 & prior & 0.8904 \\
+16-member full stack & 16 & new & 0.9232 \\
+16-member stack (noise) & 16 & new & 0.9563 \\
+16-member stack (pure) & 16 & new & 0.9179 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -86,7 +86,7 @@ Three-member Pareto subset & 3 & earlier & 0.8904 \\
 \label{fig:feature_importance}
 \end{figure}
 
-To evaluate individual feature channels, we conduct permutation importance analysis across T-JEPA (baseline test \ac{MCC} 0.8694), TS-JEPA (0.8785), and CF-JEPA (0.8661) on the earlier collection. Each channel is independently permuted across validation and test splits to measure the resulting \ac{MCC} degradation. Figure~\ref{fig:feature_importance} reports the mean degradation across the \ac{JEPA} family.
+To evaluate individual feature channels, we conduct permutation importance analysis across T-JEPA (baseline test \ac{MCC} 0.8694), TS-JEPA (0.8785), and CF-JEPA (0.8661) on the prior collection. Each channel is independently permuted across validation and test splits to measure the resulting \ac{MCC} degradation. Figure~\ref{fig:feature_importance} reports the mean degradation across the \ac{JEPA} family.
 
 Macroscopic signal dynamics and spectral DC components dominate classification performance. The raw \ac{RSSI} sequence is the most critical individual channel, inducing a mean \ac{MCC} drop of 0.272. Window deviation (0.240), rolling FFT DC power ($\text{band\_dc}$, 0.231), rolling mean (0.215), and second-order acceleration ($\Delta^2_t$, 0.158) follow. Intermediate contributions originate from low-frequency STFT bands ($\text{stft\_b0}$ at 0.106, $\text{stft\_b1}$ at 0.084), spectral peak location (0.090), first-order velocity ($\Delta_t$, 0.058), rolling dynamic range (0.055), and rolling skewness (0.045).
 
@@ -98,8 +98,8 @@ For edge access points, a compact subset of five to six channels (raw RSSI, wind
 
 The experimental findings offer three primary insights into self-supervised world models for opportunistic Wi-Fi sensing in ISAC.
 
-First, the contrast between self-supervised world models and supervised sequence baselines across dataset collections reveals the fundamental mechanism of radio representation learning. In radio sensing, concurrent transmitting devices introduce non-stationary interference that alters local signal distributions. Supervised classifiers regularized with strict isotropic Gaussian priors, such as SIGReg, constrain the latent space around class-specific distributions observed during training; when unobserved multi-device interference patterns appear in the extended collection, these rigid decision boundaries deteriorate, causing a 0.40 drop in test \ac{MCC}. In contrast, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly across masked time-frequency patches without relying on label supervision, forcing the encoder to learn smooth, invariant latent trajectories corresponding to physical passenger displacement.
+First, the contrast between self-supervised world models and supervised sequence baselines across dataset collections reveals the fundamental mechanism of radio representation learning. In radio sensing, concurrent transmitting devices introduce non-stationary interference that alters local signal distributions. Supervised classifiers regularized with strict isotropic Gaussian priors, such as SIGReg, constrain the latent space around class-specific distributions observed during training; when unobserved multi-device interference patterns appear in the new collection, these rigid decision boundaries deteriorate, causing a 0.40 drop in test \ac{MCC}. In contrast, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly across masked time-frequency patches without relying on label supervision, forcing the encoder to learn smooth, invariant latent trajectories corresponding to physical passenger displacement.
 
 Second, the permutation importance hierarchy directly reflects the physical characteristics of transit mobility. Passenger movements between vehicle cabin (Zone~A) and exterior platform (Zone~B) are governed by macroscopic spatial displacement, which manifests primarily through absolute signal level (raw RSSI), relative baseline shifts (window deviation and rolling mean), and rate of velocity change (second-order acceleration $\Delta^2_t$). Conversely, high-order statistical moments such as rolling kurtosis, skewness, and high-frequency STFT sub-bands capture fast-fading multipath scattering rather than purposeful mobility. As a result, pruning the 18-channel hierarchy down to the five dominant kinematic and DC channels retains approximately 95\% of total discriminative power while reducing front-end feature dimensionality by more than 70\%.
 
-Third, the Pareto parameter efficiency analysis demonstrates that massive neural ensembles are unnecessary for robust passive sensing. While the 21-member ensemble requires 74.8~M parameters across multiple deep sequence backbones, the greedy Pareto selection identifies a compact three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 test \ac{MCC} at only 1.26~M parameters. On the extended collection, the 16-member ensemble reaches 0.9232 \ac{MCC}, with 0.9563 on multi-device noise scenarios. This confirms that compact self-supervised ensembles can deliver state-of-the-art opportunistic sensing with minimal memory footprint, establishing a practical dual-function sensing layer on existing wireless infrastructure.
+Third, the Pareto parameter efficiency analysis demonstrates that massive neural ensembles are unnecessary for robust passive sensing. While the 21-member ensemble requires 74.8~M parameters across multiple deep sequence backbones, the greedy Pareto selection identifies a compact three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 test \ac{MCC} at only 1.26~M parameters. On the new collection, the 16-member ensemble reaches 0.9232 \ac{MCC}, with 0.9563 on multi-device noise scenarios. This confirms that compact self-supervised ensembles can deliver state-of-the-art opportunistic sensing with minimal memory footprint, establishing a practical dual-function sensing layer on existing wireless infrastructure.
