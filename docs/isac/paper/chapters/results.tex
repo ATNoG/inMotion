@@ -53,26 +53,27 @@ The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes t
 \label{fig:params}
 \end{figure}
 
-Table~\ref{tab:ensemble} summarizes ensemble performance across datasets. Softmax probabilities are temperature-calibrated on validation \ac{NLL} before fusion. On the prior collection, multinomial logistic regression stacking ($C = 0.005$) and entropy-weighted probability averaging both achieve an \ac{MCC} of 0.8873, outperforming uniform probability averaging (0.8814) and Caruana selection (0.8706), whereas rank averaging fails ($-0.316$) due to noisy rank permutations.
+Table~\ref{tab:ensemble} summarizes ensemble performance and parameter scaling across datasets. Softmax probabilities are temperature-calibrated on validation \ac{NLL} before fusion. On the prior collection, multinomial logistic regression stacking ($C = 0.005$) and entropy-weighted probability averaging both achieve an \ac{MCC} of 0.8873, outperforming uniform probability averaging (0.8814) and Caruana selection (0.8706), whereas rank averaging fails ($-0.316$) due to noisy rank permutations.
 
-On the new collection, a 16-member calibrated logistic regression stack attains an overall test \ac{MCC} of 0.9232, scoring 0.9563 on the multi-device noise subset and 0.9179 on the pure single-device subset.
+On the new collection, the 21-member calibrated logistic regression stack attains a peak test \ac{MCC} of 0.9232, scoring 0.9563 on multi-device noise and 0.9596 on pure single-device traces. The 16-member non-redundant subset matches this overall performance (0.9232 \ac{MCC}) while omitting weak recurrent backbones.
 
-Figure~\ref{fig:params} plots test \ac{MCC} against parameter counts spanning four orders of magnitude (0.039~M for GRU to 43.576~M for DeepStack). Self-supervised world models cluster in a high-performing region between 0.566~M and 2.153~M parameters. Applying greedy Pareto selection on the prior collection identifies a minimal three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 \ac{MCC} with only 1.26~M parameters, surpassing the full 21-member ensemble while reducing parameter footprint by 97\%.
+Figure~\ref{fig:params} plots test \ac{MCC} against parameter counts spanning four orders of magnitude (0.039~M for GRU to 43.576~M for DeepStack). Self-supervised world models cluster in a high-performing region between 0.566~M and 2.153~M parameters. Applying greedy Pareto selection on the prior collection identifies a minimal three-member ensemble (logistic regression, LeJEPA, and SIGReg) achieving 0.8904 \ac{MCC} with only 1.26~M parameters, surpassing the full 21-member ensemble while reducing parameter footprint by 98\%. Furthermore, world-model-only ensembles (3.42~M to 6.68~M parameters) deliver 0.9065 to 0.9160 \ac{MCC} on the new collection, confirming that compact self-supervised ensembles provide near-peak accuracy at a fraction of the computational burden.
 
 \begin{table}[t]
-\caption{Ensemble classification performance across dataset collections.}
+\caption{Ensemble classification performance and parameter scaling.}
 \label{tab:ensemble}
 \centering
-\footnotesize
-\begin{tabular}{lccc}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccccc}
 \toprule
-Ensemble Configuration & Members & Collection & Test \ac{MCC} \\
+Ensemble & $n$ & Params & Prior & New & Noise / Pure \\
 \midrule
-21-member full stack & 21 & prior & 0.8873 \\
-Three-member Pareto subset & 3 & prior & 0.8904 \\
-16-member full stack & 16 & new & 0.9232 \\
-16-member stack (noise) & 16 & new & 0.9563 \\
-16-member stack (pure) & 16 & new & 0.9179 \\
+21-member full stack & 21 & 74.8~M & 0.8873 & \textbf{0.9232} & \textbf{0.9563} / \textbf{0.9596} \\
+16-member subset & 16 & 73.2~M & 0.8873 & \textbf{0.9232} & \textbf{0.9563} / 0.9179 \\
+World-only stack & 7 & 6.68~M & 0.8872 & 0.9065 & 0.9450 / \textbf{0.9596} \\
+Best-world subset & 3 & 3.42~M & 0.8784 & 0.9160 & 0.9341 / 0.8773 \\
+Three-member Pareto & 3 & \textbf{1.26~M} & \textbf{0.8904} & 0.5753 & 0.9396 / 0.9179 \\
 \bottomrule
 \end{tabular}
 \end{table}
