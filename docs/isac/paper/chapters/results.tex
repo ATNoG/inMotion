@@ -4,23 +4,16 @@ This section evaluates the self-supervised world models, supervised sequence bas
 
 \subsection{Single-Model Classification Performance}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.72\columnwidth]{images/transfer_mcc.pdf}
-\caption{Cross-collection transfer evaluation. Self-supervised JEPA world models demonstrate positive transfer on the extended collection, whereas supervised classifiers and state-space architectures degrade.}
+\includegraphics[width=\columnwidth]{images/transfer_mcc.pdf}
+\caption{Cross-collection generalization and single-model test \ac{MCC}. Self-supervised JEPA world models demonstrate positive transfer on the extended collection, whereas supervised classifiers and state-space architectures degrade.}
 \label{fig:transfer}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.72\columnwidth]{images/single_model_mcc.pdf}
-\caption{Single-model test \ac{MCC} across architectures evaluated on the extended 3,511-sample collection. The dotted horizontal line denotes the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.}
-\label{fig:single}
-\end{figure}
+Models were evaluated across both dataset collections. Table~\ref{tab:single} reports the test \ac{MCC} of each model family on the earlier 2,251-sample dataset and on the extended 3,511-sample dataset, along with the performance differential $\Delta$. On the extended collection, the four self-supervised world models achieve the top results: TS-JEPA reaches an \ac{MCC} of 0.9194, LeJEPA obtains 0.9143, CF-JEPA achieves 0.9083, and T-JEPA attains 0.8982. Every evaluated \ac{JEPA} architecture substantially exceeds the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.
 
-Table~\ref{tab:single} reports test \ac{MCC} across model families on the earlier 2,251-sample collection and the extended 3,511-sample collection, along with the performance differential $\Delta$. On the extended collection, the four self-supervised world models achieve the top results: TS-JEPA reaches an \ac{MCC} of 0.9194, LeJEPA obtains 0.9143, CF-JEPA achieves 0.9083, and T-JEPA attains 0.8982. Every evaluated \ac{JEPA} architecture substantially exceeds the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.
-
-By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised SIGReg classifier drops to 0.4872 despite leading the earlier dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Figure~\ref{fig:single} depicts single-model performance on the extended collection.
+By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised SIGReg classifier drops to 0.4872 despite leading the earlier dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Figure~\ref{fig:transfer} illustrates this cross-collection transfer behavior.
 
 Multi-seed evaluations across five independent runs (seeds 3, 5, 7, 123, 2024) confirm protocol stability, with standard deviations constrained within narrow bounds ($\sigma \approx 0.008$ for SIGReg). Full pretraining over 300 to 500 epochs is mandatory: fine-tuning from early checkpoints (below 100 epochs) collapses test \ac{MCC} to 0.49--0.60 across all seeds.
 
@@ -47,15 +40,15 @@ HPO GRU & 0.8524 & 0.5746 & $-0.28$ \\
 
 \subsection{Cross-Collection Generalization and Transfer Invariance}
 
-Figure~\ref{fig:transfer} illustrates cross-collection transfer between the two benchmarks. While all self-supervised world models exhibit positive transfer from the earlier to the extended collection (gaining +0.029 to +0.042 in \ac{MCC}), supervised models and state-space architectures degrade.
+The cross-collection results in Figure~\ref{fig:transfer} and Table~\ref{tab:single} highlight a key finding: while all self-supervised world models exhibit positive transfer from the earlier to the extended collection (gaining +0.029 to +0.042 in \ac{MCC}), supervised models and state-space architectures degrade.
 
 The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes the vulnerability of purely supervised regularizers to environmental radio shifts. In SIGReg, the Empirical Characteristic Function regularizer penalizes deviations from an isotropic Gaussian latent prior conditioned strictly on the class labels of the training split. Under the richer multi-device interference and channel fading of the extended collection, this supervised constraint creates brittle decision boundaries tailored to training artifacts. Conversely, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly over radio sequence dynamics without label guidance, extracting latent motion invariants that generalize robustly across collection environments.
 
 \subsection{Calibrated Ensemble Performance and Pareto Efficiency}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.72\columnwidth]{images/param_efficiency.pdf}
+\includegraphics[width=\columnwidth]{images/param_efficiency.pdf}
 \caption{Parameter efficiency frontier. Each point denotes an individual model; the solid curve traces the greedy Pareto selection from logistic regression through LeJEPA to SIGReg.}
 \label{fig:params}
 \end{figure}
@@ -86,9 +79,9 @@ Three-member Pareto subset & 3 & earlier & 0.8904 \\
 
 \subsection{Feature Channel Importance and Pruning}
 
-\begin{figure}[t]
+\begin{figure}[!b]
 \centering
-\includegraphics[width=0.72\columnwidth]{images/feature_importance_18ch.pdf}
+\includegraphics[width=\columnwidth]{images/feature_importance_18ch.pdf}
 \caption{Permutation importance across the 18 rich feature channels averaged over the self-supervised JEPA world models.}
 \label{fig:feature_importance}
 \end{figure}

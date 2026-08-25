@@ -14,7 +14,7 @@ We formulate passenger movement classification as a four-class time-series task 
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.72\columnwidth]{images/rssi_trajectory.pdf}
+\includegraphics[width=\columnwidth]{images/rssi_trajectory.pdf}
 \caption{Mean RSSI trajectory per passenger movement class ($\pm 1\,\sigma$ shaded variance band) across 10-second observation windows on the 3,511-sample collection.}
 \label{fig:rssi_trajectory}
 \end{figure}
@@ -35,11 +35,11 @@ To capture the temporal, statistical, and spectral dynamics of radio attenuation
 
 All \ac{JEPA} models learn invariant latent dynamics by predicting representations of masked or future temporal regions. An online context encoder $f_\theta$ is updated via gradient descent, a target encoder $g_\xi$ is updated via \ac{EMA} ($\xi \leftarrow \tau \xi + (1-\tau)\theta$), and a latent predictor $h_\psi$ minimizes the L2 prediction loss $\mathcal{L}_{\text{JEPA}} = \| h_\psi(f_\theta(x_c)) - \text{sg}(g_\xi(x_t)) \|_2^2$, where $\text{sg}(\cdot)$ is the stop-gradient operator. We evaluate four distinct formulations:
 
-\textbf{T-JEPA} \cite{thimonier2024tjepa} applies per-timestep channel tokenization with learned feature embeddings and two REG tokens. Contiguous 30\% temporal masks are applied during pretraining (dim 128, 4 heads, 4 layers, width 256, 3-layer bottleneck dim 64; 0.633~M parameters, 18 channels).
+\textbf{T-JEPA} \cite{thimonier2024tjepa} applies per-timestep channel tokenization with learned feature embeddings and two REG tokens, applying contiguous 30\% temporal masks (dim 128, 4 heads, 4 layers, width 256, 3-layer bottleneck dim 64; 0.633~M parameters, 18 channels).
 
 \textbf{TS-JEPA} \cite{tsjepa2024} utilizes a 1D convolutional patch tokenizer (patch size two) with patch masking annealed from 0.4 to 0.7 (dim 256, 8 heads, 4 layers, width 512, 2-layer bottleneck dim 128; 2.153~M parameters, 18 channels).
 
-\textbf{LeJEPA} \cite{balestriero2025lejepa} performs next-step autoregressive latent prediction without an \ac{EMA} target, stabilized via Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function (dim 128, 4 heads, 4 layers, width 256, 3 predictor layers; 0.566~M parameters, 4 channels).
+\textbf{LeJEPA} \cite{balestriero2025lejepa} executes next-step latent prediction without an \ac{EMA} target, stabilized via Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function (dim 128, 4 heads, 4 layers, width 256, 3 predictor layers; 0.566~M parameters, 4 channels).
 
 \textbf{CF-JEPA} \cite{cfjepa2026} executes mask-free multi-horizon prediction across horizons $k \in \{1, 2, 3\}$ from context crops with an \ac{EMA} target (dim 256, 8 heads, 3 layers, width 256, 1-layer bottleneck dim 128; 1.232~M parameters, 18 channels).
 
