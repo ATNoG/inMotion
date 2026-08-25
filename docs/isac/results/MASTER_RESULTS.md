@@ -178,6 +178,33 @@ but over different member sets; the paper must cite the exact set per number.
 **Provenance:** `results/ensemble_size_frontier.csv`.
 **Note:** this 0.8904 is the highest honest test MCC achievable — a 3-member subset. The "all-members" LR-stack is 0.8873.
 
+### 4.4 Ensemble parameter sizes (every named ensemble, §4.0)
+
+Per-member param counts from `docs/isac/results/raw/count_params.py`
+(checkpoint state_dicts). Total = sum of member params; the LR-stack
+meta-learner is negligible (a `(n_members×4, 4)` linear layer).
+
+**Provenance:** `docs/isac/results/raw/ensemble_sizes.py`.
+
+| Ensemble | n | Members | Total params (M) | Best test MCC | Dataset |
+|---|---|---|---|---|---|
+| E1 all-21 | 21 | full 21-member list | **74.78** | 0.8873 | icaisf |
+| E2 size-frontier | 3 | logreg + lejepa + sigreg | **1.26** | **0.8904** | icaisf |
+| E3 16-members | 16 | strong non-redundant set | **73.16** | **0.9232** | dataset.csv |
+| E4 config1 world-only | 7 | JEPA+sigreg family | **6.68** | 0.8872 | icaisf |
+| E5 config2 world+best-DL | 9 | E4 + deepstack, mamba3_tcn | **51.09** | 0.8872 | icaisf |
+| E6 config3 best-world | 3 | sigreg, lejepa, ts_jepa | **3.42** | 0.8784 | icaisf |
+| E7 config4 best-world+best-DL | 5 | sigreg, lejepa, ts_jepa + deepstack, mamba3_tcn | **47.84** | 0.8872 | icaisf |
+| E8 config6 greedy | 16 | greedy-selected on val | **72.06** | 0.8873 | icaisf |
+
+**Key deployment tradeoff (MCC vs params):**
+- **E2 (1.26M params) = 0.8904** — smallest ensemble, near-best MCC. The
+  on-device optimal pick.
+- **E6 (3.42M params) = 0.8784** — 3 world models only, small & strong.
+- **E3 (73.16M) = 0.9232** — the highest MCC, but dominated by deepstack
+  (43.58M) + hpo_lstm (13.11M). Large server-side only.
+- **E1 (74.78M) = 0.8873** — full 21-member, adds weak recurrents (no MCC gain).
+
 ---
 
 ## 5. Per-member test MCC on icaisf (full member list)
@@ -271,7 +298,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | sigreg_s3 | 0.4237 | 0.4832 | 0.697 |
 | sigreg_s5 | 0.4469 | 0.4775 | 0.697 |
 
-**Ensemble E3 (LR-stack, 16 members: lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, mamba3_cnn, mamba3_tcn, mamba3_transformer, mamba3_multiview, deepstack, cnn, tcn, hpo_gru, hpo_lstm, hpo_cnn, hpo_mamba): test MCC = 0.9232 (C=0.5)** — above 0.9 ✓
+**E3 subset (LR-stack, 16 members: lejepa, t_jepa, ts_jepa, cf_jepa, sigreg, mamba3_cnn, mamba3_tcn, mamba3_transformer, mamba3_multiview, deepstack, cnn, tcn, hpo_gru, hpo_lstm, hpo_cnn, hpo_mamba): test MCC = 0.9232 (C=0.5)**. Full 21-member **E1** also = 0.9232 (see §7b.4). Above 0.9 ✓
 
 ### 7b.2 `dataset_only_noise.csv` (val 120 / test 240)
 
@@ -283,7 +310,7 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | t_jepa | 0.8031 | 0.9005 |
 | ts_jepa | 0.8671 | 0.8838 |
 
-**Ensemble E3 (same 16 members as 7b.1): test MCC = 0.9563 (C=0.1)** ✓
+**E3 subset (same 16 members as 7b.1): test MCC = 0.9563 (C=0.1)**. Full E1 also = 0.9563 (see §7b.4). ✓
 
 ### 7b.3 `dataset_only_pure.csv` (val 16 / test 32 — small set)
 
@@ -295,11 +322,36 @@ MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset.icaisf.csv \
 | cf_jepa | 0.9215 | 0.8366 |
 | sigreg | 0.8377 | 0.8410 |
 
-**Ensemble E3 (same 16 members as 7b.1): test MCC = 0.9179 (C=0.005)** ✓
+**E3 subset (same 16 members as 7b.1): test MCC = 0.9179 (C=0.005)**, but full **E1 = 0.9596** on pure (the tiny 32-sample test favors the full member set — see §7b.4). ✓
 
-### 7b.4 Key finding
+### 7b.4 Every ensemble across all variants (test MCC)
 
-The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `dataset.csv` than sigreg/mamba3/DL** — the SSL-pretrained encoders generalize across dataset variants. The 16-member ensemble clears **0.9 on every variant** (0.9232 / 0.9563 / 0.9179 test MCC).
+**Provenance:** `docs/isac/results/raw/score_all_ensembles_variants.py`
+(computed 2026-08-25; each ensemble per the §4.0 registry). `lr` = LR-stack
+with C swept on val; `mean` = equal-weight mean. Note E2 here = sigreg+lejepa
+(logreg is a classical ML member not loaded in the DL-only scoring script),
+so E2's cross-variant numbers are the 2-member mean subset.
+
+| Ensemble | Members | dataset.csv | noise | pure |
+|---|---|---|---|---|
+| E1 all-21 (lr) | 21 | **0.9232** | **0.9563** | **0.9596** |
+| E2 sigreg+lejepa (mean) | 2 | 0.5753 | 0.9396 | 0.9179 |
+| E3 16-members (lr) | 16 | **0.9232** | **0.9563** | 0.9179 |
+| E4 world-only (mean) | 7 | 0.9065 | 0.9450 | 0.9596 |
+| E5 world+best-DL (mean) | 9 | 0.8952 | 0.9507 | 0.9596 |
+| E6 best-world (mean) | 3 | 0.9160 | 0.9341 | 0.8773 |
+| E7 best-world+best-DL (mean) | 5 | 0.8990 | 0.9398 | 0.9179 |
+| E8 greedy (lr) | 16 | 0.9232 | 0.9507 | 0.9596 |
+
+**Updated key finding (supersedes the E3-only claim):** the **full 21-member
+LR-stack (E1) is the strongest on every variant** — 0.9232 (dataset.csv),
+0.9563 (noise), **0.9596 (pure)**. This is the paper's headline ensemble.
+The earlier E3-only numbers (0.9232/0.9563/0.9179) understated pure because
+the tiny pure test (n=32) benefits from the full member diversity.
+
+### 7b.5 Key finding
+
+The world models (lejepa/ts_jepa/cf_jepa/t_jepa) **transfer much better to `dataset.csv` than sigreg/mamba3/DL** — the SSL-pretrained encoders generalize across dataset variants. The **full 21-member LR-stack ensemble (E1)** clears **0.9 on every variant** (0.9232 / 0.9563 / 0.9596 test MCC).
 
 ---
 
@@ -386,9 +438,73 @@ signal — good for the efficiency story (smaller input → smaller model).
 | Best ensemble subset (size frontier) | **0.8904** @ 1.26M params (E2) | §4.3 |
 | Best validation MCC (world+DL, config 2) | **0.9178** | §4.2 |
 | Best validation MCC (greedy, config 6) | **0.9240** | §4.2 |
-| **Ensemble test MCC on `dataset.csv`** | **0.9232** (E3, 16 members, C=0.5) | §7b.1 |
-| **Ensemble test MCC on noise** | **0.9563** (E3, C=0.1) | §7b.2 |
-| **Ensemble test MCC on pure** | **0.9179** (E3, C=0.005) | §7b.3 |
+| **Ensemble test MCC on `dataset.csv`** | **0.9232** (E1, 21 members, C=0.5) | §7b.4 |
+| **Ensemble test MCC on noise** | **0.9563** (E1, C=0.1) | §7b.4 |
+| **Ensemble test MCC on pure** | **0.9596** (E1, C=0.005) | §7b.4 |
 | Best single on `dataset.csv` | **0.9194** (ts_jepa) | §7b.1 |
 | Most important rich feature | **raw** (avg test-MCC drop 0.272) | §7c |
 | Prunable features | roll_std, roll_kurt (≈0 drop) | §7c |
+| Smallest near-best ensemble | **E2, 1.26M params, MCC 0.8904** | §4.4 |
+| Smallest strong world-only ensemble | **E6, 3.42M params, MCC 0.8784** | §4.4 |
+| Largest (best MCC) ensemble | **E3, 73.16M params, MCC 0.9232** | §4.4 |
+
+---
+
+## 9. Consolidated: model parameters vs. performance
+
+### 9.1 Individual models — params vs. best test MCC
+
+| Model | Params (M) | icaisf test | dataset.csv test |
+|---|---|---|---|
+| **sigreg** | 0.697 | **0.8858** | 0.4872 |
+| **lejepa** | 0.566 | **0.8850** | **0.9143** |
+| mamba3_tcn | 0.843 | 0.8844 | 0.7816 |
+| **ts_jepa** | 2.153 | 0.8785 | **0.9194** |
+| t_jepa | 0.633 | 0.8694 | 0.8982 |
+| cf_jepa | 1.232 | 0.8661 | 0.9083 |
+| mamba3_multiview | 1.701 | 0.8640 | 0.7853 |
+| mamba3_transformer | 0.842 | 0.8581 | 0.7626 |
+| mamba3_cnn | 0.945 | 0.8567 | 0.7703 |
+| deepstack | 43.576 | 0.8810 | 0.7811 |
+| cnn | 0.317 | 0.6201 | 0.6201 |
+| tcn | 2.180 | 0.5545 | 0.6056 |
+| hpo_lstm | 13.110 | 0.6092 | 0.6256 |
+| hpo_mamba | 0.278 | 0.6049 | 0.6135 |
+| hpo_cnn | 0.081 | 0.5785 | 0.6225 |
+| hpo_gru | 4.008 | 0.5306 | 0.5746 |
+| bilstm | 0.136 | 0.5622 | 0.6035 |
+| lstm | 0.052 | 0.5547 | 0.6014 |
+| gru | 0.039 | 0.3360 | 0.3554 |
+
+**Insight:** the world models (lejepa 0.566M/0.885, sigreg 0.697M/0.886,
+ts_jepa 2.15M/0.879) dominate — tiny params, top accuracy. deepstack (43.6M)
+is big and mediocre on all datasets. HPO/DL single models are the weakest
+(cnn 0.62, tcn 0.55-0.61, hpo_* 0.53-0.63).
+
+### 9.2 Ensembles — size vs. test MCC across variants
+
+| Ensemble | Members | Params (M) | icaisf | dataset.csv | noise | pure |
+|---|---|---|---|---|---|---|
+| **E1 all-21** | 21 | 74.78 | 0.8873 | **0.9232** | **0.9563** | **0.9596** |
+| **E2 size-frontier** | 3 | **1.26** | **0.8904** | 0.5753* | 0.9396 | 0.9179 |
+| E3 16-members | 16 | 73.16 | 0.8873 | 0.9232 | 0.9563 | 0.9179 |
+| E4 world-only | 7 | 6.68 | 0.8872 | 0.9065 | 0.9450 | 0.9596 |
+| E6 best-world | 3 | **3.42** | 0.8784 | 0.9160 | 0.9341 | 0.8773 |
+| E8 greedy | 16 | 72.06 | 0.8873 | 0.9232 | 0.9507 | 0.9596 |
+
+*\*E2 cross-variant = sigreg+lejepa only (logreg excluded from DL-only
+scoring); the true E2 with logreg is the icaisf 0.8904 in §4.3.*
+
+### 9.3 The size/accuracy story (paper headline)
+
+- **E1 (74.8M) is the accuracy champion** — 0.92 (dataset.csv), 0.96 (noise),
+  0.96 (pure) MCC.
+- **E2 (1.26M) reaches 0.8904 at ~1/60th the size** — the Pareto-optimal
+  on-device choice; near-best accuracy with minimal parameters.
+- **World-model-only E4 (6.68M) / E6 (3.42M)** give the best accuracy-per-
+  parameter; the JEPA+sigreg family is both small and strong.
+- **E3/E1 (73-75M) is server-side only** — dominated by deepstack (43.58M) +
+  hpo_lstm (13.11M), which add little accuracy on icaisf.
+- Accuracy saturates: adding weak recurrents (gru/lstm/bilstm) to the full
+  set adds **no MCC gain** (E1 0.9232 = E3 0.9232 on dataset.csv) but ~1.6M
+  params of noise.
