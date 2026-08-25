@@ -4,17 +4,11 @@
 Adheres strictly to scientific-visualization, matplotlib, and academic-plotting skills:
   - Clean seaborn-v0_8-whitegrid layout with generous margins and padding ("airosa")
   - Colorblind-safe palettes (Okabe-Ito / ColorBrewer) with high contrast
-  - Dedicated whitespace placement for legends (inside clean white card boxes)
-    ensuring 100% ZERO title-legend and legend-data collisions
-  - Custom non-overlapping callouts for all scatter points (never crossing y-axis or colliding)
+  - Built-in legend titles (ax.legend(title=..., ...)) ensuring Matplotlib's internal
+    geometry engine manages the title-legend stack with 100% ZERO collision
+  - Custom non-overlapping callouts with leader lines
   - High resolution (600 DPI vector PDF + 300 DPI raster PNG)
-
-Figures:
-  1. rssi_trajectory.pdf/.png       — Mean RSSI trajectory per mobility class (+-1 Std Dev)
-  2. single_model_mcc.pdf/.png      — Best single model per family (3,511-sample collection)
-  3. transfer_mcc.pdf/.png          — Cross-collection generalisation (SSL vs Supervised)
-  4. param_efficiency.pdf/.png      — Parameter efficiency (MCC vs log-params) with Pareto frontier
-  5. feature_importance_18ch.pdf/.png — Rich-feature permutation importance (18 channels)
+  - Designed for full column width (width=\\columnwidth) in IEEE two-column format
 """
 
 import matplotlib
@@ -64,8 +58,7 @@ plt.rcParams.update({
     "grid.linewidth": 0.5,
     "grid.alpha": 0.8,
     "savefig.dpi": DPI,
-    "savefig.bbox": "tight",
-    "savefig.pad_inches": 0.04,
+    # "savefig.bbox": "tight",
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
 })
@@ -90,14 +83,14 @@ def fig_rssi_trajectory():
         ("BB", "BB (Platform Waiting)", C_BB, "D", "-"),
     ]
 
-    fig, ax = plt.subplots(figsize=(3.45, 2.55))
+    fig, ax = plt.subplots(figsize=(3.5, 2.7))
 
     for cls_key, label_str, col, mark, ls in class_configs:
         sub = df[df["label"] == cls_key][features].values
         mean_vals = sub.mean(axis=0)
         std_vals = sub.std(axis=0)
 
-        ax.plot(timesteps, mean_vals, marker=mark, markersize=3.5, label=label_str,
+        ax.plot(timesteps, mean_vals, marker=mark, markersize=3.6, label=label_str,
                 color=col, linewidth=1.3, linestyle=ls, alpha=0.95, zorder=4)
         ax.fill_between(timesteps, mean_vals - std_vals, mean_vals + std_vals,
                         color=col, alpha=0.15, zorder=2)
@@ -109,14 +102,14 @@ def fig_rssi_trajectory():
     ax.set_ylim(-65, -31)
     ax.set_yticks([-60, -50, -40])
 
-    # Title with clean spacing
-    ax.set_title("Mean RSSI Trajectory per Class ($\\pm 1\\,\\sigma$)", fontsize=9.2, fontweight="bold", pad=8)
+    # Built-in legend title: Matplotlib places title strictly above legend items
+    leg = ax.legend(title=r"Mean RSSI Trajectory per Class ($\pm 1\,\sigma$)",
+                    title_fontsize=9.0, loc="lower center", bbox_to_anchor=(0.5, 1.02),
+                    ncol=2, frameon=False, fontsize=6.8, handletextpad=0.3, columnspacing=0.8,
+                    alignment="center")
+    plt.setp(leg.get_title(), fontweight="bold")
 
-    # Legend placed in clean lower-left empty region (where RSSI is never present)
-    ax.legend(loc="lower left", frameon=True, framealpha=0.92, facecolor="white",
-              edgecolor="#e0e0e0", fontsize=6.8, handletextpad=0.3)
-
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.74, bottom=0.15, left=0.15, right=0.96)
     fig.savefig(OUT / "rssi_trajectory.pdf")
     fig.savefig(OUT / "rssi_trajectory.png", dpi=300)
     plt.close(fig)
@@ -144,7 +137,7 @@ def fig_single_model():
     color_dict = {"SSL": C_SSL, "SSM": C_SSM, "Stack": C_STACK, "Sup": C_SUP}
     colors = [color_dict[f] for f in fam]
 
-    fig, ax = plt.subplots(figsize=(3.45, 2.75))
+    fig, ax = plt.subplots(figsize=(3.5, 2.9))
     y = np.arange(len(models))
 
     bars = ax.barh(y, mcc, color=colors, height=0.64, edgecolor="white", linewidth=0.6, alpha=0.92)
@@ -155,7 +148,7 @@ def fig_single_model():
 
     ax.axvline(0.756, color="#d95f02", linestyle=":", linewidth=1.1, alpha=0.85)
     ax.text(0.758, len(models) - 0.5, "Prior Classical ML (0.756)", color="#d95f02",
-            fontsize=6.5, va="bottom", ha="left", style="italic")
+            fontsize=6.2, va="bottom", ha="left", style="italic")
 
     ax.set_yticks(y)
     ax.set_yticklabels(models, fontsize=7.2)
@@ -165,20 +158,18 @@ def fig_single_model():
     ax.invert_yaxis()
     ax.grid(axis="y", visible=False)
 
-    # Title with clean spacing
-    ax.set_title("Single-Model Performance (3,511 Samples)",
-                 fontsize=9.2, fontweight="bold", pad=8)
-
-    # Legend placed in clean lower-right area
     legend_elements = [
         Patch(facecolor=C_SSL, edgecolor="white", label="SSL World Model"),
         Patch(facecolor=C_SSM, edgecolor="white", label="Mamba-3 SSM"),
         Patch(facecolor=C_SUP, edgecolor="white", label="Supervised Baseline"),
     ]
-    ax.legend(handles=legend_elements, loc="lower right", frameon=True, framealpha=0.92,
-              facecolor="white", edgecolor="#e0e0e0", fontsize=6.5, handletextpad=0.3)
+    leg = ax.legend(handles=legend_elements, title="Single-Model Performance (New 3,511 Samples)",
+                    title_fontsize=9.0, loc="lower center", bbox_to_anchor=(0.5, 1.02),
+                    ncol=3, frameon=False, fontsize=6.2, handletextpad=0.3, columnspacing=0.6,
+                    alignment="center")
+    plt.setp(leg.get_title(), fontweight="bold")
 
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.80, bottom=0.13, left=0.22, right=0.96)
     fig.savefig(OUT / "single_model_mcc.pdf")
     fig.savefig(OUT / "single_model_mcc.png", dpi=300)
     plt.close(fig)
@@ -195,13 +186,12 @@ def fig_transfer():
     x = np.arange(len(names))
     width = 0.35
 
-    fig, ax = plt.subplots(figsize=(3.45, 2.45))
-    ax.bar(x - width/2, prior, width, label="Earlier (2,251 samples)",
+    fig, ax = plt.subplots(figsize=(3.5, 2.5))
+    ax.bar(x - width/2, prior, width, label="Prior (2,251 samples)",
            color=C_PRIOR, edgecolor="white", linewidth=0.6)
-    bars2 = ax.bar(x + width/2, extended, width, label="Extended (3,511 samples)",
+    bars2 = ax.bar(x + width/2, extended, width, label="New (3,511 samples)",
                    color=C_SSL, edgecolor="white", linewidth=0.6)
 
-    # Differentiate the degraded models with warm color
     for i in range(4, len(names)):
         bars2[i].set_color(C_SUP)
 
@@ -209,62 +199,63 @@ def fig_transfer():
         diff = e - p
         delta_str = f"{diff:+.2f}"
         ax.text(i + width/2, e + 0.02, delta_str, ha="center", va="bottom",
-                fontsize=6.2, fontweight="bold",
+                fontsize=6.0, fontweight="bold",
                 color=C_SSL if diff > 0 else C_SUP)
 
     ax.set_xticks(x)
-    ax.set_xticklabels(names, rotation=25, ha="right", fontsize=7.0)
+    ax.set_xticklabels(names, rotation=24, ha="right", fontsize=7.0)
     ax.set_ylabel("Test MCC", fontsize=8)
-    ax.set_ylim(0.0, 1.25)
+    ax.set_ylim(0.0, 1.22)
     ax.set_yticks([0.0, 0.25, 0.50, 0.75, 1.0])
 
-    ax.set_title("Cross-Collection Generalization", fontsize=9.2, fontweight="bold", pad=8)
-
-    # Legend placed in upper-right white space
-    ax.legend(loc="upper right", frameon=True, framealpha=0.92, facecolor="white",
-              edgecolor="#e0e0e0", fontsize=6.8, handletextpad=0.3)
+    leg = ax.legend(title="Cross-Collection Generalization", title_fontsize=9.0,
+                    loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2,
+                    frameon=False, fontsize=6.6, handletextpad=0.3, columnspacing=0.8,
+                    alignment="center")
+    plt.setp(leg.get_title(), fontweight="bold")
     ax.grid(axis="x", visible=False)
 
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.76, bottom=0.15, left=0.14, right=0.96)
     fig.savefig(OUT / "transfer_mcc.pdf")
     fig.savefig(OUT / "transfer_mcc.png", dpi=300)
     plt.close(fig)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 4. Parameter efficiency (MCC vs size, log x) + three-member frontier
+# 4. Parameter efficiency (MCC vs size, log x) + leader pointer callouts
 # ═══════════════════════════════════════════════════════════════════════════
 def fig_param_efficiency():
-    # Model data with non-colliding callouts: (name, p, m, cat, offset_xy)
     members = [
-        ("GRU", 0.039, 0.3360, "Sup", (5, -2)),
-        ("LSTM", 0.052, 0.5547, "Sup", (5, 4)),
-        ("HPO CNN", 0.081, 0.5785, "Sup", (5, -8)),
-        ("BiLSTM", 0.136, 0.5622, "Sup", (5, 4)),
-        ("HPO Mamba", 0.278, 0.6049, "Sup", (5, 4)),
-        ("LeJEPA", 0.566, 0.8850, "SSL", (-28, 5)),
-        ("T-JEPA", 0.633, 0.8694, "SSL", (-24, -9)),
-        ("SIGReg", 0.697, 0.8858, "Sup", (0, 7)),
-        ("Mamba-3 Tf", 0.842, 0.8581, "SSM", (-35, -8)),
-        ("Mamba-3 TCN", 0.843, 0.8844, "SSM", (-4, 7)),
-        ("Mamba-3 CNN", 0.945, 0.8567, "SSM", (5, -9)),
-        ("CF-JEPA", 1.232, 0.8661, "SSL", (5, -7)),
-        ("Mamba-3 MV", 1.701, 0.8640, "SSM", (5, 4)),
-        ("TCN", 2.180, 0.5545, "Sup", (5, -7)),
-        ("TS-JEPA", 2.153, 0.8785, "SSL", (5, 5)),
-        ("HPO GRU", 4.008, 0.5306, "Sup", (5, -4)),
-        ("HPO LSTM", 13.110, 0.6092, "Sup", (5, 3)),
-        ("DeepStack", 43.576, 0.8810, "Stack", (-46, 3)),
+        ("GRU", 0.039, 0.3360, "Sup", (8, -3), "left"),
+        ("LSTM", 0.052, 0.5547, "Sup", (-18, 14), "right"),
+        ("HPO CNN", 0.081, 0.5785, "Sup", (-12, -18), "right"),
+        ("BiLSTM", 0.136, 0.5622, "Sup", (10, 12), "left"),
+        ("HPO Mamba", 0.278, 0.6049, "Sup", (-8, 14), "center"),
+        ("LeJEPA", 0.566, 0.8850, "SSL", (-35, 18), "right"),
+        ("T-JEPA", 0.633, 0.8694, "SSL", (-35, -16), "right"),
+        ("SIGReg", 0.697, 0.8858, "Sup", (-8, 22), "center"),
+        ("Mamba-3 Tf", 0.842, 0.8581, "SSM", (-15, -24), "center"),
+        ("Mamba-3 TCN", 0.843, 0.8844, "SSM", (10, 24), "left"),
+        ("Mamba-3 CNN", 0.945, 0.8567, "SSM", (10, -22), "left"),
+        ("CF-JEPA", 1.232, 0.8661, "SSL", (28, -12), "left"),
+        ("Mamba-3 MV", 1.701, 0.8640, "SSM", (25, 4), "left"),
+        ("TS-JEPA", 2.153, 0.8785, "SSL", (15, 18), "left"),
+        ("TCN", 2.180, 0.5545, "Sup", (-14, -16), "right"),
+        ("HPO GRU", 4.008, 0.5306, "Sup", (12, -14), "left"),
+        ("HPO LSTM", 13.110, 0.6092, "Sup", (10, 10), "left"),
+        ("DeepStack", 43.576, 0.8810, "Stack", (0, 10), "center"),
     ]
 
     col_map = {"SSL": C_SSL, "SSM": C_SSM, "Stack": C_STACK, "Sup": C_MUTED}
 
-    fig, ax = plt.subplots(figsize=(3.45, 2.70))
+    fig, ax = plt.subplots(figsize=(3.5, 2.8))
 
-    for name, p, m, cat, offset in members:
-        ax.scatter(p, m, color=col_map[cat], s=26, edgecolor="white", linewidth=0.6, zorder=4)
+    for name, p, m, cat, offset, ha in members:
+        ax.scatter(p, m, color=col_map[cat], s=30, edgecolor="white", linewidth=0.7, zorder=4)
         ax.annotate(name, (p, m), xytext=offset, textcoords="offset points",
-                    fontsize=5.6, color="#222222", fontweight="normal")
+                    ha=ha, fontsize=5.8, color="#222222", fontweight="normal",
+                    arrowprops={"arrowstyle": "-", "color": "#777777",
+                                "lw": 0.6, "shrinkA": 2, "shrinkB": 2})
 
     # Frontier path
     fx = [0.035, 0.566, 1.263]
@@ -273,24 +264,25 @@ def fig_param_efficiency():
             markersize=4.2, zorder=5, label="Three-member frontier")
 
     ax.set_xscale("log")
-    ax.set_xlim(0.022, 75)
-    ax.set_ylim(0.28, 0.98)
+    ax.set_xlim(0.02, 85)
+    ax.set_ylim(0.25, 1.02)
     ax.set_xlabel("Parameters (M, log scale)", fontsize=8)
-    ax.set_ylabel("Test MCC (Earlier Collection)", fontsize=8)
+    ax.set_ylabel("Test MCC (Prior Collection)", fontsize=8)
 
-    ax.set_title("Parameter Efficiency & Model Scaling", fontsize=9.2, fontweight="bold", pad=8)
+    ax.set_title("Parameter Efficiency & Model Scaling",
+                 fontsize=9.0, fontweight="bold", pad=8)
 
-    # Legend placed in clean UPPER-LEFT whitespace (x <= 0.35M, y >= 0.72 has zero points)
+    # Legend placed in EMPTY LOWER-RIGHT
     legend_items = [
         Line2D([0], [0], color=C_SUP, marker="o", lw=1.3, label="Size Frontier (0.8904)"),
         Patch(facecolor=C_SSL, edgecolor="white", label="SSL World Model"),
         Patch(facecolor=C_SSM, edgecolor="white", label="Mamba-3 SSM"),
         Patch(facecolor=C_STACK, edgecolor="white", label="DeepStack (43.6M)"),
     ]
-    ax.legend(handles=legend_items, loc="upper left", frameon=True, framealpha=0.92,
-              facecolor="white", edgecolor="#e0e0e0", fontsize=5.8, handletextpad=0.3)
+    ax.legend(handles=legend_items, loc="lower right", frameon=True, framealpha=0.95,
+              facecolor="white", edgecolor="#d5d5d5", fontsize=5.8, handletextpad=0.3)
 
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.90, bottom=0.13, left=0.14, right=0.96)
     fig.savefig(OUT / "param_efficiency.pdf")
     fig.savefig(OUT / "param_efficiency.png", dpi=300)
     plt.close(fig)
@@ -334,7 +326,7 @@ def fig_feature_importance():
     }
     colors = [fam_colors[f] for f in families]
 
-    fig, ax = plt.subplots(figsize=(3.45, 3.10))
+    fig, ax = plt.subplots(figsize=(3.5, 3.2))
     y = np.arange(len(names))
 
     bars = ax.barh(y, drops, color=colors, height=0.66, edgecolor="white", linewidth=0.5, alpha=0.92)
@@ -358,9 +350,7 @@ def fig_feature_importance():
     ax.invert_yaxis()
     ax.grid(axis="y", visible=False)
 
-    ax.set_title("Rich-Feature Permutation Importance", fontsize=9.2, fontweight="bold", pad=8)
-
-    # Legend placed in clean lower-right whitespace (where bars are <= 0.035)
+    # Legend + Title centered over the ENTIRE FIGURE canvas (labels + plot area)
     legend_items = [
         Patch(facecolor=C_SSL, edgecolor="white", label="Base Kinematics"),
         Patch(facecolor=C_SSM, edgecolor="white", label="Rolling FFT"),
@@ -368,20 +358,23 @@ def fig_feature_importance():
         Patch(facecolor=C_SUP, edgecolor="white", label="Shape Descriptors"),
         Patch(facecolor=C_STACK, edgecolor="white", label="STFT Bands"),
     ]
-    ax.legend(handles=legend_items, loc="lower right", frameon=True, framealpha=0.92,
-              facecolor="white", edgecolor="#e0e0e0", fontsize=5.8, ncol=1, handletextpad=0.3)
+    leg = fig.legend(handles=legend_items, title="Rich-Feature Permutation Importance",
+                     title_fontsize=9.0, loc="lower center", bbox_to_anchor=(0.50, 0.855),
+                     ncol=3, frameon=False, fontsize=5.8, handletextpad=0.3, columnspacing=0.6,
+                     alignment="center")
+    plt.setp(leg.get_title(), fontweight="bold")
 
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.84, bottom=0.11, left=0.30, right=0.96)
     fig.savefig(OUT / "feature_importance_18ch.pdf")
     fig.savefig(OUT / "feature_importance_18ch.png", dpi=300)
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    print("Generating ISAC paper figures (spacious publication quality, zero overlap)...")
+    print("Generating ISAC paper figures (built-in legend titles, zero overlap)...")
     fig_rssi_trajectory()
     fig_single_model()
     fig_transfer()
     fig_param_efficiency()
     fig_feature_importance()
-    print("Done: 5 figures written to", OUT)
+    print("Done: All figures written to", OUT)
