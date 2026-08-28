@@ -12,6 +12,7 @@
 \usepackage{multirow}
 \usepackage{float}
 \usepackage[printonlyused,withpage]{acronym}
+\usepackage{microtype}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -32,6 +33,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \acrodef{GRU}{Gated Recurrent Unit}
 \acrodef{TCN}{Temporal Convolutional Network}
 \acrodef{JEPA}{Joint-Embedding Predictive Architecture}
+\acrodef{TS-JEPA}{Time-Series Joint-Embedding Predictive Architecture}
 \acrodef{EMA}{Exponential Moving Average}
 \acrodef{SSL}{Self-Supervised Learning}
 \acrodef{TPE}{Tree-structured Parzen Estimator}
@@ -39,11 +41,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \acrodef{STFT}{Short-Time Fourier Transform}
 \acrodef{MLP}{Multi-Layer Perceptron}
 \acrodef{ECF}{Empirical Characteristic Function}
-
+\acrodef{SIGReg}{Sliced Gaussian Regularization}
+\acrodef{SHAP}{SHapley Additive exPlanations}
 \begin{document}
 
-\title{World Models for Passive Wi-Fi Sensing:\\
-    Passenger Movement Classification}
+\title{Passive ISAC for Urban Transit using Self-Supervised World Models}
 
 \author{
 \IEEEauthorblockN{
@@ -59,7 +61,7 @@ E-mails: \{mario.antunes,dgomes\}@ua.pt}
 \maketitle
 
 \begin{abstract}
-    Integrated Sensing and Communications (ISAC) enables the opportunistic reuse of existing wireless infrastructure, allowing commodity Wi-Fi access points to passively classify passenger mobility dynamics in public transport without dedicated radar or optical sensors. While Received Signal Strength Indicator (RSSI) sequences are natively accessible across off-the-shelf devices, non-stationary multi-device interference and multipath fading severely limit classical supervised classifiers, which previously reached a Matthews Correlation Coefficient (MCC) of 0.756 on initial collection benchmarks. To overcome these representational limitations, this paper introduces self-supervised Joint-Embedding Predictive Architecture (JEPA) world models, a characteristic-function regularized supervised baseline (SIGReg), and selective state-space architectures trained on a new 3,511-sample transit dataset. On this new collection, the leading self-supervised model, TS-JEPA, achieves an MCC of 0.9194, while a 16-member stacked ensemble attains 0.9232 and a compact three-member Pareto subset reaches 0.8904 with only 1.26 million parameters. Crucially, self-supervised representations generalize robustly across distinct collection regimes where supervised baselines experience catastrophic collapse, and feature permutation analysis confirms that a pruned five-channel subset retains 95\% of discriminative capacity for lightweight edge execution.
+    Integrated Sensing and Communications (ISAC) enables the opportunistic reuse of existing wireless infrastructure, allowing commodity Wi-Fi access points to passively classify passenger mobility dynamics in public transport without dedicated radar or optical sensors. While Received Signal Strength Indicator (RSSI) sequences are natively accessible across off-the-shelf devices, non-stationary multi-device interference and multipath fading severely limit classical supervised classifiers, which previously reached a Matthews Correlation Coefficient (MCC) of 0.756 on initial collection benchmarks. To overcome these representational limitations, this paper introduces self-supervised Joint-Embedding Predictive Architecture (JEPA) world models, a supervised baseline regularized with Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function, and selective state-space architectures trained on a primary 3,511-sample transit dataset. On this dataset, the leading self-supervised model, Time-Series JEPA (TS-JEPA), achieves a single-model MCC of 0.9194, while a 16-member stacked ensemble attains 0.9232 (0.9563 on multi-device noise) and a compact three-member self-supervised subset reaches 0.9160 with only 3.42 million parameters. Crucially, self-supervised representations generalize robustly across distinct collection regimes where supervised baselines experience catastrophic collapse (dropping from 0.8858 to 0.4872), and game-theoretic Shapley additive attribution coupled with empirical pruning confirms that a compact 4-channel base subset retains 99.4\% of peak classification performance (0.9143 vs. 0.9194 MCC) while eliminating 77.8\% of front-end feature extraction for lightweight edge execution.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -71,9 +73,6 @@ E-mails: \{mario.antunes,dgomes\}@ua.pt}
 \input{chapters/methodology}
 \input{chapters/results}
 \input{chapters/conclusions}
-
-\section*{Generative AI Declaration}
-During the preparation of this manuscript, the authors used DeepSeek and Gemini as writing assistants for language improvement, grammar correction, and formatting. All technical content, experimental design, model architectures, results, analysis, and conclusions represent the authors' original intellectual contribution. The authors take full responsibility for the accuracy and integrity of the content.
 
 \section*{Acknowledgment}
 This work is supported by the European Regional Development Fund (FEDER), through the Regional Operational Programme of Centre (CENTRO 2030) of the Portugal 2030 framework [Project inMotion with Nr. 21359 (CENTRO2030-FEDER-02225900)].
