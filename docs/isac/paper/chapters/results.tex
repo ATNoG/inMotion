@@ -77,43 +77,45 @@ Figure~\ref{fig:params} plots test \ac{MCC} against parameter footprint across f
     \end{tabular}
 \end{table}
 
-\subsection{Feature Channel Attribution and Empirical Pruning}
+\subsection{Channel-Level Interpretability and Feature Ablation}
 
 \begin{figure}[!b]
     \centering
     \includegraphics[width=\columnwidth]{images/feature_importance_18ch.pdf}
-    \caption{Game-theoretic \ac{SHAP} feature channel attribution across the 18-channel hierarchy evaluated on the leading \ac{TS-JEPA} world model.}
+    \caption{Channel-level \ac{SHAP} feature attribution across the 18-channel hierarchy evaluated on the leading \ac{TS-JEPA} world model.}
     \label{fig:feature_importance}
 \end{figure}
 
-To evaluate the contribution of individual feature channels, we conduct game-theoretic \ac{SHAP} analysis across the 18-channel hierarchy on the primary collection. Figure~\ref{fig:feature_importance} reports the mean absolute Shapley value $|\phi_j|$ for each channel evaluated on the leading \ac{TS-JEPA} model.
+To determine how each channel in the 18-channel hierarchy informs latent world-model predictions, we conduct additive feature attribution via \ac{SHAP} on the primary dataset. Figure~\ref{fig:feature_importance} reports the mean absolute Shapley value $|\phi_j|$ per channel evaluated on the leading \ac{TS-JEPA} model.
 
-Shape descriptors and spectral components provide the primary discriminative signal. Peak location index ($6.04 \times 10^{-3}$), low-frequency STFT Band 0 ($5.97 \times 10^{-3}$), rolling FFT DC power ($4.40 \times 10^{-3}$), and rolling FFT AC energy ($3.99 \times 10^{-3}$) exhibit the highest additive contributions, followed by sign change count ($3.85 \times 10^{-3}$), raw \ac{RSSI} ($3.21 \times 10^{-3}$), and rolling dynamic range ($3.12 \times 10^{-3}$). Conversely, high-order statistical moments (rolling kurtosis at $1.22 \times 10^{-3}$, rolling standard deviation at $0.95 \times 10^{-3}$) and fine velocity differentials contribute minimally to the latent representations.
+The attribution hierarchy reveals that macroscopic signal shape and low-frequency spectral power dominate the decision space. Peak location index ($|\phi| = 6.04 \times 10^{-3}$) and low-frequency STFT Band~0 ($5.97 \times 10^{-3}$) contribute most strongly, capturing the exact timestamp of door transitions and the coarse Doppler shifts of physical motion. These are followed by rolling FFT DC power ($4.40 \times 10^{-3}$) and AC energy ($3.99 \times 10^{-3}$), which reflect baseline energy shifts between vehicle zones. In contrast, fine-grained statistical descriptors, such as rolling kurtosis ($1.22 \times 10^{-3}$), rolling standard deviation ($0.95 \times 10^{-3}$), and high-frequency STFT bands, exhibit negligible marginal value, primarily capturing non-semantic multipath scattering rather than transit kinematics.
 
 \begin{table}[t]
-    \caption{Feature channel pruning ablation on the primary dataset. Base channels comprise Raw RSSI, $\Delta$, $\Delta^2$, and Window Deviation.}
+    \caption{Architecture-controlled feature channel ablation across world models on the primary dataset (\ac{MCC}).}
     \label{tab:pruning}
     \centering
-    \footnotesize
-    \setlength{\tabcolsep}{3.5pt}
+    \scriptsize
+    \setlength{\tabcolsep}{2.5pt}
     \begin{tabular}{lcccc}
         \toprule
-        Configuration        & Channels & Leading Model & Test \ac{MCC}   & Retained        \\
+        Feature Configuration                            & $C$ & \ac{TS-JEPA}    & CF-JEPA & T-JEPA \\
         \midrule
-        Full Rich Hierarchy  & 18       & \ac{TS-JEPA}  & \textbf{0.9194} & 100.0\%         \\
-        Pruned Base Channels & 4        & LeJEPA        & \textbf{0.9143} & \textbf{99.4\%} \\
-        Pruned Base Channels & 4        & T-JEPA        & 0.8982          & 97.7\%          \\
-        Pruned Base Channels & 4        & \ac{SIGReg}   & 0.4872          & 53.0\%          \\
+        Full 18-Channel Hierarchy                        & 18  & \textbf{0.9194} & 0.9083  & 0.8982 \\
+        Top-12 \ac{SHAP} Channels                        & 12  & 0.5815          & 0.8098  & 0.5856 \\
+        Base Kinematics (Raw, $\Delta$, $\Delta^2$, Dev) & 4   & 0.4486          & 0.4366  & 0.4787 \\
+        Rolling Statistics (Moments, Range)              & 5   & 0.3447          & 0.4351  & 0.4944 \\
+        Spectral Domain (FFT, STFT 0--3)                 & 6   & 0.2981          & 0.1869  & 0.2283 \\
+        Raw \ac{RSSI} Only (Single Channel)              & 1   & 0.2431          & 0.3305  & 0.3395 \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-To provide an unassailable empirical proof for edge deployment, Table~\ref{tab:pruning} benchmarks the full 18-channel hierarchy against the pruned 4-channel base kinematic pipeline (raw \ac{RSSI}, velocity $\Delta$, acceleration $\Delta^2$, and window deviation). Pruning 77.8\% of input channels (from 18 down to 4) preserves 99.4\% of peak classification performance (0.9143 test \ac{MCC} for LeJEPA vs. 0.9194 for \ac{TS-JEPA}), eliminating 14 feature extraction passes and reducing front-end computation by 4.5-fold.
+To validate these attribution findings under controlled conditions, Table~\ref{tab:pruning} presents an architecture-controlled feature ablation across \ac{TS-JEPA}, CF-JEPA, and T-JEPA. When input channels are restricted to individual functional domains or the 4-channel base kinematic subset under identical model architectures, performance drops significantly (e.g., from 0.9194 to 0.4486 \ac{MCC} for \ac{TS-JEPA} on 4 channels, and to 0.2431 on raw \ac{RSSI} alone). This confirms that self-supervised world models critically rely on cross-domain synergy across kinematic, spectral, and statistical features to construct noise-invariant latent representations under multi-device interference. At the same time, specialized lightweight architectures designed specifically for low-dimensional inputs, such as LeJEPA (0.566~M parameters, 4 channels), achieve 0.9143 \ac{MCC}, demonstrating that edge access points can choose between rich multi-channel tokenization and ultra-compact dedicated models with virtually zero performance loss.
 \subsection{Discussion: Architectural Insights and Sensing Trade-offs}
 
-The experimental findings offer three primary insights into self-supervised world models for opportunistic Wi-Fi sensing in ISAC.
+The experimental findings offer three primary insights into passive ISAC for urban transit using self-supervised world models.
 First, the contrast between self-supervised world models and supervised sequence baselines across dataset collections reveals the fundamental mechanism of radio representation learning. In radio sensing, concurrent transmitting devices introduce non-stationary interference that alters local signal distributions. Supervised classifiers regularized with strict isotropic Gaussian priors, such as \ac{SIGReg}, constrain the latent space around training distributions; when unobserved multi-device interference patterns appear, these rigid decision boundaries deteriorate, causing a 0.40 drop in test \ac{MCC}. In contrast, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly across masked time-frequency patches without label supervision, learning smooth, invariant latent trajectories corresponding to physical passenger displacement.
 
-Second, the game-theoretic \ac{SHAP} attribution hierarchy and pruning ablation reflect the physical mechanics of passenger transit mobility. Cabin-to-platform transitions manifest through macroscopic profile extrema (peak location), low-frequency spectral energy (STFT Band 0 and FFT DC), and directional progression (slope sign and sign changes). Fast-fading multipath scattering produces noisy high-order oscillations (kurtosis, high-frequency STFT bands) that offer minimal semantic signal. Pruning to 4 base kinematic channels maintains 0.9143 test \ac{MCC}, confirming that lightweight edge sniffers can discard heavy preprocessing without sacrificing accuracy.
+Second, the channel-level \ac{SHAP} attribution and controlled ablation demonstrate that rich feature synergy is essential for general-purpose world models. Kinematic extrema, low-frequency Doppler power, and baseline energy shifts provide complementary physical constraints. While reducing input dimensions degrades fixed 18-channel patch tokenizers, compact architectures like LeJEPA deliver 0.9143 test \ac{MCC} directly over 4 base channels, confirming flexible edge deployment options.
 
 Third, the Pareto parameter efficiency analysis demonstrates that massive neural ensembles are unnecessary for robust passive sensing. While the 21-member ensemble requires 74.8~M parameters across multiple deep sequence backbones, a compact three-member world model ensemble achieves 0.9160 test \ac{MCC} at only 3.42~M parameters on the primary collection. This confirms that compact self-supervised ensembles deliver state-of-the-art opportunistic sensing with minimal memory footprint, establishing a practical dual-function sensing layer on existing wireless infrastructure.

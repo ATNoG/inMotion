@@ -11,11 +11,11 @@ We formulate passenger movement classification as a four-class time-series task 
     \label{fig:rssi_trajectory}
 \end{figure}
 
-The physical sensing environment comprises two spatial zones relative to a municipal transit vehicle: Zone~A denotes the interior passenger cabin, and Zone~B denotes the exterior platform or bus stop. An onboard passive sniffer records 802.11 transmissions from passenger mobile devices. Spatial transitions define four mutually exclusive movement classes: internal transit (AA, Zone~A $\to$ Zone~A), alighting (AB, Zone~A $\to$ Zone~B), boarding (BA, Zone~B $\to$ Zone~A), and platform waiting (BB, Zone~B $\to$ Zone~B).
+The physical sensing environment comprises two spatial zones emulating public transport interactions as established in \cite{ribeiro2026eucnc}: Zone~A denotes the interior passenger cabin (an enclosed room simulating a vehicle interior with a Wi-Fi access point adjacent to the doorway), and Zone~B denotes the exterior platform or bus stop (the adjacent corridor). An onboard passive sniffer records 802.11 transmissions from passenger mobile devices. Spatial transitions define four mutually exclusive movement classes: internal transit (AA, Zone~A $\to$ Zone~A), alighting (AB, Zone~A $\to$ Zone~B), boarding (BA, Zone~B $\to$ Zone~A), and platform waiting (BB, Zone~B $\to$ Zone~B).
 
 Observations consist of 10-second \ac{RSSI} sequences sampled at 1~Hz ($T=10$, $t \in \{1, \dots, 10\}$ seconds). As depicted in Figure~\ref{fig:rssi_trajectory}, each class exhibits a characteristic radio attenuation profile: internal transit (AA) maintains a high, stable signal ($\approx -40\,\text{dBm}$), alighting (AB) exhibits a monotonic decline from $-42\,\text{dBm}$ to $-52\,\text{dBm}$, boarding (BA) rises from $-51\,\text{dBm}$ to $-43\,\text{dBm}$, and platform waiting (BB) remains attenuated at $-52\,\text{dBm}$. The shaded $\pm 1\,\sigma$ variance bands capture multi-device concurrent interference while confirming the physical separability of the mobility states.
 
-The new dataset contains 3,511 labeled sequences, divided into 160 single-device calibration traces (pure scenario, 40 per class) and 3,351 multi-device concurrent interference traces (noise scenario, $\approx 840$ per class) collected across operational bus routes. This collection is a strict superset of the 2,251-sample collection in \cite{matos2026icaisf} under identical sensing protocols.
+The dataset contains 3,511 labeled sequences, divided into 160 single-device calibration traces (pure scenario, 40 per class) and 3,351 multi-device concurrent interference traces (noise scenario, $\approx 840$ per class). Data collection follows the controlled indoor methodology of \cite{ribeiro2026eucnc}, scaling the hardware diversity from 4 smartphones in \cite{ribeiro2026eucnc} to 7 distinct smartphone models across multiple vendors and Android releases. This 3,511-sample benchmark is a strict superset of the 2,251-sample collection in \cite{matos2026icaisf} under identical sensing protocols.
 
 Data is partitioned with an 80/20 class-stratified split, holding out 12.5\% of training data for validation ($\approx 10\%$ of total data). Training folds are augmented within folds using class-conditioned Gaussian noise ($\sigma = 0.05$) and intra-class Mixup ($\alpha = 0.4$), yielding 35,839 training samples with zero split contamination. Model selection is based on validation \ac{MCC}, and the test split is evaluated once for final reporting.
 
@@ -36,10 +36,19 @@ Pretraining runs for 300--500 epochs with AdamW, cosine annealing, gradient clip
 
 \textbf{Sliced Gaussian Regularization (SIGReg) Classifier} \cite{balestriero2025lejepa} is a 3-block 1D convolutional network (192 filters) with global pooling and 128-unit projection, regularized by \ac{SIGReg} ($\lambda = 0.01$) over 256 random projections (0.697~M parameters, 4 channels).
 \textbf{Mamba-3 Sequence Models} \cite{gu2026mamba3} employ selective state spaces \cite{gu2023mamba} (state dim 16, rank-4 MIMO) with four front-ends: \ac{CNN} (0.945~M), \ac{TCN} \cite{bai2018tcn} (0.843~M), Transformer (0.842~M), and multi-view fusion (1.701~M) over 4 channels.
-\textbf{DeepStack} is a two-stage stacked ensemble \cite{wolpert1992stacked} combining ten base models via Level-2 networks and a DeepMetaMLP (43.576~M parameters). Hyperparameters are tuned via Optuna \cite{optuna2019} with \ac{TPE} over 50 trials per model.
+\textbf{DeepStack} is a two-stage stacked ensemble \cite{wolpert1992stacked} combining ten base models via Level-2 networks and a DeepMetaMLP (43.576~M parameters). Supervised sequence baselines are tuned via Optuna \cite{optuna2019} with \ac{TPE} over 50 trials per model.
+
 \subsection{Calibrated Stacking and Pareto Optimization}
-Softmax logits $z_m$ from each candidate model $m$ are temperature-calibrated by optimizing scalar $T_m$ to minimize validation \ac{NLL} \cite{guo2017calibration}: $p_m = \text{softmax}(z_m / T_m)$. Calibrated probabilities are concatenated and classified via a multinomial logistic regression stacker \cite{wolpert1992stacked} with swept L2 penalties $C \in [0.005, 10.0]$. A greedy Pareto selection algorithm iteratively identifies model subsets maximizing validation \ac{MCC} per added parameter.
-\subsection{Game-Theoretic Feature Channel Attribution (SHAP)}
+
+To exploit complementary representations across model families while controlling edge complexity, we construct a calibrated stacking framework. Uncalibrated softmax outputs can produce overconfident misclassifications under noise. We therefore temperature-calibrate the raw logits $z_m$ of each candidate model $m$ by optimizing a scalar temperature parameter $T_m > 0$ on validation data to minimize Negative Log-Likelihood (\ac{NLL}) \cite{guo2017calibration}:
+\begin{equation}
+    p_m = \text{softmax}(z_m / T_m).
+\end{equation}
+The calibrated class probability vectors are concatenated into a meta-feature vector $\mathbf{u} = [p_1^\top, \dots, p_M^\top]^\top$ and passed to a multinomial logistic regression meta-learner \cite{wolpert1992stacked} with L2 regularization penalty $C \in [0.005, 10.0]$.
+
+Hyperparameter optimization for model selection and ensemble pruning is formulated as a bi-objective search over the Pareto frontier balancing classification \ac{MCC} against total parameter count. Starting from an empty ensemble, a greedy Pareto algorithm iteratively evaluates candidate additions, selecting model subsets that maximize incremental \ac{MCC} gain per added parameter. This directly yields minimal-footprint configurations tailored for edge devices.
+
+\subsection{Channel-Level Interpretability \& Attribution}
 
 To quantify the relative contribution of each channel within the 18-channel hierarchy, we employ Shapley Additive exPlanations (\ac{SHAP}) \cite{lundberg2017shap}. Grounded in cooperative game theory, \ac{SHAP} evaluates the marginal contribution of each feature channel $j$ across all possible feature subsets (coalitions) $S \subseteq F \setminus \{j\}$:
 \begin{equation}

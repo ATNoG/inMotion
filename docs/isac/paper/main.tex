@@ -14,6 +14,12 @@
 \usepackage[printonlyused,withpage]{acronym}
 \usepackage{microtype}
 
+\setlength{\textfloatsep}{5pt plus 1.0pt minus 1.0pt}
+\setlength{\floatsep}{4pt plus 1.0pt minus 1.0pt}
+\setlength{\intextsep}{4pt plus 1.0pt minus 1.0pt}
+\setlength{\abovecaptionskip}{3pt plus 1.0pt minus 1.0pt}
+\setlength{\belowcaptionskip}{2pt plus 1.0pt minus 1.0pt}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -61,7 +67,7 @@ E-mails: \{mario.antunes,dgomes\}@ua.pt}
 \maketitle
 
 \begin{abstract}
-    Integrated Sensing and Communications (ISAC) enables the opportunistic reuse of existing wireless infrastructure, allowing commodity Wi-Fi access points to passively classify passenger mobility dynamics in public transport without dedicated radar or optical sensors. While Received Signal Strength Indicator (RSSI) sequences are natively accessible across off-the-shelf devices, non-stationary multi-device interference and multipath fading severely limit classical supervised classifiers, which previously reached a Matthews Correlation Coefficient (MCC) of 0.756 on initial collection benchmarks. To overcome these representational limitations, this paper introduces self-supervised Joint-Embedding Predictive Architecture (JEPA) world models, a supervised baseline regularized with Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function, and selective state-space architectures trained on a primary 3,511-sample transit dataset. On this dataset, the leading self-supervised model, Time-Series JEPA (TS-JEPA), achieves a single-model MCC of 0.9194, while a 16-member stacked ensemble attains 0.9232 (0.9563 on multi-device noise) and a compact three-member self-supervised subset reaches 0.9160 with only 3.42 million parameters. Crucially, self-supervised representations generalize robustly across distinct collection regimes where supervised baselines experience catastrophic collapse (dropping from 0.8858 to 0.4872), and game-theoretic Shapley additive attribution coupled with empirical pruning confirms that a compact 4-channel base subset retains 99.4\% of peak classification performance (0.9143 vs. 0.9194 MCC) while eliminating 77.8\% of front-end feature extraction for lightweight edge execution.
+    Integrated Sensing and Communications (ISAC) enables the opportunistic reuse of existing wireless infrastructure, allowing commodity Wi-Fi access points to passively classify passenger mobility dynamics in public transport without dedicated radar or optical sensors. While Received Signal Strength Indicator (RSSI) sequences are natively accessible across off-the-shelf devices, non-stationary multi-device interference and multipath fading severely limit classical supervised classifiers, which previously reached a Matthews Correlation Coefficient (MCC) of 0.756 on initial collection benchmarks. To overcome these representational limitations, this paper introduces self-supervised Joint-Embedding Predictive Architecture (JEPA) world models, a supervised baseline regularized with Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function, and selective state-space architectures trained on a primary 3,511-sample transit dataset. On this dataset, the leading self-supervised model, Time-Series JEPA (TS-JEPA), achieves a single-model MCC of 0.9194, while a 16-member stacked ensemble attains 0.9232 (0.9563 on multi-device noise) and a compact three-member self-supervised subset reaches 0.9160 with only 3.42 million parameters. Crucially, self-supervised representations generalize robustly across distinct collection regimes where supervised baselines experience catastrophic collapse (dropping from 0.8858 to 0.4872), while channel-level Shapley additive attribution and architecture-controlled ablation confirm that cross-domain feature synergy drives general-purpose models, with dedicated lightweight models like LeJEPA achieving 0.9143 MCC directly over 4 base kinematic channels for edge deployment.
 \end{abstract}
 
 \begin{IEEEkeywords}
