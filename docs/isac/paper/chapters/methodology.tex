@@ -25,12 +25,41 @@ To capture the temporal, statistical, and spectral dynamics of radio attenuation
 
 \subsection{Self-Supervised World Models}
 
-All \ac{JEPA} models learn invariant latent dynamics by predicting representations of masked or future temporal regions. An online context encoder $f_\theta$ is updated via gradient descent, a target encoder $g_\xi$ is updated via \ac{EMA} ($\xi \leftarrow \tau \xi + (1-\tau)\theta$), and a latent predictor $h_\psi$ minimizes the L2 prediction loss $\mathcal{L}_{\text{JEPA}} = \| h_\psi(f_\theta(x_c)) - \text{sg}(g_\xi(x_t)) \|_2^2$, where $\text{sg}(\cdot)$ is the stop-gradient operator. We evaluate four distinct formulations:
-\textbf{T-JEPA} \cite{thimonier2024tjepa} applies per-timestep channel tokenization with learned feature embeddings and two REG tokens, applying contiguous 30\% temporal masks (dim 128, 4 heads, 4 layers, width 256, 3-layer bottleneck dim 64; 0.633~M parameters, 18 channels).
-\textbf{Time-Series JEPA (\ac{TS-JEPA})} \cite{tsjepa2024} utilizes a 1D convolutional patch tokenizer (patch size two) with patch masking annealed from 0.4 to 0.7 (dim 256, 8 heads, 4 layers, width 512, 2-layer bottleneck dim 128; 2.153~M parameters, 18 channels).
-\textbf{LeJEPA} \cite{balestriero2025lejepa} executes next-step latent prediction without an \ac{EMA} target, stabilized via Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function (dim 128, 4 heads, 4 layers, width 256, 3 predictor layers; 0.566~M parameters, 4 channels).
-\textbf{CF-JEPA} \cite{cfjepa2026} executes mask-free multi-horizon prediction across horizons $k \in \{1, 2, 3\}$ from context crops with an \ac{EMA} target (dim 256, 8 heads, 3 layers, width 256, 1-layer bottleneck dim 128; 1.232~M parameters, 18 channels).
-Pretraining runs for 300--500 epochs with AdamW, cosine annealing, gradient clipping at 1.0, and \ac{EMA} momentum schedules (0.99--0.996; 0.996--0.999 for CF-JEPA). Fine-tuning employs progressive unfreezing (frozen backbone for 25\% of epochs, then unfrozen at 0.1 learning rate with Mixup $\alpha = 0.4$ and label smoothing $\varepsilon = 0.1$).
+All \ac{JEPA} models learn invariant latent dynamics by predicting representations of masked or future temporal regions. An online context encoder $f_\theta$ is updated via gradient descent, a target encoder $g_\xi$ is updated via \ac{EMA} ($\xi \leftarrow \tau \xi + (1-\tau)\theta$), and a latent predictor $h_\psi$ minimizes the L2 prediction loss $\mathcal{L}_{\text{JEPA}} = \| h_\psi(f_\theta(x_c)) - \text{sg}(g_\xi(x_t)) \|_2^2$, where $\text{sg}(\cdot)$ is the stop-gradient operator. We evaluate four distinct formulations, whose architectural parameters and pretraining settings are detailed in Table~\ref{tab:arch_specs}:
+
+\begin{table*}[t]
+    \caption{Architectural specifications and pretraining hyperparameters across the evaluated world model family.}
+    \label{tab:arch_specs}
+    \centering
+    \small
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        Hyperparameter & TS-JEPA & LeJEPA & CF-JEPA & T-JEPA \\
+        \midrule
+        Input Channels ($C$)       & 18 (Rich)         & 4 (Base)          & 18 (Rich)         & 18 (Rich) \\
+        Tokenizer Type             & 1D Conv Patch     & Causal Temporal   & 1D Conv Patch     & Per-feature + [REG] \\
+        Patch / Token Size         & 2 timesteps       & 1 timestep        & 2 timesteps       & 1 timestep \\
+        Embedding Dim ($d$)        & 256               & 128               & 256               & 128 \\
+        Attention Heads ($h$)      & 8                 & 4                 & 8                 & 4 \\
+        Encoder Layers ($L$)       & 4                 & 4                 & 3                 & 4 \\
+        Feedforward Dim            & 512               & 256               & 256               & 256 \\
+        Predictor Architecture     & 2-layer ($d=128$) & 3-layer ($d=128$) & 1-layer ($d=128$) & 3-layer ($d=64$) \\
+        Predictive Objective       & Masked patch L2   & Next-step L2      & Multi-horizon L2  & Masked token L2 \\
+        Anti-Collapse Mechanism    & EMA target        & SIGReg ($\lambda=0.05$) & EMA target  & EMA target + [REG] \\
+        Target EMA Schedule        & $0.99 \to 0.996$  & None (Direct)     & $0.996 \to 0.999$ & $0.99 \to 0.996$ \\
+        Pretrain Epochs / Batch    & 500 / 128         & 500 / 128         & 500 / 128         & 500 / 128 \\
+        Parameter Count            & 2.153~M           & 0.566~M           & 1.232~M           & 0.633~M \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\textbf{T-JEPA} \cite{thimonier2024tjepa} applies per-timestep channel tokenization with learned feature embeddings and two learnable \texttt{[REG]} tokens (prepended to context and target to prevent representational collapse), applying contiguous 30\% temporal masks.
+\textbf{Time-Series JEPA (\ac{TS-JEPA})} \cite{tsjepa2024} utilizes a 1D convolutional patch tokenizer (patch size two) with patch masking annealed from 0.4 to 0.7 across training.
+\textbf{LeJEPA} \cite{balestriero2025lejepa} executes next-step latent prediction without an \ac{EMA} target, stabilized via Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function of latents.
+\textbf{CF-JEPA} \cite{cfjepa2026} executes mask-free multi-horizon prediction across horizons $k \in \{1, 2, 3\}$ from context crops with an \ac{EMA} target.
+
+Pretraining runs for 500 epochs with AdamW, cosine annealing, gradient clipping at 1.0, and target momentum schedules shown in Table~\ref{tab:arch_specs}. Fine-tuning employs progressive unfreezing (frozen backbone for 25\% of epochs, then unfrozen at 0.1 learning rate with Mixup $\alpha = 0.4$ and label smoothing $\varepsilon = 0.1$). All fine-tuned models share a learned-attention pooling head mapping encoder latents through a two-layer MLP with dropout (0.3) to 4-class logits.
 
 \subsection{Supervised Classifiers and State-Space Baselines}
 
