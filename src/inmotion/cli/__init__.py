@@ -23,7 +23,17 @@ from typing import Annotated
 import typer
 
 from inmotion import __version__
-from inmotion.cli import analyze, data, datasets, doctor, evaluate, model, plots, train
+from inmotion.cli import (
+    analyze,
+    data,
+    datasets,
+    doctor,
+    evaluate,
+    model,
+    plots,
+    quantize,
+    train,
+)
 
 app = typer.Typer(
     name="inmotion",
@@ -33,7 +43,7 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 
-for sub in (model, datasets, data, train, evaluate, analyze, plots):
+for sub in (model, datasets, data, quantize, train, evaluate, analyze, plots):
     app.add_typer(sub.app, name=sub.NAME, help=sub.HELP)
 
 app.command("doctor", help="Report on the environment and the artifact store.")(doctor.doctor)

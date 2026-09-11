@@ -23,7 +23,7 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 63 lines
+`src/inmotion/cli/__init__.py` - 73 lines
 
 The `inmotion` command-line interface.
 
@@ -222,6 +222,166 @@ Public API:
 - func `mixup_augment` - Intra-class Mixup: X_new = λ·X₁ + (1−λ)·X₂, same label only.
 - func `augment`
 
+## Quantization
+
+### `inmotion.quant.spec`
+
+`src/inmotion/quant/spec.py` - 130 lines
+
+Quantization schemes.
+
+Weight-only quantization: the weights are stored at low precision, activations
+stay in fp32. That is the right trade here because weights dominate this
+workload by 9x-2424x over activations (a full inference window is 10 timesteps
+x 4 channels = 160 bytes), so the entire memory problem is the weights. Keeping
+activations in fp32 also removes the need for calibration data, which keeps Q4
+and Q8 exact and reproducible rather than data-dependent.
+
+Rounding is specified explicitly. NumPy's ``np.round`` rounds half to even,
+while Rust's ``f32::round`` rounds half away from zero; leaving that implicit
+would make the Python reference and the Rust kernels disagree on roughly one
+element in a thousand, which is exactly the kind of drift the golden-vector
+tests exist to catch.
+
+Public API:
+
+- class `Granularity` - How many weights share one scale/zero-point pair.
+- class `Rounding` - Rounding mode applied before the integer cast.
+- class `QuantSpec` - A weight-quantization scheme.
+- func `resolve` - Look up a preset by name, or parse ``q<N>`` shorthand.
+
+### `inmotion.quant.reference`
+
+`src/inmotion/quant/reference.py` - 192 lines
+
+Normative quantization math, in numpy.
+
+This module *is* the specification. The Rust kernels in ``rust/inmotion-core``
+must reproduce it exactly, and ``tests/test_quant_reference.py`` pins the
+properties that make "exactly" checkable:
+
+1. dequantize is exactly ``(q - zero_point) * scale`` in float32;
+2. re-quantizing a dequantized tensor is idempotent (no compounding drift);
+3. rounding ties follow the declared mode, because numpy rounds half to even
+   while Rust rounds half away from zero;
+4. granularity is honoured, so per-group is never silently coarser than asked;
+5. the byte accounting uses the packed size, not one int8 per value.
+
+Layout convention
+-----------------
+``scale`` and ``zero_point`` are stored in the *reduced* shape that broadcasts
+against the codes, so no reader has to re-derive it:
+
+===============  ==========================================  ==================
+granularity      reduced shape                               dequant broadcast
+===============  ==========================================  ==================
+per_tensor       ``()``                                      scalar
+per_channel      ``(1, .., D, .., 1)`` with ``D=shape[axis]``  direct
+per_group        ``(*shape[:-1], ceil(D/g))``                ``scale[..., None]``
+===============  ==========================================  ==================
+
+Public API:
+
+- func `n_groups_for` - Number of groups the last axis is divided into, rounding up.
+- class `QuantizedTensor` - Integer codes plus the metadata needed to reconstruct the float values.
+- func `quantize` - Quantize a float tensor into integer codes and per-group metadata.
+- func `dequantize` - Reconstruct float32 values from codes and metadata.
+
+### `inmotion.quant.packing`
+
+`src/inmotion/quant/packing.py` - 124 lines
+
+Bit-packing of integer codes.
+
+Storing a 4-bit code in an int8 wastes half the memory, and this workload is
+memory-bound, so the packing is not an optimization — it is the point. Q4 must
+cost half of Q8 and Q2 a quarter of it, or the exercise is pointless.
+
+Format
+------
+Codes are biased to unsigned (``u = q + 2**(bits-1)``) and written LSB-first:
+element ``i`` occupies bits ``[i*bits, (i+1)*bits)`` of the byte stream, so for
+4-bit codes element 0 is the low nibble of byte 0 and element 1 the high nibble.
+
+Biasing means the on-device dequantization stays a single formula with no extra
+per-weight work: because ``q = u - 2**(bits-1)``,
+
+    (q - zero_point) * scale  ==  (u - (zero_point + 2**(bits-1))) * scale
+
+so the bias is folded into the zero point once, at export, by
+:func:`fold_bias_into_zero_point`.
+
+Public API:
+
+- func `n_bytes_for` - Number of bytes needed to pack ``count`` codes of ``bits`` each.
+- func `fold_bias_into_zero_point` - Return the zero point that pairs with biased unsigned codes.
+- func `pack` - Pack int8 codes into a uint8 byte stream, LSB-first.
+- func `unpack` - Inverse of :func:`pack`. Returns signed int8 codes.
+
+### `inmotion.quant.model`
+
+`src/inmotion/quant/model.py` - 267 lines
+
+Weight-only quantization of a model, and honest size accounting.
+
+What gets quantized
+-------------------
+Only the *weights* of ``Linear`` and ``Conv1d``/``Conv2d`` layers — the tensors
+with two or more dimensions. Everything else stays fp32:
+
+- biases, LayerNorm/BatchNorm weights and running statistics are 1-D and a tiny
+  share of the parameters; quantizing them costs accuracy and saves nothing;
+- learned tokens and position embeddings (``mask_token``, ``query_tokens``,
+  ``pos_embed``) are initialization state, not weights to be approximated.
+
+Activations stay fp32. That is deliberate: activations peak at ~10 KB against
+0.57-2.35 MB of weights, so keeping them fp32 costs nothing measurable and
+removes the need for calibration data.
+
+Accuracy measurement
+--------------------
+:func:`apply` replaces each weight with ``dequantize(quantize(w))``. Running the
+model afterwards measures exactly what a device does, because the device also
+reconstructs fp32 weights from codes before the matmul. No forward pass needs to
+be rewritten, so the measurement cannot drift from the model.
+
+Public API:
+
+- class `TensorRecord` - One quantized weight tensor.
+- class `QuantReport` - Size and error summary for one (model, spec) pair.
+- func `quantize_tensor` - Quantize one weight tensor.
+- func `apply` - Return a model whose quantizable weights have been quantized and rebuilt.
+- func `apply_cast` - Round every parameter and buffer to a narrower float format.
+
+### `inmotion.quant.evaluate`
+
+`src/inmotion/quant/evaluate.py` - 246 lines
+
+Accuracy under quantization, measured on the paper's split.
+
+The point of this module is that the numbers it produces are comparable with
+``docs/isac/results/MASTER_RESULTS.md``. It therefore reuses the *same* splits
+and the same feature pipeline the models were trained with:
+
+- features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
+  scaler is fitted inside it and using a different fit would change the inputs;
+- the 80/20 stratified split from ``_stratified_indices(y, seed)``, which is the
+  convention stated in MASTER_RESULTS.
+
+The first thing the sweep does is evaluate the unquantized model. If that does
+not reproduce the recorded MCC, the harness is wrong and every later number is
+meaningless, so :func:`check_baseline` fails loudly instead of publishing a
+table nobody can trace.
+
+Public API:
+
+- class `EvalRow` - One (model, precision) measurement.
+- func `evaluate` - Measure one (model, precision) pair on the test split.
+- func `check_baseline` - Confirm fp32 reproduces the recorded MCC, within tolerance.
+- func `sweep` - Evaluate every (model, precision) pair and optionally write a CSV.
+- func `write_csv`
+- func `write_json`
+
 ## Models
 
 ### `inmotion.models.registry`
@@ -393,7 +553,7 @@ Public API:
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 63 lines
+`src/inmotion/cli/__init__.py` - 73 lines
 
 The `inmotion` command-line interface.
 
@@ -506,6 +666,18 @@ Public API:
 
 - func `classical` - Rebuild the figures without retraining.
 - func `dl` - Rebuild the DL figures without retraining.
+
+### `inmotion.cli.quantize`
+
+`src/inmotion/cli/quantize.py` - 143 lines
+
+`inmotion quantize` — quantize models and measure what it costs.
+
+Public API:
+
+- func `formats` - Show each scheme, its bit width and its storage granularity.
+- func `show` - Report the size, compression and weight error for one scheme.
+- func `evaluate` - Sweep models x formats and write one row per measurement.
 
 ### `inmotion.cli.doctor`
 

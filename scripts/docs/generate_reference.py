@@ -42,6 +42,13 @@ MODULE_GROUPS: dict[str, list[str]] = {
         "inmotion.data.clean",
         "inmotion.data.augment",
     ],
+    "Quantization": [
+        "inmotion.quant.spec",
+        "inmotion.quant.reference",
+        "inmotion.quant.packing",
+        "inmotion.quant.model",
+        "inmotion.quant.evaluate",
+    ],
     "Models": [
         "inmotion.models.registry",
         "inmotion.models.factories",
@@ -58,6 +65,7 @@ MODULE_GROUPS: dict[str, list[str]] = {
         "inmotion.cli.evaluate",
         "inmotion.cli.analyze",
         "inmotion.cli.plots",
+        "inmotion.cli.quantize",
         "inmotion.cli.doctor",
     ],
     "Training pipelines": [

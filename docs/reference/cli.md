@@ -289,6 +289,38 @@ Options:
 - `--eda` (default: `False`) - Also regenerate the EDA figures.
 - `--data` - Dataset CSV, needed with --eda.
 
+## `quantize`
+
+Quantize models and measure the cost.
+
+### `quantize eval`
+
+Measure accuracy under quantization on the paper's split.
+
+Options:
+
+- `--models` - Comma-separated; default: the JEPA family.
+- `--formats` - Comma-separated; default: all.
+- `--data` - Dataset CSV; default: dataset.icaisf.csv.
+- `--seed` (default: `42`) - Split seed.
+- `--out` (default: `results/quant/sweep.csv`) - Where to write the results CSV.
+
+### `quantize formats`
+
+List the available quantization schemes.
+
+### `quantize show`
+
+Quantize one model and report size and error.
+
+Arguments:
+
+- `MODEL` (required) - Registered model name.
+
+Options:
+
+- `--format`, `-f` (default: `int8`) - Scheme, e.g. q4.
+
 ## `train`
 
 Train models.

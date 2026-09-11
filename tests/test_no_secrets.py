@@ -29,7 +29,15 @@ SECRET_ASSIGNMENT = re.compile(
 )
 
 SKIP_SUFFIXES = {".lock", ".png", ".pdf", ".joblib", ".pt", ".npz"}
-SKIP_PARTS = {".git", ".venv", "node_modules", ".omp", "20-aug", "backup", "plots", "results"}
+# Directories that never contain source: tool caches, checkouts of the artefact
+# stores, and generated output. Scanning them wastes time and makes the test
+# count depend on unrelated churn.
+SKIP_PARTS = {
+    ".git", ".venv", "node_modules", ".omp",
+    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".idea",
+    "20-aug", "backup", "plots", "results", "combined", "catboost_info",
+    "dist", ".astro",
+}
 
 
 def _scanned_files() -> list[Path]:
