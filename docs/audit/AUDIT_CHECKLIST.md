@@ -80,6 +80,7 @@ The reference documents are generated, so they cannot disagree with the code.
 | dataset | IEEE Dataport DOI `10.21227/55nm-0r91`; a copy is committed under `data/processed/` |
 | model weights | gitignored, present in `backup/` and `20-aug/models/`; `inmotion model inventory` recovers their architectures |
 | licence | not yet declared — **add one before submission** |
+| citation | `CITATION.cff` present; replace the placeholder reference with the camera-ready citation on acceptance |
 
 ## Open items
 
