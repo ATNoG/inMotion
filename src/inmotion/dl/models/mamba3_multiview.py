@@ -12,7 +12,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from dl.models.mamba import _MambaBlock
+from inmotion.dl.models.mamba import _MambaBlock
 
 
 class _LocalView(nn.Module):

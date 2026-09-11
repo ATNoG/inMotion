@@ -41,11 +41,10 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-# `inmotion` is the package (subpackages included automatically).
-# `dl` and `ml_classification` are legacy top-level packages still imported by
-# the pipelines, pending their move under src/. The previous `eucnc` entry named
-# a package that does not exist.
-packages = ["src/inmotion", "dl", "ml_classification"]
+# One package. `dl` and `ml_classification` were top-level packages until they
+# were folded in as `inmotion.dl` and `inmotion.classification`. The entry
+# before that named `eucnc`, a package that never existed.
+packages = ["src/inmotion"]
 
 # pyproject.toml
 [tool.uv.sources]
@@ -101,7 +100,7 @@ select = [
 
 
 [tool.pyright]
-include = ["src", "dl", "ml_classification", "tests"]
+include = ["src", "tests"]
 exclude = ["demo", "website", ".omp", "20-aug", "docs"]
 typeCheckingMode = "basic"
 reportImportCycles = false

@@ -1,6 +1,6 @@
 """Train the paper's HPO-best models using configs from docs/icaisf/hpo_supplementary.md.
 
-The original Optuna DL DBs (optuna_dl_*.db) were deleted, so run_dl.py can no
+The original Optuna DL DBs (optuna_dl_*.db) were deleted, so the DL pipeline can no
 longer skip HPO. This script rebuilds each HPO-best model from the paper's
 documented config and trains it with the Trainer, saving checkpoints that the
 mega-ensemble can load directly.
@@ -25,10 +25,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
-from dl.evaluation import evaluate_model_on_test
-from dl.training import Trainer
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
+from inmotion.dl.evaluation import evaluate_model_on_test
+from inmotion.dl.training import Trainer
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Paper HPO-best configs (docs/icaisf/hpo_supplementary.md)
@@ -139,13 +139,13 @@ PAPER_HPO_CONFIGS: dict[str, dict] = {
 
 def _build_model(model_type: str, config: DLConfig, p: dict) -> torch.nn.Module:
     """Rebuild an HPO-best model from params (mirrors run_dl._build_hpo_best_model)."""
-    from dl.models.bilstm import BiLSTMClassifier
-    from dl.models.cnn import CNNClassifier
-    from dl.models.gru import GRUClassifier
-    from dl.models.lstm import LSTMClassifier
-    from dl.models.mamba import MambaClassifier
-    from dl.models.rnn import RNNClassifier
-    from dl.models.tcn import TCNClassifier
+    from inmotion.dl.models.bilstm import BiLSTMClassifier
+    from inmotion.dl.models.cnn import CNNClassifier
+    from inmotion.dl.models.gru import GRUClassifier
+    from inmotion.dl.models.lstm import LSTMClassifier
+    from inmotion.dl.models.mamba import MambaClassifier
+    from inmotion.dl.models.rnn import RNNClassifier
+    from inmotion.dl.models.tcn import TCNClassifier
 
     dropout = float(p.get("dropout", config.dropout))
     kernel_sets: list[list[int]] = [[3], [3, 5], [3, 5, 7], [3, 5, 7, 9]]
@@ -285,7 +285,7 @@ def main() -> None:
         trainer = Trainer(config, run_name=run_name)
         result = trainer.fit(model, tr_loader, val_loader, save_path=save_path)
 
-        # ── Final-fit (mirrors run_dl.py): retrain on train+val for best_epoch,
+        # -- Final-fit (mirrors the DL pipeline): retrain on train+val for
         #    keep the better of the two models ────────────────────────────────
         X_full = np.concatenate([X_tr, X_va], axis=0)
         y_full = np.concatenate([y_tr, y_va], axis=0)

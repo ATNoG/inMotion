@@ -5,7 +5,7 @@ timesteps from unmasked ones, without using any class labels.  Produces
 a context encoder that can be fine-tuned for classification.
 
 Usage:
-    from dl.jepa_training import JEPATrainer
+    from inmotion.dl.jepa_training import JEPATrainer
     trainer = JEPATrainer(config, model)
     trainer.pretrain(train_loader, val_loader, epochs=200)
     # Then fine-tune with model.context_encoder + classification head
@@ -34,8 +34,8 @@ try:
 except ImportError:
     _WANDB_AVAILABLE = False
 
-from dl.config import DLConfig
-from dl.models.t_jepa import TJEPAModel
+from inmotion.dl.config import DLConfig
+from inmotion.dl.models.t_jepa import TJEPAModel
 
 
 @dataclass
@@ -309,7 +309,7 @@ def prepare_jepa_data(config: DLConfig) -> tuple[DataLoader, DataLoader | None]:
     Returns:
         train_loader, val_loader (val may be None if not enough data)
     """
-    from dl.data_loader import DLDataLoader
+    from inmotion.dl.data_loader import DLDataLoader
 
     loader = DLDataLoader(config)
     X_all, y_all = loader.load_and_preprocess()

@@ -40,13 +40,13 @@ from sklearn.metrics import matthews_corrcoef
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader, RSSIDataset
-from dl.evaluation import evaluate_model_on_test
-from dl.training import Trainer
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader, RSSIDataset
+from inmotion.dl.evaluation import evaluate_model_on_test
+from inmotion.dl.training import Trainer
 
 if TYPE_CHECKING:
-    from dl.jepa_viz import JEPAVisualizer
+    from inmotion.dl.jepa_viz import JEPAVisualizer
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -366,7 +366,7 @@ def load_supervised_data(
 
 
 def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
-    from dl.models.t_jepa import TJEPAModel
+    from inmotion.dl.models.t_jepa import TJEPAModel
 
     n_channels = 18 if args.rich_features else 4
     return TJEPAModel(
@@ -388,7 +388,7 @@ def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
 
 
 def _build_ts_jepa(args: argparse.Namespace) -> nn.Module:
-    from dl.models.ts_jepa import TSJEPAModel
+    from inmotion.dl.models.ts_jepa import TSJEPAModel
 
     in_channels = 18 if args.rich_features else 4
     return TSJEPAModel(
@@ -409,7 +409,7 @@ def _build_ts_jepa(args: argparse.Namespace) -> nn.Module:
 
 
 def _build_lejepa(args: argparse.Namespace) -> nn.Module:
-    from dl.models.lejepa import LeJEPAModel
+    from inmotion.dl.models.lejepa import LeJEPAModel
 
     in_channels = 18 if args.rich_features else 4
     return LeJEPAModel(
@@ -425,7 +425,7 @@ def _build_lejepa(args: argparse.Namespace) -> nn.Module:
 
 
 def _build_cf_jepa(args: argparse.Namespace) -> nn.Module:
-    from dl.models.cf_jepa import CFJEPAModel
+    from inmotion.dl.models.cf_jepa import CFJEPAModel
 
     in_channels = 18 if args.rich_features else 4
     return CFJEPAModel(
@@ -449,7 +449,7 @@ def _build_cf_jepa(args: argparse.Namespace) -> nn.Module:
 
 
 def _build_sigreg(args: argparse.Namespace) -> nn.Module:
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     return SIGRegClassifier(
         in_features=4,
@@ -478,19 +478,19 @@ def _build_mamba3(variant: str, args: argparse.Namespace) -> nn.Module:
         "mimo_rank": getattr(args, "mimo_rank", 4),
     }
     if variant == "cnn":
-        from dl.models.mamba3_cnn import Mamba3CNN
+        from inmotion.dl.models.mamba3_cnn import Mamba3CNN
 
         return Mamba3CNN(cnn_channels=args.d_model, n_mamba_layers=args.num_layers, **kw)
     elif variant == "tcn":
-        from dl.models.mamba3_tcn import Mamba3TCN
+        from inmotion.dl.models.mamba3_tcn import Mamba3TCN
 
         return Mamba3TCN(tcn_channels=args.d_model, n_mamba_layers=args.num_layers, **kw)
     elif variant == "transformer":
-        from dl.models.mamba3_transformer import Mamba3Transformer
+        from inmotion.dl.models.mamba3_transformer import Mamba3Transformer
 
         return Mamba3Transformer(nhead=args.nhead, num_blocks=args.num_layers, **kw)
     elif variant == "multiview":
-        from dl.models.mamba3_multiview import Mamba3MultiView
+        from inmotion.dl.models.mamba3_multiview import Mamba3MultiView
 
         return Mamba3MultiView(n_mamba_layers=args.num_layers, **kw)
     raise ValueError(f"Unknown Mamba-3 variant: {variant}")
@@ -821,7 +821,7 @@ def finetune_jepa(
     Uses progressive unfreezing: freeze encoder → train head → unfreeze → full fine-tune.
     """
     if args.model == "t_jepa":
-        from dl.models.t_jepa import TJEPAClassifier
+        from inmotion.dl.models.t_jepa import TJEPAClassifier
 
         clf = TJEPAClassifier(
             pretrained=pretrained_model,
@@ -830,7 +830,7 @@ def finetune_jepa(
             dropout=0.3,
         )
     elif args.model == "lejepa":
-        from dl.models.lejepa import LeJEPAClassifier
+        from inmotion.dl.models.lejepa import LeJEPAClassifier
 
         clf = LeJEPAClassifier(
             pretrained=pretrained_model,
@@ -839,7 +839,7 @@ def finetune_jepa(
             dropout=0.3,
         )
     elif args.model == "cf_jepa":
-        from dl.models.cf_jepa import CFJEPAClassifier
+        from inmotion.dl.models.cf_jepa import CFJEPAClassifier
 
         clf = CFJEPAClassifier(
             pretrained=pretrained_model,
@@ -848,7 +848,7 @@ def finetune_jepa(
             dropout=0.3,
         )
     else:
-        from dl.models.ts_jepa import TSJEPAClassifier
+        from inmotion.dl.models.ts_jepa import TSJEPAClassifier
 
         clf = TSJEPAClassifier(
             pretrained=pretrained_model,
@@ -1013,7 +1013,7 @@ def _hpo_objective_value(mcc: float, n_params: int, objective: str) -> float:
 
 def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
     """Create a single-objective study, or a NSGA-II Pareto study."""
-    from dl.optimization import _get_optuna_storage
+    from inmotion.dl.optimization import _get_optuna_storage
 
     storage = _get_optuna_storage("sqlite:///optuna_exotic.db")
     if objective == "pareto":
@@ -1130,7 +1130,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
 
         # ── Build model ───────────────────────────────────────────────
         if is_ts:
-            from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+            from inmotion.dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
 
             m = TSJEPAModel(
                 seq_len=10,
@@ -1145,7 +1145,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 ema_start=ema_start,
             ).to(device)
         elif is_le:
-            from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+            from inmotion.dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
 
             m = LeJEPAModel(
                 seq_len=10,
@@ -1158,7 +1158,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
             ).to(device)
         elif is_cf:
-            from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
+            from inmotion.dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
 
             m = CFJEPAModel(
                 seq_len=10,
@@ -1174,7 +1174,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
             ).to(device)
         else:
-            from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+            from inmotion.dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
             m = TJEPAModel(
                 n_timesteps=10,
@@ -1238,11 +1238,11 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         if is_ts:
             clf = TSJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         elif is_le:
-            from dl.models.lejepa import LeJEPAClassifier
+            from inmotion.dl.models.lejepa import LeJEPAClassifier
 
             clf = LeJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         elif is_cf:
-            from dl.models.cf_jepa import CFJEPAClassifier
+            from inmotion.dl.models.cf_jepa import CFJEPAClassifier
 
             clf = CFJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         else:
@@ -1326,7 +1326,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             return best_mcc, float(n_params)
         return _hpo_objective_value(best_mcc, n_params, obj)
 
-    from dl.optimization import _log_trial_callback
+    from inmotion.dl.optimization import _log_trial_callback
 
     obj = getattr(args, "hpo_objective", "mcc")
     study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
@@ -1511,7 +1511,7 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
 
 
 def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     def objective(trial):
         d_model = trial.suggest_categorical("d_model", [128, 192, 256])
@@ -1641,7 +1641,7 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
         trl = DataLoader(RSSIDataset(Xt, yt), batch_size=args.batch_size, shuffle=True)
         val = DataLoader(RSSIDataset(Xv, yv), batch_size=args.batch_size, shuffle=False)
 
-        from dl.training import Trainer
+        from inmotion.dl.training import Trainer
 
         result = Trainer(cfg).fit(m, trl, val)
         mcc = float(result.best_val_mcc)
@@ -1669,7 +1669,7 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
             return mcc, float(n_params)
         return _hpo_objective_value(mcc, n_params, obj)
 
-    from dl.optimization import _log_trial_callback
+    from inmotion.dl.optimization import _log_trial_callback
 
     obj = getattr(args, "hpo_objective", "mcc")
     study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
@@ -1701,7 +1701,7 @@ def main() -> None:
 
     # Anti-collapse regularizer mode (SigReg vs RDMReg)
     if args.sigreg_mode == "rdm":
-        from dl.sigreg import set_default_sigreg_mode
+        from inmotion.dl.sigreg import set_default_sigreg_mode
 
         set_default_sigreg_mode("rdm", p=args.rdm_p)
         print(f"Using RDMReg (p={args.rdm_p}) for anti-collapse regularization")
@@ -1745,7 +1745,7 @@ def main() -> None:
         print(f"{'=' * 60}")
 
         # Setup visualization
-        from dl.jepa_viz import JEPAVisualizer
+        from inmotion.dl.jepa_viz import JEPAVisualizer
 
         viz = JEPAVisualizer(
             save_dir=args.viz_dir,

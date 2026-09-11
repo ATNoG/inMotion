@@ -21,27 +21,27 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from torch import nn
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
-from dl.evaluation import (
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
+from inmotion.dl.evaluation import (
     evaluate_model_on_test,
     metrics_to_extended_row,
 )
-from dl.models.bilstm import BiLSTMClassifier
-from dl.models.cnn import CNNClassifier
-from dl.models.cnn2d_rnn import CNN2DRNNClassifier
-from dl.models.ensemble import StackingEnsemble, VotingEnsemble
-from dl.models.gru import GRUClassifier
-from dl.models.lstm import LSTMClassifier
-from dl.models.mamba import MambaClassifier
-from dl.models.meta_fusion import MetaFusionClassifier
-from dl.models.moe import (
+from inmotion.dl.models.bilstm import BiLSTMClassifier
+from inmotion.dl.models.cnn import CNNClassifier
+from inmotion.dl.models.cnn2d_rnn import CNN2DRNNClassifier
+from inmotion.dl.models.ensemble import StackingEnsemble, VotingEnsemble
+from inmotion.dl.models.gru import GRUClassifier
+from inmotion.dl.models.lstm import LSTMClassifier
+from inmotion.dl.models.mamba import MambaClassifier
+from inmotion.dl.models.meta_fusion import MetaFusionClassifier
+from inmotion.dl.models.moe import (
     MOE_COMBOS,
     build_soft_moe,
 )
-from dl.models.rnn import RNNClassifier
-from dl.models.tcn import TCNClassifier
-from dl.models.transformer import TransformerClassifier
+from inmotion.dl.models.rnn import RNNClassifier
+from inmotion.dl.models.tcn import TCNClassifier
+from inmotion.dl.models.transformer import TransformerClassifier
 
 # ── Model-building helpers ────────────────────────────────────────────────────
 

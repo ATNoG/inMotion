@@ -15,9 +15,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dl.config import DLConfig
-from dl.results import load_extended_results
-from dl.visualization import DLVisualizer
+from inmotion.dl.config import DLConfig
+from inmotion.dl.results import load_extended_results
+from inmotion.dl.visualization import DLVisualizer
 
 
 def parse_args() -> argparse.Namespace:
@@ -97,7 +97,7 @@ def main() -> None:
     # ── EDA (optional) ───────────────────────────────────────────────────────
     if args.eda:
         print("\nRunning EDA...")
-        from dl.eda import run_eda_for_dl
+        from inmotion.dl.eda import run_eda_for_dl
 
         run_eda_for_dl(config)
 

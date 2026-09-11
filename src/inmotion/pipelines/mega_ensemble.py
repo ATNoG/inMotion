@@ -35,8 +35,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Model registry — each entry knows how to build, load, and run the model
@@ -44,7 +44,7 @@ from dl.data_loader import DLDataLoader
 
 
 def _build_lejepa():
-    from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+    from inmotion.dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
 
     # full-after-hpo Pareto winner (0.8676): d_model=128 ff=256 layers=4 pred_layers=3
     pretrained = LeJEPAModel(
@@ -61,7 +61,7 @@ def _build_lejepa():
 
 
 def _build_t_jepa():
-    from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+    from inmotion.dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
     # full-after-hpo Pareto winner (0.8445): d_model=128 layers=4 ff=256 pred_layers=3
     pretrained = TJEPAModel(
@@ -79,7 +79,7 @@ def _build_t_jepa():
 
 
 def _build_ts_jepa():
-    from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+    from inmotion.dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
 
     pretrained = TSJEPAModel(
         seq_len=10,
@@ -96,7 +96,7 @@ def _build_ts_jepa():
 
 
 def _build_cf_jepa():
-    from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
+    from inmotion.dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
 
     # full-after-hpo best frontier point (manual run): embed 256, layers 3,
     # ff 256, pred_dim 128, pred_layers 1, 18-channel rich features
@@ -122,37 +122,37 @@ def _build_cf_jepa():
 
 
 def _build_cnn():
-    from dl.models.cnn import CNNClassifier
+    from inmotion.dl.models.cnn import CNNClassifier
 
     return CNNClassifier(4, 128, 3, 4, 0.3, [3, 5, 7])
 
 
 def _build_tcn():
-    from dl.models.tcn import TCNClassifier
+    from inmotion.dl.models.tcn import TCNClassifier
 
     return TCNClassifier(4, 256, 3, 6, 4, 0.3)
 
 
 def _build_gru():
-    from dl.models.gru import GRUClassifier
+    from inmotion.dl.models.gru import GRUClassifier
 
     return GRUClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_lstm():
-    from dl.models.lstm import LSTMClassifier
+    from inmotion.dl.models.lstm import LSTMClassifier
 
     return LSTMClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_bilstm():
-    from dl.models.bilstm import BiLSTMClassifier
+    from inmotion.dl.models.bilstm import BiLSTMClassifier
 
     return BiLSTMClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_sigreg():
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     m = SIGRegClassifier(
         in_features=4,
@@ -167,7 +167,7 @@ def _build_sigreg():
 
 def _build_sigreg_full():
     """sigreg full-after-hpo checkpoint: encoder 128 filters / 3 blocks."""
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     m = SIGRegClassifier(
         in_features=4,
@@ -188,7 +188,7 @@ def _make_hpo_builder(model_type: str):
     import optuna
 
     def build():
-        from dl.config import DLConfig
+        from inmotion.dl.config import DLConfig
         from inmotion.pipelines.dl import _build_hpo_best_model
 
         study = optuna.load_study(
@@ -201,7 +201,7 @@ def _make_hpo_builder(model_type: str):
 
 
 def _build_mamba3_cnn():
-    from dl.models.mamba3_cnn import Mamba3CNN
+    from inmotion.dl.models.mamba3_cnn import Mamba3CNN
 
     return Mamba3CNN(
         in_features=4,
@@ -216,7 +216,7 @@ def _build_mamba3_cnn():
 
 
 def _build_mamba3_tcn():
-    from dl.models.mamba3_tcn import Mamba3TCN
+    from inmotion.dl.models.mamba3_tcn import Mamba3TCN
 
     # backup checkpoint: tcn/d_model=128
     return Mamba3TCN(
@@ -232,7 +232,7 @@ def _build_mamba3_tcn():
 
 
 def _build_mamba3_transformer():
-    from dl.models.mamba3_transformer import Mamba3Transformer
+    from inmotion.dl.models.mamba3_transformer import Mamba3Transformer
 
     # backup checkpoint: d_model=128
     return Mamba3Transformer(
@@ -248,7 +248,7 @@ def _build_mamba3_transformer():
 
 
 def _build_mamba3_multiview():
-    from dl.models.mamba3_multiview import Mamba3MultiView
+    from inmotion.dl.models.mamba3_multiview import Mamba3MultiView
 
     # backup checkpoint: d_model=256
     return Mamba3MultiView(
@@ -271,13 +271,13 @@ def _build_ds_ensemble():
     0.881 on data/processed/dataset.icaisf.csv.
     """
 
-    from dl.models.cnn import CNNClassifier
-    from dl.models.cnn2d_rnn import CNN2DRNNClassifier
-    from dl.models.deep_stack import DeepStackEnsemble, Level2Net
-    from dl.models.gru import GRUClassifier
-    from dl.models.mamba import MambaClassifier
-    from dl.models.rnn import RNNClassifier
-    from dl.models.tcn import TCNClassifier
+    from inmotion.dl.models.cnn import CNNClassifier
+    from inmotion.dl.models.cnn2d_rnn import CNN2DRNNClassifier
+    from inmotion.dl.models.deep_stack import DeepStackEnsemble, Level2Net
+    from inmotion.dl.models.gru import GRUClassifier
+    from inmotion.dl.models.mamba import MambaClassifier
+    from inmotion.dl.models.rnn import RNNClassifier
+    from inmotion.dl.models.tcn import TCNClassifier
 
     bases: list[nn.Module] = [
         CNN2DRNNClassifier(

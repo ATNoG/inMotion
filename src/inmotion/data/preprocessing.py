@@ -5,9 +5,9 @@ engineered extra channels, but **never persisted the scaler**. Two different
 conventions were in use, which is why a saved model could not be re-run without
 also having the exact training CSV:
 
-``dl/data_loader.py``
+``inmotion/dl/data_loader.py``
     ``scaler.fit_transform(X_raw)`` on the whole file, *before* the split.
-``mega_ensemble.py``
+``inmotion/pipelines/mega_ensemble.py``
     ``StandardScaler().fit(_raw_X[train_idx])`` on the training fold only.
 
 :class:`FeaturePipeline` records which convention produced a model, stores the
@@ -28,7 +28,7 @@ import pandas as pd
 
 # Feature engineering is imported from the training code so inference and
 # training cannot drift apart.
-from dl.data_loader import (
+from inmotion.dl.data_loader import (
     _expand_features,
     _expand_features_device_invariant,
     _expand_features_rich,
@@ -74,8 +74,8 @@ class FeaturePipeline:
         """Fit from a reference CSV.
 
         ``convention`` is recorded, not inferred: pass
-        :data:`CONVENTION_WHOLE_CSV` to match ``dl/data_loader.py`` or
-        :data:`CONVENTION_TRAIN_FOLD` to match ``mega_ensemble.py``.
+        :data:`CONVENTION_WHOLE_CSV` to match ``inmotion/dl/data_loader.py`` or
+        :data:`CONVENTION_TRAIN_FOLD` to match ``inmotion/pipelines/mega_ensemble.py``.
         """
         cols = feature_cols or [str(i) for i in range(1, seq_len + 1)]
         df = pd.read_csv(csv_path)

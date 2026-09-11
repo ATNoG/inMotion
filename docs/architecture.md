@@ -54,7 +54,7 @@ width.
 
 **The standardisation statistics are part of the artifact.** They were not
 saved by the original training code, and two incompatible conventions existed
-(`dl/data_loader.py` fitted on the whole CSV before splitting, `mega_ensemble`
+(`src/inmotion/dl/data_loader.py` fitted on the whole CSV before splitting, `mega_ensemble`
 fitted on the training fold only), which made a saved model impossible to re-run
 without its exact training CSV. `FeaturePipeline` now persists them, and
 reconstructed statistics are labelled as reconstructed.

@@ -1,7 +1,7 @@
 # ISAC 2026 — Model Architectures
 
 Precise architectural description of every model used, extracted from the code
-(`dl/models/*.py`, `run_exotic.py`, `mega_ensemble.py`). Parameter counts are the
+(`src/inmotion/dl/models/*.py`, `run_exotic.py`, `mega_ensemble.py`). Parameter counts are the
 measured checkpoint counts (see `docs/isac/results/MASTER_RESULTS.md` §5).
 
 Common inputs: 10-timestep RSSI windows, shape `(N, 10, C)` with C=4 (plain) or
@@ -17,7 +17,7 @@ no gradients), and a **predictor** that must be shallower and narrower than the
 encoder (the JEPA bottleneck). A linear probe MCC during pretraining selects the
 best checkpoint.
 
-### 1.1 T-JEPA (`t_jepa`, `dl/models/t_jepa.py`)
+### 1.1 T-JEPA (`t_jepa`, `src/inmotion/dl/models/t_jepa.py`)
 - **Tokenizer**: per-(timestep,channel) "feature" tokens; a per-feature linear
   projection with feature-index embeddings, plus **2 learnable [REG] tokens**
   prepended (never masked, never predicted) — the paper's collapse-prevention
@@ -36,7 +36,7 @@ best checkpoint.
 - **Paper config (full-after-HPO)**: d_model=128, nhead=4, layers=4, ff=256,
   pred_dim=64, pred_layers=3, 18 channels, 0.633 M params.
 
-### 1.2 TS-JEPA (`ts_jepa`, `dl/models/ts_jepa.py`)
+### 1.2 TS-JEPA (`ts_jepa`, `src/inmotion/dl/models/ts_jepa.py`)
 - **Patch tokenizer**: Conv1D over channels, `patch_size=2`, `seq_len=10` → 5
   patches; learnable positional embedding per patch.
 - **Masking**: contiguous temporal block of patches (`mask_ratio` annealed
@@ -47,7 +47,7 @@ best checkpoint.
 - **Paper config (full run)**: embed_dim=256, nhead=8, layers=4, ff=512,
   pred_dim=128, pred_layers=2, 18 channels, 2.153 M params.
 
-### 1.3 LeJEPA (`lejepa`, `dl/models/lejepa.py`)
+### 1.3 LeJEPA (`lejepa`, `src/inmotion/dl/models/lejepa.py`)
 - **End-to-end next-step latent prediction**: no EMA, no stop-grad, no REG
   tokens. Encoder → causal Transformer predictor predicting `z_{t+1}` from
   `z_{1..t}`.
@@ -57,7 +57,7 @@ best checkpoint.
 - **Paper config (full-after-HPO)**: d_model=128, nhead=4, layers=4, ff=256,
   pred_layers=3, 4 channels, 0.566 M params.
 
-### 1.4 CF-JEPA (`cf_jepa`, `dl/models/cf_jepa.py`)
+### 1.4 CF-JEPA (`cf_jepa`, `src/inmotion/dl/models/cf_jepa.py`)
 - **Mask-free multi-horizon forward prediction**: random context crop of the
   encoded patch sequence; predictor maps context latents to future latents at
   horizons 1→3 (annealed during training, `horizon_start=1`, `horizon_end=3`;
@@ -66,7 +66,7 @@ best checkpoint.
 - **Paper config (full-after-HPO)**: embed_dim=256, nhead=8, layers=3, ff=256,
   pred_dim=128, pred_layers=1, 18 channels, 1.232 M params.
 
-### 1.5 SIGReg classifier (`sigreg`, `dl/models/sigreg_classifier.py`)
+### 1.5 SIGReg classifier (`sigreg`, `src/inmotion/dl/models/sigreg_classifier.py`)
 - **Directly supervised**, not a JEPA: CNN encoder (`_CNNEncoder`,
   `num_filters`, `num_blocks`) → global pooling → Linear(num_filters→latent_dim)
   → LayerNorm → Linear(latent_dim→4).
@@ -77,7 +77,7 @@ best checkpoint.
 
 ---
 
-## 2. Mamba-3 family (`dl/models/mamba3_*.py`)
+## 2. Mamba-3 family (`src/inmotion/dl/models/mamba3_*.py`)
 
 State-space (Mamba) backbones with different front-end fusion; all take 4
 channels and use `d_state=16`, dropout 0.2, `mimo_rank=4`.
@@ -89,7 +89,7 @@ channels and use `d_state=16`, dropout 0.2, `mimo_rank=4`.
 | `mamba3_transformer` | Transformer (nhead=4) | 128 | 0.842 |
 | `mamba3_multiview` | Multi-view fusion | 256 | 1.701 |
 
-## 3. Classic deep-sequence models (`dl/models/`)
+## 3. Classic deep-sequence models (`src/inmotion/dl/models/`)
 
 | Model | Architecture | Params (M) |
 |---|---|---|
@@ -105,7 +105,7 @@ channels and use `d_state=16`, dropout 0.2, `mimo_rank=4`.
 | OptunaNet_NAS | NAS-searched network | — |
 | Autoformer | FFT auto-correlation decomposition transformer | — |
 
-## 4. DeepStackEnsemble (`deepstack`, `dl/models/deep_stack.py`)
+## 4. DeepStackEnsemble (`deepstack`, `src/inmotion/dl/models/deep_stack.py`)
 
 - **10 base models** (2 configs each of CNN2DRNN, CNN, GRU, Mamba, RNN, TCN —
   see `_build_ds_ensemble` in `mega_ensemble.py`), each emitting 4-class
@@ -142,7 +142,7 @@ Operate on the **raw 10 RSSI columns** (standard-scaled on train), not the
 DC/AC energies over 3-sample windows), rolling statistics (5: mean, range, std,
 skew, kurtosis over 3/5-sample windows), shape (3: peak location, slope sign,
 sign-change count), and full-sequence STFT (4 log-energy frequency bands
-broadcast to every timestep). See `_expand_features_rich` in `dl/data_loader.py`.
+broadcast to every timestep). See `_expand_features_rich` in `src/inmotion/dl/data_loader.py`.
 JEPA models that use rich features consume 18 channels; all others consume 4.
 
 ## 7. Head design (shared)

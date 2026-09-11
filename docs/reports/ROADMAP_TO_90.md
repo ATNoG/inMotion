@@ -140,7 +140,7 @@ models = [
 # on the concatenated outputs of all models
 ```
 
-The existing `dl/models/ensemble.py` already has `StackingEnsemble` — reuse it.
+The existing `src/inmotion/dl/models/ensemble.py` already has `StackingEnsemble` — reuse it.
 
 ---
 

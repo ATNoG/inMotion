@@ -389,7 +389,7 @@ class TJEPAModel(nn.Module):
         # latent distribution toward N(0,I), preventing the encoder from
         # collapsing to a low-rank cluster (the T-JEPA failure mode).
         if sigreg_lambda > 0:
-            from dl.sigreg import make_sigreg
+            from inmotion.dl.sigreg import make_sigreg
 
             self.sigreg = make_sigreg()
 

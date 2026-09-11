@@ -18,7 +18,7 @@ import math
 import torch
 from torch import Tensor, nn
 
-from dl.models.mamba import _MambaBlock
+from inmotion.dl.models.mamba import _MambaBlock
 
 
 class _HybridBlock(nn.Module):

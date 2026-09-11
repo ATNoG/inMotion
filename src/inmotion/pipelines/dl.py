@@ -35,32 +35,32 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
-from dl.evaluation import (
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
+from inmotion.dl.evaluation import (
     evaluate_model_on_test,
     metrics_to_extended_row,
     plot_training_curves,
     save_results_csv,
 )
-from dl.models.bilstm import BiLSTMClassifier
-from dl.models.cnn import CNNClassifier
-from dl.models.cnn2d_rnn import CNN2DRNNClassifier
-from dl.models.ensemble import StackingEnsemble, VotingEnsemble
-from dl.models.gru import GRUClassifier
-from dl.models.lstm import LSTMClassifier
-from dl.models.mamba import MambaClassifier
-from dl.models.meta_fusion import MetaFusionClassifier
-from dl.models.moe import (
+from inmotion.dl.models.bilstm import BiLSTMClassifier
+from inmotion.dl.models.cnn import CNNClassifier
+from inmotion.dl.models.cnn2d_rnn import CNN2DRNNClassifier
+from inmotion.dl.models.ensemble import StackingEnsemble, VotingEnsemble
+from inmotion.dl.models.gru import GRUClassifier
+from inmotion.dl.models.lstm import LSTMClassifier
+from inmotion.dl.models.mamba import MambaClassifier
+from inmotion.dl.models.meta_fusion import MetaFusionClassifier
+from inmotion.dl.models.moe import (
     MOE_COMBOS,
     build_moe_expert,
     build_moe_expert_typed,
     build_soft_moe,
 )
-from dl.models.rnn import RNNClassifier
-from dl.models.tcn import TCNClassifier
-from dl.models.transformer import TransformerClassifier
-from dl.optimization import (
+from inmotion.dl.models.rnn import RNNClassifier
+from inmotion.dl.models.tcn import TCNClassifier
+from inmotion.dl.models.transformer import TransformerClassifier
+from inmotion.dl.optimization import (
     init_optuna_db,
     run_binary_moe_hpo_study,
     run_hpo_study,
@@ -68,7 +68,7 @@ from dl.optimization import (
     run_nas_study,
     save_optuna_plots,
 )
-from dl.training import Trainer
+from inmotion.dl.training import Trainer
 
 SINGLE_MODEL_NAMES: list[str] = [
     "RNN",
@@ -265,7 +265,7 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
             # T-JEPA requires pretraining before classification.
             # This builds the classifier with a randomly-initialized encoder;
             # pretraining should be done separately via pretrain_t_jepa.py.
-            from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+            from inmotion.dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
             pretrained = TJEPAModel(
                 n_features=10,
@@ -570,7 +570,7 @@ def _hpo_worker(
         try:
             import optuna
 
-            from dl.optimization import _get_optuna_storage
+            from inmotion.dl.optimization import _get_optuna_storage
 
             study_name = f"{config.optuna_study_prefix}_{model_type}"
             study = optuna.load_study(
@@ -1583,8 +1583,8 @@ def main() -> None:
 
         # ── Stage 1: Freeze base models, train Level2 nets (full multiclass) ──
         # Level2Net now outputs C classes (not binary), preserving full inter-class signal.
-        from dl.models.deep_stack import DeepMetaMLP as _DeepMetaMLP
-        from dl.models.deep_stack import Level2Net as _Level2Net
+        from inmotion.dl.models.deep_stack import DeepMetaMLP as _DeepMetaMLP
+        from inmotion.dl.models.deep_stack import Level2Net as _Level2Net
 
         n_base_feats = base_feat_tr.shape[1]  # n_base * C
         l2_config = copy.copy(config)
@@ -1635,7 +1635,7 @@ def main() -> None:
         # Reassemble the full pipeline into a single nn.Module for joint fine-tune.
         # Use a low LR (10× smaller) to avoid overwriting learned representations.
         print("  [DeepStack stage-2] joint end-to-end fine-tuning…")
-        from dl.models.deep_stack import DeepStackEnsemble as _DeepStackEnsemble
+        from inmotion.dl.models.deep_stack import DeepStackEnsemble as _DeepStackEnsemble
 
         # Rebuild Level2 nets with loaded state (on CPU initially)
         l2_nets_loaded: list[nn.Module] = []

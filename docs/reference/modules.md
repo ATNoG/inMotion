@@ -141,9 +141,9 @@ engineered extra channels, but **never persisted the scaler**. Two different
 conventions were in use, which is why a saved model could not be re-run without
 also having the exact training CSV:
 
-``dl/data_loader.py``
+``inmotion/dl/data_loader.py``
     ``scaler.fit_transform(X_raw)`` on the whole file, *before* the split.
-``mega_ensemble.py``
+``inmotion/pipelines/mega_ensemble.py``
     ``StandardScaler().fit(_raw_X[train_idx])`` on the training fold only.
 
 :class:`FeaturePipeline` records which convention produced a model, stores the
@@ -270,7 +270,7 @@ Public API:
 
 ### `inmotion.models.factories`
 
-`src/inmotion/models/factories.py` - 750 lines
+`src/inmotion/models/factories.py` - 751 lines
 
 Architecture factories.
 
@@ -346,7 +346,7 @@ Public API:
 
 ### `inmotion.models.adopt`
 
-`src/inmotion/models/adopt.py` - 717 lines
+`src/inmotion/models/adopt.py` - 718 lines
 
 Infer a :class:`~inmotion.models.checkpoint.Sidecar` from an untagged checkpoint.
 
@@ -573,7 +573,7 @@ Public API:
 
 Train the paper's HPO-best models using configs from docs/icaisf/hpo_supplementary.md.
 
-The original Optuna DL DBs (optuna_dl_*.db) were deleted, so run_dl.py can no
+The original Optuna DL DBs (optuna_dl_*.db) were deleted, so the DL pipeline can no
 longer skip HPO. This script rebuilds each HPO-best model from the paper's
 documented config and trains it with the Trainer, saving checkpoints that the
 mega-ensemble can load directly.
@@ -648,7 +648,7 @@ Public API:
 - func `set_seed`
 - func `get_device`
 - func `setup_plot_style` - Apply DLVisualizer-compatible plot style.
-- func `build_model` - Construct model matching _build_model_by_name from run_dl.py.
+- func `build_model` - Construct a model matching ``_build_model_by_name`` in the DL pipeline.
 - func `train_or_load` - Train model from scratch or load saved checkpoint.
 - func `permutation_importance` - Return (importance[N_CHANNELS, N_TIMESTEPS], baseline_mcc).
 - func `plot_heatmap` - Publication-quality heatmap: 4 channels × 10 timesteps, avg across models.
@@ -730,11 +730,11 @@ Public API:
 - func `parse_args`
 - func `main`
 
-## Legacy packages (imported by the pipelines)
+## Deep learning library (inmotion.dl)
 
-### `dl.config`
+### `inmotion.dl.config`
 
-`dl/config.py` - 101 lines
+`src/inmotion/dl/config.py` - 101 lines
 
 DL pipeline configuration.
 
@@ -742,9 +742,9 @@ Public API:
 
 - class `DLConfig`
 
-### `dl.data_loader`
+### `inmotion.dl.data_loader`
 
-`dl/data_loader.py` - 343 lines
+`src/inmotion/dl/data_loader.py` - 343 lines
 
 Data loading, preprocessing, and PyTorch Dataset/DataLoader utilities.
 
@@ -754,9 +754,9 @@ Public API:
 - class `MetaRSSIDataset` - Dataset that returns (X, meta, y) triples for metadata-fusion models.
 - class `DLDataLoader` - Load, preprocess, and split the WiFi fingerprinting dataset.
 
-### `dl.training`
+### `inmotion.dl.training`
 
-`dl/training.py` - 317 lines
+`src/inmotion/dl/training.py` - 317 lines
 
 Generic Trainer with WandB logging, early stopping, and L1 regularization.
 
@@ -766,9 +766,9 @@ Public API:
 - class `TrainResult`
 - class `Trainer`
 
-### `dl.optimization`
+### `inmotion.dl.optimization`
 
-`dl/optimization.py` - 669 lines
+`src/inmotion/dl/optimization.py` - 669 lines
 
 Optuna HPO studies — per-model and NAS meta-model.
 
@@ -781,9 +781,9 @@ Public API:
 - func `save_optuna_plots`
 - func `run_moe_multiobjective_study` - Multi-objective Optuna HPO for SoftMixtureOfExperts using NSGA-II.
 
-### `dl.evaluation`
+### `inmotion.dl.evaluation`
 
-`dl/evaluation.py` - 291 lines
+`src/inmotion/dl/evaluation.py` - 291 lines
 
 Metrics, cross-validation evaluation, and plot generation.
 
@@ -798,17 +798,44 @@ Public API:
 - func `evaluate_checkpoint_from_disk` - Load a checkpoint from disk, reconstruct the model, and evaluate.
 - func `metrics_to_extended_row` - Convert metrics dict to a flat row dict suitable for CSV storage.
 
-### `dl.models`
+### `inmotion.dl.results`
 
-`dl/models/__init__.py` - 48 lines
+`src/inmotion/dl/results.py` - 77 lines
+
+Extended results I/O for DL pipeline — detailed per-class metrics + confusion matrices.
+
+Public API:
+
+- func `save_extended_results_csv` - Save extended results rows to CSV with all per-class and CM columns.
+- func `load_extended_results` - Load extended DL results CSV.
+
+### `inmotion.dl.interference`
+
+`src/inmotion/dl/interference.py` - 357 lines
+
+Cross-route interference analysis — how concurrent paths affect RSSI signatures.
+
+Analyses the `concurrent_noise_path` column to measure how strongly each interfering
+route distorts the RSSI readings of the primary route. Generates publication-quality
+PDF plots at 600 DPI with large fonts.
+
+Public API:
+
+- class `InterferenceAnalyzer` - Analyze how concurrent noise from different routes affects RSSI readings.
+
+### `inmotion.dl.models`
+
+`src/inmotion/dl/models/__init__.py` - 48 lines
 
 DL model exports.
 
 No public classes or functions; this module provides data or constants consumed elsewhere.
 
-### `ml_classification.config`
+## Classical machine learning library (inmotion.classification)
 
-`ml_classification/config.py` - 115 lines
+### `inmotion.classification.config`
+
+`src/inmotion/classification/config.py` - 115 lines
 
 Configuration module for ML classification pipeline.
 
@@ -817,9 +844,9 @@ Public API:
 - func `check_gpu_availability` - Check if CUDA GPU is available for ML libraries.
 - class `Config` - Configuration settings for the ML classification pipeline.
 
-### `ml_classification.classifiers`
+### `inmotion.classification.classifiers`
 
-`ml_classification/classifiers.py` - 362 lines
+`src/inmotion/classification/classifiers.py` - 362 lines
 
 Classifier factory with all ML classification algorithms.
 
@@ -827,9 +854,9 @@ Public API:
 
 - class `ClassifierFactory` - Factory class to create and manage all classifiers.
 
-### `ml_classification.training`
+### `inmotion.classification.training`
 
-`ml_classification/training.py` - 407 lines
+`src/inmotion/classification/training.py` - 407 lines
 
 Training pipeline for ML classification.
 
@@ -839,9 +866,9 @@ Public API:
 - class `ClassifierResult` - Results from training a classifier.
 - class `TrainingPipeline` - Complete training pipeline for all classifiers.
 
-### `ml_classification.optimization`
+### `inmotion.classification.optimization`
 
-`ml_classification/optimization.py` - 325 lines
+`src/inmotion/classification/optimization.py` - 325 lines
 
 Optuna hyperparameter optimization module.
 
@@ -849,9 +876,9 @@ Public API:
 
 - class `OptunaOptimizer` - Hyperparameter optimization using Optuna.
 
-### `ml_classification.visualization`
+### `inmotion.classification.visualization`
 
-`ml_classification/visualization.py` - 637 lines
+`src/inmotion/classification/visualization.py` - 637 lines
 
 Visualization module for ML classification results.
 
@@ -860,12 +887,22 @@ Public API:
 - func `load_results_from_csv` - Load classification results from CSV files for plot regeneration.
 - class `Visualizer` - Visualization utilities for ML classification results.
 
-### `ml_classification.eda`
+### `inmotion.classification.eda`
 
-`ml_classification/eda.py` - 452 lines
+`src/inmotion/classification/eda.py` - 452 lines
 
 Exploratory Data Analysis module for comprehensive dataset analysis.
 
 Public API:
 
 - class `ExploratoryDataAnalysis` - Comprehensive exploratory data analysis for WiFi fingerprinting dataset.
+
+### `inmotion.classification.data_loader`
+
+`src/inmotion/classification/data_loader.py` - 110 lines
+
+Data loading and preprocessing module.
+
+Public API:
+
+- class `DataLoader` - Load and preprocess the WiFi fingerprinting dataset.

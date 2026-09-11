@@ -6,7 +6,7 @@ Checkpoint binaries are large and are **not** tracked. They live in two stores:
 
 | store | contents |
 |---|---|
-| `20-aug/models/` | the ISAC 2026 paper's models: base and after-HPO JEPA/SIGReg runs, plus the `dl/` classifier store |
+| `20-aug/models/` | the ISAC 2026 paper's models: base and after-HPO JEPA/SIGReg runs, plus the `src/inmotion/dl/` classifier store |
 | `backup/` | the members that only exist here: `sigreg_seed{3,5,42}`, the four `mamba3_*` variants, `DeepStackEnsemble_seed42` |
 | `models/` | classical-ML joblibs used by the demo (`GaussianProcess*.joblib`) |
 

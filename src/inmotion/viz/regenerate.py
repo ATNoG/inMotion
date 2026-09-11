@@ -16,7 +16,7 @@ Usage:
 import argparse
 from pathlib import Path
 
-from ml_classification import (
+from inmotion.classification import (
     Config,
     DataLoader,
     ExploratoryDataAnalysis,

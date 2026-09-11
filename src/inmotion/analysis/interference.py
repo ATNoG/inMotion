@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from dl.interference import InterferenceAnalyzer
+from inmotion.dl.interference import InterferenceAnalyzer
 
 
 def parse_args() -> argparse.Namespace:

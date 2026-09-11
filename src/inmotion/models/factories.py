@@ -38,7 +38,7 @@ def lejepa(
     dropout: float = 0.3,
 ) -> nn.Module:
     """LeJEPA classifier (paper after-HPO winner: d_model=128, ff=256, layers=4)."""
-    from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+    from inmotion.dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
 
     pretrained = LeJEPAModel(
         seq_len=seq_len,
@@ -73,7 +73,7 @@ def t_jepa(
     dropout: float = 0.3,
 ) -> nn.Module:
     """T-JEPA classifier (paper after-HPO winner: d_model=128, ff=256)."""
-    from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+    from inmotion.dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
     pretrained = TJEPAModel(
         n_timesteps=n_timesteps,
@@ -109,7 +109,7 @@ def ts_jepa(
     dropout: float = 0.3,
 ) -> nn.Module:
     """TS-JEPA classifier (paper: embed_dim=256, layers=4, ff=512)."""
-    from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+    from inmotion.dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
 
     pretrained = TSJEPAModel(
         seq_len=seq_len,
@@ -152,7 +152,7 @@ def cf_jepa(
     dropout: float = 0.3,
 ) -> nn.Module:
     """CF-JEPA classifier (paper after-HPO: embed 256, layers 3, ff 256)."""
-    from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
+    from inmotion.dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
 
     pretrained = CFJEPAModel(
         seq_len=seq_len,
@@ -200,7 +200,7 @@ def sigreg(
     cited in the paper); ``num_filters=128`` reproduces the ``full-after-hpo``
     retrain.
     """
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     return TupleWrap(
         SIGRegClassifier(
@@ -230,7 +230,7 @@ def mamba3_cnn(
     mimo_rank: int = 4,
 ) -> nn.Module:
     """Mamba-3 CNN hybrid."""
-    from dl.models.mamba3_cnn import Mamba3CNN
+    from inmotion.dl.models.mamba3_cnn import Mamba3CNN
 
     return Mamba3CNN(
         in_features=in_features,
@@ -261,7 +261,7 @@ def mamba3_tcn(
     number of Mamba blocks. Both vary between saved variants, so neither is
     defaulted to a value that silently mis-loads.
     """
-    from dl.models.mamba3_tcn import Mamba3TCN
+    from inmotion.dl.models.mamba3_tcn import Mamba3TCN
 
     return Mamba3TCN(
         in_features=in_features,
@@ -290,7 +290,7 @@ def mamba3_transformer(
 
     ``num_blocks`` differs between saved variants (2 vs 3), so it is explicit.
     """
-    from dl.models.mamba3_transformer import Mamba3Transformer
+    from inmotion.dl.models.mamba3_transformer import Mamba3Transformer
 
     return Mamba3Transformer(
         in_features=in_features,
@@ -314,7 +314,7 @@ def mamba3_multiview(
     mimo_rank: int = 4,
 ) -> nn.Module:
     """Mamba-3 multi-view hybrid (checkpoint uses d_model=256)."""
-    from dl.models.mamba3_multiview import Mamba3MultiView
+    from inmotion.dl.models.mamba3_multiview import Mamba3MultiView
 
     return Mamba3MultiView(
         in_features=in_features,
@@ -343,13 +343,13 @@ def deep_stack(
     Base order matters: ``DeepStackEnsemble`` stores them as ``base_models.i``,
     so the checkpoint is only loadable with this exact sequence.
     """
-    from dl.models.cnn import CNNClassifier
-    from dl.models.cnn2d_rnn import CNN2DRNNClassifier
-    from dl.models.deep_stack import DeepStackEnsemble, Level2Net
-    from dl.models.gru import GRUClassifier
-    from dl.models.mamba import MambaClassifier
-    from dl.models.rnn import RNNClassifier
-    from dl.models.tcn import TCNClassifier
+    from inmotion.dl.models.cnn import CNNClassifier
+    from inmotion.dl.models.cnn2d_rnn import CNN2DRNNClassifier
+    from inmotion.dl.models.deep_stack import DeepStackEnsemble, Level2Net
+    from inmotion.dl.models.gru import GRUClassifier
+    from inmotion.dl.models.mamba import MambaClassifier
+    from inmotion.dl.models.rnn import RNNClassifier
+    from inmotion.dl.models.tcn import TCNClassifier
 
     bases: list[nn.Module] = [
         CNN2DRNNClassifier(
@@ -403,8 +403,9 @@ def build(factory: str, arch: dict[str, Any] | None = None) -> nn.Module:
 
 
 # ---------------------------------------------------------------------------
-# Classical DL classifiers (the `dl/models` families). These were trained by
-# run_dl.py with per-model configs that were only ever recorded in a now-deleted
+# Classical DL classifiers (the `inmotion/dl/models` families). These were
+# trained by the DL pipeline with per-model configs that were only ever recorded
+# in a now-deleted
 # Optuna database, so `adopt` recovers them from checkpoint shapes.
 # ---------------------------------------------------------------------------
 
@@ -418,7 +419,7 @@ def rnn(
     bidirectional: bool = False,
 ) -> nn.Module:
     """Plain RNN classifier."""
-    from dl.models.rnn import RNNClassifier
+    from inmotion.dl.models.rnn import RNNClassifier
 
     return RNNClassifier(
         in_features=in_features,
@@ -440,7 +441,7 @@ def gru(
     use_attention: bool = False,
 ) -> nn.Module:
     """GRU classifier, optionally with attention pooling."""
-    from dl.models.gru import GRUClassifier
+    from inmotion.dl.models.gru import GRUClassifier
 
     return GRUClassifier(
         in_features=in_features,
@@ -463,7 +464,7 @@ def lstm(
     use_attention: bool = True,
 ) -> nn.Module:
     """LSTM classifier, optionally with attention pooling."""
-    from dl.models.lstm import LSTMClassifier
+    from inmotion.dl.models.lstm import LSTMClassifier
 
     return LSTMClassifier(
         in_features=in_features,
@@ -485,7 +486,7 @@ def bilstm(
     use_attention: bool = True,
 ) -> nn.Module:
     """Bidirectional LSTM classifier."""
-    from dl.models.bilstm import BiLSTMClassifier
+    from inmotion.dl.models.bilstm import BiLSTMClassifier
 
     return BiLSTMClassifier(
         in_features=in_features,
@@ -506,7 +507,7 @@ def tcn(
     dropout: float = 0.2,
 ) -> nn.Module:
     """Temporal convolutional network classifier."""
-    from dl.models.tcn import TCNClassifier
+    from inmotion.dl.models.tcn import TCNClassifier
 
     return TCNClassifier(
         in_features=in_features,
@@ -529,7 +530,7 @@ def mamba(
     mimo_rank: int = 4,
 ) -> nn.Module:
     """Mamba (selective SSM) classifier."""
-    from dl.models.mamba import MambaClassifier
+    from inmotion.dl.models.mamba import MambaClassifier
 
     return MambaClassifier(
         in_features=in_features,
@@ -553,7 +554,7 @@ def transformer(
     max_seq_len: int = 512,
 ) -> nn.Module:
     """Transformer encoder classifier."""
-    from dl.models.transformer import TransformerClassifier
+    from inmotion.dl.models.transformer import TransformerClassifier
 
     return TransformerClassifier(
         in_features=in_features,
@@ -575,7 +576,7 @@ def cnn(
     kernel_sizes: list[int] | None = None,
 ) -> nn.Module:
     """Multi-branch residual CNN classifier."""
-    from dl.models.cnn import CNNClassifier
+    from inmotion.dl.models.cnn import CNNClassifier
 
     return CNNClassifier(
         in_features=in_features,
@@ -599,7 +600,7 @@ def cnn2d_rnn(
     bidirectional: bool = False,
 ) -> nn.Module:
     """2-D CNN front-end feeding an RNN."""
-    from dl.models.cnn2d_rnn import CNN2DRNNClassifier
+    from inmotion.dl.models.cnn2d_rnn import CNN2DRNNClassifier
 
     return CNN2DRNNClassifier(
         in_features=in_features,
@@ -625,7 +626,7 @@ def meta_fusion(
     bidirectional: bool = False,
 ) -> nn.Module:
     """RNN plus metadata (noise flag, concurrent path) fusion classifier."""
-    from dl.models.meta_fusion import MetaFusionClassifier
+    from inmotion.dl.models.meta_fusion import MetaFusionClassifier
 
     return MetaFusionClassifier(
         in_features=in_features,
@@ -665,7 +666,7 @@ def voting_ensemble(
     ``models`` is a list of ``{"factory": ..., "arch": {...}}``. Storing members
     as data keeps an ensemble rebuildable from its sidecar alone.
     """
-    from dl.models.ensemble import VotingEnsemble
+    from inmotion.dl.models.ensemble import VotingEnsemble
 
     members = [build(m["factory"], m.get("arch")) for m in models]
     if weights is None:
@@ -679,7 +680,7 @@ def stacking_ensemble(
     dropout: float = 0.3,
 ) -> nn.Module:
     """Stacking ensemble: base members feed a learned meta-learner."""
-    from dl.models.ensemble import StackingEnsemble
+    from inmotion.dl.models.ensemble import StackingEnsemble
 
     members = [build(m["factory"], m.get("arch")) for m in base_models]
     return StackingEnsemble(members, num_classes=num_classes, dropout=dropout)
@@ -702,7 +703,7 @@ FACTORIES.update(
 
 def lejepa_pretrain(**arch: Any) -> nn.Module:
     """Base LeJEPA world model (no classification head)."""
-    from dl.models.lejepa import LeJEPAModel
+    from inmotion.dl.models.lejepa import LeJEPAModel
 
     arch.pop("hidden_dim", None)
     arch.pop("num_classes", None)
@@ -712,7 +713,7 @@ def lejepa_pretrain(**arch: Any) -> nn.Module:
 
 def t_jepa_pretrain(**arch: Any) -> nn.Module:
     """Base T-JEPA world model."""
-    from dl.models.t_jepa import TJEPAModel
+    from inmotion.dl.models.t_jepa import TJEPAModel
 
     arch.pop("hidden_dim", None)
     arch.pop("num_classes", None)
@@ -722,7 +723,7 @@ def t_jepa_pretrain(**arch: Any) -> nn.Module:
 
 def ts_jepa_pretrain(**arch: Any) -> nn.Module:
     """Base TS-JEPA world model."""
-    from dl.models.ts_jepa import TSJEPAModel
+    from inmotion.dl.models.ts_jepa import TSJEPAModel
 
     arch.pop("hidden_dim", None)
     arch.pop("num_classes", None)
@@ -732,7 +733,7 @@ def ts_jepa_pretrain(**arch: Any) -> nn.Module:
 
 def cf_jepa_pretrain(**arch: Any) -> nn.Module:
     """Base CF-JEPA world model."""
-    from dl.models.cf_jepa import CFJEPAModel
+    from inmotion.dl.models.cf_jepa import CFJEPAModel
 
     arch.pop("hidden_dim", None)
     arch.pop("num_classes", None)

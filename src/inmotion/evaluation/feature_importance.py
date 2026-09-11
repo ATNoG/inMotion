@@ -45,13 +45,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # pre-flight check above must run before importing anything that imports torch,
 # so that a missing PyTorch produces the "run uv sync" message rather than a
 # bare ModuleNotFoundError.
-from dl.config import DLConfig  # noqa: E402
-from dl.data_loader import DLDataLoader  # noqa: E402
-from dl.models.cnn import CNNClassifier  # noqa: E402
-from dl.models.gru import GRUClassifier  # noqa: E402
-from dl.models.mamba import MambaClassifier  # noqa: E402
-from dl.models.tcn import TCNClassifier  # noqa: E402
-from dl.training import Trainer  # noqa: E402
+from inmotion.dl.config import DLConfig  # noqa: E402
+from inmotion.dl.data_loader import DLDataLoader  # noqa: E402
+from inmotion.dl.models.cnn import CNNClassifier  # noqa: E402
+from inmotion.dl.models.gru import GRUClassifier  # noqa: E402
+from inmotion.dl.models.mamba import MambaClassifier  # noqa: E402
+from inmotion.dl.models.tcn import TCNClassifier  # noqa: E402
+from inmotion.dl.training import Trainer  # noqa: E402
 
 matplotlib.use("Agg")
 
@@ -142,7 +142,7 @@ def setup_plot_style() -> None:
 
 
 def build_model(name: str, config: DLConfig) -> nn.Module:
-    """Construct model matching _build_model_by_name from run_dl.py."""
+    """Construct a model matching ``_build_model_by_name`` in the DL pipeline."""
     kw: dict = {
         "in_features": config.in_features,
         "num_classes": config.num_classes,
@@ -440,7 +440,7 @@ def _try_load_deepstack(
     device: torch.device,
 ) -> nn.Module | None:
     """Build DeepStackEnsemble from saved DS base checkpoints, or return None."""
-    from dl.models.deep_stack import DeepStackEnsemble, Level2Net
+    from inmotion.dl.models.deep_stack import DeepStackEnsemble, Level2Net
 
     base_models: list[nn.Module] = []
     for ds_name in DEEPSTACK_DS_VARIANTS:

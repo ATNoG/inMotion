@@ -14,7 +14,7 @@ classical DL (CNN, TCN, GRU, LSTM, BiLSTM), DeepStack (12-base rebuild), and cla
 **Winning recipe:** sigreg + ts_jepa + t_jepa, temperature-calibrated, LR-stacked with C≈2-5.
 **Result: 0.8744 MCC** on dataset.csv (beats paper's DeepStack 0.859 and roadmap's 0.89 projection is near).
 
-### 2. CF-JEPA (`dl/models/cf_jepa.py`)
+### 2. CF-JEPA (`src/inmotion/dl/models/cf_jepa.py`)
 Mask-free multi-horizon forward prediction (arXiv:2606.07031 adaptation):
 - Random context crop (1-2 patches) → predict future latents (horizon 2-4)
 - Horizon annealing, EMA target encoder, query-token predictor
@@ -22,14 +22,14 @@ Mask-free multi-horizon forward prediction (arXiv:2606.07031 adaptation):
 - **Finding:** SSL probe stays ~0.28-0.34 on 10-step data — the masking/prediction task
   converges to trivial solutions at this sequence length (confirmed JEPA short-seq limitation).
 
-### 3. RDMReg (`dl/sigreg.py`)
+### 3. RDMReg (`src/inmotion/dl/sigreg.py`)
 Rectified Distribution Matching (arXiv:2602.01456): sparse non-negative embeddings via
 ReLU rectification + sliced-2-Wasserstein to a Rectified Generalized Gaussian target.
 - `RDMReg` class + `make_sigreg()` factory + `set_default_sigreg_mode()`
 - Wired into all 4 JEPA models + run_exotic `--sigreg-mode rdm`
 - **Finding:** over-regularizes at this scale; probe stuck ~0.21. Needs more tuning than feasible.
 
-### 4. Mamba import fix (`dl/models/mamba.py`)
+### 4. Mamba import fix (`src/inmotion/dl/models/mamba.py`)
 `mamba_ssm` CUDA extension import hangs on this box → added `MAMBA_SSM_AVAILABLE=0` env guard
 so the pure-PyTorch fallback is always reachable. Required for any model importing mamba.
 
@@ -60,10 +60,10 @@ dataset_augmented3.csv) transfer well to dataset.csv.
 
 ## File changes
 - `mega_ensemble.py` (new) — ensemble harness
-- `dl/models/cf_jepa.py` (new) — CF-JEPA model
-- `dl/sigreg.py` — added RDMReg + factory
+- `src/inmotion/dl/models/cf_jepa.py` (new) — CF-JEPA model
+- `src/inmotion/dl/sigreg.py` — added RDMReg + factory
 - `run_exotic.py` — added cf_jepa, sigreg-mode, rdm-p, probe-based early stopping
-- `dl/models/{t_jepa,ts_jepa,cf_jepa,lejepa}.py` — use make_sigreg() factory
-- `dl/models/mamba.py` — MAMBA_SSM_AVAILABLE guard
+- `src/inmotion/dl/models/{t_jepa,ts_jepa,cf_jepa,lejepa}.py` — use make_sigreg() factory
+- `src/inmotion/dl/models/mamba.py` — MAMBA_SSM_AVAILABLE guard
 - `job_cf_jepa.sh`, `job_lejepa_rdm.sh` (new) — training scripts
 - `docs/ENSEMBLE_TECHNIQUES_REPORT.md` — research reference (from agent)

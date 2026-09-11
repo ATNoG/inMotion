@@ -9,21 +9,21 @@ the canonical citation, the arXiv/URL, and what the model contributes to this wo
 
 | Model | Reference | Where it's used |
 |---|---|---|
-| **T-JEPA** | Thimonier, Popineau, Rimmel, Doan, Daniel (2024). *T-JEPA: A Joint-Embedding Predictive Architecture for Tabular Data*. arXiv:2410.05016. Code: https://github.com/jose-melo/t-jepa | `t_jepa` — our 4-channel / 18-channel tabular-JEPA encoder. See `dl/models/t_jepa.py` |
+| **T-JEPA** | Thimonier, Popineau, Rimmel, Doan, Daniel (2024). *T-JEPA: A Joint-Embedding Predictive Architecture for Tabular Data*. arXiv:2410.05016. Code: https://github.com/jose-melo/t-jepa | `t_jepa` — our 4-channel / 18-channel tabular-JEPA encoder. See `src/inmotion/dl/models/t_jepa.py` |
 | **I-JEPA** (foundation) | Assran, Duval, Misra, Bojanowski, Ballas, Gondal, Avent, Mazare (2023). *Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture*. arXiv:2301.08243 | Conceptual basis of all JEPA variants (context/target encoder + predictor) |
-| **TS-JEPA** | Time-Series Joint-Embedding Predictive Architecture (2024). arXiv:2509.25449 | `ts_jepa` — Conv1D-patched, contiguous temporal-block masking over multi-channel input. See `dl/models/ts_jepa.py` |
-| **LeJEPA** | Balestriero & LeCun (2025). *LeJEPA: Joint-Embedding Predictive Architecture with Sliced Gaussian Regularization*. arXiv:2511.08544. Code: https://github.com/galilai-group/lejepa | `lejepa` — end-to-end next-step latent prediction with SIGReg anti-collapse. See `dl/models/lejepa.py` |
-| **CF-JEPA** | *CF-JEPA: Mask-free multi-horizon forward prediction for time series*. arXiv:2606.07031 | `cf_jepa` — mask-free multi-horizon forward prediction (random context crop → predict future latents). See `dl/models/cf_jepa.py` |
-| **SIGReg** | Same LeJEPA paper (Balestriero & LeCun 2025) — ECF-based Gaussian regularizer | `sigreg` classifier and the anti-collapse term in all JEPA models. See `dl/sigreg.py` |
+| **TS-JEPA** | Time-Series Joint-Embedding Predictive Architecture (2024). arXiv:2509.25449 | `ts_jepa` — Conv1D-patched, contiguous temporal-block masking over multi-channel input. See `src/inmotion/dl/models/ts_jepa.py` |
+| **LeJEPA** | Balestriero & LeCun (2025). *LeJEPA: Joint-Embedding Predictive Architecture with Sliced Gaussian Regularization*. arXiv:2511.08544. Code: https://github.com/galilai-group/lejepa | `lejepa` — end-to-end next-step latent prediction with SIGReg anti-collapse. See `src/inmotion/dl/models/lejepa.py` |
+| **CF-JEPA** | *CF-JEPA: Mask-free multi-horizon forward prediction for time series*. arXiv:2606.07031 | `cf_jepa` — mask-free multi-horizon forward prediction (random context crop → predict future latents). See `src/inmotion/dl/models/cf_jepa.py` |
+| **SIGReg** | Same LeJEPA paper (Balestriero & LeCun 2025) — ECF-based Gaussian regularizer | `sigreg` classifier and the anti-collapse term in all JEPA models. See `src/inmotion/dl/sigreg.py` |
 | **LeWorldModel** | le-wm: https://github.com/lucas-maes/le-wm ; arXiv:2603.19312 | Ancillary source used while exploring JEPA-style world models |
-| **RDMReg / LpJEPA** | *Rectified LpJEPA* (2026). arXiv:2602.01456 | Sparse non-negative alternative regularizer implemented in `dl/sigreg.py` (RDMReg), used as `--sigreg-mode rdm` |
+| **RDMReg / LpJEPA** | *Rectified LpJEPA* (2026). arXiv:2602.01456 | Sparse non-negative alternative regularizer implemented in `src/inmotion/dl/sigreg.py` (RDMReg), used as `--sigreg-mode rdm` |
 
 ## 2. State-space models
 
 | Model | Reference | Where it's used |
 |---|---|---|
 | **Mamba** | Gu & Dao (2023). *Mamba: Linear-Time Sequence Modeling with Selective State Spaces*. arXiv:2312.00752 | `mamba` base model (deep-stack base, HPO_MAMBA) |
-| **Mamba-3 family** | Gu, Parnichkun, et al. (2026). arXiv:2606.xxxxx (mamba3) | `mamba3_cnn`, `mamba3_tcn`, `mamba3_transformer`, `mamba3_multiview` — four fusion variants. See `dl/models/mamba3_*.py` |
+| **Mamba-3 family** | Gu, Parnichkun, et al. (2026). arXiv:2606.xxxxx (mamba3) | `mamba3_cnn`, `mamba3_tcn`, `mamba3_transformer`, `mamba3_multiview` — four fusion variants. See `src/inmotion/dl/models/mamba3_*.py` |
 
 ## 3. Classic deep-sequence models
 
@@ -34,7 +34,7 @@ the canonical citation, the arXiv/URL, and what the model contributes to this wo
 | **CNN2DRNN** | — (local architecture) | `cnn2d_rnn`, deep-stack CNN2DRNN base |
 | **SoftMoE** | Puigcerver et al. (2023). *From Sparse to Soft Mixtures of Experts*. arXiv:2308.00951 | `MoE_4TCN`, `MoE_4LSTM`, `MoE_Mixed2` |
 | **Autoformer** | Wu et al. (2021). *Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting*. arXiv:2106.13008 | `Autoformer` variant (paper architecture table) |
-| **DeepStackEnsemble** | Deep stacking: Deng & Yu (2011) *Deep Stacking Networks*; ensemble flavor adapted here | `deepstack` — 10 bases → per-class Level2Nets → DeepMetaMLP. See `dl/models/deep_stack.py` |
+| **DeepStackEnsemble** | Deep stacking: Deng & Yu (2011) *Deep Stacking Networks*; ensemble flavor adapted here | `deepstack` — 10 bases → per-class Level2Nets → DeepMetaMLP. See `src/inmotion/dl/models/deep_stack.py` |
 
 ## 4. Classical ML baselines
 

@@ -29,12 +29,12 @@ from sklearn.metrics import matthews_corrcoef
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
 
 
 def _build_lejepa() -> nn.Module:
-    from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+    from inmotion.dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
 
     pretrained = LeJEPAModel(
         seq_len=10,
@@ -50,7 +50,7 @@ def _build_lejepa() -> nn.Module:
 
 
 def _build_t_jepa() -> nn.Module:
-    from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+    from inmotion.dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
     pretrained = TJEPAModel(
         n_timesteps=10,
@@ -67,7 +67,7 @@ def _build_t_jepa() -> nn.Module:
 
 
 def _build_ts_jepa() -> nn.Module:
-    from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+    from inmotion.dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
 
     pretrained = TSJEPAModel(
         seq_len=10,
@@ -84,7 +84,7 @@ def _build_ts_jepa() -> nn.Module:
 
 
 def _build_sigreg() -> nn.Module:
-    from dl.models.sigreg_classifier import SIGRegClassifier
+    from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     m = SIGRegClassifier(
         in_features=4,
@@ -98,7 +98,7 @@ def _build_sigreg() -> nn.Module:
 
 
 def _build_mamba3_cnn() -> nn.Module:
-    from dl.models.mamba3_cnn import Mamba3CNN
+    from inmotion.dl.models.mamba3_cnn import Mamba3CNN
 
     return Mamba3CNN(
         in_features=4,

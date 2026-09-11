@@ -13,8 +13,8 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from dl.models.mamba import _MambaBlock
-from dl.models.tcn import TCNClassifier
+from inmotion.dl.models.mamba import _MambaBlock
+from inmotion.dl.models.tcn import TCNClassifier
 
 
 class _TCNEncoder(nn.Module):

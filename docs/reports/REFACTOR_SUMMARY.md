@@ -24,7 +24,7 @@ on disk in `plots/` and `combined/`.
 name + kwargs + state-dict prefix) instead of a `_build_*` function whose
 constants had been recovered by comparing tensor shapes. 17 curated specs plus
 shape-driven adoption cover every checkpoint in the store: 12 paper models
-(§2.3), 5 base/retrained variants, and 23 `dl/` classifiers and ensembles.
+(§2.3), 5 base/retrained variants, and 23 `src/inmotion/dl/` classifiers and ensembles.
 
 **Strict loading.** `load_state_dict(..., strict=False)` is gone. It had been
 hiding real breakage: `mamba3_tcn` "loaded" while missing 13 keys, and two
@@ -33,7 +33,7 @@ different builders each claimed the same `lejepa` checkpoint correctly with
 fingerprint per model catches behaviour changes that still load.
 
 **Preprocessing.** The `StandardScaler` was never saved by any training path, and
-two incompatible conventions existed (`dl/data_loader.py` fit on the whole CSV before
+two incompatible conventions existed (`src/inmotion/dl/data_loader.py` fit on the whole CSV before
 splitting; `mega_ensemble` fit on the training fold). A checkpoint therefore
 could not be re-run without also having its exact training CSV, which is why the
 demo contained a heuristic that refits a scaler and guesses. `FeaturePipeline`
@@ -74,7 +74,7 @@ marked `known_incorrect` per the project owner's report and warns on resolve.
   and was lower value than the model-loading work.
 - The pipelines still parse `sys.argv` internally; `inmotion run pipeline`
   delegates to them unchanged. See `MIGRATION.md`.
-- `ml_classification/` has not moved under `src/inmotion/`; it still overlaps
-  `dl/` on `DataLoader`, `optimization` and `visualization`.
-- Legacy `dl/` has 58 ruff findings, left alone deliberately.
+- `src/inmotion/classification/` has not moved under `src/inmotion/`; it still overlaps
+  `src/inmotion/dl/` on `DataLoader`, `optimization` and `visualization`.
+- Legacy `src/inmotion/dl/` has 58 ruff findings, left alone deliberately.
 - `*_pretrain_best.pt` bundles are recognised and explained, not adopted.

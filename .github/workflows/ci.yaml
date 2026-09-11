@@ -27,9 +27,9 @@ jobs:
       - name: Sync root project
         run: uv sync --all-packages
       - name: Lint
-        run: uv run ruff check src dl ml_classification tests
+        run: uv run ruff check src tests
       - name: Check formatting
-        run: uv run ruff format --check src dl ml_classification tests
+        run: uv run ruff format --check src tests
       - name: Reference docs must match the code
         run: uv run python scripts/docs/generate_reference.py --check
 

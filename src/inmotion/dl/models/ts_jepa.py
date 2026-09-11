@@ -298,7 +298,7 @@ class TSJEPAModel(nn.Module):
         self.sigreg_lambda = sigreg_lambda
 
         if sigreg_lambda > 0:
-            from dl.sigreg import make_sigreg
+            from inmotion.dl.sigreg import make_sigreg
 
             self.sigreg = make_sigreg()
 

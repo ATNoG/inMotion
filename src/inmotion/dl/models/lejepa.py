@@ -135,7 +135,7 @@ class LeJEPAModel(nn.Module):
         self.seq_len = seq_len
         self.sigreg_lambda = sigreg_lambda
 
-        from dl.sigreg import make_sigreg
+        from inmotion.dl.sigreg import make_sigreg
 
         self.sigreg = make_sigreg()
 

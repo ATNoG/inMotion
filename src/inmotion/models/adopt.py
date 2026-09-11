@@ -582,12 +582,13 @@ def _composite_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
 # with ``epoch`` and ``probe_mcc``.
 #
 # Rebuilding one means loading the parts into the matching attributes, which is
-# what run_exotic.py already does. Doing that from shapes alone is ambiguous --
+# what the exotic pipeline already does. Reconstructing it from shapes alone is
+# ambiguous --
 # the predictor's configuration is not determined by the encoder's -- and a
 # wrong guess produces a checkpoint that loads and then quietly resumes with a
 # mis-shaped predictor. So these are recognised and reported explicitly instead
 # of being adopted speculatively. Resuming training keeps working through
-# run_exotic.py --checkpoint, which is unchanged.
+# `inmotion run pipeline exotic -- --checkpoint`, which is unchanged.
 # ---------------------------------------------------------------------------
 
 PRETRAIN_MARKERS = ("predictor",)
