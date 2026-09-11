@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+title: "inMotion: WiFi RSSI mobility classification for urban transport"
+message: "If you use this code or dataset, please cite the dataset DOI and the relevant paper."
+version: 0.2.0
+date-released: "2026-09-11"
+license: null
+type: software
+abstract: >-
+  Classification of passenger mobility (inside a bus, at the stop, boarding,
+  alighting) from 10-second WiFi RSSI sequences captured by a fixed access
+  point. Includes self-supervised world models (JEPA family, SIGReg),
+  supervised deep-learning baselines, ensemble methods, and a live demo.
+authors:
+  - family-names: "Ribeiro"
+    given-names: "André"
+    email: "andrepedroribeiro@av.it.pt"
+    affiliation: "Instituto de Telecomunicações"
+  - family-names: "Matos"
+    given-names: "Guilherme"
+    email: "gui.matos@av.it.pt"
+    affiliation: "Instituto de Telecomunicações"
+  - family-names: "Antunes"
+    given-names: "Mário"
+    email: "mario.antunes@av.it.pt"
+    affiliation: "Instituto de Telecomunicações"
+keywords:
+  - wifi fingerprinting
+  - rssi
+  - mobility classification
+  - self-supervised learning
+  - jepa
+  - ensemble learning
+identifiers:
+  - type: doi
+    value: "10.21227/55nm-0r91"
+    description: "Dataset on IEEE Dataport"
+repository-code: "https://github.com/andreribeiro87/inMotion"
+references:
+  - type: conference-paper
+    title: "See docs/isac/results/MASTER_RESULTS.md for the mapping from reported numbers to artifacts"
+    notes: "Replace with the camera-ready citation on acceptance"

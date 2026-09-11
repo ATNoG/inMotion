@@ -93,7 +93,8 @@ Current versions, newest lineage last:
 | `ds-augmented-v3` | `dataset_augmented3.csv` | 35,839 | **canonical training set** |
 
 `ds-augmented-v3` is what the JEPA and SIGReg checkpoints were trained on, so it
-is the reference for reproducing their preprocessing.
+is the reference for reproducing their preprocessing. Full detail, including
+lineage and checksums, is in [`docs/reference/datasets.md`](docs/reference/datasets.md).
 
 Building datasets from raw captures:
 
@@ -122,9 +123,14 @@ Cluster submission scripts are in `scripts/slurm/`, single-machine runs in
 ## Tests
 
 ```bash
-uv run pytest tests/              # root suite
-cd demo && uv run --project . pytest   # demo is a separate workspace member
+uv run pytest tests/                          # root suite
+cd demo && uv run --project . pytest          # demo is a separate workspace member
+uv run ruff check src dl ml_classification tests
+uv run ruff format --check src dl ml_classification tests
+uv run python scripts/docs/generate_reference.py --check
 ```
+
+All of these also run in CI (`.github/workflows/ci.yaml`).
 
 Model tests verify that every documented checkpoint loads with `strict=True` and
 matches its recorded parameter count, and that each model's output still matches
@@ -134,27 +140,48 @@ store is absent.
 ## Layout
 
 ```
-src/inmotion/          the package: models registry, data pipeline, CLI
+src/inmotion/          the package
+  cli.py               the `inmotion` entry point
   models/              registry, factories, sidecars, adoption
-  data/                feature pipeline
-data/                  DATASETS.json manifest
-docs/                  papers (frozen), reports, supplementary
-scripts/               slurm/ local/ archive/ oneoff/
-tests/                 checkpoint contract, adoption, CLI, secrets guard
+  data/                tier paths, feature pipeline, export/merge/clean/augment
+  pipelines/           training and evaluation pipelines + their registry
+  evaluation/          checkpoint evaluation, SHAP, feature importance
+  analysis/  viz/      multi-seed analysis, figure regeneration
+data/
+  raw/ interim/ processed/   the three data tiers
+  DATASETS.json        checksums, lineage, label provenance
+docs/                  papers (frozen), reference (generated), guides, audit
+scripts/               slurm/ local/ archive/ oneoff/ docs/
+tests/                 contract, adoption, CLI, docs, secrets guard
 demo/                  FastAPI demo (separate workspace member, own image)
 backup/  20-aug/       checkpoint stores (not tracked)
 plots/  results/       generated output (not tracked)
 ```
 
+## Auditability
+
+For a review, these are the entry points: [`docs/audit/AUDIT_CHECKLIST.md`](docs/audit/AUDIT_CHECKLIST.md)
+lists every claim and the command that verifies it, and
+[`docs/audit/MODEL_CARDS.md`](docs/audit/MODEL_CARDS.md) states each model's
+purpose and limitations. Known discrepancies — including three checkpoints whose
+parameter counts do not match the published table — are documented in
+[`docs/reproducibility.md`](docs/reproducibility.md) rather than omitted.
+
 ## Documentation
+
+**[`docs/README.md`](docs/README.md) is the documentation index.** Start there.
 
 | document | contents |
 |---|---|
-| `docs/reports/ARTIFACTS.md` | artifact stores, tracking rules, the mamba3 provenance gap |
-| `docs/reports/MIGRATION.md` | old → new commands; what is still to be reorganized |
-| `docs/reports/README.md` | index of the reports |
-| `docs/isac/results/MASTER_RESULTS.md` | canonical numbers for the ISAC paper |
-| `docs/supplementary/` | hyperparameter search spaces and optima |
+| [`docs/architecture.md`](docs/architecture.md) | how data flows, the model families, the registry, sidecars |
+| [`docs/reproducibility.md`](docs/reproducibility.md) | environment, seeds, split, and what is **not** reproducible |
+| [`docs/guides/running-models.md`](docs/guides/running-models.md) | list, inspect, verify, predict, adopt |
+| [`docs/guides/training.md`](docs/guides/training.md) | training each family, on a workstation or a cluster |
+| [`docs/reference/`](docs/reference/) | generated: CLI, models, modules, datasets |
+| [`docs/audit/AUDIT_CHECKLIST.md`](docs/audit/AUDIT_CHECKLIST.md) | what a reviewer can verify independently |
+| [`docs/audit/MODEL_CARDS.md`](docs/audit/MODEL_CARDS.md) | per-family model cards and limitations |
+| [`docs/isac/results/MASTER_RESULTS.md`](docs/isac/results/MASTER_RESULTS.md) | canonical reported numbers, each mapped to its artifact |
+| [`docs/reports/`](docs/reports/) | artifact rules, migration notes, refactor history |
 
 ## Citing
 

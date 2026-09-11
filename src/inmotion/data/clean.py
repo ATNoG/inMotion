@@ -24,9 +24,9 @@ reported to <out-stem>_flagged.csv; dropped too with --drop-ambiguous.
 
 Usage
 -----
-    MAMBA_SSM_AVAILABLE=0 uv run python clean_dataset.py --data data/processed/dataset.csv
+    MAMBA_SSM_AVAILABLE=0 uv run inmotion data clean -- --data data/processed/dataset.csv
     # stricter: also drop ambiguous samples
-    MAMBA_SSM_AVAILABLE=0 uv run python clean_dataset.py --drop-ambiguous
+    MAMBA_SSM_AVAILABLE=0 uv run inmotion data clean -- --drop-ambiguous
 """
 
 from __future__ import annotations

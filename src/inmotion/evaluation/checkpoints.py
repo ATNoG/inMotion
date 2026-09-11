@@ -2,7 +2,7 @@
 """Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
 Usage:
-    uv run python evaluate_checkpoints.py --seed 42 --data data/processed/dataset.csv
+    uv run inmotion run pipeline evaluate-checkpoints -- --seed 42 --data data/processed/dataset.csv
 """
 
 from __future__ import annotations

@@ -116,10 +116,10 @@ second machine; the resulting test MCCs converge to the values reported here
 ## 7. Reproducibility
 
 - Split: `_stratified_indices(y, 42)` in `mega_ensemble.py`.
-- Training: `uv run python run_exotic.py ...` with per-model Pareto-winner
+- Training: `uv run inmotion run pipeline exotic -- ...` with per-model Pareto-winner
   flags in `docs/isac/results/MASTER_RESULTS.md` §7 (example given) and
   `job_*.sh` scripts in the repo root.
-- Ensemble: `MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data
+- Ensemble: `MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline mega-ensemble -- --data
   dataset.icaisf.csv --seed 42 --no-tabpfn --no-classical --size-frontier`.
 - Every number in the results tables has a provenance pointer (CSV/log/ckpt)
   in `docs/isac/results/MASTER_RESULTS.md`.

@@ -390,7 +390,7 @@ def data_merge(
 
 
 def _delegate(module: str, args: list[str]) -> None:
-    """Run a pipeline module in process, preserving its argparse interface."""
+    """Run a pipeline module in process, preserving its own argparse interface."""
     import importlib
 
     from .pipelines.registry import _argv
@@ -410,7 +410,7 @@ def _delegate(module: str, args: list[str]) -> None:
     "clean", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def data_clean(ctx: typer.Context) -> None:
-    """Audit and clean a dataset (delegates to clean_dataset.py)."""
+    """Audit a dataset per device and drop rows that poison training."""
     _delegate("data.clean", list(ctx.args))
 
 
@@ -418,7 +418,7 @@ def data_clean(ctx: typer.Context) -> None:
     "augment", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
 )
 def data_augment(ctx: typer.Context) -> None:
-    """Augment a dataset (delegates to augment_data.py)."""
+    """Augment a dataset with noise injection and intra-class mixup."""
     _delegate("data.augment", list(ctx.args))
 
 

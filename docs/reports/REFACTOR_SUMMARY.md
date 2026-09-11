@@ -33,7 +33,7 @@ different builders each claimed the same `lejepa` checkpoint correctly with
 fingerprint per model catches behaviour changes that still load.
 
 **Preprocessing.** The `StandardScaler` was never saved by any training path, and
-two incompatible conventions existed (`dl/data_loader` fit on the whole CSV before
+two incompatible conventions existed (`dl/data_loader.py` fit on the whole CSV before
 splitting; `mega_ensemble` fit on the training fold). A checkpoint therefore
 could not be re-run without also having its exact training CSV, which is why the
 demo contained a heuristic that refits a scaler and guesses. `FeaturePipeline`

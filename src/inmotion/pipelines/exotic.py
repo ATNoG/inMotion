@@ -9,16 +9,18 @@ Plus Mamba-3 hybrids (supervised only).
 
 Usage:
     # T-JEPA: pretrain + fine-tune
-    uv run python run_exotic.py --model t_jepa --pretrain-epochs 300 --finetune-epochs 50
+    uv run inmotion run pipeline exotic -- --model t_jepa \
+        --pretrain-epochs 300 --finetune-epochs 50
 
     # TS-JEPA: pretrain + fine-tune
-    uv run python run_exotic.py --model ts_jepa --pretrain-epochs 300 --finetune-epochs 50
+    uv run inmotion run pipeline exotic -- --model ts_jepa \
+        --pretrain-epochs 300 --finetune-epochs 50
 
     # SIGReg: direct supervised (no pretraining)
-    uv run python run_exotic.py --model sigreg --epochs 200
+    uv run inmotion run pipeline exotic -- --model sigreg --epochs 200
 
     # Mamba-3: direct supervised
-    uv run python run_exotic.py --model mamba3_cnn --epochs 150
+    uv run inmotion run pipeline exotic -- --model mamba3_cnn --epochs 150
 """
 
 from __future__ import annotations

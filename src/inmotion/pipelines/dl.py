@@ -4,7 +4,7 @@ Each model trains on its own GPU (round-robin). No DataParallel.
 HPO studies also distributed across GPUs in parallel.
 
 Usage:
-    uv run python run_dl.py [OPTIONS]
+    uv run inmotion run pipeline dl -- [OPTIONS]
 
 Options:
     --seed INT          Random seed (default 42)
