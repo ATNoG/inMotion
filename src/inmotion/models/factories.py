@@ -19,10 +19,10 @@ from torch import nn
 
 from .wrappers import TupleWrap
 
-
 # ---------------------------------------------------------------------------
 # JEPA family
 # ---------------------------------------------------------------------------
+
 
 def lejepa(
     seq_len: int = 10,
@@ -41,13 +41,20 @@ def lejepa(
     from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
 
     pretrained = LeJEPAModel(
-        seq_len=seq_len, in_channels=in_channels, d_model=d_model, nhead=nhead,
-        num_layers=num_layers, dim_feedforward=dim_feedforward,
-        pred_num_layers=pred_num_layers, sigreg_lambda=sigreg_lambda,
+        seq_len=seq_len,
+        in_channels=in_channels,
+        d_model=d_model,
+        nhead=nhead,
+        num_layers=num_layers,
+        dim_feedforward=dim_feedforward,
+        pred_num_layers=pred_num_layers,
+        sigreg_lambda=sigreg_lambda,
     )
     return LeJEPAClassifier(
-        pretrained=pretrained, num_classes=num_classes,
-        hidden_dim=hidden_dim, dropout=dropout,
+        pretrained=pretrained,
+        num_classes=num_classes,
+        hidden_dim=hidden_dim,
+        dropout=dropout,
     )
 
 
@@ -69,14 +76,21 @@ def t_jepa(
     from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
 
     pretrained = TJEPAModel(
-        n_timesteps=n_timesteps, n_channels=n_channels, d_model=d_model,
-        nhead=nhead, num_layers=num_layers, dim_feedforward=dim_feedforward,
-        n_reg_tokens=n_reg_tokens, pred_dim=pred_dim,
+        n_timesteps=n_timesteps,
+        n_channels=n_channels,
+        d_model=d_model,
+        nhead=nhead,
+        num_layers=num_layers,
+        dim_feedforward=dim_feedforward,
+        n_reg_tokens=n_reg_tokens,
+        pred_dim=pred_dim,
         pred_num_layers=pred_num_layers,
     )
     return TJEPAClassifier(
-        pretrained=pretrained, num_classes=num_classes,
-        hidden_dim=hidden_dim, dropout=dropout,
+        pretrained=pretrained,
+        num_classes=num_classes,
+        hidden_dim=hidden_dim,
+        dropout=dropout,
     )
 
 
@@ -98,14 +112,21 @@ def ts_jepa(
     from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
 
     pretrained = TSJEPAModel(
-        seq_len=seq_len, patch_size=patch_size, in_channels=in_channels,
-        embed_dim=embed_dim, nhead=nhead, num_layers=num_layers,
-        dim_feedforward=dim_feedforward, pred_dim=pred_dim,
+        seq_len=seq_len,
+        patch_size=patch_size,
+        in_channels=in_channels,
+        embed_dim=embed_dim,
+        nhead=nhead,
+        num_layers=num_layers,
+        dim_feedforward=dim_feedforward,
+        pred_dim=pred_dim,
         pred_num_layers=pred_num_layers,
     )
     return TSJEPAClassifier(
-        pretrained=pretrained, num_classes=num_classes,
-        hidden_dim=hidden_dim, dropout=dropout,
+        pretrained=pretrained,
+        num_classes=num_classes,
+        hidden_dim=hidden_dim,
+        dropout=dropout,
     )
 
 
@@ -134,16 +155,28 @@ def cf_jepa(
     from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
 
     pretrained = CFJEPAModel(
-        seq_len=seq_len, patch_size=patch_size, in_channels=in_channels,
-        embed_dim=embed_dim, nhead=nhead, num_layers=num_layers,
-        dim_feedforward=dim_feedforward, pred_dim=pred_dim,
-        pred_num_layers=pred_num_layers, horizon_start=horizon_start,
-        horizon_end=horizon_end, ctx_min=ctx_min, ctx_max=ctx_max,
-        ema_start=ema_start, ema_end=ema_end, sigreg_lambda=sigreg_lambda,
+        seq_len=seq_len,
+        patch_size=patch_size,
+        in_channels=in_channels,
+        embed_dim=embed_dim,
+        nhead=nhead,
+        num_layers=num_layers,
+        dim_feedforward=dim_feedforward,
+        pred_dim=pred_dim,
+        pred_num_layers=pred_num_layers,
+        horizon_start=horizon_start,
+        horizon_end=horizon_end,
+        ctx_min=ctx_min,
+        ctx_max=ctx_max,
+        ema_start=ema_start,
+        ema_end=ema_end,
+        sigreg_lambda=sigreg_lambda,
     )
     return CFJEPAClassifier(
-        pretrained=pretrained, num_classes=num_classes,
-        hidden_dim=hidden_dim, dropout=dropout,
+        pretrained=pretrained,
+        num_classes=num_classes,
+        hidden_dim=hidden_dim,
+        dropout=dropout,
     )
 
 
@@ -151,6 +184,7 @@ def cf_jepa(
 # SIGReg — two published widths exist, so the width is a parameter, not a
 # second near-duplicate function.
 # ---------------------------------------------------------------------------
+
 
 def sigreg(
     in_features: int = 4,
@@ -170,9 +204,12 @@ def sigreg(
 
     return TupleWrap(
         SIGRegClassifier(
-            in_features=in_features, num_filters=num_filters,
-            num_blocks=num_blocks, latent_dim=latent_dim,
-            num_classes=num_classes, sigreg_lambda=sigreg_lambda,
+            in_features=in_features,
+            num_filters=num_filters,
+            num_blocks=num_blocks,
+            latent_dim=latent_dim,
+            num_classes=num_classes,
+            sigreg_lambda=sigreg_lambda,
         )
     )
 
@@ -180,6 +217,7 @@ def sigreg(
 # ---------------------------------------------------------------------------
 # Mamba-3 hybrids
 # ---------------------------------------------------------------------------
+
 
 def mamba3_cnn(
     in_features: int = 4,
@@ -195,9 +233,14 @@ def mamba3_cnn(
     from dl.models.mamba3_cnn import Mamba3CNN
 
     return Mamba3CNN(
-        in_features=in_features, cnn_channels=cnn_channels, d_model=d_model,
-        d_state=d_state, n_mamba_layers=n_mamba_layers, num_classes=num_classes,
-        dropout=dropout, mimo_rank=mimo_rank,
+        in_features=in_features,
+        cnn_channels=cnn_channels,
+        d_model=d_model,
+        d_state=d_state,
+        n_mamba_layers=n_mamba_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        mimo_rank=mimo_rank,
     )
 
 
@@ -221,9 +264,15 @@ def mamba3_tcn(
     from dl.models.mamba3_tcn import Mamba3TCN
 
     return Mamba3TCN(
-        in_features=in_features, tcn_channels=tcn_channels, tcn_depth=tcn_depth,
-        d_model=d_model, d_state=d_state, n_mamba_layers=n_mamba_layers,
-        num_classes=num_classes, dropout=dropout, mimo_rank=mimo_rank,
+        in_features=in_features,
+        tcn_channels=tcn_channels,
+        tcn_depth=tcn_depth,
+        d_model=d_model,
+        d_state=d_state,
+        n_mamba_layers=n_mamba_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        mimo_rank=mimo_rank,
     )
 
 
@@ -244,8 +293,13 @@ def mamba3_transformer(
     from dl.models.mamba3_transformer import Mamba3Transformer
 
     return Mamba3Transformer(
-        in_features=in_features, d_model=d_model, d_state=d_state, nhead=nhead,
-        num_blocks=num_blocks, num_classes=num_classes, dropout=dropout,
+        in_features=in_features,
+        d_model=d_model,
+        d_state=d_state,
+        nhead=nhead,
+        num_blocks=num_blocks,
+        num_classes=num_classes,
+        dropout=dropout,
         mimo_rank=mimo_rank,
     )
 
@@ -263,15 +317,20 @@ def mamba3_multiview(
     from dl.models.mamba3_multiview import Mamba3MultiView
 
     return Mamba3MultiView(
-        in_features=in_features, d_model=d_model, d_state=d_state,
-        n_mamba_layers=n_mamba_layers, num_classes=num_classes,
-        dropout=dropout, mimo_rank=mimo_rank,
+        in_features=in_features,
+        d_model=d_model,
+        d_state=d_state,
+        n_mamba_layers=n_mamba_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        mimo_rank=mimo_rank,
     )
 
 
 # ---------------------------------------------------------------------------
 # Deep stacking ensemble (10 bases -> 4 Level2Nets -> meta MLP)
 # ---------------------------------------------------------------------------
+
 
 def deep_stack(
     num_classes: int = 4,
@@ -293,9 +352,17 @@ def deep_stack(
     from dl.models.tcn import TCNClassifier
 
     bases: list[nn.Module] = [
-        CNN2DRNNClassifier(in_features=4, num_filters=128, cnn_depth=3, hidden_size=256,
-                           num_rnn_layers=3, num_classes=4, dropout=0.3,
-                           rnn_type="lstm", bidirectional=True),
+        CNN2DRNNClassifier(
+            in_features=4,
+            num_filters=128,
+            cnn_depth=3,
+            hidden_size=256,
+            num_rnn_layers=3,
+            num_classes=4,
+            dropout=0.3,
+            rnn_type="lstm",
+            bidirectional=True,
+        ),
         CNNClassifier(4, 64, 2, 4, 0.2, [3, 5]),
         CNNClassifier(4, 256, 4, 4, 0.3, [3, 5, 7, 9]),
         GRUClassifier(4, 64, 2, 4, 0.2),

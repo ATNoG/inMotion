@@ -26,10 +26,7 @@ GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 # Model checkpoints are large binaries kept out of git (see .gitignore). When a
 # checkout has no artifact store, the model tests cannot verify anything, so they
 # skip with an explicit reason rather than fail as if the models were broken.
-ARTIFACTS_PRESENT = (
-    (REPO_ROOT / "backup").is_dir()
-    and (REPO_ROOT / "20-aug" / "models").is_dir()
-)
+ARTIFACTS_PRESENT = (REPO_ROOT / "backup").is_dir() and (REPO_ROOT / "20-aug" / "models").is_dir()
 
 requires_artifacts = __import__("pytest").mark.skipif(
     not ARTIFACTS_PRESENT,

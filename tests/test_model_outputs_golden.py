@@ -19,13 +19,12 @@ import json
 
 import pytest
 import torch
-
 from conftest import GOLDEN_DIR, requires_artifacts
+
 from inmotion.models import registry as reg
 
 # Every test here needs the (gitignored) checkpoint store.
 pytestmark = requires_artifacts
-
 
 
 BATCH = 3

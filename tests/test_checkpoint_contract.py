@@ -20,14 +20,12 @@ loosening ``strict``.
 from __future__ import annotations
 
 import pytest
-
 from conftest import requires_artifacts
+
 from inmotion.models import registry as reg
 
 # Every test here needs the (gitignored) checkpoint store.
 pytestmark = requires_artifacts
-
-
 
 
 # model name -> (checkpoint exists, exact module parameter count)

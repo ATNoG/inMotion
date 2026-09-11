@@ -27,7 +27,7 @@ class TupleWrap(nn.Module):
 
 def strip_prefix(state: dict, prefix: str = "c.") -> dict:
     """Remove ``prefix`` from every key that starts with it."""
-    return {k[len(prefix):] if k.startswith(prefix) else k: v for k, v in state.items()}
+    return {k[len(prefix) :] if k.startswith(prefix) else k: v for k, v in state.items()}
 
 
 def add_prefix(state: dict, prefix: str) -> dict:

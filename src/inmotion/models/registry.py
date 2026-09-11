@@ -18,7 +18,7 @@ adopt``) to infer a spec from a checkpoint's tensor shapes.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -44,7 +44,7 @@ class ModelSpec:
     path: Path
     params: int
     published_m: float | None = None
-    '''Parameter count in millions as printed in MASTER_RESULTS.md.'''
+    """Parameter count in millions as printed in MASTER_RESULTS.md."""
     prefix: str | None = None
     rich: bool = False
     """True when the model consumes 18-channel rich features, False for 4."""
@@ -70,76 +70,198 @@ CURATED: list[ModelSpec] = [
     # the paper table (which counted the checkpoint's tensors, buffers included).
     # Where the two disagree the artifact on disk is NOT the model the paper
     # scored — see `PROVENANCE_GAPS` below.
-    ModelSpec("lejepa", "lejepa",
-              {"d_model": 128, "nhead": 4, "num_layers": 4, "dim_feedforward": 256,
-               "pred_num_layers": 3, "sigreg_lambda": 0.05},
-              _ISAC / "full-after-hpo" / "lejepa_ft_seed42.pt", 565_765,
-              published_m=0.566, note="after-HPO Pareto winner"),
-    ModelSpec("t_jepa", "t_jepa",
-              {"d_model": 128, "nhead": 4, "num_layers": 4, "dim_feedforward": 256,
-               "pred_dim": 64, "pred_num_layers": 3},
-              _ISAC / "full-after-hpo" / "t_jepa_ft_seed42.pt", 633_477,
-              rich=True, published_m=0.633, note="after-HPO Pareto winner"),
-    ModelSpec("ts_jepa", "ts_jepa", {},
-              _ISAC / "ts_jepa_ft_seed42.pt", 2_153_349,
-              rich=True, published_m=2.153, note="base run (18ch, embed 256)"),
-    ModelSpec("cf_jepa", "cf_jepa", {},
-              _ISAC / "full-after-hpo" / "cf_jepa_ft_seed42.pt", 1_232_261,
-              rich=True, published_m=1.232, note="after-HPO frontier point"),
-    ModelSpec("sigreg", "sigreg", {"num_filters": 192},
-              _BACKUP / "sigreg_seed42.pt", 696_900, prefix="m.",
-              published_m=0.697, note="192-filter encoder; paper §2.3 checkpoint"),
-    ModelSpec("sigreg_seed3", "sigreg", {"num_filters": 192},
-              _BACKUP / "sigreg_seed3.pt", 696_900, prefix="m.",
-              published_m=0.697, note="multi-seed diversity member"),
-    ModelSpec("sigreg_seed5", "sigreg", {"num_filters": 192},
-              _BACKUP / "sigreg_seed5.pt", 696_900, prefix="m.",
-              published_m=0.697, note="multi-seed diversity member"),
-    ModelSpec("deep_stack", "deep_stack", {},
-              _BACKUP / "DeepStackEnsemble_seed42.pt", 43_575_549,
-              published_m=43.576,
-              note="10-base deep stack; MASTER_RESULTS cites this under the stale "
-                   "path models/dl/augmented/DeepStackEnsemble_seed42.pt"),
-
+    ModelSpec(
+        "lejepa",
+        "lejepa",
+        {
+            "d_model": 128,
+            "nhead": 4,
+            "num_layers": 4,
+            "dim_feedforward": 256,
+            "pred_num_layers": 3,
+            "sigreg_lambda": 0.05,
+        },
+        _ISAC / "full-after-hpo" / "lejepa_ft_seed42.pt",
+        565_765,
+        published_m=0.566,
+        note="after-HPO Pareto winner",
+    ),
+    ModelSpec(
+        "t_jepa",
+        "t_jepa",
+        {
+            "d_model": 128,
+            "nhead": 4,
+            "num_layers": 4,
+            "dim_feedforward": 256,
+            "pred_dim": 64,
+            "pred_num_layers": 3,
+        },
+        _ISAC / "full-after-hpo" / "t_jepa_ft_seed42.pt",
+        633_477,
+        rich=True,
+        published_m=0.633,
+        note="after-HPO Pareto winner",
+    ),
+    ModelSpec(
+        "ts_jepa",
+        "ts_jepa",
+        {},
+        _ISAC / "ts_jepa_ft_seed42.pt",
+        2_153_349,
+        rich=True,
+        published_m=2.153,
+        note="base run (18ch, embed 256)",
+    ),
+    ModelSpec(
+        "cf_jepa",
+        "cf_jepa",
+        {},
+        _ISAC / "full-after-hpo" / "cf_jepa_ft_seed42.pt",
+        1_232_261,
+        rich=True,
+        published_m=1.232,
+        note="after-HPO frontier point",
+    ),
+    ModelSpec(
+        "sigreg",
+        "sigreg",
+        {"num_filters": 192},
+        _BACKUP / "sigreg_seed42.pt",
+        696_900,
+        prefix="m.",
+        published_m=0.697,
+        note="192-filter encoder; paper §2.3 checkpoint",
+    ),
+    ModelSpec(
+        "sigreg_seed3",
+        "sigreg",
+        {"num_filters": 192},
+        _BACKUP / "sigreg_seed3.pt",
+        696_900,
+        prefix="m.",
+        published_m=0.697,
+        note="multi-seed diversity member",
+    ),
+    ModelSpec(
+        "sigreg_seed5",
+        "sigreg",
+        {"num_filters": 192},
+        _BACKUP / "sigreg_seed5.pt",
+        696_900,
+        prefix="m.",
+        published_m=0.697,
+        note="multi-seed diversity member",
+    ),
+    ModelSpec(
+        "deep_stack",
+        "deep_stack",
+        {},
+        _BACKUP / "DeepStackEnsemble_seed42.pt",
+        43_575_549,
+        published_m=43.576,
+        note="10-base deep stack; MASTER_RESULTS cites this under the stale "
+        "path models/dl/augmented/DeepStackEnsemble_seed42.pt",
+    ),
     # -- Mamba-3 hybrids. The stored checkpoints are SMALLER than the paper
     # table's parameter counts; see PROVENANCE_GAPS.
-    ModelSpec("mamba3_cnn", "mamba3_cnn", {},
-              _BACKUP / "mamba3_cnn_seed42.pt", 945_028, published_m=0.945),
-    ModelSpec("mamba3_tcn", "mamba3_tcn",
-              {"tcn_channels": 128, "tcn_depth": 4, "d_model": 128, "d_state": 16,
-               "n_mamba_layers": 2, "mimo_rank": 4},
-              _BACKUP / "mamba3_tcn_seed42.pt", 695_812, published_m=0.843),
-    ModelSpec("mamba3_transformer", "mamba3_transformer",
-              {"d_model": 128, "d_state": 16, "nhead": 4, "num_blocks": 2,
-               "mimo_rank": 4},
-              _BACKUP / "mamba3_transformer_seed42.pt", 561_796, published_m=0.842),
-    ModelSpec("mamba3_multiview", "mamba3_multiview",
-              {"d_model": 256, "d_state": 16, "n_mamba_layers": 2, "mimo_rank": 4},
-              _BACKUP / "mamba3_multiview_seed42.pt", 1_193_349, published_m=1.701),
-
+    ModelSpec(
+        "mamba3_cnn", "mamba3_cnn", {}, _BACKUP / "mamba3_cnn_seed42.pt", 945_028, published_m=0.945
+    ),
+    ModelSpec(
+        "mamba3_tcn",
+        "mamba3_tcn",
+        {
+            "tcn_channels": 128,
+            "tcn_depth": 4,
+            "d_model": 128,
+            "d_state": 16,
+            "n_mamba_layers": 2,
+            "mimo_rank": 4,
+        },
+        _BACKUP / "mamba3_tcn_seed42.pt",
+        695_812,
+        published_m=0.843,
+    ),
+    ModelSpec(
+        "mamba3_transformer",
+        "mamba3_transformer",
+        {"d_model": 128, "d_state": 16, "nhead": 4, "num_blocks": 2, "mimo_rank": 4},
+        _BACKUP / "mamba3_transformer_seed42.pt",
+        561_796,
+        published_m=0.842,
+    ),
+    ModelSpec(
+        "mamba3_multiview",
+        "mamba3_multiview",
+        {"d_model": 256, "d_state": 16, "n_mamba_layers": 2, "mimo_rank": 4},
+        _BACKUP / "mamba3_multiview_seed42.pt",
+        1_193_349,
+        published_m=1.701,
+    ),
     # -- MASTER_RESULTS.md §2.1/2.2 — pre-HPO base runs, kept for provenance.
     # These need 18-channel input, which is why `rich` is True.
-    ModelSpec("lejepa_base", "lejepa",
-              {"in_channels": 18, "d_model": 256, "nhead": 8, "num_layers": 4,
-               "dim_feedforward": 512, "pred_num_layers": 2, "sigreg_lambda": 0.1},
-              _ISAC / "lejepa_ft_seed42.pt", 2_215_813, rich=True,
-              note="pre-HPO base run (2.1)"),
-    ModelSpec("t_jepa_base", "t_jepa",
-              {"d_model": 256, "nhead": 8, "num_layers": 4, "dim_feedforward": 512,
-               "pred_dim": 128, "pred_num_layers": 2},
-              _ISAC / "t_jepa_ft_seed42.pt", 2_347_653, rich=True,
-              note="pre-HPO base run (2.1); nhead/pred_dim do not affect any saved "
-                   "tensor shape, so they are not recoverable from the checkpoint"),
-    ModelSpec("cf_jepa_base", "cf_jepa",
-              {"num_layers": 4, "dim_feedforward": 512},
-              _ISAC / "cf_jepa_ft_seed42.pt", 2_153_349, rich=True,
-              note="pre-HPO base run (2.1)"),
-    ModelSpec("sigreg_base", "sigreg", {"num_filters": 192, "num_blocks": 2},
-              _ISAC / "sigreg_seed42.pt", 474_564, prefix="m.",
-              note="pre-HPO base run (2.1), 2 residual blocks"),
-    ModelSpec("sigreg_after_hpo", "sigreg", {"num_filters": 128},
-              _ISAC / "full-after-hpo" / "sigreg_seed42.pt", 317_460, prefix="m.",
-              note="128-filter retrain at the HPO winner config (2.2)"),
+    ModelSpec(
+        "lejepa_base",
+        "lejepa",
+        {
+            "in_channels": 18,
+            "d_model": 256,
+            "nhead": 8,
+            "num_layers": 4,
+            "dim_feedforward": 512,
+            "pred_num_layers": 2,
+            "sigreg_lambda": 0.1,
+        },
+        _ISAC / "lejepa_ft_seed42.pt",
+        2_215_813,
+        rich=True,
+        note="pre-HPO base run (2.1)",
+    ),
+    ModelSpec(
+        "t_jepa_base",
+        "t_jepa",
+        {
+            "d_model": 256,
+            "nhead": 8,
+            "num_layers": 4,
+            "dim_feedforward": 512,
+            "pred_dim": 128,
+            "pred_num_layers": 2,
+        },
+        _ISAC / "t_jepa_ft_seed42.pt",
+        2_347_653,
+        rich=True,
+        note="pre-HPO base run (2.1); nhead/pred_dim do not affect any saved "
+        "tensor shape, so they are not recoverable from the checkpoint",
+    ),
+    ModelSpec(
+        "cf_jepa_base",
+        "cf_jepa",
+        {"num_layers": 4, "dim_feedforward": 512},
+        _ISAC / "cf_jepa_ft_seed42.pt",
+        2_153_349,
+        rich=True,
+        note="pre-HPO base run (2.1)",
+    ),
+    ModelSpec(
+        "sigreg_base",
+        "sigreg",
+        {"num_filters": 192, "num_blocks": 2},
+        _ISAC / "sigreg_seed42.pt",
+        474_564,
+        prefix="m.",
+        note="pre-HPO base run (2.1), 2 residual blocks",
+    ),
+    ModelSpec(
+        "sigreg_after_hpo",
+        "sigreg",
+        {"num_filters": 128},
+        _ISAC / "full-after-hpo" / "sigreg_seed42.pt",
+        317_460,
+        prefix="m.",
+        note="128-filter retrain at the HPO winner config (2.2)",
+    ),
 ]
 
 
