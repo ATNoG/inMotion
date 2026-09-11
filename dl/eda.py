@@ -12,9 +12,10 @@ from .config import DLConfig
 
 def run_eda_for_dl(config: DLConfig, data_path: Path | None = None) -> dict:
     """Run full EDA analysis on the dataset, saving plots to config.plots_dir / 'eda'."""
+    from sklearn.preprocessing import LabelEncoder
+
     from ml_classification.config import Config
     from ml_classification.eda import ExploratoryDataAnalysis
-    from sklearn.preprocessing import LabelEncoder
 
     data_file = data_path or config.data_path
 

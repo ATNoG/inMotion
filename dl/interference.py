@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-
 
 ROUTES = ["AA", "AB", "BA", "BB"]
 FEATURE_COLS = [str(i) for i in range(1, 11)]

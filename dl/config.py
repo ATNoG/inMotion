@@ -1,10 +1,10 @@
 """DL pipeline configuration."""
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import torch
-from random import randint
 
 
 @dataclass
@@ -58,7 +58,14 @@ class DLConfig:
 
     # Optuna
     n_trials: int = 100
-    optuna_storage: str = f"sqlite:///optuna_dl_{randint(1000, 9999)}.db"
+    # Deterministic on purpose. This used to be
+    # `f"sqlite:///optuna_dl_{randint(1000, 9999)}.db"`, evaluated at import
+    # time, so every process got a different database: studies could not be
+    # resumed and `evaluate_checkpoints.py` had to guess a name. Override with
+    # INMOTION_OPTUNA_STORAGE for a one-off run.
+    optuna_storage: str = os.environ.get(
+        "INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"
+    )
     optuna_study_prefix: str = "inMotion_dl_v3"
 
     # WandB

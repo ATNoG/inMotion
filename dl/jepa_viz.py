@@ -29,7 +29,6 @@ import numpy as np
 import torch
 from torch import Tensor
 
-
 # ── Optional imports (graceful fallback if matplotlib not available) ──────────
 try:
     import matplotlib

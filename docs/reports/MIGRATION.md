@@ -49,3 +49,11 @@ becomes a native typer command and the mapping above is dropped.
   torch/cu126 stack. That duplication is intentional, not an oversight.
 - LaTeX build artifacts under `docs/*/paper/` are untracked but still on disk;
   they are regenerable with `latexmk`.
+
+## Lint status
+
+`src/inmotion/` and `tests/` are clean under the project's ruff configuration.
+The legacy `dl/` package still has 58 findings (mostly unused arguments and
+comprehension simplifications) that predate this work and were left alone:
+auto-fixing them would touch training code for no functional gain. They are a
+follow-up to the `dl/` → `src/inmotion/models/` move.

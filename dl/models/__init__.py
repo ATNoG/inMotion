@@ -8,18 +8,18 @@ from .ensemble import StackingEnsemble, VotingEnsemble
 from .gru import GRUClassifier
 from .lstm import LSTMClassifier
 from .mamba import MambaClassifier
+from .mamba3_cnn import Mamba3CNN
+from .mamba3_multiview import Mamba3MultiView
+from .mamba3_tcn import Mamba3TCN
+from .mamba3_transformer import Mamba3Transformer
 from .meta_fusion import MetaFusionClassifier
 from .optuna_net import build_optuna_model
 from .rnn import RNNClassifier
-from .tcn import TCNClassifier
-from .t_jepa import TJEPAModel, TJEPAClassifier
-from .transformer import TransformerClassifier
-from .ts_jepa import TSJEPAModel, TSJEPAClassifier
 from .sigreg_classifier import SIGRegClassifier
-from .mamba3_cnn import Mamba3CNN
-from .mamba3_tcn import Mamba3TCN
-from .mamba3_transformer import Mamba3Transformer
-from .mamba3_multiview import Mamba3MultiView
+from .t_jepa import TJEPAClassifier, TJEPAModel
+from .tcn import TCNClassifier
+from .transformer import TransformerClassifier
+from .ts_jepa import TSJEPAClassifier, TSJEPAModel
 
 __all__ = [
     "RNNClassifier", "GRUClassifier", "LSTMClassifier", "BiLSTMClassifier",

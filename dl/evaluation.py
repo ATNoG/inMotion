@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
-    classification_report,
     confusion_matrix,
     matthews_corrcoef,
     precision_recall_fscore_support,

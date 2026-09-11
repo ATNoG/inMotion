@@ -16,13 +16,13 @@ Reference:
 
 from __future__ import annotations
 
-import copy, math
+import copy
+import math
 from typing import Optional
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Patch tokenizer — Conv1D over multi-channel input

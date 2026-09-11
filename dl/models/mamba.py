@@ -24,16 +24,16 @@ from __future__ import annotations
 
 import math
 
-import torch
-import torch.nn.functional as F
-from torch import Tensor, nn
-
 # ── Official Mamba-3 availability ─────────────────────────────────────────────
 # Importing mamba_ssm can hang for minutes (its __init__ triggers CUDA
 # extension builds / Triton JIT in subprocesses). Set
 # MAMBA_SSM_AVAILABLE=0 to force the pure-PyTorch fallback, or rely on the
 # 5s thread timeout below.
 import os as _os
+
+import torch
+import torch.nn.functional as F
+from torch import Tensor, nn
 
 if _os.environ.get("MAMBA_SSM_AVAILABLE", "1") == "0":
     _MAMBA3_AVAILABLE = False

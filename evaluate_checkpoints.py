@@ -8,8 +8,8 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import copy
 import json
+import os
 import random
 import sys
 from pathlib import Path
@@ -19,13 +19,14 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from torch import nn
+
 from dl.config import DLConfig
 from dl.data_loader import DLDataLoader
 from dl.evaluation import (
     evaluate_model_on_test,
     metrics_to_extended_row,
 )
-from dl.training import Trainer
 from dl.models.bilstm import BiLSTMClassifier
 from dl.models.cnn import CNNClassifier
 from dl.models.cnn2d_rnn import CNN2DRNNClassifier
@@ -36,19 +37,11 @@ from dl.models.mamba import MambaClassifier
 from dl.models.meta_fusion import MetaFusionClassifier
 from dl.models.moe import (
     MOE_COMBOS,
-    build_moe_expert_typed,
     build_soft_moe,
 )
 from dl.models.rnn import RNNClassifier
 from dl.models.tcn import TCNClassifier
 from dl.models.transformer import TransformerClassifier
-from dl.models.deep_stack import (
-    DeepMetaMLP,
-    DeepStackEnsemble,
-    Level2Net,
-)
-from torch import nn
-
 
 # ── Model-building helpers ────────────────────────────────────────────────────
 
@@ -259,7 +252,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--no-wandb", action="store_true")
     p.add_argument("--models-dir", type=Path, default=None)
-    p.add_argument("--optuna-db", type=str, default="sqlite:///optuna_dl_2.db")
+    p.add_argument("--optuna-db", type=str, default=os.environ.get("INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"))
     return p.parse_args()
 
 
@@ -533,7 +526,7 @@ def main() -> None:
                         extra={"best_arch": json.dumps(params)},
                     ))
                 else:
-                    print(f"[skip] OptunaNet: no NAS best params")
+                    print("[skip] OptunaNet: no NAS best params")
 
             # ── Case 7: Voting/Stacking Ensembles ────────────────────────
             elif model_name.startswith("Ensemble_") or model_name.startswith("Stacking_"):
