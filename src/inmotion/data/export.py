@@ -1,7 +1,8 @@
-import pandas as pd
 import argparse
 import ast
 from typing import Any
+
+import pandas as pd
 
 
 def extract_rssi_and_mac_pairs(
@@ -44,7 +45,7 @@ def export_to_csv(
 
     data = []
     dict_strs = []
-    with open(input_file, "r") as f:
+    with open(input_file) as f:
         for line in f.readlines():
             dict_strs.append(line.split(maxsplit=2)[2].strip())
 

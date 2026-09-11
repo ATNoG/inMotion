@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Merge multiple CSV files into a single dataset.
-"""
+"""Merge multiple CSV files into a single dataset."""
 
 import argparse
 import re
@@ -11,8 +9,7 @@ import pandas as pd
 
 
 def extract_concurrent_noise_path(filename: str, label: str) -> str | None:
-    """
-    Extract the concurrent noise path from filename and row label.
+    """Extract the concurrent noise path from filename and row label.
 
     For noise files like 'noiseAA_BB3.csv', if label is 'AA', concurrent is 'BB'.
     If label is 'BB', concurrent is 'AA'.
@@ -47,8 +44,7 @@ def extract_concurrent_noise_path(filename: str, label: str) -> str | None:
 
 
 def merge_csv_files(input_dir: str, output_file: str, pattern: str = "*.csv") -> None:
-    """
-    Merge multiple CSV files into a single dataset.
+    """Merge multiple CSV files into a single dataset.
 
     Args:
             input_dir: Directory containing CSV files
@@ -119,7 +115,7 @@ def merge_csv_files(input_dir: str, output_file: str, pattern: str = "*.csv") ->
     print("\n" + "=" * 60)
     print(f"Merged {len(dfs)} files into {output_file}")
     print(f"Total rows: {len(merged_df)}")
-    print(f"Label distribution:")
+    print("Label distribution:")
     print(merged_df["label"].value_counts().to_dict())
     print(f"  0 (failed handovers): {(merged_df['label'] == '0').sum()}")
     print(f"  1 (successful handovers): {(merged_df['label'] == '1').sum()}")
@@ -128,7 +124,7 @@ def merge_csv_files(input_dir: str, output_file: str, pattern: str = "*.csv") ->
     if "concurrent_noise_path" in merged_df.columns:
         concurrent_counts = merged_df["concurrent_noise_path"].value_counts()
         if not concurrent_counts.empty:
-            print(f"\nConcurrent noise path distribution:")
+            print("\nConcurrent noise path distribution:")
             for path, count in concurrent_counts.items():
                 if pd.notna(path):
                     print(f"  {path}: {count} samples")

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import optuna
+import torch
 from optuna.storages import RDBStorage
 from sqlalchemy import text
 from torch import Tensor, nn

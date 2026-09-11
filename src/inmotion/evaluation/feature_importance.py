@@ -23,6 +23,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+
 # Pre-flight: torch must be available (run `uv sync` first if missing)
 try:
     import torch  # noqa: F811
@@ -34,19 +35,22 @@ except ImportError:
 from sklearn.metrics import matthews_corrcoef
 from sklearn.model_selection import train_test_split
 from torch import nn
-from torch.utils.data import DataLoader, TensorDataset
 
 # ── Project imports ─────────────────────────────────────────────────────────
 # Repository root, for default artifact paths.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
-from dl.config import DLConfig
-from dl.data_loader import DLDataLoader
-from dl.models.cnn import CNNClassifier
-from dl.models.gru import GRUClassifier
-from dl.models.mamba import MambaClassifier
-from dl.models.tcn import TCNClassifier
-from dl.training import Trainer
+# The imports below are intentionally not at the top of the file: the torch
+# pre-flight check above must run before importing anything that imports torch,
+# so that a missing PyTorch produces the "run uv sync" message rather than a
+# bare ModuleNotFoundError.
+from dl.config import DLConfig  # noqa: E402
+from dl.data_loader import DLDataLoader  # noqa: E402
+from dl.models.cnn import CNNClassifier  # noqa: E402
+from dl.models.gru import GRUClassifier  # noqa: E402
+from dl.models.mamba import MambaClassifier  # noqa: E402
+from dl.models.tcn import TCNClassifier  # noqa: E402
+from dl.training import Trainer  # noqa: E402
 
 matplotlib.use("Agg")
 
@@ -134,11 +138,11 @@ def setup_plot_style() -> None:
 
 def build_model(name: str, config: DLConfig) -> nn.Module:
     """Construct model matching _build_model_by_name from run_dl.py."""
-    kw: dict = dict(
-        in_features=config.in_features,
-        num_classes=config.num_classes,
-        dropout=config.dropout,
-    )
+    kw: dict = {
+        "in_features": config.in_features,
+        "num_classes": config.num_classes,
+        "dropout": config.dropout,
+    }
     match name:
         case "CNN":
             return CNNClassifier(num_filters=128, num_blocks=3, **kw)  # type: ignore[arg-type]
@@ -572,7 +576,7 @@ def main(args: argparse.Namespace | None = None) -> None:
         model_labels.append(name)
 
         print(f"\n  Baseline MCC: {baseline_mcc:.4f}")
-        print(f"  Top 5 most important features:")
+        print("  Top 5 most important features:")
         flat = [
             (c, t, imp[c, t])
             for c in range(N_CHANNELS)
@@ -583,7 +587,7 @@ def main(args: argparse.Namespace | None = None) -> None:
             print(f"    {CHANNEL_NAMES[c]:30s} t={t + 1:2d}  ΔMCC={val:.4f}")
 
         # Channel-level summary
-        print(f"  Channel-level importance (mean ΔMCC across timesteps):")
+        print("  Channel-level importance (mean ΔMCC across timesteps):")
         for c in range(N_CHANNELS):
             ch_mean = float(imp[c].mean())
             ch_std = float(imp[c].std())

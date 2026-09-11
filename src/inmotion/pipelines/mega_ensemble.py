@@ -1,6 +1,8 @@
-"""Mega-ensemble: combine ALL available models — DL checkpoints, JEPA family,
-classical ML (KNN/CatBoost/GP/LR), and TabPFN — via OOF stacking with
-temperature calibration and CE-based bagged Caruana selection.
+"""Mega-ensemble across every model family.
+
+Combines DL checkpoints, the JEPA family, classical ML (KNN/CatBoost/GP/LR) and
+TabPFN via OOF stacking, with temperature calibration and CE-based bagged
+Caruana selection.
 
 Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
   A. Collect OOF + test probabilities for every member under the same 70/10/20 split
@@ -20,18 +22,14 @@ from __future__ import annotations
 
 import argparse
 import csv
-import math
-import random
 from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss, matthews_corrcoef
-from sklearn.model_selection import cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -45,7 +43,7 @@ from dl.data_loader import DLDataLoader
 
 
 def _build_lejepa():
-    from dl.models.lejepa import LeJEPAModel, LeJEPAClassifier
+    from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
     # full-after-hpo Pareto winner (0.8676): d_model=128 ff=256 layers=4 pred_layers=3
     pretrained = LeJEPAModel(
         seq_len=10, in_channels=4, d_model=128, nhead=4,
@@ -55,7 +53,7 @@ def _build_lejepa():
 
 
 def _build_t_jepa():
-    from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+    from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
     # full-after-hpo Pareto winner (0.8445): d_model=128 layers=4 ff=256 pred_layers=3
     pretrained = TJEPAModel(
         n_timesteps=10, n_channels=18, d_model=128, nhead=4,
@@ -66,7 +64,7 @@ def _build_t_jepa():
 
 
 def _build_ts_jepa():
-    from dl.models.ts_jepa import TSJEPAModel, TSJEPAClassifier
+    from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
     pretrained = TSJEPAModel(
         seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
         num_layers=4, dim_feedforward=512, pred_dim=128, pred_num_layers=2,
@@ -75,7 +73,7 @@ def _build_ts_jepa():
 
 
 def _build_cf_jepa():
-    from dl.models.cf_jepa import CFJEPAModel, CFJEPAClassifier
+    from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
     # full-after-hpo best frontier point (manual run): embed 256, layers 3,
     # ff 256, pred_dim 128, pred_layers 1, 18-channel rich features
     pretrained = CFJEPAModel(
@@ -132,13 +130,15 @@ def _build_sigreg_full():
 
 
 def _make_hpo_builder(model_type: str):
-    """Builder that rebuilds an HPO_* checkpoint's architecture from its
-    winning Optuna trial params (stored in optuna_dl_9344.db)."""
+    """Builder that rebuilds an ``HPO_*`` checkpoint's architecture.
+
+    The architecture comes from the winning Optuna trial params.
+    """
     import optuna
 
     def build():
-        from inmotion.pipelines.dl import _build_hpo_best_model
         from dl.config import DLConfig
+        from inmotion.pipelines.dl import _build_hpo_best_model
         study = optuna.load_study(
             study_name=f"inMotion_dl_v3_{model_type}",
             storage="sqlite:///optuna_dl_9344.db",
@@ -191,14 +191,14 @@ def _build_ds_ensemble():
     → 4 Level2Nets → DeepMetaMLP. Scores 0.852 on data/processed/dataset_augmented.csv,
     0.881 on data/processed/dataset.icaisf.csv.
     """
-    from dl.models.deep_stack import DeepStackEnsemble, Level2Net
+
     from dl.models.cnn import CNNClassifier
     from dl.models.cnn2d_rnn import CNN2DRNNClassifier
+    from dl.models.deep_stack import DeepStackEnsemble, Level2Net
     from dl.models.gru import GRUClassifier
     from dl.models.mamba import MambaClassifier
     from dl.models.rnn import RNNClassifier
     from dl.models.tcn import TCNClassifier
-    from torch import nn
 
     bases: list[nn.Module] = [
         CNN2DRNNClassifier(in_features=4, num_filters=128, cnn_depth=3, hidden_size=256,

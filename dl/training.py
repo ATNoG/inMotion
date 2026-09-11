@@ -97,18 +97,16 @@ class Trainer:
                     )
                     idx = torch.randperm(X_batch.size(0), device=X_batch.device)
                     X_mixed = lam * X_batch + (1.0 - lam) * X_batch[idx]
-                    if has_meta:
-                        logits = model(X_mixed, meta_batch)
-                    else:
-                        logits = model(X_mixed)
+                    logits = (
+                        model(X_mixed, meta_batch) if has_meta else model(X_mixed)
+                    )
                     loss = lam * criterion(logits, y_batch) + (1.0 - lam) * criterion(
                         logits, y_batch[idx]
                     )
                 else:
-                    if has_meta:
-                        logits = model(X_batch, meta_batch)
-                    else:
-                        logits = model(X_batch)
+                    logits = (
+                        model(X_batch, meta_batch) if has_meta else model(X_batch)
+                    )
                     loss = criterion(logits, y_batch)
                 if train:
                     loss = loss + self._l1_loss(model)

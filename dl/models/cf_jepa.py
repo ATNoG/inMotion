@@ -174,8 +174,6 @@ class CFJEPAPredictor(nn.Module):
             for future positions (output i predicts patch position ctx_end + i)
         """
         B, K, _ = ctx_latents.shape
-        pred_dim = self.predictor_embed_dim
-        num_future = self.num_patches - 1
 
         # Project context latents and add context-position embedding
         ctx_proj = self.input_proj(ctx_latents) + self.ctx_pos_embed[:, :K, :]

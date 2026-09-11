@@ -114,7 +114,7 @@ def plot_metric_comparison_across_seeds(
             values.append(val)
 
         offset = (i - len(seeds) / 2 + 0.5) * width
-        bars = ax.bar(x + offset, values, width, label=f"Seed {seed}", color=colors[i])
+        ax.bar(x + offset, values, width, label=f"Seed {seed}", color=colors[i])
 
     ax.set_xlabel("Classifier")
     ax.set_ylabel(metric.replace("_", " "))

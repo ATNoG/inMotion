@@ -145,9 +145,10 @@ class RDMReg(nn.Module):
         self.n_samples = n_samples
 
     def _sample_rgg(self, batch: int, dim: int, device: torch.device) -> Tensor:
-        """Sample from the Rectified Generalized Gaussian:
-        x = ReLU(σ · S · (p·G)^{1/p})  where G ~ Gamma(1/p, 1), S ~ ±1.
-        Samples directly on device (no CPU→GPU copy).
+        """Sample from the Rectified Generalized Gaussian.
+
+        ``x = ReLU(σ · S · (p·G)^{1/p})`` where ``G ~ Gamma(1/p, 1)`` and
+        ``S ~ ±1``. Samples directly on device (no CPU→GPU copy).
         """
         shape = (batch, dim, self.n_projections)
         g = torch.distributions.Gamma(1.0 / self.p, 1.0).sample(shape).to(device)
@@ -182,8 +183,10 @@ class RDMReg(nn.Module):
 
 
 class RDMSigReg(nn.Module):
-    """RDMReg + invariance: match rectified latents to RGG AND pull same-class
-    latents together (VICReg-style invariance on the non-rectified space).
+    """RDMReg plus an invariance term on the latent space.
+
+    Matches rectified latents to the RGG and pulls same-class latents together
+    (VICReg-style invariance on the non-rectified space).
 
     This is the full LpJEPA recipe: invariance ℓ2 + RDMReg on both views.
     For single-branch usage (our case) the invariance term is a no-op unless

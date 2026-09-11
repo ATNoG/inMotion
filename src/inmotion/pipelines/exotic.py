@@ -31,12 +31,11 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-
 import numpy as np
+import optuna
 import torch
-import torch.nn as nn
 from sklearn.metrics import matthews_corrcoef
-from torch import Tensor
+from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
 from dl.config import DLConfig
@@ -93,6 +92,12 @@ def parse_args() -> argparse.Namespace:
 
     # Model architecture
     p.add_argument("--d-model", type=int, default=256)
+    p.add_argument("--d-state", type=int, default=16,
+                   help="Mamba-3 state width (also searched by --hpo).")
+    p.add_argument("--dropout", type=float, default=0.2,
+                   help="Dropout for the Mamba-3 hybrids (also searched by --hpo).")
+    p.add_argument("--mimo-rank", type=int, default=4,
+                   help="Mamba-3 MIMO rank (also searched by --hpo).")
     p.add_argument("--nhead", type=int, default=8)
     p.add_argument("--num-layers", type=int, default=4)
     p.add_argument("--dim-ff", type=int, default=512)
@@ -328,8 +333,21 @@ def _build_sigreg(args: argparse.Namespace) -> nn.Module:
 
 
 def _build_mamba3(variant: str, args: argparse.Namespace) -> nn.Module:
-    kw = dict(in_features=4, d_model=args.d_model, d_state=16, num_classes=4,
-              dropout=0.2, mimo_rank=4)
+    """Build a Mamba-3 hybrid from ``args``.
+
+    ``d_state``, ``dropout`` and ``mimo_rank`` are read from ``args`` and fall
+    back to the previous fixed defaults. They used to be hardcoded here while
+    ``_hpo_mamba3`` suggested them, so the Optuna study reported three search
+    dimensions that could not affect the model at all.
+    """
+    kw = {
+        "in_features": 4,
+        "d_model": args.d_model,
+        "d_state": getattr(args, "d_state", 16),
+        "num_classes": 4,
+        "dropout": getattr(args, "dropout", 0.2),
+        "mimo_rank": getattr(args, "mimo_rank", 4),
+    }
     if variant == "cnn":
         from dl.models.mamba3_cnn import Mamba3CNN
         return Mamba3CNN(cnn_channels=args.d_model, n_mamba_layers=args.num_layers, **kw)
@@ -674,7 +692,9 @@ def finetune_jepa(
 
     # Wrap so Trainer can call model(x) → logits
     class W(nn.Module):
-        def __init__(self, c): super().__init__(); self.c = c
+        def __init__(self, c):
+            super().__init__()
+            self.c = c
         def forward(self, x): return self.c(x)
     wrapped = W(clf)
 
@@ -811,8 +831,6 @@ def _hpo_objective_value(mcc: float, n_params: int, objective: str) -> float:
 
 def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
     """Create a single-objective study, or a NSGA-II Pareto study."""
-    import optuna
-
     from dl.optimization import _get_optuna_storage
     storage = _get_optuna_storage("sqlite:///optuna_exotic.db")
     if objective == "pareto":
@@ -837,11 +855,12 @@ def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
 
 def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
     """Run Optuna HPO, update args with best hyperparams."""
-    import optuna
 
     cfg = DLConfig()
-    cfg.data_path = args.data; cfg.seed = args.seed
-    cfg.batch_size = args.batch_size; cfg.device = str(device)
+    cfg.data_path = args.data
+    cfg.seed = args.seed
+    cfg.batch_size = args.batch_size
+    cfg.device = str(device)
 
     dl = DLDataLoader(cfg)
     X, y = dl.load_and_preprocess()
@@ -895,7 +914,6 @@ def _trial_wandb_finish(run: object | None, metrics: dict) -> None:
 # ── JEPA HPO ──────────────────────────────────────────────────────────────────
 
 def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
-    import optuna
     from torch.utils.data import DataLoader, TensorDataset
 
     is_ts = args.model == "ts_jepa"
@@ -921,26 +939,26 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
 
         # ── Build model ───────────────────────────────────────────────
         if is_ts:
-            from dl.models.ts_jepa import TSJEPAModel, TSJEPAClassifier
+            from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
             m = TSJEPAModel(seq_len=10, patch_size=2, in_channels=4,
                             embed_dim=d_model, nhead=nhead, num_layers=num_layers,
                             dim_feedforward=dim_ff, pred_dim=pred_dim,
                             pred_num_layers=pred_layers, ema_start=ema_start).to(device)
         elif is_le:
-            from dl.models.lejepa import LeJEPAModel, LeJEPAClassifier
+            from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
             m = LeJEPAModel(seq_len=10, in_channels=4, d_model=d_model, nhead=nhead,
                             num_layers=num_layers, dim_feedforward=dim_ff,
                             pred_num_layers=pred_layers,
                             sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
         elif is_cf:
-            from dl.models.cf_jepa import CFJEPAModel, CFJEPAClassifier
+            from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
             m = CFJEPAModel(seq_len=10, patch_size=2, in_channels=4,
                             embed_dim=d_model, nhead=nhead, num_layers=num_layers,
                             dim_feedforward=dim_ff, pred_dim=pred_dim,
                             pred_num_layers=pred_layers, ema_start=ema_start,
                             sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
         else:
-            from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+            from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
             m = TJEPAModel(n_timesteps=10, n_channels=4, d_model=d_model, nhead=nhead,
                            num_layers=num_layers, dim_feedforward=dim_ff, pred_dim=pred_dim,
                            pred_num_layers=pred_layers, ema_start=ema_start).to(device)
@@ -962,14 +980,18 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         opt = torch.optim.AdamW(params_list, lr=pt_lr)
         for ep in range(pt_epochs):
             m.train()
-            pt_loss_sum = 0.0; pt_n = 0
+            pt_loss_sum = 0.0
+            pt_n = 0
             for (xb,) in ptl:
                 loss, _ = m.pretrain_step(xb.to(device), ep, pt_epochs)
-                opt.zero_grad(); loss.backward()
-                torch.nn.utils.clip_grad_norm_(params_list, 1.0); opt.step()
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(params_list, 1.0)
+                opt.step()
                 if hasattr(m, "_update_target_encoder"):
                     m._update_target_encoder()
-                pt_loss_sum += loss.item(); pt_n += 1
+                pt_loss_sum += loss.item()
+                pt_n += 1
             avg_pt_loss = pt_loss_sum / max(pt_n, 1)
             if run is not None:
                 import wandb
@@ -989,7 +1011,9 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             clf = TJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
 
         class W(nn.Module):
-            def __init__(self, c): super().__init__(); self.c = c
+            def __init__(self, c):
+                super().__init__()
+                self.c = c
             def forward(self, x): return self.c(x)
         wr = W(clf)
 
@@ -1005,15 +1029,20 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             clf.train()
             for xb, yb in trl:
                 loss = ce(wr(xb.to(device)), yb.to(device))
-                opt1.zero_grad(); loss.backward(); opt1.step()
+                opt1.zero_grad()
+                loss.backward()
+                opt1.step()
             # Val MCC
-            clf.eval(); vap, vat = [], []
+            clf.eval()
+            vap, vat = [], []
             with torch.no_grad():
                 for xb, yb in val:
-                    vap.extend(wr(xb.to(device)).argmax(1).cpu().tolist()); vat.extend(yb.tolist())
+                    vap.extend(wr(xb.to(device)).argmax(1).cpu().tolist())
+                    vat.extend(yb.tolist())
             vmcc = float(matthews_corrcoef(vat, vap))
             if run is not None:
-                import wandb; wandb.log({"ft/stage1_epoch": ep, "ft/stage1_val_mcc": vmcc})
+                import wandb
+                wandb.log({"ft/stage1_epoch": ep, "ft/stage1_val_mcc": vmcc})
 
         # Stage 2: unfreeze, lower LR
         for p in clf.encoder.parameters():
@@ -1024,16 +1053,21 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             clf.train()
             for xb, yb in trl:
                 loss = ce(wr(xb.to(device)), yb.to(device))
-                opt2.zero_grad(); loss.backward(); opt2.step()
-            clf.eval(); vap, vat = [], []
+                opt2.zero_grad()
+                loss.backward()
+                opt2.step()
+            clf.eval()
+            vap, vat = [], []
             with torch.no_grad():
                 for xb, yb in val:
-                    vap.extend(wr(xb.to(device)).argmax(1).cpu().tolist()); vat.extend(yb.tolist())
+                    vap.extend(wr(xb.to(device)).argmax(1).cpu().tolist())
+                    vat.extend(yb.tolist())
             vmcc = float(matthews_corrcoef(vat, vap))
             if vmcc > best_mcc:
                 best_mcc = vmcc
             if run is not None:
-                import wandb; wandb.log({"ft/stage2_epoch": ep, "ft/stage2_val_mcc": vmcc})
+                import wandb
+                wandb.log({"ft/stage2_epoch": ep, "ft/stage2_val_mcc": vmcc})
 
         # ── Final metrics ─────────────────────────────────────────────
         eff = _efficiency(best_mcc, n_params)
@@ -1204,7 +1238,6 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
 # ── SIGReg HPO ────────────────────────────────────────────────────────────────
 
 def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
-    import optuna
     from dl.models.sigreg_classifier import SIGRegClassifier
 
     def objective(trial):
@@ -1232,12 +1265,16 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
                 xb, yb = xb.to(device), yb.to(device)
                 logits, latents = m(xb)
                 loss, loss_dict = m.compute_loss(logits, latents, yb)
-                opt.zero_grad(); loss.backward(); opt.step()
-            m.eval(); vap, vat = [], []
+                opt.zero_grad()
+                loss.backward()
+                opt.step()
+            m.eval()
+            vap, vat = [], []
             with torch.no_grad():
                 for xb, yb in val:
                     logits, _ = m(xb.to(device))
-                    vap.extend(logits.argmax(1).cpu().tolist()); vat.extend(yb.tolist())
+                    vap.extend(logits.argmax(1).cpu().tolist())
+                    vat.extend(yb.tolist())
             vmcc = float(matthews_corrcoef(vat, vap))
             if vmcc > best_mcc:
                 best_mcc = vmcc
@@ -1276,7 +1313,6 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
 # ── Mamba-3 HPO ───────────────────────────────────────────────────────────────
 
 def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
-    import optuna
 
     def objective(trial):
         d_model = trial.suggest_categorical("d_model", [64, 128, 192])
@@ -1286,15 +1322,27 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
         lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
         mimo_rank = trial.suggest_categorical("mimo_rank", [1, 2, 4])
 
-        m = _build_mamba3(args.model.replace("mamba3_", ""),
-                          argparse.Namespace(d_model=d_model, num_layers=num_layers,
-                                             nhead=4)).to(device)
+        m = _build_mamba3(
+            args.model.replace("mamba3_", ""),
+            argparse.Namespace(
+                d_model=d_model,
+                num_layers=num_layers,
+                nhead=4,
+                d_state=d_state,
+                dropout=dropout,
+                mimo_rank=mimo_rank,
+            ),
+        ).to(device)
         n_params = _count_params(m)
         run = _trial_wandb_start(trial, args, {"n_params": n_params,
                                                 "params_str": _params_str(n_params)})
 
-        cfg = DLConfig(); cfg.seed = args.seed; cfg.batch_size = args.batch_size
-        cfg.device = str(device); cfg.num_epochs = 30; cfg.learning_rate = lr
+        cfg = DLConfig()
+        cfg.seed = args.seed
+        cfg.batch_size = args.batch_size
+        cfg.device = str(device)
+        cfg.num_epochs = 30
+        cfg.learning_rate = lr
         cfg.use_wandb = False
         trl = DataLoader(RSSIDataset(Xt, yt), batch_size=args.batch_size, shuffle=True)
         val = DataLoader(RSSIDataset(Xv, yv), batch_size=args.batch_size, shuffle=False)
@@ -1506,7 +1554,9 @@ def main() -> None:
         # Load best and evaluate — wrap to return logits only
         model.load_state_dict(torch.load(save_path, map_location=device, weights_only=False))
         class _EvalWrap(nn.Module):
-            def __init__(self, m): super().__init__(); self.m = m
+            def __init__(self, m):
+                super().__init__()
+                self.m = m
             def forward(self, x): return self.m(x)[0]
         eval_model = _EvalWrap(model)
         metrics = evaluate_model_on_test(

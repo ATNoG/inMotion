@@ -20,17 +20,21 @@ Options:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import copy
 import json
 import multiprocessing as mp
 import random
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from tqdm import tqdm
 from pathlib import Path
 
 import numpy as np
 import torch
+from torch import nn
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
 from dl.config import DLConfig
 from dl.data_loader import DLDataLoader
 from dl.evaluation import (
@@ -65,8 +69,6 @@ from dl.optimization import (
     save_optuna_plots,
 )
 from dl.training import Trainer
-from torch import nn
-from torch.utils.data import DataLoader
 
 SINGLE_MODEL_NAMES: list[str] = [
     "RNN",
@@ -182,13 +184,13 @@ def _build_device_pool(n_gpus: int) -> list[str]:
 
 
 def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
-    base_kw: dict[str, object] = dict(
-        in_features=config.in_features,
-        hidden_size=config.hidden_size,
-        num_layers=config.num_layers,
-        num_classes=config.num_classes,
-        dropout=config.dropout,
-    )
+    base_kw: dict[str, object] = {
+        "in_features": config.in_features,
+        "hidden_size": config.hidden_size,
+        "num_layers": config.num_layers,
+        "num_classes": config.num_classes,
+        "dropout": config.dropout,
+    }
     match name:
         case "RNN":
             return RNNClassifier(**base_kw)  # type: ignore[arg-type]
@@ -260,7 +262,7 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
             # T-JEPA requires pretraining before classification.
             # This builds the classifier with a randomly-initialized encoder;
             # pretraining should be done separately via pretrain_t_jepa.py.
-            from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+            from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
             pretrained = TJEPAModel(
                 n_features=10,
                 d_model=config.d_model,
@@ -549,6 +551,7 @@ def _hpo_worker(
     if not config._force_retrain and save_path.exists():
         try:
             import optuna
+
             from dl.optimization import _get_optuna_storage
             study_name = f"{config.optuna_study_prefix}_{model_type}"
             study = optuna.load_study(study_name=study_name, storage=_get_optuna_storage(config.optuna_storage))
@@ -1132,11 +1135,10 @@ def main() -> None:
     all_results: list[dict[str, object]] = []
     curve_data: list[dict[str, object]] = []
 
-    # Prevent DataLoader workers from forking after CUDA init → SIGBUS (exit 135)
-    try:
+    # Prevent DataLoader workers from forking after CUDA init -> SIGBUS (exit 135).
+    # A RuntimeError means the start method is already set, which is fine.
+    with contextlib.suppress(RuntimeError):
         torch.multiprocessing.set_start_method("spawn")
-    except RuntimeError:
-        pass  # may already be set by another component
     ctx = mp.get_context("spawn")
 
     # ── Phase 1: Parallel single-model training ──────────────────────────────
@@ -1377,8 +1379,6 @@ def main() -> None:
             f"\n[Phase 4a] SoftMoE multi-objective HPO (NSGA-II) — "
             f"{n_combos} combos across {len(devices)} GPU(s)…"
         )
-        # Pre-create study entries in DB to avoid spawn-race
-        mo_study_names = [f"{config.optuna_study_prefix}_moe_mo_{name}" for name in MOE_COMBOS]
         # Multi-objective studies use directions=[] so cannot use init_optuna_db directly;
         # they are created inside the worker / study call (load_if_exists=True).
 
@@ -1449,7 +1449,7 @@ def main() -> None:
         dl_ds = DLDataLoader(ds_config)
         tr_loader_ds = dl_ds.make_loader(X_tr, y_tr, shuffle=True)
         val_loader_ds = dl_ds.make_loader(X_val, y_val, shuffle=False)
-        test_loader_ds = dl_ds.make_loader(X_test, y_test, shuffle=False)
+        # The DeepStack test split is loaded where it is used, in stage 2.
 
         with ProcessPoolExecutor(max_workers=len(devices), mp_context=ctx) as pool:
             ds_futures = {
@@ -1497,9 +1497,11 @@ def main() -> None:
                 [_extract_logits(m, loader, dev0) for m in base_models_loaded], axis=-1
             )
 
+        # Only the train and validation folds feed the level-2 nets and the meta
+        # model; the test fold is evaluated at the end of stage 2. Base-model
+        # logits for the test split were previously computed here and discarded.
         base_feat_tr = _concat_logits(tr_loader_ds)  # (N, n_base * C)
         base_feat_val = _concat_logits(val_loader_ds)
-        base_feat_test = _concat_logits(test_loader_ds)
 
         # ── Stage 1: Freeze base models, train Level2 nets (full multiclass) ──
         # Level2Net now outputs C classes (not binary), preserving full inter-class signal.
@@ -1533,7 +1535,9 @@ def main() -> None:
 
         l2_feat_tr = _l2_feats(base_feat_tr)
         l2_feat_val = _l2_feats(base_feat_val)
-        l2_feat_test = _l2_feats(base_feat_test)
+        # NOTE: stage 1 (DeepMetaMLP) is trained but never evaluated on the test
+        # split; stage 2 does the reported evaluation. Computing the test L2
+        # features here would be discarded, so it is not done.
 
         # ── Train DeepMetaMLP on L2 features ──────────────────────────────────
         print("  [DeepStack stage-1] training DeepMetaMLP…")
@@ -1541,13 +1545,13 @@ def main() -> None:
         meta_ds_dl = DLDataLoader(meta_ds_config)
         ds_meta_tr = meta_ds_dl.make_loader(l2_feat_tr, y_tr, shuffle=True)
         ds_meta_val = meta_ds_dl.make_loader(l2_feat_val, y_val, shuffle=False)
-        ds_meta_test = meta_ds_dl.make_loader(l2_feat_test, y_test, shuffle=False)
 
         n_l2_feats = l2_feat_tr.shape[1]  # n_l2 * C
         ds_meta: nn.Module = _DeepMetaMLP(n_l2_feats, config.num_classes, config.dropout)
         ds_meta_save = config.models_dir / f"DS_meta_seed{config.seed}.pt"
         stage1_trainer = Trainer(meta_ds_config, run_name="DeepStackMeta_S1")
-        stage1_result = stage1_trainer.fit(ds_meta, ds_meta_tr, ds_meta_val, save_path=ds_meta_save)
+        # Stage 1 trains and saves the DeepMetaMLP; its result object is unused.
+        stage1_trainer.fit(ds_meta, ds_meta_tr, ds_meta_val, save_path=ds_meta_save)
 
         # ── Stage 2: joint end-to-end fine-tuning (DeepStackEnsemble) ─────────
         # Reassemble the full pipeline into a single nn.Module for joint fine-tune.

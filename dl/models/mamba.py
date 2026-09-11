@@ -1,5 +1,7 @@
-"""Mamba-3 MIMO classifier — official mamba_ssm.modules.mamba3.Mamba3 when
-available, pure-PyTorch MIMO selective-SSM fallback otherwise.
+"""Mamba-3 MIMO classifier with a pure-PyTorch fallback.
+
+Uses the official ``mamba_ssm.modules.mamba3.Mamba3`` when it is importable and
+a pure-PyTorch MIMO selective-SSM otherwise.
 
 Install the library for full performance:
     pip install mamba-ssm  (requires CUDA + causal-conv1d)
@@ -35,6 +37,11 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 
+# The official block class, or None when unavailable. Held in an explicitly
+# named variable rather than injected into globals() so the fallback path is
+# checkable and the type is visible to a reader and to a type checker.
+Mamba3Official: type[nn.Module] | None = None
+
 if _os.environ.get("MAMBA_SSM_AVAILABLE", "1") == "0":
     _MAMBA3_AVAILABLE = False
     _MIMO_KERNEL_AVAILABLE = False
@@ -43,18 +50,22 @@ else:
     try:
         import concurrent.futures
 
-        def _load_mamba3() -> None:
-            from mamba_ssm.modules.mamba3 import Mamba3 as _M3  # type: ignore[import-untyped]
-            globals()["_Mamba3"] = _M3
+        def _load_mamba3() -> type[nn.Module]:
+            from mamba_ssm.modules.mamba3 import (  # type: ignore[import-untyped]
+                Mamba3 as _M3,
+            )
+
+            return _M3
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _ex:
             _fut = _ex.submit(_load_mamba3)
-            _fut.result(timeout=5)  # give up after 5s → fallback
+            Mamba3Official = _fut.result(timeout=5)  # give up after 5s -> fallback
 
-        _MAMBA3_AVAILABLE = True
+        _MAMBA3_AVAILABLE = Mamba3Official is not None
         _MIMO_KERNEL_AVAILABLE = False
         _mimo_fn = None
     except Exception:
+        Mamba3Official = None
         _MAMBA3_AVAILABLE = False
         _MIMO_KERNEL_AVAILABLE = False
         _mimo_fn = None
@@ -231,7 +242,12 @@ class _OfficialMamba3Block(nn.Module):
 
         self.norm = nn.LayerNorm(d_model)
         self._use_mimo = _MIMO_KERNEL_AVAILABLE
-        self.mamba = _Mamba3(  # type: ignore[possibly-undefined]
+        if Mamba3Official is None:  # pragma: no cover - guarded by _MAMBA3_AVAILABLE
+            raise RuntimeError(
+                "mamba_ssm.modules.mamba3.Mamba3 is unavailable; construct "
+                "MambaClassifier instead, which selects the pure-PyTorch fallback."
+            )
+        self.mamba = Mamba3Official(
             d_model=d_model,
             d_state=d_state,
             expand=expand,

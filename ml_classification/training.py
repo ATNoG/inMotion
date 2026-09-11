@@ -13,20 +13,6 @@ import numpy as np
 import pandas as pd
 from joblib import parallel_config
 from sklearn.base import ClassifierMixin, clone
-
-
-@contextlib.contextmanager
-def suppress_stderr():
-    """Context manager to suppress stderr output (for C++ library warnings)."""
-    with open(os.devnull, "w") as devnull:
-        old_stderr = sys.stderr
-        sys.stderr = devnull
-        try:
-            yield
-        finally:
-            sys.stderr = old_stderr
-
-
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -42,6 +28,19 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_va
 from .classifiers import ClassifierFactory
 from .config import Config
 from .utils import format_time, save_model
+
+
+@contextlib.contextmanager
+def suppress_stderr():
+    """Context manager to suppress stderr output (for C++ library warnings)."""
+    with open(os.devnull, "w") as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
+
 
 
 @dataclass

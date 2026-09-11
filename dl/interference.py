@@ -71,8 +71,8 @@ class InterferenceAnalyzer:
         counts = np.empty((4, 4), dtype=int)
         pure_means = np.empty(4)
 
-        pure_df = df[df["noise"] == False]
-        noise_df = df[df["noise"] == True]
+        pure_df = df[~df["noise"]]
+        noise_df = df[df["noise"]]
 
         for i, label in enumerate(ROUTES):
             pure = pure_df[pure_df["label"] == label]
@@ -127,7 +127,7 @@ class InterferenceAnalyzer:
             fig, ax = plt.subplots(figsize=(12, 8))
 
             # Pure baseline
-            pure = df[(df["label"] == label) & (df["noise"] == False)]
+            pure = df[(df["label"] == label) & (~df["noise"])]
             if len(pure) > 0:
                 pure_mean = pure[FEATURE_COLS].mean().values
                 pure_std = pure[FEATURE_COLS].std().values
@@ -138,7 +138,7 @@ class InterferenceAnalyzer:
             for k, cpath in enumerate(ROUTES):
                 sub = df[
                     (df["label"] == label)
-                    & (df["noise"] == True)
+                    & (df["noise"])
                     & (df["concurrent_noise_path"] == cpath)
                 ]
                 if len(sub) == 0:
@@ -195,7 +195,7 @@ class InterferenceAnalyzer:
             data_groups = []
             tick_labels = []
 
-            pure = df[(df["label"] == label) & (df["noise"] == False)]
+            pure = df[(df["label"] == label) & (~df["noise"])]
             pure_vals = pure[FEATURE_COLS].values.flatten()
             if len(pure_vals) > 0:
                 data_groups.append(pure_vals)
@@ -204,7 +204,7 @@ class InterferenceAnalyzer:
             for cpath in ROUTES:
                 sub = df[
                     (df["label"] == label)
-                    & (df["noise"] == True)
+                    & (df["noise"])
                     & (df["concurrent_noise_path"] == cpath)
                 ]
                 vals = sub[FEATURE_COLS].values.flatten()
@@ -235,8 +235,8 @@ class InterferenceAnalyzer:
 
     def plot_timestep_interference(self, df: pd.DataFrame) -> None:
         """4 × 10 heatmap: timestep × interfering path, showing mean RSSI shift per timestep."""
-        pure_df = df[df["noise"] == False]
-        noise_df = df[df["noise"] == True]
+        pure_df = df[~df["noise"]]
+        noise_df = df[df["noise"]]
 
         for label in ROUTES:
             pure = pure_df[pure_df["label"] == label]
@@ -281,7 +281,7 @@ class InterferenceAnalyzer:
             colors = sns.color_palette("husl", 5)
 
             # Pure baseline
-            mask_pure = (df["label"] == label) & (df["noise"] == False)
+            mask_pure = (df["label"] == label) & (~df["noise"])
             ax.scatter(
                 X_pca[mask_pure, 0], X_pca[mask_pure, 1],
                 c=[colors[0]], label="No interference", alpha=0.6, s=60, edgecolors="black",
@@ -290,7 +290,7 @@ class InterferenceAnalyzer:
             for k, cpath in enumerate(ROUTES):
                 mask = (
                     (df["label"] == label)
-                    & (df["noise"] == True)
+                    & (df["noise"])
                     & (df["concurrent_noise_path"] == cpath)
                 )
                 if mask.sum() == 0:

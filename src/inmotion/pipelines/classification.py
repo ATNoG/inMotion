@@ -23,7 +23,10 @@ warnings.filterwarnings("ignore", message=".*Falling back to prediction.*")
 warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
 warnings.filterwarnings("ignore", category=UserWarning)
 
-from ml_classification import (
+# The imports below are intentionally not at the top of the file:
+# XGBOOST_VERBOSITY and the warning filters must be in place before these
+# # libraries are imported, so the imports cannot move above the setup.
+from ml_classification import (  # noqa: E402
     Config,
     DataLoader,
     ExploratoryDataAnalysis,

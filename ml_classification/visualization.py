@@ -230,7 +230,7 @@ class Visualizer:
 
         for i, metric in enumerate(available_metrics):
             offset = (i - len(available_metrics) / 2 + 0.5) * width
-            bars = ax.bar(x + offset, df[metric], width, label=metric, color=self.colors[i])
+            ax.bar(x + offset, df[metric], width, label=metric, color=self.colors[i])
 
         ax.set_xlabel("Classifier")
         ax.set_ylabel("Score")

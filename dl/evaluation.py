@@ -9,6 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     confusion_matrix,
@@ -121,7 +122,6 @@ def cross_validate(
     model_name: str = "model",
 ) -> dict[str, float]:
     fold_mccs: list[float] = []
-    device = config.resolve_device()
 
     for fold, (tr_idx, val_idx) in enumerate(data_loader.cv_splits(X, y)):
         X_tr, X_val = X[tr_idx], X[val_idx]
@@ -178,7 +178,6 @@ def evaluate_model_on_test(
             wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/precision"] = cls_metrics["precision"]
             wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/recall"] = cls_metrics["recall"]
             wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/f1"] = cls_metrics["f1"]
-        cm = metrics["confusion_matrix"]
         wandb_log_dict[f"{model_name}/test_confusion_matrix"] = wandb.plot.confusion_matrix(
             probs=None,
             y_true=targets,

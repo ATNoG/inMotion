@@ -306,7 +306,6 @@ class TJEPAPredictor(nn.Module):
         """
         B = ctx_latents.size(0)
         reg = self.n_reg_tokens
-        pred_dim = self.mask_token.size(-1)
 
         # Context latents are already at absolute positions (encoder keeps
         # full sequence, masked positions zeroed). Project to predictor dim.

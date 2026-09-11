@@ -230,8 +230,10 @@ class JEPAVisualizer:
         if self.val_losses:
             ax.plot(self.val_losses, label="Val loss", alpha=0.8)
         ax.set_title("Pretrain Loss")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Loss")
-        ax.legend(); ax.grid(True, alpha=0.3)
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Loss")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
 
         # 2. Uniformity (collapse detection)
         ax = axes[0, 1]
@@ -240,15 +242,18 @@ class JEPAVisualizer:
             ax.axhline(y=-3.5, color="red", linestyle="--", alpha=0.5,
                        label="Collapse threshold")
         ax.set_title("Latent Space Uniformity\n(higher = better, red = collapse)")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Uniformity")
-        ax.legend(); ax.grid(True, alpha=0.3)
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Uniformity")
+        ax.legend()
+        ax.grid(True, alpha=0.3)
 
         # 3. EMA schedule
         ax = axes[1, 0]
         if self.ema_history:
             ax.plot(self.ema_history)
         ax.set_title("EMA Momentum Schedule")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Momentum")
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Momentum")
         ax.grid(True, alpha=0.3)
 
         # 4. Latent dimension activity over time
@@ -259,7 +264,8 @@ class JEPAVisualizer:
             ax.fill_between(epochs, dead, alpha=0.3, color="red")
             ax.plot(epochs, dead, "o-", markersize=3, color="red")
         ax.set_title("Dead Latent Dimensions Over Time\n(lower = better)")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Dead dims")
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Dead dims")
         ax.grid(True, alpha=0.3)
 
         fig.suptitle(f"{self.model_name} — Pretraining Summary", fontsize=14)

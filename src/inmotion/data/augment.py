@@ -94,8 +94,8 @@ def augment(
     df["synthetic"] = False
 
     # ── 1. Class-Conditioned Noise Augmentation ───────────────────────────
-    clean_df = df[df["noise"] == False]
-    noisy_df = df[df["noise"] == True]
+    clean_df = df[~df["noise"]]
+    noisy_df = df[df["noise"]]
 
     print(f"Original rows  : {len(df)}")
     print(f"  noise=False  : {len(clean_df)}")
@@ -116,8 +116,8 @@ def augment(
     combined = combined.sample(frac=1, random_state=SEED).reset_index(drop=True)
 
     print(f"\nFinal dataset rows : {len(combined)}")
-    print(f"  synthetic=False  : {(combined['synthetic'] == False).sum()}")
-    print(f"  synthetic=True   : {(combined['synthetic'] == True).sum()}")
+    print(f"  synthetic=False  : {(~combined['synthetic']).sum()}")
+    print(f"  synthetic=True   : {combined['synthetic'].sum()}")
     print("\nLabel distribution (augmented):")
     print(combined["label"].value_counts())
 

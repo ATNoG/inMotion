@@ -47,18 +47,22 @@ from dl.models.transformer import TransformerClassifier
 
 def _build_single_model(name: str, config: DLConfig) -> nn.Module:
     """Build a single (non-HPO) model by name."""
-    base_kw = dict(
-        in_features=config.in_features,
-        hidden_size=config.hidden_size,
-        num_layers=config.num_layers,
-        num_classes=config.num_classes,
-        dropout=config.dropout,
-    )
+    base_kw = {
+        "in_features": config.in_features,
+        "hidden_size": config.hidden_size,
+        "num_layers": config.num_layers,
+        "num_classes": config.num_classes,
+        "dropout": config.dropout,
+    }
     match name:
-        case "RNN":  return RNNClassifier(**base_kw)
-        case "GRU":  return GRUClassifier(**base_kw)
-        case "LSTM": return LSTMClassifier(**base_kw, use_attention=True)
-        case "BiLSTM": return BiLSTMClassifier(**base_kw, use_attention=True)
+        case "RNN":
+            return RNNClassifier(**base_kw)
+        case "GRU":
+            return GRUClassifier(**base_kw)
+        case "LSTM":
+            return LSTMClassifier(**base_kw, use_attention=True)
+        case "BiLSTM":
+            return BiLSTMClassifier(**base_kw, use_attention=True)
         case "CNN":
             return CNNClassifier(config.in_features, 128, 3, config.num_classes, config.dropout)
         case "TCN":

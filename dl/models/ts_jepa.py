@@ -229,7 +229,6 @@ class TSJEPAPredictor(nn.Module):
             predictions: (B, M, embed_dim) — predicted latents at masked positions
         """
         B, _, D = ctx_latents.shape
-        pred_dim = self.mask_token.size(-1)
 
         # Project context latents
         ctx_proj = self.input_proj(ctx_latents)  # (B, K, pred_dim)

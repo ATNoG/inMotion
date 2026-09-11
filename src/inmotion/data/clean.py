@@ -40,7 +40,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import matthews_corrcoef, mutual_info_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
 
 FEATS = [str(i) for i in range(1, 11)]
 

@@ -34,7 +34,7 @@ from dl.data_loader import DLDataLoader
 
 
 def _build_lejepa() -> nn.Module:
-    from dl.models.lejepa import LeJEPAModel, LeJEPAClassifier
+    from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
     pretrained = LeJEPAModel(
         seq_len=10, in_channels=4, d_model=256, nhead=8,
         num_layers=4, dim_feedforward=512, pred_num_layers=2, sigreg_lambda=0.1,
@@ -43,7 +43,7 @@ def _build_lejepa() -> nn.Module:
 
 
 def _build_t_jepa() -> nn.Module:
-    from dl.models.t_jepa import TJEPAModel, TJEPAClassifier
+    from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
     pretrained = TJEPAModel(
         n_timesteps=10, n_channels=18, d_model=512, nhead=8,
         num_layers=4, dim_feedforward=512, n_reg_tokens=2,
@@ -53,7 +53,7 @@ def _build_t_jepa() -> nn.Module:
 
 
 def _build_ts_jepa() -> nn.Module:
-    from dl.models.ts_jepa import TSJEPAModel, TSJEPAClassifier
+    from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
     pretrained = TSJEPAModel(
         seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
         num_layers=4, dim_feedforward=512, pred_dim=128, pred_num_layers=2,

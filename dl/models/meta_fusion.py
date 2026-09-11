@@ -89,11 +89,14 @@ class MetaFusionClassifier(nn.Module):
         nn.init.normal_(self.path_embed.weight, std=0.01)
 
     def forward(self, x: Tensor, meta: Tensor) -> Tensor:
-        """Args:
-            x:    (B, T, in_features)   — RSSI sequence
-            meta: (B, 2)  int64          — [noise_int, noise_path_idx]
+        """Fuse an RSSI sequence with categorical metadata.
+
+        Args:
+            x: (B, T, in_features) RSSI sequence.
+            meta: (B, 2) int64, ``[noise_int, noise_path_idx]``.
+
         Returns:
-            logits: (B, num_classes)
+            logits: (B, num_classes).
         """
         # ── RSSI branch ───────────────────────────────────────────────────────
         rnn_out, _ = self.rnn(x)  # (B, T, rssi_dim)
