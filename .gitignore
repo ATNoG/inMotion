@@ -242,3 +242,5 @@ backup/
 # Experiment checkpoints under date-prefixed run dirs (large binaries)
 20-aug/models/
 
+
+.omp/
