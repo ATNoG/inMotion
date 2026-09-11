@@ -30,6 +30,7 @@ dependencies = [
     # "causal-conv1d>=1.4.0",
     "tabpfn>=8.4.0",
     "shap>=0.46.0",
+    "typer>=0.25.1",
 ]
 
 [build-system]
@@ -40,7 +41,10 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["eucnc", "ml_classification", "dl"]
+# `inmotion` is the package; `dl` and `ml_classification` are legacy top-level
+# packages still imported by the root scripts, pending their move into src/.
+# The previous `eucnc` entry named a package that does not exist.
+packages = ["src/inmotion", "dl", "ml_classification"]
 
 # pyproject.toml
 [tool.uv.sources]
@@ -52,12 +56,18 @@ url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
 [dependency-groups]
-dev = ["pyright>=1.1.408", "ruff>=0.14.14", "ty>=0.0.14"]
+dev = [
+    "pyright>=1.1.408",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.14.14",
+    "ty>=0.0.14",
+]
 
 
 [tool.ruff]
 line-length = 100
-src = ["src"]
+src = ["src", "."]
 
 [tool.ruff.lint]
 ignore = [
@@ -90,8 +100,8 @@ select = [
 
 
 [tool.pyright]
-include = ["src"]
-exclude = [""]                            #TODO
+include = ["src", "dl", "ml_classification", "tests"]
+exclude = ["demo", "website", ".omp", "20-aug", "docs"]
 typeCheckingMode = "basic"
 reportImportCycles = false
 reportUnnecessaryCast = true
@@ -105,4 +115,14 @@ reportUnknownParameterType = "none"
 [tool.uv.workspace]
 members = [
     "demo",
+]
+
+[tool.pytest.ini_options]
+# Root suite only. `demo/` is a separate uv workspace member with its own config.
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::FutureWarning",
+    "ignore::DeprecationWarning",
 ]

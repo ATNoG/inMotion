@@ -1,0 +1,19 @@
+{
+  "cf_jepa": "1939f8bcd805fe93",
+  "cf_jepa_base": "a76b1f620dedf615",
+  "deep_stack": "bf8ff87e1cc8cc20",
+  "lejepa": "13e917e5bbd6c912",
+  "lejepa_base": "45037acbe55a5069",
+  "mamba3_cnn": "85bb438057142398",
+  "mamba3_multiview": "3ad1e6d5e9a10c9a",
+  "mamba3_tcn": "8a9bfc7934920152",
+  "mamba3_transformer": "5319ff811f222453",
+  "sigreg": "f79b686216054938",
+  "sigreg_after_hpo": "805fe9018b4dc59a",
+  "sigreg_base": "ede1ef36858b16cb",
+  "sigreg_seed3": "4128a215b75f2b55",
+  "sigreg_seed5": "a519b1ec4b890a5a",
+  "t_jepa": "fcee5a764ecba4ff",
+  "t_jepa_base": "945da7d1ef5a72bc",
+  "ts_jepa": "956905308a49089c"
+}

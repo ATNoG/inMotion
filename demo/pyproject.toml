@@ -66,3 +66,9 @@ pythonVersion = "3.13"
 pythonPlatform = "All"
 reportUnknownMemberType = "none"
 reportUnknownParameterType = "none"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# demo tests import `app.*`, so demo/ itself must be importable.
+pythonpath = ["."]
+addopts = "-q"
