@@ -8,6 +8,7 @@ internal functions, so the CLI can be reorganised without rewriting them.
 from __future__ import annotations
 
 import json
+import re
 
 import pytest
 from conftest import requires_artifacts
@@ -156,3 +157,28 @@ def test_model_adopt_reports_ambiguity() -> None:
     assert result.exit_code == 0, result.stdout
     assert "cf_jepa" in result.stdout
     assert "ambiguous with" in result.stdout
+
+
+def test_cli_help_sweep() -> None:
+    """Every command must be invocable, not merely importable.
+
+    A command whose body imports something that no longer exists still appears in
+    `--help` output, so the tree is walked and each leaf invoked with `--help`.
+    """
+    groups = ["model", "datasets", "data", "train", "evaluate", "analyze", "plots"]
+    failures: list[str] = []
+
+    for group in groups:
+        group_result = _invoke(group, "--help")
+        assert group_result.exit_code == 0, group
+
+        # Parse the command names from the rich table typer renders.
+        names = re.findall(r"^.{0,2}([a-z][a-z-]+)\s{2,}", group_result.stdout, re.M)
+        for name in names:
+            if name in ("help", "options", "usage", "commands"):
+                continue
+            leaf = _invoke(group, name, "--help")
+            if leaf.exit_code != 0:
+                failures.append(f"{group} {name}")
+
+    assert not failures, f"commands that cannot be invoked: {failures}"

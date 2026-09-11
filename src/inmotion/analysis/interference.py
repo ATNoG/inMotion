@@ -2,7 +2,7 @@
 """Analyze cross-route interference using the `concurrent_noise_path` column.
 
 Usage:
-    inmotion run pipeline analyze-interference -- \
+    inmotion analyze-interference \
         --data data/processed/dataset.csv --output-dir plots/interference
 """
 

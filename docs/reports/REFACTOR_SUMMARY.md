@@ -8,16 +8,15 @@ sha256 manifests of every artifact are in `~/inmotion-freeze/`.
 | metric | before | after |
 |---|---|---|
 | tracked files | 798 | 407 |
-| entries at repository root | 70 | 19 |
+| entries at repository root | 70 | 20 |
 | Python modules at root | 17 | **0** |
 | datasets at root | 7 | **0** |
 | tracked images (pdf/png) | 473 | 74 |
-| tracked size | 88.6 MB | 81.7 MB |
-| markdown documents | 23 | 39 |
 | top-level importable packages | 3 | **1** |
-| duplicate `_build_*` model definitions | 27 | **0** |
+| duplicate model builders | 27 | **0** |
+| argparse option definitions | ~180 | **0** |
 | ruff findings | 268 | **0** |
-| tests | 0 | **1 727** |
+| tests | 0 | **1 777** |
 
 The image drop is generated figures being untracked, not deleted: they remain
 on disk in `plots/` and `combined/`.
@@ -49,9 +48,12 @@ statistics are labelled as reconstructed.
 
 ### A CLI that answers "how do I run this"
 
-`inmotion model list | info | verify | predict | adopt | inventory` requires no
-knowledge of the training scripts. `inmotion model verify` strict-loads every
-registered model.
+`inmotion` is a package of native typer commands (`model`, `datasets`, `data`,
+`train`, `evaluate`, `analyze`, `plots`, `doctor`). Every pipeline exposes a
+typed `RunConfig` and a `run(args) -> int`, with no argument parsing, so the same
+work is drivable from a notebook. `inmotion model verify` strict-loads every
+registered model, and `docs/reference/pipelines.md` documents every option by
+reading the dataclasses.
 
 ### Dataset versioning
 
@@ -102,13 +104,10 @@ that verifies it.
 
 ## Not done
 
-- `inmotion/pipelines/dl.py` (1,635 lines) and `inmotion/pipelines/exotic.py`
-  (1,562 lines) are intact and wrapped by the CLI rather than split further.
-  Splitting them is mechanical but not free of regression risk, and the model
-  loading work was higher value.
-- The pipelines still parse `sys.argv` internally; `inmotion run pipeline`
-  invokes them in process unchanged. See `MIGRATION.md`.
 - `inmotion/dl/` and `inmotion/classification/` still duplicate responsibilities
   on data loading, optimisation and visualisation. Merging them is a behavioural
-  change and is left as a follow-up.
+  change and is left as a follow-up; `inmotion/pipelines/exotic/hpo_jepa.py`
+  (432 lines) is the largest remaining module.
+- The four `mamba3_*` hybrids are registered and loadable but were explored
+  rather than reported; they carry no metric claim.
 - `*_pretrain_best.pt` bundles are recognised and explained, not adopted.

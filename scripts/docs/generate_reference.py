@@ -426,8 +426,88 @@ def gen_cli() -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+# Each entry: (command path, pipeline module, RunConfig class name)
+PIPELINE_CONFIGS: list[tuple[str, str, str]] = [
+    ("train dl", "inmotion.pipelines.dl", "RunConfig"),
+    ("train exotic", "inmotion.pipelines.exotic", "RunConfig"),
+    ("train classification", "inmotion.pipelines.classification", "RunConfig"),
+    ("train hpo-paper", "inmotion.pipelines.hpo_paper", "RunConfig"),
+    ("evaluate ensemble", "inmotion.pipelines.ensemble", "RunConfig"),
+    ("evaluate mega-ensemble", "inmotion.pipelines.mega_ensemble", "RunConfig"),
+    ("evaluate checkpoints", "inmotion.evaluation.checkpoints", "RunConfig"),
+    ("evaluate shap", "inmotion.evaluation.shap", "RunConfig"),
+    ("evaluate feature-importance", "inmotion.evaluation.feature_importance", "RunConfig"),
+    ("analyze seeds", "inmotion.analysis.seeds", "RunConfig"),
+    ("analyze interference", "inmotion.analysis.interference", "RunConfig"),
+    ("plots classical", "inmotion.viz.regenerate", "RunConfig"),
+    ("plots dl", "inmotion.viz.regenerate_dl", "RunConfig"),
+    ("data clean", "inmotion.data.clean", "RunConfig"),
+]
+
+
+def gen_pipelines() -> str:
+    """Every pipeline's option surface, read from its RunConfig dataclass."""
+    import dataclasses
+    import importlib
+
+    lines = [
+        "# Pipeline reference",
+        "",
+        "Generated from the pipelines' own `RunConfig` dataclasses, so the option",
+        "list cannot drift from what the code accepts.",
+        "",
+        "Every pipeline has the same shape: a typed config and a `run(args) -> int`.",
+        "The CLI builds the config from the options below; from Python you construct",
+        "it directly:",
+        "",
+        "```python",
+        "from inmotion.pipelines.exotic import RunConfig, run",
+        "",
+        "run(RunConfig(model='ts_jepa', seed=42, pretrain_epochs=500))",
+        "```",
+        "",
+        "Return value is the exit code, so a caller can check it.",
+        "",
+        "| command | pipeline module | options |",
+        "|---|---|---:|",
+    ]
+    loaded: list[tuple[str, str, type]] = []
+    for command, module_name, cls_name in PIPELINE_CONFIGS:
+        module = importlib.import_module(module_name)
+        cls = getattr(module, cls_name)
+        loaded.append((command, module_name, cls))
+        lines.append(f"| `inmotion {command}` | `{module_name}` | {len(dataclasses.fields(cls))} |")
+
+    for command, module_name, cls in loaded:
+        lines += ["", f"## `inmotion {command}`", "", f"Module: `{module_name}`", ""]
+        doc = (cls.__doc__ or "").strip().splitlines()
+        if doc:
+            lines += [doc[0], ""]
+        lines += [
+            "| option | type | default |",
+            "|---|---|---|",
+        ]
+        for field in dataclasses.fields(cls):
+            annotation = str(field.type).replace("NoneType", "None")
+            annotation = annotation.replace("inmotion.", "")
+            if field.default is not dataclasses.MISSING:
+                default = f"`{field.default!r}`"
+            elif field.default_factory is not dataclasses.MISSING:  # type: ignore[misc]
+                try:
+                    default = f"`{field.default_factory()!r}`"  # type: ignore[misc]
+                except Exception:  # noqa: BLE001
+                    default = "(computed)"
+            else:
+                default = ""
+            lines.append(f"| `--{field.name.replace('_', '-')}` | `{annotation}` | {default} |")
+        # note which fields map to a CLI flag whose name differs
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 GENERATORS = {
     "cli.md": gen_cli,
+    "pipelines.md": gen_pipelines,
     "models.md": gen_models,
     "datasets.md": gen_datasets,
     "modules.md": gen_modules,

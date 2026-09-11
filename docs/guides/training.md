@@ -8,7 +8,7 @@ installed: importing `mamba_ssm` can hang for minutes while it builds kernels.
 ## Classical machine learning
 
 ```bash
-uv run inmotion run pipeline classification -- \
+uv run inmotion train classification \
     --data data/processed/dataset.csv
 ```
 
@@ -20,7 +20,7 @@ CSV. Add `--optimize` for the Optuna stage and `--dashboard` to launch
 ## Deep learning baselines
 
 ```bash
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline dl -- \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion train dl \
     --data data/processed/dataset.csv --seed 42 --trials 50
 ```
 
@@ -42,12 +42,12 @@ checkpoint is reused unless `--force-retrain` is given.
 
 ```bash
 # find a configuration first
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline exotic -- \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion train exotic \
     --model ts_jepa --data data/processed/dataset_augmented3.csv \
     --hpo --hpo-trials 50
 
 # pretrain plus fine-tune
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline exotic -- \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion train exotic \
     --model ts_jepa --data data/processed/dataset_augmented3.csv --seed 42 \
     --pretrain-epochs 500 --finetune-epochs 80 --batch-size 512
 ```
@@ -63,7 +63,7 @@ masked-prediction loss, because the loss does not track representation quality.
 Resume from a pretrained encoder:
 
 ```bash
-inmotion run pipeline exotic -- --model ts_jepa \
+inmotion train exotic --model ts_jepa \
     --checkpoint 20-aug/models/exotic/normal-new-ds/ts_jepa_pretrain_best.pt \
     --finetune-only
 ```
@@ -74,7 +74,7 @@ The Optuna databases were deleted, so the winning configurations are re-declared
 from the documented values and retrained:
 
 ```bash
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline hpo-paper -- \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion train hpo-paper \
     --data data/processed/dataset.csv --seed 42
 ```
 
@@ -84,11 +84,11 @@ Values come from `docs/icaisf/hpo_supplementary.md`.
 
 ```bash
 # greedy selection over existing checkpoints (Caruana forward selection)
-uv run inmotion run pipeline ensemble -- \
+uv run inmotion evaluate ensemble \
     --data data/processed/dataset_augmented3.csv --seed 42
 
 # OOF stacking over every family, with calibration
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline mega-ensemble -- \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion evaluate mega-ensemble \
     --data data/processed/dataset_augmented3.csv --seed 42
 ```
 

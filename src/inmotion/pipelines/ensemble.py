@@ -15,7 +15,7 @@ Add a model in one line by appending a dict to MODELS:
     }
 
 Run:
-    uv run inmotion run pipeline ensemble -- --data data/processed/dataset_augmented3.csv --seed 42
+    uv run inmotion ensemble --data data/processed/dataset_augmented3.csv --seed 42
 """
 
 from __future__ import annotations

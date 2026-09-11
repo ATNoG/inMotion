@@ -5,11 +5,11 @@ This script loads classification results from CSV files and regenerates
 all visualization plots without needing to retrain models.
 
 Usage:
-    uv run inmotion run pipeline regenerate-plots -- --results-dir results_3
-    inmotion run pipeline regenerate-plots -- \
+    uv run inmotion regenerate-plots --results-dir results_3
+    inmotion regenerate-plots \
         --csv results_3/classification_results.csv \
         --plots-dir plots_regenerated
-    inmotion run pipeline regenerate-plots -- \
+    inmotion regenerate-plots \
         --results-dir results_3 --eda --data data/processed/dataset.csv
 """
 

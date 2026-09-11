@@ -112,9 +112,9 @@ Pipelines are invoked through one entry point; arguments pass through unchanged.
 
 ```bash
 uv run inmotion run list
-uv run inmotion run pipeline exotic -- --model ts_jepa --seed 42
-uv run inmotion run pipeline dl     -- --seed 42
-uv run inmotion run pipeline mega-ensemble -- --data dataset_augmented3.csv
+uv run inmotion train exotic --model ts_jepa --seed 42
+uv run inmotion train dl     -- --seed 42
+uv run inmotion evaluate mega-ensemble --data dataset_augmented3.csv
 ```
 
 Cluster submission scripts are in `scripts/slurm/`, single-machine runs in

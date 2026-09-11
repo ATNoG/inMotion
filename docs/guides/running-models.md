@@ -97,7 +97,7 @@ uv run inmotion model adopt ckpt.pt --name my_model --write artifacts/my_model
 pipeline:
 
 ```bash
-inmotion run pipeline exotic -- --model ts_jepa \
+inmotion train exotic --model ts_jepa \
     --checkpoint 20-aug/models/exotic/normal-new-ds/ts_jepa_pretrain_best.pt
 ```
 

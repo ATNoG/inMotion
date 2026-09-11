@@ -7,10 +7,10 @@ there is one entry point, and the arguments pass straight through after `--`:
 
 | before | after |
 |---|---|
-| `uv run python run_exotic.py --model ts_jepa --seed 42` | `inmotion run pipeline exotic -- --model ts_jepa --seed 42` |
-| `uv run python run_dl.py --seed 42` | `inmotion run pipeline dl -- --seed 42` |
-| `uv run python mega_ensemble.py --data dataset_augmented3.csv` | `inmotion run pipeline mega-ensemble -- --data dataset_augmented3.csv` |
-| `uv run python run_classification.py` | `inmotion run pipeline classification` |
+| `uv run python run_exotic.py --model ts_jepa --seed 42` | `inmotion train exotic --model ts_jepa --seed 42` |
+| `uv run python run_dl.py --seed 42` | `inmotion train dl --seed 42` |
+| `uv run python mega_ensemble.py --data dataset_augmented3.csv` | `inmotion evaluate mega-ensemble --data dataset_augmented3.csv` |
+| `uv run python run_classification.py` | `inmotion train classification` |
 | `uv run python export.py --input ... --output ...` | `inmotion data export --input ... --output ...` (native) |
 | `uv run python merge_csv.py --input data/ --output dataset.csv` | `inmotion data merge --input data --output dataset.csv` (native) |
 | `uv run python clean_dataset.py --data dataset.csv` | `inmotion data clean -- --data dataset.csv` |

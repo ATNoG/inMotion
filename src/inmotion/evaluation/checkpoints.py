@@ -2,7 +2,7 @@
 """Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
 Usage:
-    uv run inmotion run pipeline evaluate-checkpoints -- --seed 42 --data data/processed/dataset.csv
+    uv run inmotion evaluate-checkpoints --seed 42 --data data/processed/dataset.csv
 """
 
 from __future__ import annotations
@@ -821,7 +821,7 @@ def run(args: RunConfig) -> int:
             elif model_name == "DeepStackEnsemble":
                 print(
                     f"[skip] {model_name}: requires the full DeepStack training "
-                    "pipeline; run it through `inmotion run pipeline dl`"
+                    "pipeline; run it through `inmotion train dl`"
                 )
 
             else:

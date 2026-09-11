@@ -14,6 +14,7 @@ reference you need. `../README.md` is the project front page.
 
 | document | what it answers |
 |---|---|
+| [`guides/commands.md`](guides/commands.md) | every command, when to use it, and a realistic invocation |
 | [`guides/running-models.md`](guides/running-models.md) | how to use a checkpoint: list, inspect, verify, predict, adopt |
 | [`guides/training.md`](guides/training.md) | how to train each family, on a workstation or a cluster |
 
@@ -25,6 +26,7 @@ these are stale.
 | document | contents |
 |---|---|
 | [`reference/cli.md`](reference/cli.md) | every command, argument, option and default |
+| [`reference/pipelines.md`](reference/pipelines.md) | every pipeline option, read from its config dataclass |
 | [`reference/models.md`](reference/models.md) | every registered model: factory, architecture, parameter count, provenance |
 | [`reference/modules.md`](reference/modules.md) | every module, its purpose and its public API |
 | [`reference/datasets.md`](reference/datasets.md) | every dataset version: checksum, counts, lineage, label audit |

@@ -93,7 +93,10 @@ def test_doc_references_exist(path: Path) -> None:
 
 # The modules were moved into src/inmotion; docs must not instruct the reader to
 # run the old root-level scripts.
+# Command forms that were superseded. Current docs must not use them;
+# `docs/reports/` records history and is exempt.
 _STALE_INVOCATIONS = (
+    "inmotion run pipeline",
     "python run_dl.py",
     "python run_exotic.py",
     "python run_ensemble.py",

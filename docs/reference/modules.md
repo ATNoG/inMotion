@@ -733,7 +733,7 @@ Add a model in one line by appending a dict to MODELS:
     }
 
 Run:
-    uv run inmotion run pipeline ensemble -- --data data/processed/dataset_augmented3.csv --seed 42
+    uv run inmotion ensemble --data data/processed/dataset_augmented3.csv --seed 42
 
 Public API:
 
@@ -757,7 +757,7 @@ Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
   E. Compare: greedy-weighted, logit-avg, rank-avg, entropy-weighted, LR stack
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 inmotion run pipeline mega-ensemble --         --data data/processed/dataset_augmented3.csv --seed 42
+    MAMBA_SSM_AVAILABLE=0 inmotion mega-ensemble         --data data/processed/dataset_augmented3.csv --seed 42
 
 Note: set MAMBA_SSM_AVAILABLE=0 to skip the (hang-prone) mamba_ssm CUDA
 extension import and use the pure-PyTorch fallback for Mamba-based models.
@@ -786,7 +786,7 @@ Configs sourced from docs/icaisf/hpo_supplementary.md (best val MCC in parens):
     HPO RNN      0.6402
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 inmotion run pipeline hpo-paper --         --data data/processed/dataset.csv --seed 42
+    MAMBA_SSM_AVAILABLE=0 inmotion hpo-paper         --data data/processed/dataset.csv --seed 42
     # --models only gru tcn    (subset)
 
 Public API:
@@ -802,7 +802,7 @@ Public API:
 Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
 Usage:
-    uv run inmotion run pipeline evaluate-checkpoints -- --seed 42 --data data/processed/dataset.csv
+    uv run inmotion evaluate-checkpoints --seed 42 --data data/processed/dataset.csv
 
 Public API:
 
@@ -822,7 +822,7 @@ hierarchy (or the 4-channel base hierarchy) for the time-series world models:
 TS-JEPA, LeJEPA, CF-JEPA, T-JEPA and SIGReg.
 
 Usage:
-    inmotion run pipeline shap --         --data data/processed/dataset.csv         --checkpoint backup/ts_jepa_ft_seed42.pt         --samples 50 --nsamples 150
+    inmotion shap         --data data/processed/dataset.csv         --checkpoint backup/ts_jepa_ft_seed42.pt         --samples 50 --nsamples 150
 
 Public API:
 
@@ -891,7 +891,7 @@ Public API:
 Analyze cross-route interference using the `concurrent_noise_path` column.
 
 Usage:
-    inmotion run pipeline analyze-interference --         --data data/processed/dataset.csv --output-dir plots/interference
+    inmotion analyze-interference         --data data/processed/dataset.csv --output-dir plots/interference
 
 Public API:
 
@@ -908,9 +908,9 @@ This script loads classification results from CSV files and regenerates
 all visualization plots without needing to retrain models.
 
 Usage:
-    uv run inmotion run pipeline regenerate-plots -- --results-dir results_3
-    inmotion run pipeline regenerate-plots --         --csv results_3/classification_results.csv         --plots-dir plots_regenerated
-    inmotion run pipeline regenerate-plots --         --results-dir results_3 --eda --data data/processed/dataset.csv
+    uv run inmotion regenerate-plots --results-dir results_3
+    inmotion regenerate-plots         --csv results_3/classification_results.csv         --plots-dir plots_regenerated
+    inmotion regenerate-plots         --results-dir results_3 --eda --data data/processed/dataset.csv
 
 Public API:
 
@@ -924,8 +924,8 @@ Public API:
 Regenerate DL-specific paper plots from extended results CSV.
 
 Usage:
-    inmotion run pipeline regenerate-dl-plots --         --results-csv results/dl/dl_detailed_seed42.csv         --output-dir plots/dl/42
-    inmotion run pipeline regenerate-dl-plots --         --results-csv results/dl/dl_detailed_seed42.csv --eda         --data data/processed/dataset.csv
+    inmotion regenerate-dl-plots         --results-csv results/dl/dl_detailed_seed42.csv         --output-dir plots/dl/42
+    inmotion regenerate-dl-plots         --results-csv results/dl/dl_detailed_seed42.csv --eda         --data data/processed/dataset.csv
 
 Public API:
 

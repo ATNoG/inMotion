@@ -588,7 +588,7 @@ def _composite_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
 # wrong guess produces a checkpoint that loads and then quietly resumes with a
 # mis-shaped predictor. So these are recognised and reported explicitly instead
 # of being adopted speculatively. Resuming training keeps working through
-# `inmotion run pipeline exotic -- --checkpoint`, which is unchanged.
+# `inmotion exotic --checkpoint`, which is unchanged.
 # ---------------------------------------------------------------------------
 
 PRETRAIN_MARKERS = ("predictor",)
@@ -649,7 +649,7 @@ def infer(
             "This is a pre-training checkpoint, not a classifier: it carries a "
             "separate predictor and encoder rather than one module's weights, so "
             "it has no single architecture to adopt. Resume training with "
-            "`inmotion run pipeline exotic -- --model <name> --checkpoint "
+            "`inmotion exotic --model <name> --checkpoint "
             f"{path}`, which restores the parts explicitly."
         )
 

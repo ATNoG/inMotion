@@ -111,7 +111,7 @@ Param counts for `—` cells not yet loaded in the count script; the HPO and sin
 
 ## 4. Mega-ensemble results (on dataset.icaisf.csv, seed 42)
 
-**Command:** `MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline mega-ensemble -- --data dataset.icaisf.csv --seed 42 --no-tabpfn --no-classical --size-frontier`
+**Command:** `MAMBA_SSM_AVAILABLE=0 uv run inmotion evaluate mega-ensemble --data dataset.icaisf.csv --seed 42 --no-tabpfn --no-classical --size-frontier`
 **Provenance:** `results/mega_ensemble_results.csv` (append-only), log `/tmp/full_ensemble4.log`.
 
 ### 4.0 Ensemble definitions & configurations (EVERY ensemble named)
@@ -254,7 +254,7 @@ The multi-seed finetune-only experiment (option 2) did not beat the originals an
 
 ```bash
 # 1. Train the world models (full pretrain+finetune) — see job_*.sh in repo root
-uv run inmotion run pipeline exotic -- --model lejepa --data dataset_augmented3.csv --seed 42 \
+uv run inmotion train exotic --model lejepa --data dataset_augmented3.csv --seed 42 \
   --pretrain-epochs 500 --finetune-epochs 200 --batch-size 128 \
   --d-model 128 --nhead 4 --num-layers 4 --dim-ff 256 --pred-dim 64 --pred-layers 3 \
   --pretrain-lr 7.84e-4 --finetune-lr 9.38e-3 --ema-start 0.9968 --jepa-sigreg 0.05 \
@@ -262,7 +262,7 @@ uv run inmotion run pipeline exotic -- --model lejepa --data dataset_augmented3.
   --results-dir 20-aug/results/exotic/normal-new-ds/full-after-hpo
 
 # 2. Run the ensemble (all 21 DL members + optional classical)
-MAMBA_SSM_AVAILABLE=0 uv run inmotion run pipeline mega-ensemble -- --data dataset.icaisf.csv \
+MAMBA_SSM_AVAILABLE=0 uv run inmotion evaluate mega-ensemble --data dataset.icaisf.csv \
   --seed 42 --no-tabpfn --no-classical --size-frontier
 ```
 

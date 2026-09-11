@@ -12,7 +12,7 @@ Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
   E. Compare: greedy-weighted, logit-avg, rank-avg, entropy-weighted, LR stack
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 inmotion run pipeline mega-ensemble -- \
+    MAMBA_SSM_AVAILABLE=0 inmotion mega-ensemble \
         --data data/processed/dataset_augmented3.csv --seed 42
 
 Note: set MAMBA_SSM_AVAILABLE=0 to skip the (hang-prone) mamba_ssm CUDA

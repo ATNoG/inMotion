@@ -63,7 +63,7 @@ uv run inmotion model verify
 uv run inmotion datasets verify
 
 # 3. member-by-member MCC, then the ensemble
-uv run inmotion run pipeline mega-ensemble -- \
+uv run inmotion evaluate mega-ensemble \
     --data data/processed/dataset.icaisf.csv --seed 42
 ```
 

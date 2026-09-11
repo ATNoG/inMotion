@@ -2,10 +2,10 @@
 """Regenerate DL-specific paper plots from extended results CSV.
 
 Usage:
-    inmotion run pipeline regenerate-dl-plots -- \
+    inmotion regenerate-dl-plots \
         --results-csv results/dl/dl_detailed_seed42.csv \
         --output-dir plots/dl/42
-    inmotion run pipeline regenerate-dl-plots -- \
+    inmotion regenerate-dl-plots \
         --results-csv results/dl/dl_detailed_seed42.csv --eda \
         --data data/processed/dataset.csv
 """

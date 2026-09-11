@@ -11,7 +11,7 @@ Configs sourced from docs/icaisf/hpo_supplementary.md (best val MCC in parens):
     HPO RNN      0.6402
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 inmotion run pipeline hpo-paper -- \
+    MAMBA_SSM_AVAILABLE=0 inmotion hpo-paper \
         --data data/processed/dataset.csv --seed 42
     # --models only gru tcn    (subset)
 """

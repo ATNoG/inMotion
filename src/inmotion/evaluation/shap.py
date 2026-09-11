@@ -6,7 +6,7 @@ hierarchy (or the 4-channel base hierarchy) for the time-series world models:
 TS-JEPA, LeJEPA, CF-JEPA, T-JEPA and SIGReg.
 
 Usage:
-    inmotion run pipeline shap -- \
+    inmotion shap \
         --data data/processed/dataset.csv \
         --checkpoint backup/ts_jepa_ft_seed42.pt \
         --samples 50 --nsamples 150

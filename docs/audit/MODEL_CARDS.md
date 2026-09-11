@@ -70,7 +70,7 @@ augmented variants for the HPO-best configurations.
 
 **Limitations.**
 - The HPO-best configurations were rebuilt from documented values because the
-  Optuna databases were deleted (`inmotion run pipeline hpo-paper`). The
+  Optuna databases were deleted (`inmotion train hpo-paper`). The
   configuration is documented; the *search trajectory* is not recoverable.
 - `mamba` and the `mamba3_*` family require either the `mamba_ssm` CUDA
   extension or the pure-PyTorch fallback. The two are not numerically identical,
