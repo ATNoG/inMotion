@@ -48,6 +48,7 @@ MODULE_GROUPS: dict[str, list[str]] = {
         "inmotion.quant.packing",
         "inmotion.quant.model",
         "inmotion.quant.evaluate",
+        "inmotion.quant.export",
     ],
     "Models": [
         "inmotion.models.registry",

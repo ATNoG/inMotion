@@ -382,6 +382,51 @@ Public API:
 - func `write_csv`
 - func `write_json`
 
+### `inmotion.quant.export`
+
+`src/inmotion/quant/export.py` - 298 lines
+
+Export a model to a portable artifact a non-Python runtime can execute.
+
+The artifact is a directory:
+
+    model.safetensors   tensors, quantized ones packed
+    meta.json           architecture, quantization spec, tensor index
+
+Why not ONNX
+------------
+ONNX Runtime is a poor fit for an MCU and heavy even for an x86 router, and the
+graphs here are small and fixed-shape. A flat tensor bag plus a small JSON
+description is easier to audit and is what embedded runtimes actually do.
+
+Export-time transformations
+---------------------------
+Two source conventions are resolved here rather than in every Rust reader:
+
+``in_proj_weight`` is split into separate Q, K and V tensors. PyTorch packs them
+into one ``(3*d_model, d_model)`` matrix; splitting means the Rust side does not
+have to know that packing convention.
+
+``weight_norm`` is folded into an ordinary weight. It is what broke FX tracing
+and ONNX export for ``tcn``/``deep_stack``, and folding removes the problem
+instead of working around it.
+
+Two export modes
+----------------
+``dtype="fp32"`` writes plain float weights. Use it to verify that the *port* is
+correct before introducing quantization, so a mismatch can only be one of the two
+things.
+
+``quant=QuantSpec`` writes packed integer codes plus scales and zero points. The
+Rust reader dequantizes exactly as :mod:`inmotion.quant.reference` does, so
+parity holds by construction and is asserted by the golden-vector tests.
+
+Public API:
+
+- class `ExportReport` - What was written and how big it is.
+- func `export` - Write ``model_name`` as a portable artifact directory.
+- func `write_golden` - Write input/output pairs for a non-Python runtime to reproduce.
+
 ## Models
 
 ### `inmotion.models.registry`
@@ -669,7 +714,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 143 lines
+`src/inmotion/cli/quantize.py` - 187 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 
@@ -677,6 +722,7 @@ Public API:
 
 - func `formats` - Show each scheme, its bit width and its storage granularity.
 - func `show` - Report the size, compression and weight error for one scheme.
+- func `export_cmd` - Export an artifact plus the golden vectors a Rust runtime must reproduce.
 - func `evaluate` - Sweep models x formats and write one row per measurement.
 
 ### `inmotion.cli.doctor`

@@ -33,10 +33,22 @@ SKIP_SUFFIXES = {".lock", ".png", ".pdf", ".joblib", ".pt", ".npz"}
 # stores, and generated output. Scanning them wastes time and makes the test
 # count depend on unrelated churn.
 SKIP_PARTS = {
-    ".git", ".venv", "node_modules", ".omp",
-    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".idea",
-    "20-aug", "backup", "plots", "results", "combined", "catboost_info",
-    "dist", ".astro",
+    ".git",
+    ".venv",
+    "node_modules",
+    ".omp",
+    ".ruff_cache",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".idea",
+    "20-aug",
+    "backup",
+    "plots",
+    "results",
+    "combined",
+    "catboost_info",
+    "dist",
+    ".astro",
 }
 
 

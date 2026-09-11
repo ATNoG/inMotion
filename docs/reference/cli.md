@@ -305,6 +305,21 @@ Options:
 - `--seed` (default: `42`) - Split seed.
 - `--out` (default: `results/quant/sweep.csv`) - Where to write the results CSV.
 
+### `quantize export`
+
+Write a portable artifact for a non-Python runtime.
+
+Arguments:
+
+- `MODEL` (required) - Registered model name.
+
+Options:
+
+- `--out`, `-o` - Destination directory.
+- `--format`, `-f` (default: `fp32`) - Scheme, or fp32 for none.
+- `--golden` (default: `True`) - Also write golden vectors.
+- `--tol` (default: `0.0002`) - Parity tolerance recorded in golden.json.
+
 ### `quantize formats`
 
 List the available quantization schemes.

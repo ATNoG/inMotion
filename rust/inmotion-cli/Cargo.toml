@@ -1,0 +1,15 @@
+[package]
+name = "inmotion-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Run an exported inMotion model on x86 / a router"
+
+[[bin]]
+name = "inmotion-infer"
+path = "src/main.rs"
+
+[dependencies]
+inmotion-core = { path = "../inmotion-core" }
+serde_json = "1"

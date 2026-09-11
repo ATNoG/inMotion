@@ -7,7 +7,6 @@ from typing import Annotated
 
 import typer
 
-from inmotion.pipelines.classification_config import RunConfig  # noqa: F401  (typing parity)
 from inmotion.quant.spec import FLOAT_PRECISIONS, PRESET_SPECS
 
 app = typer.Typer(no_args_is_help=True, help="Quantize models and measure the cost.")
@@ -92,6 +91,51 @@ def show(
     typer.echo(f"compression  : {report.compression:.2f}x on quantized weights")
     typer.echo(f"max |w err|  : {report.max_error:.6f}")
     typer.echo(f"tensors      : {len(report.records)} quantized, {len(report.skipped)} skipped")
+
+
+@app.command("export", help="Write a portable artifact for a non-Python runtime.")
+def export_cmd(
+    model: Annotated[str, typer.Argument(help="Registered model name.")],
+    out: Annotated[Path, typer.Option("--out", "-o", help="Destination directory.")],
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Scheme, or fp32 for none.")
+    ] = "fp32",
+    golden: Annotated[bool, typer.Option("--golden", help="Also write golden vectors.")] = True,
+    tol: Annotated[
+        float, typer.Option("--tol", help="Parity tolerance recorded in golden.json.")
+    ] = 2e-4,
+) -> None:
+    """Export an artifact plus the golden vectors a Rust runtime must reproduce."""
+    from inmotion.quant.export import export, write_golden
+
+    if format not in ALL_FORMATS:
+        typer.secho(
+            f"unknown format {format!r}; choose from {', '.join(ALL_FORMATS)}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=2)
+
+    quant = None if format == "fp32" else format
+    report = export(model, out, quant=quant)
+    typer.secho(f"wrote {out}", fg=typer.colors.GREEN)
+    for key, value in report.summary().items():
+        typer.echo(f"  {key:18s} {value}")
+
+    if golden:
+        path = write_golden(model, out, quant=quant, dataset=None)
+        import json
+
+        payload = json.loads(path.read_text())
+        payload["tol"] = tol
+        path.write_text(json.dumps(payload, indent=2) + "\n")
+        typer.secho(f"wrote {path}  ({len(payload['cases'])} cases)", fg=typer.colors.GREEN)
+        typer.echo("")
+        typer.echo("verify with:")
+        typer.echo(
+            "  cd rust && cargo run --release -p inmotion-cli -- check "
+            f"--artifact {out} --golden {out}"
+        )
 
 
 @app.command("eval", help="Measure accuracy under quantization on the paper's split.")
