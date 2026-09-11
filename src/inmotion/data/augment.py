@@ -125,26 +125,3 @@ def augment(
     combined.to_csv(output_path, index=False)
     print(f"\nSaved → {output_path}")
     return combined
-
-
-if __name__ == "__main__":
-    import argparse
-
-    ap = argparse.ArgumentParser(description="RSSI data augmentation")
-    ap.add_argument(
-        "input",
-        nargs="?",
-        default="data/processed/dataset.csv",
-        help="input CSV (default: data/processed/dataset.csv)",
-    )
-    ap.add_argument(
-        "output", nargs="?", default=None, help="output CSV (default: <input-stem>_augmented.csv)"
-    )
-    args = ap.parse_args()
-    out = args.output or str(
-        __import__("pathlib")
-        .Path(args.input)
-        .with_name(__import__("pathlib").Path(args.input).stem + "_augmented.csv")
-    )
-    print(f"Input : {args.input}\nOutput: {out}")
-    augment(args.input, out)

@@ -144,7 +144,7 @@ Public API:
 
 ### `inmotion.data.export`
 
-`src/inmotion/data/export.py` - 167 lines
+`src/inmotion/data/export.py` - 130 lines
 
 Public API:
 
@@ -153,7 +153,7 @@ Public API:
 
 ### `inmotion.data.merge`
 
-`src/inmotion/data/merge.py` - 160 lines
+`src/inmotion/data/merge.py` - 133 lines
 
 Merge multiple CSV files into a single dataset.
 
@@ -201,7 +201,7 @@ Public API:
 
 ### `inmotion.data.augment`
 
-`src/inmotion/data/augment.py` - 150 lines
+`src/inmotion/data/augment.py` - 127 lines
 
 Data Augmentation for RSSI sequences.
 
@@ -521,7 +521,7 @@ Public API:
 
 ### `inmotion.pipelines.classification`
 
-`src/inmotion/pipelines/classification.py` - 303 lines
+`src/inmotion/pipelines/classification.py` - 254 lines
 
 Main script for WiFi Fingerprinting Classification Analysis.
 
@@ -530,7 +530,6 @@ predicting location classes based on WiFi RSSI fingerprints.
 
 Public API:
 
-- func `parse_args`
 - func `save_detailed_classifier_reports` - Save detailed per-classifier reports to a CSV file.
 - func `run` - Execute the pipeline.
 
@@ -797,7 +796,7 @@ Public API:
 
 ### `inmotion.evaluation.checkpoints`
 
-`src/inmotion/evaluation/checkpoints.py` - 851 lines
+`src/inmotion/evaluation/checkpoints.py` - 827 lines
 
 Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
@@ -806,7 +805,6 @@ Usage:
 
 Public API:
 
-- func `parse_args`
 - func `set_seed`
 - func `evaluate_single_checkpoint` - Load a checkpoint, build model, evaluate. Returns metrics dict or None.
 - func `run` - Execute the pipeline.
@@ -831,7 +829,7 @@ Public API:
 
 ### `inmotion.evaluation.feature_importance`
 
-`src/inmotion/evaluation/feature_importance.py` - 646 lines
+`src/inmotion/evaluation/feature_importance.py` - 612 lines
 
 Permutation feature importance for DL movement classification models.
 
@@ -856,14 +854,13 @@ Public API:
 - func `plot_heatmap` - Publication-quality heatmap: 4 channels × 10 timesteps, avg across models.
 - func `plot_per_model_heatmaps` - Multi-panel figure: one 4x10 heatmap per model.
 - func `plot_channel_bars` - Channel-level bar chart: mean importance +/- std across timesteps & models.
-- func `parse_args` - Command-line interface.
 - func `run` - Execute the pipeline.
 
 ## Analysis and figures
 
 ### `inmotion.analysis.seeds`
 
-`src/inmotion/analysis/seeds.py` - 455 lines
+`src/inmotion/analysis/seeds.py` - 440 lines
 
 Analyze and combine results from multi-seed experiments.
 
@@ -873,7 +870,6 @@ computes statistics, and generates comparison plots.
 Public API:
 
 - func `setup_plot_style` - Setup publication-ready plot style.
-- func `parse_args`
 - func `load_seed_results` - Load classification results for each seed.
 - func `compute_statistics` - Compute mean and std statistics across seeds.
 - func `plot_metric_comparison_across_seeds` - Plot metric comparison for each seed.
@@ -886,7 +882,7 @@ Public API:
 
 ### `inmotion.analysis.interference`
 
-`src/inmotion/analysis/interference.py` - 64 lines
+`src/inmotion/analysis/interference.py` - 44 lines
 
 Analyze cross-route interference using the `concurrent_noise_path` column.
 
@@ -895,12 +891,11 @@ Usage:
 
 Public API:
 
-- func `parse_args`
 - func `run` - Execute the pipeline.
 
 ### `inmotion.viz.regenerate`
 
-`src/inmotion/viz/regenerate.py` - 206 lines
+`src/inmotion/viz/regenerate.py` - 142 lines
 
 Regenerate plots from saved CSV results.
 
@@ -914,12 +909,11 @@ Usage:
 
 Public API:
 
-- func `parse_args`
 - func `run` - Execute the pipeline.
 
 ### `inmotion.viz.regenerate_dl`
 
-`src/inmotion/viz/regenerate_dl.py` - 107 lines
+`src/inmotion/viz/regenerate_dl.py` - 80 lines
 
 Regenerate DL-specific paper plots from extended results CSV.
 
@@ -929,7 +923,6 @@ Usage:
 
 Public API:
 
-- func `parse_args`
 - func `run` - Execute the pipeline.
 
 ## Deep learning library (inmotion.dl)

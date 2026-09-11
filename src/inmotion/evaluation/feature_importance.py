@@ -14,7 +14,6 @@ Output plots (publication-quality PDF, 600 DPI, husl palette):
 
 from __future__ import annotations
 
-import argparse
 import random
 import sys
 from pathlib import Path
@@ -486,39 +485,6 @@ def _try_load_deepstack(
 # ═══════════════════════════════════════════════════════════════════════════════
 # Main
 # ═══════════════════════════════════════════════════════════════════════════════
-
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Command-line interface."""
-    parser = argparse.ArgumentParser(
-        description="Permutation feature importance for the DL baselines.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument(
-        "--data",
-        type=Path,
-        default=None,
-        help="Dataset CSV. Defaults to the processed dataset.csv.",
-    )
-    parser.add_argument("--seed", type=int, default=SEED, help="Random seed.")
-    parser.add_argument("--epochs", type=int, default=100, help="Epochs per model.")
-    parser.add_argument("--patience", type=int, default=20, help="Early-stopping patience.")
-    parser.add_argument(
-        "--output-dir", type=Path, default=OUTPUT_DIR, help="Directory for the generated figures."
-    )
-    parser.add_argument(
-        "--checkpoints-dir",
-        type=Path,
-        default=CHECKPOINT_DIR,
-        help="Directory holding trained DL checkpoints.",
-    )
-    parser.add_argument(
-        "--n-repeats",
-        type=int,
-        default=None,
-        help="Permutation repeats (default: module constant).",
-    )
-    return parser.parse_args(argv)
 
 
 def run(args: RunConfig) -> int:

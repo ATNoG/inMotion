@@ -8,30 +8,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-from pathlib import Path
-
 import pandas as pd
 
 from inmotion.analysis.interference_config import RunConfig
 from inmotion.dl.interference import InterferenceAnalyzer
-
-
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Cross-route interference analysis")
-    p.add_argument(
-        "--data",
-        type=Path,
-        default=Path("data/processed/dataset.csv"),
-        help="Path to dataset CSV with concurrent_noise_path column",
-    )
-    p.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("plots/interference"),
-        help="Output directory for plots",
-    )
-    return p.parse_args()
 
 
 def run(args: RunConfig) -> int:

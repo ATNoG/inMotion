@@ -5,7 +5,6 @@ This script runs a comprehensive analysis of various ML classifiers for
 predicting location classes based on WiFi RSSI fingerprints.
 """
 
-import argparse
 import os
 import time
 import warnings
@@ -36,54 +35,6 @@ from inmotion.classification import (  # noqa: E402
     Visualizer,
     set_random_seeds,
 )
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="WiFi Fingerprinting Classification Analysis")
-    parser.add_argument(
-        "--data",
-        type=str,
-        default="data/processed/dataset.csv",
-        help="Path to the dataset CSV file",
-    )
-    parser.add_argument(
-        "--quick", action="store_true", help="Run quick mode with fewer classifiers"
-    )
-    parser.add_argument("--no-ensembles", action="store_true", help="Skip ensemble classifiers")
-    parser.add_argument(
-        "--optimize", action="store_true", help="Run hyperparameter optimization with Optuna"
-    )
-    parser.add_argument(
-        "--n-trials", type=int, default=100, help="Number of Optuna trials per classifier"
-    )
-    parser.add_argument("--cv-folds", type=int, default=5, help="Number of cross-validation folds")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    parser.add_argument(
-        "--n-jobs", type=int, default=-1, help="Number of parallel jobs (-1 for all cores)"
-    )
-    parser.add_argument("--skip-eda", action="store_true", help="Skip exploratory data analysis")
-    parser.add_argument(
-        "--storage",
-        type=str,
-        default="sqlite:///optuna_studies.db",
-        help="Optuna storage URL (default: sqlite:///optuna_studies.db)",
-    )
-    parser.add_argument(
-        "--dashboard", action="store_true", help="Launch Optuna dashboard after optimization"
-    )
-    parser.add_argument(
-        "--no-seed-suffix",
-        action="store_true",
-        help="Don't add seed suffix to output directories (use results/ instead of results_42/)",
-    )
-    parser.add_argument(
-        "--suffix-after-seed",
-        type=str,
-        default="",
-        help="Place seed suffix after other suffixes (e.g., results_42_pure/",
-    )
-
-    return parser.parse_args()
 
 
 def save_detailed_classifier_reports(

@@ -12,39 +12,12 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 
 from inmotion.dl.config import DLConfig
 from inmotion.dl.results import load_extended_results
 from inmotion.dl.visualization import DLVisualizer
 from inmotion.viz.regenerate_dl_config import RunConfig
-
-
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Regenerate DL result plots")
-    p.add_argument(
-        "--results-csv",
-        type=Path,
-        required=True,
-        help="Path to extended DL results CSV (e.g., dl_detailed_seed42.csv)",
-    )
-    p.add_argument(
-        "--output-dir",
-        type=Path,
-        default=None,
-        help="Output directory for plots (default: inferred from CSV path)",
-    )
-    p.add_argument("--top-n", type=int, default=15, help="Number of top models in ranking plots")
-    p.add_argument("--eda", action="store_true", help="Also generate EDA plots")
-    p.add_argument(
-        "--data",
-        type=Path,
-        default=Path("data/processed/dataset.csv"),
-        help="Dataset CSV for EDA (only with --eda)",
-    )
-    p.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
-    return p.parse_args()
 
 
 def run(args: RunConfig) -> int:

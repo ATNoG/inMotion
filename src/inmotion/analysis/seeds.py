@@ -5,7 +5,6 @@ This script reads results from experiments with different seeds,
 computes statistics, and generates comparison plots.
 """
 
-import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -35,20 +34,6 @@ def setup_plot_style() -> None:
     )
     sns.set_context("paper", font_scale=2.0)
     plt.style.use("seaborn-v0_8-whitegrid")
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Analyze multi-seed experiment results")
-    parser.add_argument(
-        "--seeds", type=str, nargs="+", default=SEEDS, help="Seeds used in experiments"
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default="seeds_results_combined",
-        help="Output directory for combined results",
-    )
-    return parser.parse_args()
 
 
 def load_seed_results(seeds: list[str]) -> dict[int, pd.DataFrame]:

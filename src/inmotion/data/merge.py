@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Merge multiple CSV files into a single dataset."""
 
-import argparse
 import re
 from pathlib import Path
 
@@ -132,29 +131,3 @@ def merge_csv_files(input_dir: str, output_file: str, pattern: str = "*.csv") ->
                 "  None (no concurrent noise): "
                 f"{merged_df['concurrent_noise_path'].isna().sum()} samples"
             )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Merge multiple CSV files into a single dataset",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Merge all CSV files in data/ directory
-  uv run inmotion data merge --input data/ --output data/processed/dataset.csv
-  
-  # Merge only fail files
-  uv run inmotion data merge --input data/ --output fails.csv --pattern "*_fail*.csv"
-		""",
-    )
-
-    parser.add_argument(
-        "--input", "-i", type=str, required=True, help="Input directory containing CSV files"
-    )
-    parser.add_argument("--output", "-o", type=str, required=True, help="Output merged CSV file")
-    parser.add_argument(
-        "--pattern", "-p", type=str, default="*.csv", help="File pattern to match (default: *.csv)"
-    )
-
-    args = parser.parse_args()
-    merge_csv_files(args.input, args.output, args.pattern)

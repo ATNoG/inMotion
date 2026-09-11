@@ -7,9 +7,7 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import json
-import os
 import random
 import sys
 from pathlib import Path
@@ -347,28 +345,6 @@ def _load_nas_best_params(config: DLConfig) -> dict | None:
 
 
 # ── Main evaluation logic ────────────────────────────────────────────────────
-
-
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Retroactive DL checkpoint evaluation")
-    p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    p.add_argument("--checkpoints-dir", type=Path, default=Path("models/dl"))
-    p.add_argument(
-        "--output",
-        type=Path,
-        default=None,
-        help="Output CSV path (default: results/dl/dl_detailed_seed{seed}.csv)",
-    )
-    p.add_argument("--batch-size", type=int, default=64)
-    p.add_argument("--no-wandb", action="store_true")
-    p.add_argument("--models-dir", type=Path, default=None)
-    p.add_argument(
-        "--optuna-db",
-        type=str,
-        default=os.environ.get("INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"),
-    )
-    return p.parse_args()
 
 
 def set_seed(seed: int) -> None:

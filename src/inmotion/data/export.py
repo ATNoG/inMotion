@@ -1,4 +1,3 @@
-import argparse
 import ast
 from typing import Any
 
@@ -129,39 +128,3 @@ def export_to_csv(
         print(f"Groups: {mac_to_group}")
     else:
         print(f"Label: {label}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Export wavecom data to CSV")
-    parser.add_argument(
-        "--label",
-        "-l",
-        type=str,
-        default="AB",
-        help="Default label for data (used when --group not provided or MAC not matched)",
-    )
-    parser.add_argument(
-        "--group",
-        "-g",
-        action="append",
-        help="Group definition in the form label:mac1,mac2,... (repeatable)",
-    )
-    parser.add_argument(
-        "--group-label",
-        "-G",
-        action="append",
-        help="Map group name to final label, e.g., G1:AB (repeatable)",
-    )
-    parser.add_argument("--input", "-i", type=str, required=True, help="Input wavecom data file")
-    parser.add_argument("--output", "-o", type=str, required=True, help="Output CSV file")
-    parser.add_argument(
-        "--noise-label",
-        "-n",
-        type=str,
-        default="False",
-        help="Value for noise column in output CSV",
-    )
-    args = parser.parse_args()
-    export_to_csv(
-        args.input, args.output, 10, args.label, args.group, args.group_label, args.noise_label
-    )

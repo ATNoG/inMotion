@@ -13,7 +13,6 @@ Usage:
         --results-dir results_3 --eda --data data/processed/dataset.csv
 """
 
-import argparse
 from pathlib import Path
 
 from inmotion.classification import (
@@ -25,69 +24,6 @@ from inmotion.classification import (
     set_random_seeds,
 )
 from inmotion.viz.regenerate_config import RunConfig
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Regenerate plots from saved classification results"
-    )
-    parser.add_argument(
-        "--results-dir",
-        type=str,
-        help="Path to results directory containing CSV files (e.g., results_3)",
-    )
-    parser.add_argument(
-        "--csv",
-        type=str,
-        help="Path to classification_results.csv (alternative to --results-dir)",
-    )
-    parser.add_argument(
-        "--detailed-csv",
-        type=str,
-        help="Path to detailed_classifier_results.csv (optional, will be inferred from --csv)",
-    )
-    parser.add_argument(
-        "--plots-dir",
-        type=str,
-        help="Output directory for plots (default: plots_{suffix} based on results dir)",
-    )
-    parser.add_argument(
-        "--top-n",
-        type=int,
-        default=15,
-        help="Number of top classifiers to show in plots (default: 15)",
-    )
-    parser.add_argument(
-        "--format",
-        type=str,
-        choices=["pdf", "png", "svg"],
-        default="pdf",
-        help="Plot output format (default: pdf)",
-    )
-    # EDA options
-    parser.add_argument(
-        "--eda",
-        action="store_true",
-        help="Also generate EDA plots (requires --data)",
-    )
-    parser.add_argument(
-        "--data",
-        type=str,
-        default="data/processed/dataset.csv",
-        help="Path to the dataset CSV file for EDA plots (default: data/processed/dataset.csv)",
-    )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=42,
-        help="Random seed for reproducibility in EDA (default: 42)",
-    )
-    parser.add_argument(
-        "--skip-classification-plots",
-        action="store_true",
-        help="Skip classification result plots (only generate EDA plots if --eda is set)",
-    )
-    return parser.parse_args()
 
 
 def run(args: RunConfig) -> int:
