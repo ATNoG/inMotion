@@ -144,7 +144,7 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   # Merge all CSV files in data/ directory
-  python merge_csv.py --input data/ --output dataset.csv
+  python merge_csv.py --input data/ --output data/processed/dataset.csv
   
   # Merge only fail files
   python merge_csv.py --input data/ --output fails.csv --pattern "*_fail*.csv"

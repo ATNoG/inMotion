@@ -7,7 +7,7 @@ all visualization plots without needing to retrain models.
 Usage:
     uv run python regenerate_plots.py --results-dir results_3
     uv run python regenerate_plots.py --csv results_3/classification_results.csv --plots-dir plots_regenerated
-    uv run python regenerate_plots.py --results-dir results_3 --eda --data dataset.csv
+    uv run python regenerate_plots.py --results-dir results_3 --eda --data data/processed/dataset.csv
 """
 
 import argparse
@@ -69,8 +69,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--data",
         type=str,
-        default="dataset.csv",
-        help="Path to the dataset CSV file for EDA plots (default: dataset.csv)",
+        default="data/processed/dataset.csv",
+        help="Path to the dataset CSV file for EDA plots (default: data/processed/dataset.csv)",
     )
     parser.add_argument(
         "--seed",

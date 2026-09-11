@@ -12,7 +12,7 @@ import numpy as np, pandas as pd, torch
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import matthews_corrcoef
 from sklearn.linear_model import LogisticRegression
-import mega_ensemble as me
+from inmotion.pipelines import mega_ensemble as me
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SEED = 42

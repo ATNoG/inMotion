@@ -15,7 +15,7 @@ Add a model in one line by appending a dict to MODELS:
     }
 
 Run:
-    uv run python run_ensemble.py --data dataset_augmented3.csv --seed 42
+    uv run python run_ensemble.py --data data/processed/dataset_augmented3.csv --seed 42
 """
 
 from __future__ import annotations
@@ -174,7 +174,7 @@ def _greedy_weights(val_probs: list[np.ndarray], val_y: np.ndarray, steps: int =
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("dataset_augmented3.csv"))
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset_augmented3.csv"))
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--steps", type=int, default=50)
     args = p.parse_args()

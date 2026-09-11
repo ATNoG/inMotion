@@ -17,16 +17,16 @@ export WANDB_ENTITY="${WANDB_ENTITY:-andreribeiro87-universidade-de-aveiro}"
 
 PYTHONUNBUFFERED=1
 
-# uv run python run_dl.py --seed 42 --trials 50 --wandb-project inMotion-dl-simple-2 --models-dir models/dl/simple-2 2>&1
+# uv run inmotion run pipeline dl -- --seed 42 --trials 50 --wandb-project inMotion-dl-simple-2 --models-dir models/dl/simple-2 2>&1
 
 # SIGReg (fastest — ~30s/trial)
-# uv run python run_exotic.py --model sigreg --data dataset_augmented3.csv \
+# uv run inmotion run pipeline exotic -- --model sigreg --data data/processed/dataset_augmented3.csv \
 #     --hpo --hpo-trials 50 --batch-size 256
 
 # # TS-JEPA (~3min/trial)
-# uv run python run_exotic.py --model ts_jepa --data dataset_augmented3.csv \
+# uv run inmotion run pipeline exotic -- --model ts_jepa --data data/processed/dataset_augmented3.csv \
 #     --hpo --hpo-trials 30 --batch-size 256
 
 # # T-JEPA (~3min/trial)
-uv run python run_exotic.py --model t_jepa --data dataset_augmented3.csv \
+uv run inmotion run pipeline exotic -- --model t_jepa --data data/processed/dataset_augmented3.csv \
     --hpo --hpo-trials 30 --batch-size 256

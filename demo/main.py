@@ -284,7 +284,7 @@ async def test_router_start() -> dict:
             timestamp=datetime.now(UTC),
             status="start",
             mode="replay-test",
-            message="Modo de teste do router ativado (dataset.csv aleatório)",
+            message="Modo de teste do router ativado (data/processed/dataset.csv aleatório)",
         ).model_dump(mode="json")
     )
     return {"ok": True, "test_mode": True}

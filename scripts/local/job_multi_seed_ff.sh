@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Multi-seed finetune-only runs for ensemble diversity (option 2).
-# Uses existing pretrained encoders; finetunes each seed on dataset.icaisf.csv.
+# Uses existing pretrained encoders; finetunes each seed on data/processed/dataset.icaisf.csv.
 set -euo pipefail
 
-DATA="dataset.icaisf.csv"
+DATA="data/processed/dataset.icaisf.csv"
 MODELS_DIR="20-aug/models/exotic/normal-new-ds/full-after-hpo"
 RESULTS_DIR="20-aug/results/exotic/normal-new-ds/full-after-hpo"
 LOGS_DIR="20-aug/logs/exotic/normal-new-ds/full-after-hpo"
@@ -13,7 +13,7 @@ export MAMBA_SSM_AVAILABLE=0
 
 run_lejepa() {
   local seed=$1
-  uv run python run_exotic.py --model lejepa --data "$DATA" \
+  uv run inmotion run pipeline exotic -- --model lejepa --data "$DATA" \
     --seed "$seed" --finetune-only \
     --checkpoint "$MODELS_DIR/lejepa_pretrain_best.pt" \
     --finetune-epochs 200 --batch-size 128 \
@@ -27,7 +27,7 @@ run_lejepa() {
 
 run_ts_jepa() {
   local seed=$1
-  uv run python run_exotic.py --model ts_jepa --data "$DATA" \
+  uv run inmotion run pipeline exotic -- --model ts_jepa --data "$DATA" \
     --seed "$seed" --finetune-only --rich-features \
     --checkpoint "$MODELS_DIR/ts_jepa_pretrain_best.pt" \
     --finetune-epochs 200 --batch-size 128 \
@@ -41,7 +41,7 @@ run_ts_jepa() {
 
 run_sigreg() {
   local seed=$1
-  uv run python run_exotic.py --model sigreg --data "$DATA" \
+  uv run inmotion run pipeline exotic -- --model sigreg --data "$DATA" \
     --seed "$seed" --epochs 300 --batch-size 512 \
     --d-model 192 --num-layers 2 --latent-dim 128 \
     --sigreg-lambda 0.00614454378558747 --lr 0.0005404103854647331 \

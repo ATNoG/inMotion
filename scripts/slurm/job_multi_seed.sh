@@ -21,10 +21,10 @@ SEEDS=(42 3 5)
 
 # ── Mapping: variant label → dataset CSV + extra flags ──────────────────────
 declare -A DATASETS
-DATASETS["normal"]="dataset.csv"
-DATASETS["augmented"]="dataset_augmented.csv"
-DATASETS["noise"]="dataset_only_noise.csv"
-DATASETS["pure"]="dataset_only_pure.csv"
+DATASETS["normal"]="data/processed/dataset.csv"
+DATASETS["augmented"]="data/processed/dataset_augmented.csv"
+DATASETS["noise"]="data/processed/dataset_only_noise.csv"
+DATASETS["pure"]="data/processed/dataset_only_pure.csv"
 
 for variant in "${!DATASETS[@]}"; do
     # if dataset is normal and seed is 42 skip
@@ -40,7 +40,7 @@ for variant in "${!DATASETS[@]}"; do
         results_dir="results/dl/${variant}"
         plots_dir="plots/dl/${variant}"
 
-        echo uv run python run_dl.py \
+        echo uv run inmotion run pipeline dl -- \
             --seed "${seed}" \
             --trials 50 \
             --data "${data_file}" \
@@ -71,7 +71,7 @@ for variant in "${!DATASETS[@]}"; do
     IFS_DIR="plots/dl/${variant}/interference"
     echo "  Variant=${variant}  Data=${data_file} → ${IFS_DIR}"
 
-    echo uv run python analyze_interference.py \
+    echo uv run inmotion run pipeline analyze-interference -- \
         --data "${data_file}" \
         --output-dir "${IFS_DIR}" \
         2>&1

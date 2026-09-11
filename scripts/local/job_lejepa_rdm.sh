@@ -9,9 +9,9 @@ export MAMBA_SSM_AVAILABLE=0
 echo "=== LeJEPA + RDMReg Full Pretrain ===" | tee -a logs/lejepa_rdm.log
 echo "Start: $(date)" | tee -a logs/lejepa_rdm.log
 
-uv run python run_exotic.py \
+uv run inmotion run pipeline exotic -- \
   --model lejepa \
-  --data dataset.csv \
+  --data data/processed/dataset.csv \
   --pretrain-epochs 300 \
   --finetune-epochs 60 \
   --probe-cadence 10 \

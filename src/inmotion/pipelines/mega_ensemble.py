@@ -10,7 +10,7 @@ Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
   E. Compare: greedy-weighted, logit-avg, rank-avg, entropy-weighted, LR stack
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data dataset_augmented3.csv --seed 42
+    MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data data/processed/dataset_augmented3.csv --seed 42
 
 Note: set MAMBA_SSM_AVAILABLE=0 to skip the (hang-prone) mamba_ssm CUDA
 extension import and use the pure-PyTorch fallback for Mamba-based models.
@@ -137,7 +137,7 @@ def _make_hpo_builder(model_type: str):
     import optuna
 
     def build():
-        from run_dl import _build_hpo_best_model
+        from inmotion.pipelines.dl import _build_hpo_best_model
         from dl.config import DLConfig
         study = optuna.load_study(
             study_name=f"inMotion_dl_v3_{model_type}",
@@ -188,8 +188,8 @@ def _build_ds_ensemble():
 
     Config resolved from the checkpoint's own weight shapes (0 missing keys).
     10 bases: CNN2DRNN, CNN_A/B, GRU_A, Mamba_A/B, RNN_A/B, TCN_A/B
-    → 4 Level2Nets → DeepMetaMLP. Scores 0.852 on dataset_augmented.csv,
-    0.881 on dataset.icaisf.csv.
+    → 4 Level2Nets → DeepMetaMLP. Scores 0.852 on data/processed/dataset_augmented.csv,
+    0.881 on data/processed/dataset.icaisf.csv.
     """
     from dl.models.deep_stack import DeepStackEnsemble, Level2Net
     from dl.models.cnn import CNNClassifier
@@ -460,7 +460,7 @@ def _entropy_weighted(probs: list[np.ndarray]) -> np.ndarray:
 
 def main() -> None:
     p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--steps", type=int, default=100)
     p.add_argument("--no-tabpfn", action="store_true")

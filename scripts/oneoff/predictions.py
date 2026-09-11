@@ -13,7 +13,7 @@ from sklearn.metrics import matthews_corrcoef, accuracy_score, f1_score
 import joblib
 
 
-df = pl.read_csv('dataset.csv')
+df = pl.read_csv('data/processed/dataset.csv')
 df = df.drop_nulls()
 
 print(f'{df}')

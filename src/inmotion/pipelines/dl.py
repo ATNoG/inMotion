@@ -14,7 +14,7 @@ Options:
     --num-gpus INT      GPUs to use, 0 = auto-detect all (default 0)
     --no-wandb          Disable WandB logging
     --no-optuna         Skip Optuna HPO/NAS studies
-    --data PATH         Path to dataset CSV (default dataset.csv)
+    --data PATH         Path to dataset CSV (default data/processed/dataset.csv)
 """
 
 from __future__ import annotations
@@ -141,7 +141,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-optuna", action="store_true")
     p.add_argument("--no-moe", action="store_true", help="Skip Mixture-of-Experts phase")
     p.add_argument("--no-deepstack", action="store_true", help="Skip Deep Stacking phase")
-    p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     p.add_argument("--wandb-project", type=str, default=None, help="Override WandB project name")
     p.add_argument("--no-meta", action="store_true", help="Skip metadata-fusion model phases")
     p.add_argument(

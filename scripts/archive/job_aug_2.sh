@@ -16,6 +16,6 @@ export WANDB_ENTITY="${WANDB_ENTITY:-andreribeiro87-universidade-de-aveiro}"
 PYTHONUNBUFFERED=1
 
 
-echo Seed=5  Variant=augmented  Data=dataset_augmented.csv
-uv run python run_dl.py --seed 5 --trials 15 --data dataset_augmented.csv --wandb-project inMotion-dl-augmented --models-dir models/dl/augmented --results-dir results/dl/augmented --plots-dir plots/dl/augmented
+echo Seed=5  Variant=augmented  Data=data/processed/dataset_augmented.csv
+uv run inmotion run pipeline dl -- --seed 5 --trials 15 --data data/processed/dataset_augmented.csv --wandb-project inMotion-dl-augmented --models-dir models/dl/augmented --results-dir results/dl/augmented --plots-dir plots/dl/augmented
 echo  Done: Seed=5 Variant=augmented

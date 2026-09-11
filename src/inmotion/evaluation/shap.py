@@ -5,7 +5,7 @@ Evaluates Shapley Additive exPlanations (SHAP) across the 18-channel feature hie
 (or 4-channel base hierarchy) for time-series world models (TS-JEPA, LeJEPA, CF-JEPA, T-JEPA, SIGReg).
 
 Usage:
-    python compute_shap.py --data dataset.csv --checkpoint backup/ts_jepa_ft_seed42.pt --samples 50 --nsamples 150
+    python compute_shap.py --data data/processed/dataset.csv --checkpoint backup/ts_jepa_ft_seed42.pt --samples 50 --nsamples 150
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import shap
 import torch
-from mega_ensemble import (
+from inmotion.pipelines.mega_ensemble import (
     _build_cf_jepa,
     _build_lejepa,
     _build_sigreg,
@@ -129,7 +129,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compute Game-Theoretic SHAP Feature Channel Attribution."
     )
-    parser.add_argument("--data", type=Path, default=Path("dataset.csv"), help="Path to CSV dataset.")
+    parser.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"), help="Path to CSV dataset.")
     parser.add_argument(
         "--model", type=str, default="ts_jepa", choices=list(MODEL_BUILDERS.keys()), help="Model type."
     )

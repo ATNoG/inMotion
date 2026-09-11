@@ -17,8 +17,8 @@ services:
       - INMOTION_SCAN_INTERVAL=${INMOTION_SCAN_INTERVAL:-1.0}
     volumes:
       - ../models:/app/models:ro
-      - ../dataset.csv:/app/dataset.csv:ro
-      - ../dataset_only_pure.csv:/app/dataset_only_pure.csv:ro
+      - ../data/processed/dataset.csv:/app/dataset.csv:ro
+      - ../data/processed/dataset_only_pure.csv:/app/dataset_only_pure.csv:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

@@ -32,7 +32,7 @@ echo "=== Master v2 start: $(date) ==="
 # ── Phase 1: LeJEPA recovery → models/exotic (the ensemble path) ───────────
 echo ""
 echo "=== [1/4] LeJEPA recovery (original config, full pretrain) ==="
-CUDA_VISIBLE_DEVICES=0 uv run python -u run_exotic.py --model lejepa --data dataset_augmented.csv \
+CUDA_VISIBLE_DEVICES=0 uv run inmotion run pipeline exotic -- --model lejepa --data data/processed/dataset_augmented.csv \
     --gpu 0 --pretrain-epochs 400 --finetune-epochs 200 \
     --d-model 256 --num-layers 4 --pred-dim 128 \
     --pretrain-lr 5e-4 --finetune-lr 1e-3 --batch-size 512 \
@@ -42,7 +42,7 @@ CUDA_VISIBLE_DEVICES=0 uv run python -u run_exotic.py --model lejepa --data data
 # ── Phase 2: TS-JEPA full retrain (finetune-heavy, rich features) ──────────
 echo ""
 echo "=== [2/4] TS-JEPA seed42 retrain (finetune 200, high probe patience) ==="
-CUDA_VISIBLE_DEVICES=1 uv run python -u run_exotic.py --model ts_jepa --data dataset_augmented3.csv \
+CUDA_VISIBLE_DEVICES=1 uv run inmotion run pipeline exotic -- --model ts_jepa --data data/processed/dataset_augmented3.csv \
     --seed 42 --pretrain-epochs 500 --finetune-epochs 200 \
     --d-model 192 --nhead 4 --num-layers 4 --dim-ff 256 \
     --pred-dim 64 --pred-layers 3 \
@@ -53,7 +53,7 @@ CUDA_VISIBLE_DEVICES=1 uv run python -u run_exotic.py --model ts_jepa --data dat
 # ── Phase 3: T-JEPA seed42 retrain (rich features — matches harness!) ──────
 echo ""
 echo "=== [3/4] T-JEPA seed42 retrain (RICH features, finetune 200) ==="
-CUDA_VISIBLE_DEVICES=1 uv run python -u run_exotic.py --model t_jepa --data dataset_augmented3.csv \
+CUDA_VISIBLE_DEVICES=1 uv run inmotion run pipeline exotic -- --model t_jepa --data data/processed/dataset_augmented3.csv \
     --seed 42 --pretrain-epochs 500 --finetune-epochs 200 \
     --d-model 256 --nhead 8 --num-layers 4 --dim-ff 768 \
     --pred-dim 96 --pred-layers 3 \
@@ -67,7 +67,7 @@ echo ""
 echo "=== [4/4] T-JEPA seeds 3/5 (rich features, for diversity) ==="
 for seed in 3 5; do
     echo "--- T-JEPA seed=$seed ---"
-    CUDA_VISIBLE_DEVICES=0 uv run python -u run_exotic.py --model t_jepa --data dataset_augmented3.csv \
+    CUDA_VISIBLE_DEVICES=0 uv run inmotion run pipeline exotic -- --model t_jepa --data data/processed/dataset_augmented3.csv \
         --seed $seed --pretrain-epochs 500 --finetune-epochs 200 \
         --d-model 256 --nhead 8 --num-layers 4 --dim-ff 768 \
         --pred-dim 96 --pred-layers 3 \

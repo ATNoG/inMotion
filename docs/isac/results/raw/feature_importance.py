@@ -11,7 +11,7 @@ import sys; sys.path.insert(0, os.getcwd())
 import numpy as np, pandas as pd, torch
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import matthews_corrcoef
-import mega_ensemble as me
+from inmotion.pipelines import mega_ensemble as me
 
 DATA = "dataset.icaisf.csv"
 SEED = 42

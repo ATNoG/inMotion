@@ -10,9 +10,9 @@ export MAMBA_SSM_AVAILABLE=0
 echo "=== CF-JEPA + RDMReg Full Pretrain v2 ===" | tee -a logs/cf_jepa_rdm.log
 echo "Start: $(date)" | tee -a logs/cf_jepa_rdm.log
 
-uv run python run_exotic.py \
+uv run inmotion run pipeline exotic -- \
   --model cf_jepa \
-  --data dataset.csv \
+  --data data/processed/dataset.csv \
   --pretrain-epochs 400 \
   --finetune-epochs 60 \
   --probe-cadence 10 \

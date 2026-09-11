@@ -55,14 +55,14 @@ def load_config() -> DemoConfig:
         "INMOTION_FALLBACK_CSV",
         [
             demo_dir / "dataset_only_pure.csv",
-            root_dir / "dataset_only_pure.csv",
+            root_dir / "data" / "processed" / "dataset_only_pure.csv",
         ],
     )
     test_router_csv_path = _resolve_path(
         "INMOTION_TEST_ROUTER_CSV",
         [
             demo_dir / "dataset.csv",
-            root_dir / "dataset.csv",
+            root_dir / "data" / "processed" / "dataset.csv",
             fallback_csv_path,
         ],
     )

@@ -11,7 +11,7 @@ Configs sourced from docs/icaisf/hpo_supplementary.md (best val MCC in parens):
     HPO RNN      0.6402
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 uv run python train_hpo_paper.py --data dataset.csv --seed 42
+    MAMBA_SSM_AVAILABLE=0 uv run python train_hpo_paper.py --data data/processed/dataset.csv --seed 42
     # --models only gru tcn    (subset)
 """
 
@@ -141,7 +141,7 @@ def _apply_training_hps(cfg: DLConfig, p: dict) -> DLConfig:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    ap.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--epochs", type=int, default=150)
     ap.add_argument("--patience", type=int, default=20,

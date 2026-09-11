@@ -3,7 +3,7 @@
 
 Usage:
     uv run python regenerate_dl_plots.py --results-csv results/dl/dl_detailed_seed42.csv --output-dir plots/dl/42
-    uv run python regenerate_dl_plots.py --results-csv results/dl/dl_detailed_seed42.csv --eda --data dataset.csv
+    uv run python regenerate_dl_plots.py --results-csv results/dl/dl_detailed_seed42.csv --eda --data data/processed/dataset.csv
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
                    help="Number of top models in ranking plots")
     p.add_argument("--eda", action="store_true",
                    help="Also generate EDA plots")
-    p.add_argument("--data", type=Path, default=Path("dataset.csv"),
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"),
                    help="Dataset CSV for EDA (only with --eda)")
     p.add_argument("--seed", type=int, default=42,
                    help="Random seed for reproducibility")

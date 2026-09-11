@@ -14,16 +14,16 @@ export WANDB_ENTITY="${WANDB_ENTITY:-andreribeiro87-universidade-de-aveiro}"
 
 PYTHONUNBUFFERED=1
 
-uv run python analyze_interference.py --data dataset.csv --output-dir plots/dl/normal/interference
+uv run inmotion run pipeline analyze-interference -- --data data/processed/dataset.csv --output-dir plots/dl/normal/interference
 
-echo Variant=noise  Data=dataset_only_noise.csv → plots/dl/noise/interference
-uv run python analyze_interference.py --data dataset_only_noise.csv --output-dir plots/dl/noise/interference
+echo Variant=noise  Data=data/processed/dataset_only_noise.csv → plots/dl/noise/interference
+uv run inmotion run pipeline analyze-interference -- --data data/processed/dataset_only_noise.csv --output-dir plots/dl/noise/interference
 echo  Done: interference plots → plots/dl/noise/interference
 
-echo Variant=pure  Data=dataset_only_pure.csv → plots/dl/pure/interference
-uv run python analyze_interference.py --data dataset_only_pure.csv --output-dir plots/dl/pure/interference
+echo Variant=pure  Data=data/processed/dataset_only_pure.csv → plots/dl/pure/interference
+uv run inmotion run pipeline analyze-interference -- --data data/processed/dataset_only_pure.csv --output-dir plots/dl/pure/interference
 echo  Done: interference plots → plots/dl/pure/interference
 
-echo Variant=augmented  Data=dataset_augmented.csv → plots/dl/augmented/interference
-uv run python analyze_interference.py --data dataset_augmented.csv --output-dir plots/dl/augmented/interference
+echo Variant=augmented  Data=data/processed/dataset_augmented.csv → plots/dl/augmented/interference
+uv run inmotion run pipeline analyze-interference -- --data data/processed/dataset_augmented.csv --output-dir plots/dl/augmented/interference
 echo  Done: interference plots → plots/dl/augmented/interference

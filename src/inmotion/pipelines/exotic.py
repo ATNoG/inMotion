@@ -59,7 +59,7 @@ def parse_args() -> argparse.Namespace:
                             "mamba3_cnn", "mamba3_tcn", "mamba3_transformer",
                             "mamba3_multiview"],
                    help="Model type")
-    p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     p.add_argument("--rich-features", action="store_true",
                    help="Use spectral + statistical + shape channels (14 instead of 4)")
     p.add_argument("--seed", type=int, default=42)

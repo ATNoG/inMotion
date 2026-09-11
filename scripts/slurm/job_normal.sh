@@ -15,14 +15,14 @@ export WANDB_ENTITY="${WANDB_ENTITY:-andreribeiro87-universidade-de-aveiro}"
 
 PYTHONUNBUFFERED=1
 
-echo Seed=42  Variant=normal  Data=dataset.csv
-uv run python run_dl.py --seed 42 --trials 30 --data dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
+echo Seed=42  Variant=normal  Data=data/processed/dataset.csv
+uv run inmotion run pipeline dl -- --seed 42 --trials 30 --data data/processed/dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
 echo  Done: Seed=42 Variant=normal
 
-echo Seed=3  Variant=normal  Data=dataset.csv
-uv run python run_dl.py --seed 3 --trials 30 --data dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
+echo Seed=3  Variant=normal  Data=data/processed/dataset.csv
+uv run inmotion run pipeline dl -- --seed 3 --trials 30 --data data/processed/dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
 echo  Done: Seed=3 Variant=normal
 
-echo Seed=5  Variant=normal  Data=dataset.csv
-uv run python run_dl.py --seed 5 --trials 30 --data dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
+echo Seed=5  Variant=normal  Data=data/processed/dataset.csv
+uv run inmotion run pipeline dl -- --seed 5 --trials 30 --data data/processed/dataset.csv --wandb-project inMotion-dl-normal --models-dir models/dl/normal --results-dir results/dl/normal --plots-dir plots/dl/normal
 echo  Done: Seed=5 Variant=normal

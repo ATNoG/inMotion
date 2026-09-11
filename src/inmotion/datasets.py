@@ -108,7 +108,7 @@ _LEGACY_NOTE = (
 CURATED: list[DatasetVersion] = [
     DatasetVersion(
         id="ds-pure",
-        file="dataset_only_pure.csv",
+        file="data/processed/dataset_only_pure.csv",
         role="subset",
         status=SUPERSEDED,
         label_audit=AUDIT_KNOWN_BAD,
@@ -116,12 +116,12 @@ CURATED: list[DatasetVersion] = [
         lineage={
             "description": "isolated single-device collection",
             "devices": 2,
-            "successor": "dataset_only_noise.csv",
+            "successor": "data/processed/dataset_only_noise.csv",
         },
     ),
     DatasetVersion(
         id="ds-noise",
-        file="dataset_only_noise.csv",
+        file="data/processed/dataset_only_noise.csv",
         role="subset",
         status=SUPERSEDED,
         label_audit=AUDIT_KNOWN_BAD,
@@ -134,7 +134,7 @@ CURATED: list[DatasetVersion] = [
     ),
     DatasetVersion(
         id="ds-augmented-v1",
-        file="dataset_augmented.csv",
+        file="data/processed/dataset_augmented.csv",
         role="augmented",
         status=SUPERSEDED,
         label_audit=AUDIT_KNOWN_BAD,
@@ -143,12 +143,12 @@ CURATED: list[DatasetVersion] = [
             "description": "augmentation config 1",
             "devices": 8,
             "parent": "8-device pool",
-            "successor": "dataset_augmented2.csv",
+            "successor": "data/processed/dataset_augmented2.csv",
         },
     ),
     DatasetVersion(
         id="ds-icaisf",
-        file="dataset.icaisf.csv",
+        file="data/processed/dataset.icaisf.csv",
         role="variant",
         status=CURRENT,
         label_audit=AUDIT_UNVERIFIED,
@@ -162,23 +162,23 @@ CURATED: list[DatasetVersion] = [
     ),
     DatasetVersion(
         id="ds-base-v2",
-        file="dataset.csv",
+        file="data/processed/dataset.csv",
         role="base",
         status=CURRENT,
         label_audit=AUDIT_UNVERIFIED,
         validity_note=(
             "13-device pool, collected after the earlier lineage. Source for "
-            "dataset_augmented2.csv and dataset_augmented3.csv."
+            "data/processed/dataset_augmented2.csv and data/processed/dataset_augmented3.csv."
         ),
         lineage={
             "description": "current base dataset",
             "devices": 13,
-            "successors": ["dataset_augmented2.csv", "dataset_augmented3.csv"],
+            "successors": ["data/processed/dataset_augmented2.csv", "data/processed/dataset_augmented3.csv"],
         },
     ),
     DatasetVersion(
         id="ds-augmented-v2",
-        file="dataset_augmented2.csv",
+        file="data/processed/dataset_augmented2.csv",
         role="augmented",
         status=SUPERSEDED,
         label_audit=AUDIT_UNVERIFIED,
@@ -187,25 +187,25 @@ CURATED: list[DatasetVersion] = [
         lineage={
             "description": "augmentation config 2",
             "devices": 13,
-            "parent": "dataset.csv",
-            "successor": "dataset_augmented3.csv",
+            "parent": "data/processed/dataset.csv",
+            "successor": "data/processed/dataset_augmented3.csv",
         },
     ),
     DatasetVersion(
         id="ds-augmented-v3",
-        file="dataset_augmented3.csv",
+        file="data/processed/dataset_augmented3.csv",
         role="augmented",
         status=CURRENT,
         label_audit=AUDIT_UNVERIFIED,
         validity_note=(
             "Canonical training set: the newest augmentation config, built from "
-            "dataset.csv. This is what the trained JEPA/SIGReg checkpoints were "
+            "data/processed/dataset.csv. This is what the trained JEPA/SIGReg checkpoints were "
             "trained on, so it is the reference for reproducing their scaling."
         ),
         lineage={
             "description": "augmentation config 3 (latest)",
             "devices": 13,
-            "parent": "dataset.csv",
+            "parent": "data/processed/dataset.csv",
             "successor": None,
         },
     ),

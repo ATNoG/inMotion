@@ -4,6 +4,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from inmotion.data.paths import processed
+
 
 def check_gpu_availability() -> bool:
     """Check if CUDA GPU is available for ML libraries.
@@ -50,8 +52,8 @@ def check_gpu_availability() -> bool:
 class Config:
     """Configuration settings for the ML classification pipeline."""
 
-    # Paths
-    data_path: Path = field(default_factory=lambda: Path("dataset.csv"))
+    # Paths. `processed()` names a file in the processed data tier.
+    data_path: Path = field(default_factory=lambda: processed("dataset.csv"))
     models_dir: Path = field(default_factory=lambda: Path("models"))
     results_dir: Path = field(default_factory=lambda: Path("results"))
     plots_dir: Path = field(default_factory=lambda: Path("plots"))

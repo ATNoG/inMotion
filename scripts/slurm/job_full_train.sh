@@ -30,17 +30,17 @@ PYTHONUNBUFFERED=1
 # Expected: TS-JEPA probe MCC climbs past 0.7 -> stage-1 MCC > 0.7
 # ═══════════════════════════════════════════════════════════════════
 
-DATA=dataset_augmented3.csv
+DATA=data/processed/dataset_augmented3.csv
 
 # ── SIGReg: direct supervised (HPO best: 0.8671) ──────────────────
-uv run python run_exotic.py --model sigreg --data $DATA --seed 42 \
+uv run inmotion run pipeline exotic -- --model sigreg --data $DATA --seed 42 \
     --epochs 300 --patience 150 --batch-size 512 \
     --d-model 192 --num-layers 3 --latent-dim 128 \
     --sigreg-lambda 0.008625079907536571 --lr 0.00014719177455031863 \
     --models-dir models/exotic --results-dir results/exotic
 
 # ── TS-JEPA: full pretrain + finetune (HPO best: 0.8312) ──────────
-uv run python run_exotic.py --model ts_jepa --data $DATA --seed 42 \
+uv run inmotion run pipeline exotic -- --model ts_jepa --data $DATA --seed 42 \
     --pretrain-epochs 500 --finetune-epochs 80 \
     --d-model 192 --nhead 4 --num-layers 4 --dim-ff 256 \
     --pred-dim 64 --pred-layers 3 \
@@ -52,7 +52,7 @@ uv run python run_exotic.py --model ts_jepa --data $DATA --seed 42 \
     --viz-dir models/exotic/viz
 
 # ── T-JEPA: full pretrain + finetune (HPO best: 0.7492) ────────────
-uv run python run_exotic.py --model t_jepa --data $DATA --seed 42 \
+uv run inmotion run pipeline exotic -- --model t_jepa --data $DATA --seed 42 \
     --pretrain-epochs 500 --finetune-epochs 80 \
     --d-model 256 --nhead 8 --num-layers 4 --dim-ff 768 \
     --pred-dim 96 --pred-layers 3 \
@@ -68,7 +68,7 @@ uv run python run_exotic.py --model t_jepa --data $DATA --seed 42 \
 # MULTI-SEED (for ensemble diversity) — uncomment after first run
 # ═══════════════════════════════════════════════════════════════════
 # for seed in 123 456 789; do
-#     uv run python run_exotic.py --model ts_jepa --data $DATA --seed $seed \
+#     uv run inmotion run pipeline exotic -- --model ts_jepa --data $DATA --seed $seed \
 #         --pretrain-epochs 500 --finetune-epochs 80 \
 #         --d-model 192 --nhead 4 --num-layers 4 --dim-ff 256 \
 #         --pred-dim 64 --pred-layers 3 \

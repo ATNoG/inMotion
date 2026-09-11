@@ -15,8 +15,8 @@ def make_config(model_path: Path) -> DemoConfig:
     return DemoConfig(
         root_dir=Path("."),
         model_path=model_path,
-        fallback_csv_path=Path("dataset_only_pure.csv"),
-        test_router_csv_path=Path("dataset.csv"),
+        fallback_csv_path=Path("data/processed/dataset_only_pure.csv"),
+        test_router_csv_path=Path("data/processed/dataset.csv"),
         scan_interval_seconds=1.0,
         scan_mode="auto",
         router_ip="",

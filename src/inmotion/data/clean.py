@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dataset cleaning audit — find and drop devices/samples that poison training.
 
-Why: on the current dataset.csv the absolute RSSI level carries ~3x more
+Why: on the current data/processed/dataset.csv the absolute RSSI level carries ~3x more
 information about WHICH DEVICE recorded a sequence than about WHICH movement it
 is (MI with MAC 0.219 vs MI with label 0.071). Several devices sit at/below
 chance under cross-device evaluation, i.e. their sequences genuinely do not
@@ -24,7 +24,7 @@ reported to <out-stem>_flagged.csv; dropped too with --drop-ambiguous.
 
 Usage
 -----
-    MAMBA_SSM_AVAILABLE=0 uv run python clean_dataset.py --data dataset.csv
+    MAMBA_SSM_AVAILABLE=0 uv run python clean_dataset.py --data data/processed/dataset.csv
     # stricter: also drop ambiguous samples
     MAMBA_SSM_AVAILABLE=0 uv run python clean_dataset.py --drop-ambiguous
 """
@@ -65,7 +65,7 @@ def _mi_binned(x: np.ndarray, codes: np.ndarray, bins: int = 20) -> float:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    ap.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     ap.add_argument("--out", type=Path, default=None,
                     help="output CSV (default: <stem>_clean.csv)")
     ap.add_argument("--report-dir", type=Path, default=Path("results"))

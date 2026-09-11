@@ -41,9 +41,10 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-# `inmotion` is the package; `dl` and `ml_classification` are legacy top-level
-# packages still imported by the root scripts, pending their move into src/.
-# The previous `eucnc` entry named a package that does not exist.
+# `inmotion` is the package (subpackages included automatically).
+# `dl` and `ml_classification` are legacy top-level packages still imported by
+# the pipelines, pending their move under src/. The previous `eucnc` entry named
+# a package that does not exist.
 packages = ["src/inmotion", "dl", "ml_classification"]
 
 # pyproject.toml

@@ -6,11 +6,16 @@ from pathlib import Path
 
 import torch
 
+from inmotion.data.paths import processed
+
 
 @dataclass
 class DLConfig:
-    # Data
-    data_path: Path = field(default_factory=lambda: Path("dataset.csv"))
+    # Data. `inmotion.data.paths` owns the data tiers; this is the
+    # canonical processed dataset.
+    data_path: Path = field(
+        default_factory=lambda: processed("dataset.csv")
+    )
     feature_cols: list[str] = field(default_factory=lambda: [str(i) for i in range(1, 11)])
     label_col: str = "label"
     seq_len: int = 10

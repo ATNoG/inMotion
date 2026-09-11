@@ -18,7 +18,7 @@ PYTHONUNBUFFERED=1
 # LeJEPA — SSL pretrain + fine-tune (paper implementation)
 # ═══════════════════════════════════════════════════════════════
 
-uv run python run_exotic.py --model lejepa --data dataset_augmented.csv \
+uv run inmotion run pipeline exotic -- --model lejepa --data data/processed/dataset_augmented.csv \
     --gpu 0 --pretrain-epochs 400 --finetune-epochs 80 \
     --d-model 256 --num-layers 4 --pred-dim 128 \
     --pretrain-lr 5e-4 --finetune-lr 1e-3 --batch-size 512
@@ -27,5 +27,5 @@ uv run python run_exotic.py --model lejepa --data dataset_augmented.csv \
 # SIGReg — HPO + train (LeJEPA SIGReg + dynamic augmentation)
 # ═══════════════════════════════════════════════════════════════
 
-uv run python run_exotic.py --model sigreg --data dataset_augmented.csv \
+uv run inmotion run pipeline exotic -- --model sigreg --data data/processed/dataset_augmented.csv \
     --gpu 0 --hpo --hpo-trials 50 --epochs 200 --batch-size 512

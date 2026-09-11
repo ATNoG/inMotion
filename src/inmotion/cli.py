@@ -15,8 +15,6 @@ knowledge of the training scripts required.
 from __future__ import annotations
 
 import json
-import subprocess
-import sys
 from pathlib import Path
 from typing import Annotated, Optional
 
@@ -45,7 +43,12 @@ app.add_typer(datasets_app, name="datasets")
 app.add_typer(data_app, name="data")
 app.add_typer(run_app, name="run")
 
-DEFAULT_REFERENCE = {True: "dataset_augmented3.csv", False: "dataset.csv"}
+# The CSV a model's scaling statistics are reconstructed from, by feature set.
+# `ds-augmented-v3` is what the world models were trained on.
+DEFAULT_REFERENCE = {
+    True: "dataset_augmented3.csv",
+    False: "dataset.csv",
+}
 
 
 def _version_callback(value: bool) -> None:
@@ -182,7 +185,9 @@ def model_predict(
     spec = reg.by_name(name)
     model = reg.load(spec, strict=True)
 
-    ref_path = reference or REPO_ROOT / DEFAULT_REFERENCE[spec.rich]
+    from .data.paths import resolve
+
+    ref_path = reference or resolve(DEFAULT_REFERENCE[spec.rich])
     if not ref_path.exists():
         typer.secho(
             f"reference CSV not found: {ref_path}\n"
@@ -352,7 +357,7 @@ def data_export(
     ] = [],
 ) -> None:
     """Turn a raw Wavecom capture into a per-route CSV."""
-    from export import export_to_csv
+    from .data.export import export_to_csv
 
     if not input_file.exists():
         typer.secho(f"input not found: {input_file}", fg=typer.colors.RED, err=True)
@@ -374,7 +379,7 @@ def data_merge(
     pattern: Annotated[str, typer.Option("--pattern", help="Glob for input files.")] = "*.csv",
 ) -> None:
     """Merge per-route CSVs into one dataset."""
-    from merge_csv import merge_csv_files
+    from .data.merge import merge_csv_files
 
     if not input_dir.is_dir():
         typer.secho(f"input directory not found: {input_dir}", fg=typer.colors.RED, err=True)
@@ -384,13 +389,21 @@ def data_merge(
     typer.secho(f"wrote {output_file}", fg=typer.colors.GREEN)
 
 
-def _delegate(script: str, args: list[str]) -> None:
-    """Run a legacy script unchanged, preserving its argparse interface."""
-    path = REPO_ROOT / script
-    if not path.exists():
-        typer.secho(f"{script} not found at {path}", fg=typer.colors.RED, err=True)
+def _delegate(module: str, args: list[str]) -> None:
+    """Run a pipeline module in process, preserving its argparse interface."""
+    import importlib
+
+    from .pipelines.registry import _argv
+
+    full = f"inmotion.{module}"
+    entry = getattr(importlib.import_module(full), "main", None)
+    if entry is None:
+        typer.secho(f"{full} has no main()", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
-    raise typer.Exit(code=subprocess.run([sys.executable, str(path), *args]).returncode)  # noqa: S603
+
+    with _argv([full, *args]):
+        result = entry()
+    raise typer.Exit(code=0 if result is None else int(result))
 
 
 @data_app.command(
@@ -398,7 +411,7 @@ def _delegate(script: str, args: list[str]) -> None:
 )
 def data_clean(ctx: typer.Context) -> None:
     """Audit and clean a dataset (delegates to clean_dataset.py)."""
-    _delegate("clean_dataset.py", list(ctx.args))
+    _delegate("data.clean", list(ctx.args))
 
 
 @data_app.command(
@@ -406,39 +419,27 @@ def data_clean(ctx: typer.Context) -> None:
 )
 def data_augment(ctx: typer.Context) -> None:
     """Augment a dataset (delegates to augment_data.py)."""
-    _delegate("augment_data.py", list(ctx.args))
+    _delegate("data.augment", list(ctx.args))
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 # run — training / evaluation pipelines
 # ═══════════════════════════════════════════════════════════════════════════
 
-PIPELINES: dict[str, str] = {
-    "classification": "run_classification.py",
-    "dl": "run_dl.py",
-    "exotic": "run_exotic.py",
-    "ensemble": "run_ensemble.py",
-    "mega-ensemble": "mega_ensemble.py",
-    "hpo-paper": "train_hpo_paper.py",
-    "evaluate-checkpoints": "evaluate_checkpoints.py",
-    "shap": "compute_shap.py",
-    "feature-importance": "feature_importance_dl.py",
-    "analyze-seeds": "analyze_seeds.py",
-    "analyze-interference": "analyze_interference.py",
-    "regenerate-plots": "regenerate_plots.py",
-    "regenerate-dl-plots": "regenerate_dl_plots.py",
-}
-
-
 @run_app.command("list")
 def run_list() -> None:
     """List the available pipelines."""
-    for name, script in sorted(PIPELINES.items()):
-        typer.echo(f"  {name:22s} {script}")
+    from .pipelines.registry import PIPELINES
+
+    width = max(len(p.name) for p in PIPELINES)
+    for pipeline in PIPELINES:
+        typer.echo(f"  {pipeline.name:<{width}}  {pipeline.summary}")
+    typer.echo("\nRun one with: inmotion run pipeline <name> -- <args>")
 
 
 @run_app.command(
-    "pipeline", context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+    "pipeline",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
 def run_pipeline(
     ctx: typer.Context,
@@ -448,19 +449,15 @@ def run_pipeline(
 
     Example:  inmotion run pipeline exotic -- --model ts_jepa --seed 42
     """
-    if pipeline not in PIPELINES:
-        typer.secho(
-            f"unknown pipeline {pipeline!r}; available: {', '.join(sorted(PIPELINES))}",
-            fg=typer.colors.RED,
-            err=True,
-        )
-        raise typer.Exit(code=2)
-    _delegate(PIPELINES[pipeline], list(ctx.args))
+    from .pipelines.registry import run
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# doctor
-# ═══════════════════════════════════════════════════════════════════════════
+    try:
+        code = run(pipeline, list(ctx.args))
+    except KeyError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+    if code:
+        raise typer.Exit(code=code)
 
 
 @app.command("doctor")

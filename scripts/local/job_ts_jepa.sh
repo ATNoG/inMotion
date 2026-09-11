@@ -14,9 +14,9 @@ echo "=== TS-JEPA Augmented Run ===" | tee "$LOG"
 echo "Start: $(date)" | tee -a "$LOG"
 echo "GPU: $(nvidia-smi --query-gpu=name,memory.free --format=csv,noheader -i 1 2>/dev/null || echo 'N/A')" | tee -a "$LOG"
 
-uv run python run_exotic.py \
+uv run inmotion run pipeline exotic -- \
   --model ts_jepa \
-  --data dataset_augmented.csv \
+  --data data/processed/dataset_augmented.csv \
   --pretrain-epochs 300 \
   --finetune-epochs 80 \
   --batch-size 128 \
@@ -40,9 +40,9 @@ echo "" | tee -a "$LOG"
 echo "=== TS-JEPA Normal Dataset ===" | tee -a "$LOG"
 echo "Start: $(date)" | tee -a "$LOG"
 
-uv run python run_exotic.py \
+uv run inmotion run pipeline exotic -- \
   --model ts_jepa \
-  --data dataset.csv \
+  --data data/processed/dataset.csv \
   --pretrain-epochs 300 \
   --finetune-epochs 80 \
   --batch-size 128 \

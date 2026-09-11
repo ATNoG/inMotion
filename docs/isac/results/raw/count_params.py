@@ -3,7 +3,7 @@ import os
 os.environ.setdefault("MAMBA_SSM_AVAILABLE", "0")
 import sys; sys.path.insert(0, os.getcwd())
 import torch
-import mega_ensemble as me
+from inmotion.pipelines import mega_ensemble as me
 
 dev = torch.device("cpu")
 

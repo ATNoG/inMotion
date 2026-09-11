@@ -86,7 +86,7 @@ def mixup_augment(
 
 
 def augment(
-    input_path: str = "dataset.csv", output_path: str = "dataset_augmented.csv"
+    input_path: str = "data/processed/dataset.csv", output_path: str = "data/processed/dataset_augmented.csv"
 ) -> pd.DataFrame:
     rng = np.random.default_rng(SEED)
 
@@ -129,8 +129,8 @@ def augment(
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser(description="RSSI data augmentation")
-    ap.add_argument("input", nargs="?", default="dataset.csv",
-                    help="input CSV (default: dataset.csv)")
+    ap.add_argument("input", nargs="?", default="data/processed/dataset.csv",
+                    help="input CSV (default: data/processed/dataset.csv)")
     ap.add_argument("output", nargs="?", default=None,
                     help="output CSV (default: <input-stem>_augmented.csv)")
     args = ap.parse_args()

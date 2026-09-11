@@ -14,6 +14,7 @@ Output plots (publication-quality PDF, 600 DPI, husl palette):
 
 from __future__ import annotations
 
+import argparse
 import random
 import sys
 from pathlib import Path
@@ -36,8 +37,8 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 # ── Project imports ─────────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(PROJECT_ROOT))
+# Repository root, for default artifact paths.
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 from dl.config import DLConfig
 from dl.data_loader import DLDataLoader
@@ -77,8 +78,8 @@ DEEPSTACK_DS_VARIANTS = [
 ]
 
 # Output
-OUTPUT_DIR = PROJECT_ROOT / "docs" / "icaisf" / "paper" / "images"
-CHECKPOINT_DIR = PROJECT_ROOT / "models" / "dl"
+OUTPUT_DIR = REPO_ROOT / "docs" / "icaisf" / "paper" / "images"
+CHECKPOINT_DIR = REPO_ROOT / "models" / "dl"
 
 # ── Plotting standards (match DLVisualizer precisely) ───────────────────────
 PLOT_DPI = 600
@@ -470,24 +471,52 @@ def _try_load_deepstack(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def main() -> None:
-    set_seed(SEED)
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Command-line interface."""
+    parser = argparse.ArgumentParser(
+        description="Permutation feature importance for the DL baselines.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--data", type=Path, default=None,
+                        help="Dataset CSV. Defaults to the processed dataset.csv.")
+    parser.add_argument("--seed", type=int, default=SEED, help="Random seed.")
+    parser.add_argument("--epochs", type=int, default=100, help="Epochs per model.")
+    parser.add_argument("--patience", type=int, default=20, help="Early-stopping patience.")
+    parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR,
+                        help="Directory for the generated figures.")
+    parser.add_argument("--checkpoints-dir", type=Path, default=CHECKPOINT_DIR,
+                        help="Directory holding trained DL checkpoints.")
+    parser.add_argument("--n-repeats", type=int, default=None,
+                        help="Permutation repeats (default: module constant).")
+    return parser.parse_args(argv)
+
+
+def main(args: argparse.Namespace | None = None) -> None:
+    args = args or parse_args()
+    set_seed(args.seed)
     device = get_device()
     print(f"Device: {device}")
-    print(f"Output dir: {OUTPUT_DIR}")
+    print(f"Output dir: {args.output_dir}")
+    # The plotting helpers read the module-level OUTPUT_DIR; point it at the
+    # requested directory rather than threading a parameter through each one.
+    global OUTPUT_DIR  # noqa: PLW0603 - module-level output location
+    OUTPUT_DIR = args.output_dir
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # ── Config ────────────────────────────────────────────────────────────
     config = DLConfig()
-    config.seed = SEED
+    config.seed = args.seed
     config.use_wandb = False
-    config.num_epochs = 100
-    config.patience = 20
-    config.models_dir = CHECKPOINT_DIR
+    config.num_epochs = args.epochs
+    config.patience = args.patience
+    config.models_dir = args.checkpoints_dir
 
     # ── Load data ─────────────────────────────────────────────────────────
-    data_path = PROJECT_ROOT / "dataset.csv"
+    from inmotion.data.paths import resolve
+
+    data_path = args.data or resolve("dataset.csv")
     if not data_path.exists():
-        data_path = PROJECT_ROOT / "dataset_augmented.csv"
+        data_path = resolve("dataset_augmented.csv")
     print(f"\nLoading: {data_path}")
 
     loader = DLDataLoader(config)

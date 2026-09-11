@@ -2,7 +2,7 @@
 """Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
 Usage:
-    uv run python evaluate_checkpoints.py --seed 42 --data dataset.csv
+    uv run python evaluate_checkpoints.py --seed 42 --data data/processed/dataset.csv
 """
 
 from __future__ import annotations
@@ -246,7 +246,7 @@ def _load_nas_best_params(config: DLConfig) -> dict | None:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Retroactive DL checkpoint evaluation")
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--data", type=Path, default=Path("dataset.csv"))
+    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     p.add_argument("--checkpoints-dir", type=Path, default=Path("models/dl"))
     p.add_argument("--output", type=Path, default=None, help="Output CSV path (default: results/dl/dl_detailed_seed{seed}.csv)")
     p.add_argument("--batch-size", type=int, default=64)
