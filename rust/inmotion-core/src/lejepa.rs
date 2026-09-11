@@ -1,4 +1,4 @@
-//! The LeJEPA classifier, reimplemented for inference.
+//! The `LeJEPA` classifier, reimplemented for inference.
 //!
 //! Mirrors `LeJEPAEncoder.forward` and `LeJEPAClassifier.forward` exactly:
 //!
@@ -25,11 +25,18 @@ use crate::tensor::Tensor;
 /// Architecture hyperparameters, read from the artifact.
 #[derive(Debug, Clone)]
 pub struct LeJepaConfig {
+    /// Timesteps per window.
     pub seq_len: usize,
+    /// Input channels per timestep.
     pub in_channels: usize,
+    /// Transformer width; also the width of the final pooling head.
     pub d_model: usize,
+    /// Attention heads; cannot be inferred from parameter shapes, so it is read
+    /// from the artifact and validated against `d_model`.
     pub n_heads: usize,
+    /// Number of `TransformerEncoderLayer` blocks.
     pub num_layers: usize,
+    /// Output classes.
     pub num_classes: usize,
 }
 
@@ -46,11 +53,24 @@ impl LeJepaConfig {
             .shape_of("head.3.weight")
             .and_then(|s| s.first())
             .ok_or("missing head.3.weight")?;
-        let num_layers = (0..)
-            .take_while(|&l| artifact.shape_of(&format!("encoder.transformer.layers.{l}.norm1.weight")).is_some())
-            .count();
+        // Read the layer count rather than probing until a lookup fails. Probing
+        // silently accepts a gap in the numbering (layers 0, 1, 3 would count as
+        // two) and allocates a formatted key per attempt.
+        let num_layers = artifact
+            .meta
+            .arch
+            .get("num_layers")
+            .and_then(serde_json::Value::as_u64)
+            .ok_or("artifact does not record `num_layers`")? as usize;
         if num_layers == 0 {
-            return Err("no transformer layers found in the artifact".into());
+            return Err("artifact records num_layers = 0".into());
+        }
+        // Every recorded layer must actually be present.
+        for l in 0..num_layers {
+            let key = format!("encoder.transformer.layers.{l}.norm1.weight");
+            if artifact.shape_of(&key).is_none() {
+                return Err(format!("artifact is missing {key}"));
+            }
         }
         Ok(Self {
             seq_len: artifact.meta.seq_len,
@@ -63,27 +83,29 @@ impl LeJepaConfig {
     }
 }
 
-/// Recover the head count from the attention layout.
+/// Read the attention head count from the artifact.
 ///
-/// PyTorch does not store `nhead` in the weights, and the head count does not
-/// change any parameter shape, so it cannot be derived from shapes alone. The
-/// artifact therefore records the architecture explicitly; this function reads it
-/// and falls back only when the value is absent.
+/// This cannot be inferred from the weights: `nhead` changes no parameter shape,
+/// only how the projected dimensions are grouped. Guessing it would produce a
+/// model that runs and returns confident wrong answers, so an absent value is an
+/// error rather than a default.
 fn infer_heads(artifact: &Artifact, d_model: usize) -> Result<usize, String> {
-    if let Some(value) = artifact.meta.arch.get("nhead").and_then(|v| v.as_u64()) {
-        return Ok(value as usize);
+    let heads = artifact
+        .meta
+        .arch
+        .get("nhead")
+        .and_then(serde_json::Value::as_u64)
+        .ok_or("artifact does not record `nhead`; re-export it from the registry entry")?
+        as usize;
+    if heads == 0 || !d_model.is_multiple_of(heads) {
+        return Err(format!("nhead {heads} does not divide d_model {d_model}"));
     }
-    // A sensible default that divides d_model; recorded in meta for real runs.
-    for candidate in [8usize, 4, 2, 1] {
-        if d_model % candidate == 0 {
-            return Ok(candidate);
-        }
-    }
-    Ok(1)
+    Ok(heads)
 }
 
-/// A loaded LeJEPA classifier, holding dequantized weights.
+/// A loaded `LeJEPA` classifier, holding dequantized weights.
 pub struct LeJepa {
+    /// Shape parameters, validated against the loaded weights.
     pub config: LeJepaConfig,
     tokenizer_w: Tensor,
     tokenizer_b: Tensor,
@@ -177,10 +199,19 @@ impl LeJepa {
     }
 
     /// Run one window, `x: (seq_len, in_channels)`; returns `(num_classes,)` logits.
+    #[must_use]
     pub fn forward(&self, x: &Tensor) -> Tensor {
         let (t, c) = x.as_2d();
-        assert_eq!(c, self.config.in_channels, "expected {} input channels", self.config.in_channels);
-        assert_eq!(t, self.config.seq_len, "expected {} timesteps", self.config.seq_len);
+        assert_eq!(
+            c, self.config.in_channels,
+            "expected {} input channels",
+            self.config.in_channels
+        );
+        assert_eq!(
+            t, self.config.seq_len,
+            "expected {} timesteps",
+            self.config.seq_len
+        );
 
         // tokenizer + positional embedding
         let mut z = ops::linear(x, &self.tokenizer_w, &self.tokenizer_b);
@@ -190,10 +221,14 @@ impl LeJepa {
             let normed = ops::layer_norm(&z, &layer.norm1_w, &layer.norm1_b, self.eps_ln);
             let attn = ops::self_attention(
                 &normed,
-                &layer.q_w, &layer.q_b,
-                &layer.k_w, &layer.k_b,
-                &layer.v_w, &layer.v_b,
-                &layer.out_w, &layer.out_b,
+                &layer.q_w,
+                &layer.q_b,
+                &layer.k_w,
+                &layer.k_b,
+                &layer.v_w,
+                &layer.v_b,
+                &layer.out_w,
+                &layer.out_b,
                 self.config.n_heads,
             );
             z = ops::add(&z, &attn);
@@ -226,8 +261,10 @@ impl LeJepa {
         let weights = ops::softmax_first_axis(&scores);
         let mut pooled = vec![0.0f32; self.config.d_model];
         for i in 0..t {
-            for d in 0..self.config.d_model {
-                pooled[d] += z.data[i * self.config.d_model + d] * weights.data[i];
+            let weight = weights.data[i];
+            let row = &z.data[i * self.config.d_model..(i + 1) * self.config.d_model];
+            for (acc, value) in pooled.iter_mut().zip(row) {
+                *acc += value * weight;
             }
         }
         let pooled = Tensor::new(pooled, vec![1, self.config.d_model]);

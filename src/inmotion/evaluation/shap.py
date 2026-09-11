@@ -27,7 +27,7 @@ from inmotion.pipelines.mega_ensemble import (
     _build_t_jepa,
     _build_ts_jepa,
     _load_features,
-    _stratified_indices,
+    stratified_indices,
 )
 
 FEATURE_NAMES_18 = [
@@ -155,7 +155,7 @@ def run(args: RunConfig) -> int:
 
     # Load dataset
     y_raw = pd.read_csv(args.data)["label"].values
-    train_idx, _, test_idx = _stratified_indices(y_raw, args.seed)
+    train_idx, _, test_idx = stratified_indices(y_raw, args.seed)
 
     builder_fn, is_rich = MODEL_BUILDERS[args.model]
     n_channels = 18 if is_rich else 4

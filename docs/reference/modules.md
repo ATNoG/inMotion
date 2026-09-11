@@ -222,6 +222,24 @@ Public API:
 - func `mixup_augment` - Intra-class Mixup: X_new = λ·X₁ + (1−λ)·X₂, same label only.
 - func `augment`
 
+### `inmotion.data.splits`
+
+`src/inmotion/data/splits.py` - 43 lines
+
+The train/validation/test split convention.
+
+One definition, because every reported number depends on it. `MASTER_RESULTS.md`
+states the convention: an 80/20 stratified train-test split, then 12.5% of the
+train portion held out for validation, both with a fixed seed.
+
+This lived in `pipelines/mega_ensemble.py` and was imported from there by three
+other modules, which meant a 1,000-line pipeline had to be imported to obtain a
+fifteen-line function. It is a data concern, so it lives with the data.
+
+Public API:
+
+- func `stratified_indices` - Return ``(train, validation, test)`` index arrays.
+
 ## Quantization
 
 ### `inmotion.quant.spec`
@@ -355,7 +373,7 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 246 lines
+`src/inmotion/quant/evaluate.py` - 235 lines
 
 Accuracy under quantization, measured on the paper's split.
 
@@ -365,7 +383,7 @@ and the same feature pipeline the models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
-- the 80/20 stratified split from ``_stratified_indices(y, seed)``, which is the
+- the 80/20 stratified split from ``inmotion.data.splits``, which is the
   convention stated in MASTER_RESULTS.
 
 The first thing the sweep does is evaluate the unquantized model. If that does
@@ -376,15 +394,16 @@ table nobody can trace.
 Public API:
 
 - class `EvalRow` - One (model, precision) measurement.
+- func `load_split` - Features, labels and test indices, using the training convention.
 - func `evaluate` - Measure one (model, precision) pair on the test split.
 - func `check_baseline` - Confirm fp32 reproduces the recorded MCC, within tolerance.
 - func `sweep` - Evaluate every (model, precision) pair and optionally write a CSV.
-- func `write_csv`
+- func `write_csv` - Write the sweep as one row per measurement.
 - func `write_json`
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 298 lines
+`src/inmotion/quant/export.py` - 289 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -931,7 +950,7 @@ Public API:
 
 ### `inmotion.pipelines.ensemble`
 
-`src/inmotion/pipelines/ensemble.py` - 292 lines
+`src/inmotion/pipelines/ensemble.py` - 272 lines
 
 Greedy ensemble selection over existing checkpoints.
 
@@ -958,7 +977,7 @@ Public API:
 
 ### `inmotion.pipelines.mega_ensemble`
 
-`src/inmotion/pipelines/mega_ensemble.py` - 1064 lines
+`src/inmotion/pipelines/mega_ensemble.py` - 1045 lines
 
 Mega-ensemble across every model family.
 

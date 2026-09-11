@@ -13,3 +13,6 @@ path = "src/main.rs"
 [dependencies]
 inmotion-core = { path = "../inmotion-core" }
 serde_json = "1"
+
+[lints]
+workspace = true

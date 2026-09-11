@@ -12,3 +12,6 @@ serde_json = "1"
 libm = "0.2"
 
 [dev-dependencies]
+
+[lints]
+workspace = true

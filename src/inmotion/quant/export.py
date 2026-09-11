@@ -37,14 +37,20 @@ parity holds by construction and is asserted by the golden-vector tests.
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
 import torch
+from safetensors.numpy import save_file
 
-from inmotion.quant.model import _is_quantizable, quantize_tensor
-from inmotion.quant.spec import QuantSpec
+from inmotion.data.paths import resolve as resolve_path
+from inmotion.models import registry as reg
+from inmotion.quant.evaluate import load_split
+from inmotion.quant.model import _is_quantizable, apply, apply_cast, quantize_tensor
+from inmotion.quant.packing import fold_bias_into_zero_point, pack
+from inmotion.quant.spec import FLOAT_PRECISIONS, QuantSpec
 from inmotion.quant.spec import resolve as resolve_spec
 
 ARTIFACT_VERSION = 1
@@ -142,10 +148,6 @@ def export(
     seed: int = 42,
 ) -> ExportReport:
     """Write ``model_name`` as a portable artifact directory."""
-    from safetensors.numpy import save_file
-
-    from inmotion.models import registry as reg
-
     spec_obj = reg.by_name(model_name)
     model = reg.load(spec_obj, strict=True).eval()
     out_dir = Path(out_dir)
@@ -164,8 +166,6 @@ def export(
         is_weight = _is_quantizable(name, torch.from_numpy(array))
         if quant_spec is not None and is_weight:
             qt, _ = quantize_tensor(torch.from_numpy(array), quant_spec)
-            from inmotion.quant.packing import fold_bias_into_zero_point, pack
-
             tensors[f"{name}.q"] = pack(qt.q.ravel(), quant_spec.bits)
             tensors[f"{name}.scale"] = qt.scale.astype(np.float32).ravel()
             tensors[f"{name}.zp"] = fold_bias_into_zero_point(
@@ -221,8 +221,7 @@ def export(
 
 
 def _git_sha() -> str | None:
-    import subprocess
-
+    """Best-effort current commit, so an artifact can be traced to its code."""
     try:
         return subprocess.run(
             ["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5, check=True
@@ -254,17 +253,9 @@ def write_golden(
     unquantized outputs would measure quantization error, not port correctness,
     and would be reported as a parity failure.
     """
-    import json as _json
-
-    from inmotion.data.paths import resolve as resolve_path
-    from inmotion.models import registry as reg
-    from inmotion.quant.evaluate import _load_split
-    from inmotion.quant.model import apply, apply_cast
-    from inmotion.quant.spec import FLOAT_PRECISIONS
-
     spec_obj = reg.by_name(model_name)
     path = dataset or resolve_path("dataset.icaisf.csv")
-    X, _y, test_idx, classes = _load_split(model_name, path, seed)
+    X, _y, test_idx, classes = load_split(model_name, path, seed)
 
     model = reg.load(spec_obj, strict=True).eval()
     if quant is not None:
@@ -294,5 +285,5 @@ def write_golden(
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / GOLDEN_NAME
-    out_path.write_text(_json.dumps(payload, indent=2) + "\n")
+    out_path.write_text(json.dumps(payload, indent=2) + "\n")
     return out_path

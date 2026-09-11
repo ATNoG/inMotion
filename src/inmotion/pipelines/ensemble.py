@@ -28,6 +28,7 @@ from sklearn.metrics import matthews_corrcoef
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
 
+from inmotion.data.splits import stratified_indices
 from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
 from inmotion.pipelines.ensemble_config import RunConfig
@@ -202,27 +203,6 @@ def _load_features(data_path: Path, rich: bool) -> np.ndarray:
     return X.astype(np.float32)
 
 
-def _stratified_indices(y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Same split as run_exotic.load_supervised_data: 70/10/20 train/val/test."""
-    from sklearn.model_selection import train_test_split
-
-    idx = np.arange(len(y))
-    tr_val_idx, test_idx = train_test_split(
-        idx,
-        test_size=0.2,
-        random_state=seed,
-        stratify=y,
-    )
-    y_tr_val = y[tr_val_idx]
-    train_idx, val_idx = train_test_split(
-        tr_val_idx,
-        test_size=0.125,
-        random_state=seed,
-        stratify=y_tr_val,
-    )
-    return train_idx, val_idx, test_idx
-
-
 def _greedy_weights(val_probs: list[np.ndarray], val_y: np.ndarray, steps: int = 50) -> np.ndarray:
     """Caruana ensemble selection with replacement. Returns (n_models,) counts."""
     n = len(val_probs)
@@ -254,7 +234,7 @@ def run(args: RunConfig) -> int:
     import pandas as pd
 
     y = pd.read_csv(args.data)["label"].values
-    train_idx, val_idx, test_idx = _stratified_indices(y, args.seed)
+    train_idx, val_idx, test_idx = stratified_indices(y, args.seed)
     y_val = y[val_idx]
     y_test = y[test_idx]
     from sklearn.preprocessing import LabelEncoder

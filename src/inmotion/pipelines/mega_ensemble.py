@@ -34,6 +34,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
 
+from inmotion.data.splits import stratified_indices
 from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
 from inmotion.pipelines.mega_ensemble_config import RunConfig
@@ -431,28 +432,8 @@ def _load_features(data_path: Path, rich: bool) -> np.ndarray:
 
 
 def _stratified_indices(y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    from sklearn.model_selection import train_test_split
-
-    idx = np.arange(len(y))
-    tr_val_idx, test_idx = train_test_split(
-        idx,
-        test_size=0.2,
-        random_state=seed,
-        stratify=y,
-    )
-    y_tr_val = y[tr_val_idx]
-    train_idx, val_idx = train_test_split(
-        tr_val_idx,
-        test_size=0.125,
-        random_state=seed,
-        stratify=y_tr_val,
-    )
-    return train_idx, val_idx, test_idx
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Model prediction
-# ═══════════════════════════════════════════════════════════════════════════════
+    """Backwards-compatible alias for :func:`inmotion.data.splits.stratified_indices`."""
+    return stratified_indices(y, seed)
 
 
 def _predict_probs(

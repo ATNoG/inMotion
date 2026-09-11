@@ -8,6 +8,23 @@ edition = "2021"
 license = "MIT"
 authors = ["André Ribeiro <andrepedro2004@hotmail.com>"]
 
+# Enforced in CI. The crate is small enough that these should stay at zero.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+# `pedantic` is noisy about casts that are intentional in numeric kernels.
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+similar_names = "allow"
+many_single_char_names = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
 [profile.release]
 opt-level = 3
 lto = true

@@ -23,7 +23,9 @@ fn usage() -> &'static str {
 }
 
 fn arg_value(args: &[String], flag: &str) -> Option<String> {
-    args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1).cloned())
+    args.iter()
+        .position(|a| a == flag)
+        .and_then(|i| args.get(i + 1).cloned())
 }
 
 /// Read a `seq_len x in_channels` window: whitespace- or comma-separated floats.
@@ -32,7 +34,7 @@ fn read_window(path: &Path, seq_len: usize, channels: usize) -> Result<Tensor, S
     let values: Vec<f32> = text
         .split(|c: char| c.is_whitespace() || c == ',')
         .filter(|s| !s.is_empty())
-        .map(|s| s.parse::<f32>())
+        .map(str::parse::<f32>)
         .collect::<Result<_, _>>()
         .map_err(|e| format!("{}: not a float: {e}", path.display()))?;
     let expected = seq_len * channels;
@@ -71,7 +73,8 @@ fn predict(artifact_dir: &Path, input: &Path) -> Result<(), String> {
     let x = read_window(input, model.config.seq_len, model.config.in_channels)?;
 
     let logits = model.forward(&x);
-    let probs = inmotion_core::ops::softmax_last(&Tensor::new(logits.data.clone(), vec![1, logits.len()]));
+    let probs =
+        inmotion_core::ops::softmax_last(&Tensor::new(logits.data.clone(), vec![1, logits.len()]));
     let (best, &confidence) = probs
         .data
         .iter()
@@ -103,7 +106,12 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
             .as_array()
             .ok_or("case has no input")?
             .iter()
-            .flat_map(|row| row.as_array().unwrap().iter().map(|v| v.as_f64().unwrap() as f32))
+            .flat_map(|row| {
+                row.as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|v| v.as_f64().unwrap() as f32)
+            })
             .collect();
         let expected: Vec<f32> = case["logits"]
             .as_array()
@@ -143,12 +151,11 @@ fn main() -> ExitCode {
         eprintln!("{}", usage());
         return ExitCode::from(2);
     }
-    let artifact_dir: PathBuf = match arg_value(&args, "--artifact") {
-        Some(p) => PathBuf::from(p),
-        None => {
-            eprintln!("--artifact is required\n{}", usage());
-            return ExitCode::from(2);
-        }
+    let artifact_dir: PathBuf = if let Some(p) = arg_value(&args, "--artifact") {
+        PathBuf::from(p)
+    } else {
+        eprintln!("--artifact is required\n{}", usage());
+        return ExitCode::from(2);
     };
 
     let result = match args[1].as_str() {

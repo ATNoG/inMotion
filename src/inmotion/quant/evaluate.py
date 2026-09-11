@@ -6,7 +6,7 @@ and the same feature pipeline the models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
-- the 80/20 stratified split from ``_stratified_indices(y, seed)``, which is the
+- the 80/20 stratified split from ``inmotion.data.splits``, which is the
   convention stated in MASTER_RESULTS.
 
 The first thing the sweep does is evaluate the unquantized model. If that does
@@ -18,14 +18,19 @@ table nobody can trace.
 from __future__ import annotations
 
 import csv
+import dataclasses
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
 import torch
+from sklearn.metrics import accuracy_score, f1_score, matthews_corrcoef
 
 from inmotion.data.paths import resolve as resolve_path
+from inmotion.data.splits import stratified_indices
+from inmotion.dl.config import DLConfig
+from inmotion.dl.data_loader import DLDataLoader
 from inmotion.models import registry as reg
 from inmotion.quant.model import apply, apply_cast
 from inmotion.quant.spec import FLOAT_PRECISIONS
@@ -40,6 +45,9 @@ PAPER_REFERENCE: dict[str, float] = {
     "cf_jepa": 0.8661,
 }
 BASELINE_TOLERANCE = 0.02
+
+#: The dataset the reference numbers above were measured on.
+PAPER_REFERENCE_DATASET = "dataset.icaisf.csv"
 
 
 @dataclass
@@ -64,16 +72,16 @@ class EvalRow:
 
     def flat(self) -> dict[str, object]:
         row = asdict(self)
-        row.pop("extra", None)
+        row.pop("extra", None)  # nested dict, not a CSV column
         return row
 
 
-def _load_split(model_name: str, dataset: Path, seed: int):
-    """Features, labels and test indices, using the training convention."""
-    from inmotion.dl.config import DLConfig
-    from inmotion.dl.data_loader import DLDataLoader
-    from inmotion.pipelines.mega_ensemble import _stratified_indices
+def load_split(model_name: str, dataset: Path, seed: int):
+    """Features, labels and test indices, using the training convention.
 
+    Public because the exporter needs the same split to write golden vectors;
+    reaching across modules for a private name would be a smell, not a boundary.
+    """
     spec = reg.by_name(model_name)
     cfg = DLConfig()
     cfg.data_path = dataset
@@ -83,7 +91,7 @@ def _load_split(model_name: str, dataset: Path, seed: int):
 
     loader = DLDataLoader(cfg)
     X, y = loader.load_and_preprocess()
-    _, _, test_idx = _stratified_indices(y, seed)
+    _, _, test_idx = stratified_indices(y, seed)
     return X.astype(np.float32), y, test_idx, list(loader.classes_)
 
 
@@ -98,8 +106,6 @@ def _predict(model: torch.nn.Module, X: np.ndarray, batch: int = 256) -> np.ndar
 
 
 def _metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
-    from sklearn.metrics import accuracy_score, f1_score, matthews_corrcoef
-
     return {
         "mcc": float(matthews_corrcoef(y_true, y_pred)),
         "accuracy": float(accuracy_score(y_true, y_pred)),
@@ -117,7 +123,7 @@ def evaluate(
     """Measure one (model, precision) pair on the test split."""
     spec = reg.by_name(model_name)
     path = dataset or resolve_path("dataset.icaisf.csv")
-    X, y, test_idx, _ = _load_split(model_name, path, seed)
+    X, y, test_idx, _ = load_split(model_name, path, seed)
 
     model = reg.load(spec, strict=True)
     if precision in FLOAT_PRECISIONS:
@@ -153,7 +159,7 @@ def check_baseline(rows: list[EvalRow]) -> list[str]:
     """
     problems: list[str] = []
     for row in rows:
-        if row.precision != "fp32" or row.dataset not in PAPER_REFERENCE_DATASET:
+        if row.precision != "fp32" or row.dataset != PAPER_REFERENCE_DATASET:
             continue
         expected = PAPER_REFERENCE.get(row.model)
         if expected is None:
@@ -164,9 +170,6 @@ def check_baseline(rows: list[EvalRow]) -> list[str]:
                 f"(tolerance {BASELINE_TOLERANCE})"
             )
     return problems
-
-
-PAPER_REFERENCE_DATASET = ("dataset.icaisf.csv",)
 
 
 DEFAULT_PRECISIONS: tuple[str, ...] = (
@@ -210,26 +213,12 @@ def sweep(
 
 
 def write_csv(rows: list[EvalRow], path: Path) -> Path:
+    """Write the sweep as one row per measurement."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fields = list(
-        EvalRow(
-            model="",
-            precision="",
-            bits=0,
-            dataset="",
-            seed=0,
-            mcc=0,
-            accuracy=0,
-            f1_macro=0,
-            n_test=0,
-            total_mb=0,
-            weights_mb=0,
-            compression=0,
-            max_weight_error=0,
-            n_params=0,
-        ).flat()
-    )
+    # Field names come from the dataclass, so the header cannot drift from the
+    # row that is written. (`extra` is excluded: it is a nested summary dict.)
+    fields = [f.name for f in dataclasses.fields(EvalRow) if f.name != "extra"]
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()

@@ -41,6 +41,7 @@ MODULE_GROUPS: dict[str, list[str]] = {
         "inmotion.data.merge",
         "inmotion.data.clean",
         "inmotion.data.augment",
+        "inmotion.data.splits",
     ],
     "Quantization": [
         "inmotion.quant.spec",
