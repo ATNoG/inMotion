@@ -36,11 +36,20 @@ def add_prefix(state: dict, prefix: str) -> dict:
 
 
 def normalise_state(state: dict, prefix: str | None) -> dict:
-    """Return ``state`` shaped for a module that expects ``prefix`` wrapping.
+    """Return ``state`` shaped the way the target module expects.
 
-    ``None`` means the module is unwrapped, so a ``c.``-prefixed checkpoint is
-    unwrapped to match.
+    ``prefix`` names the wrapper attribute the module nests its children under
+    (``"m."`` for :class:`TupleWrap`). Raw checkpoints saved from the inner
+    module lack it and need it added; checkpoints saved from the wrapper already
+    carry it, so re-adding must be a no-op rather than producing ``"m.m."``.
+
+    ``prefix=None`` means the module is unwrapped, so a ``"c."``-prefixed
+    classifier checkpoint is unwrapped to match.
     """
     if prefix is None:
         return strip_prefix(state, "c.") if any(k.startswith("c.") for k in state) else state
+
+    # Already wrapped: adding the prefix again would double it.
+    if state and all(k.startswith(prefix) for k in state):
+        return state
     return add_prefix(state, prefix)

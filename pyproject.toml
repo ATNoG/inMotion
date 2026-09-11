@@ -30,6 +30,9 @@ dependencies = [
     "typer>=0.25.1",
 ]
 
+[project.scripts]
+inmotion = "inmotion.cli:app"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
