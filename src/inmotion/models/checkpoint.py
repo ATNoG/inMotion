@@ -84,7 +84,7 @@ class Sidecar:
     @classmethod
     def from_json(cls, text: str) -> Sidecar:
         data = json.loads(text)
-        known = {f for f in cls.__dataclass_fields__}
+        known = set(cls.__dataclass_fields__)
         unknown = set(data) - known
         if unknown:
             raise ValueError(f"sidecar has unknown fields: {sorted(unknown)}")

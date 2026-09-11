@@ -400,3 +400,351 @@ def build(factory: str, arch: dict[str, Any] | None = None) -> nn.Module:
     if factory not in FACTORIES:
         raise KeyError(f"unknown factory {factory!r}; known: {sorted(FACTORIES)}")
     return FACTORIES[factory](**(arch or {}))
+
+
+# ---------------------------------------------------------------------------
+# Classical DL classifiers (the `dl/models` families). These were trained by
+# run_dl.py with per-model configs that were only ever recorded in a now-deleted
+# Optuna database, so `adopt` recovers them from checkpoint shapes.
+# ---------------------------------------------------------------------------
+
+
+def rnn(
+    in_features: int = 4,
+    hidden_size: int = 64,
+    num_layers: int = 2,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    bidirectional: bool = False,
+) -> nn.Module:
+    """Plain RNN classifier."""
+    from dl.models.rnn import RNNClassifier
+
+    return RNNClassifier(
+        in_features=in_features,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        bidirectional=bidirectional,
+    )
+
+
+def gru(
+    in_features: int = 4,
+    hidden_size: int = 64,
+    num_layers: int = 1,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    bidirectional: bool = False,
+    use_attention: bool = False,
+) -> nn.Module:
+    """GRU classifier, optionally with attention pooling."""
+    from dl.models.gru import GRUClassifier
+
+    return GRUClassifier(
+        in_features=in_features,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        bidirectional=bidirectional,
+        use_attention=use_attention,
+    )
+
+
+def lstm(
+    in_features: int = 4,
+    hidden_size: int = 64,
+    num_layers: int = 1,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    bidirectional: bool = False,
+    use_attention: bool = True,
+) -> nn.Module:
+    """LSTM classifier, optionally with attention pooling."""
+    from dl.models.lstm import LSTMClassifier
+
+    return LSTMClassifier(
+        in_features=in_features,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        bidirectional=bidirectional,
+        use_attention=use_attention,
+    )
+
+
+def bilstm(
+    in_features: int = 4,
+    hidden_size: int = 64,
+    num_layers: int = 1,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    use_attention: bool = True,
+) -> nn.Module:
+    """Bidirectional LSTM classifier."""
+    from dl.models.bilstm import BiLSTMClassifier
+
+    return BiLSTMClassifier(
+        in_features=in_features,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        use_attention=use_attention,
+    )
+
+
+def tcn(
+    in_features: int = 4,
+    num_channels: int = 128,
+    kernel_size: int = 3,
+    depth: int = 4,
+    num_classes: int = 4,
+    dropout: float = 0.2,
+) -> nn.Module:
+    """Temporal convolutional network classifier."""
+    from dl.models.tcn import TCNClassifier
+
+    return TCNClassifier(
+        in_features=in_features,
+        num_channels=num_channels,
+        kernel_size=kernel_size,
+        depth=depth,
+        num_classes=num_classes,
+        dropout=dropout,
+    )
+
+
+def mamba(
+    in_features: int = 4,
+    d_model: int = 64,
+    d_state: int = 16,
+    num_layers: int = 2,
+    expand: int = 2,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    mimo_rank: int = 4,
+) -> nn.Module:
+    """Mamba (selective SSM) classifier."""
+    from dl.models.mamba import MambaClassifier
+
+    return MambaClassifier(
+        in_features=in_features,
+        d_model=d_model,
+        d_state=d_state,
+        num_layers=num_layers,
+        expand=expand,
+        num_classes=num_classes,
+        dropout=dropout,
+        mimo_rank=mimo_rank,
+    )
+
+
+def transformer(
+    in_features: int = 4,
+    d_model: int = 64,
+    n_heads: int = 4,
+    num_layers: int = 2,
+    num_classes: int = 4,
+    dropout: float = 0.1,
+    max_seq_len: int = 512,
+) -> nn.Module:
+    """Transformer encoder classifier."""
+    from dl.models.transformer import TransformerClassifier
+
+    return TransformerClassifier(
+        in_features=in_features,
+        d_model=d_model,
+        n_heads=n_heads,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        max_seq_len=max_seq_len,
+    )
+
+
+def cnn(
+    in_features: int = 4,
+    num_filters: int = 128,
+    num_blocks: int = 3,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    kernel_sizes: list[int] | None = None,
+) -> nn.Module:
+    """Multi-branch residual CNN classifier."""
+    from dl.models.cnn import CNNClassifier
+
+    return CNNClassifier(
+        in_features=in_features,
+        num_filters=num_filters,
+        num_blocks=num_blocks,
+        num_classes=num_classes,
+        dropout=dropout,
+        kernel_sizes=kernel_sizes,
+    )
+
+
+def cnn2d_rnn(
+    in_features: int = 4,
+    num_filters: int = 32,
+    cnn_depth: int = 2,
+    hidden_size: int = 64,
+    num_rnn_layers: int = 2,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    rnn_type: str = "lstm",
+    bidirectional: bool = False,
+) -> nn.Module:
+    """2-D CNN front-end feeding an RNN."""
+    from dl.models.cnn2d_rnn import CNN2DRNNClassifier
+
+    return CNN2DRNNClassifier(
+        in_features=in_features,
+        num_filters=num_filters,
+        cnn_depth=cnn_depth,
+        hidden_size=hidden_size,
+        num_rnn_layers=num_rnn_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        rnn_type=rnn_type,
+        bidirectional=bidirectional,
+    )
+
+
+def meta_fusion(
+    in_features: int = 4,
+    hidden_size: int = 64,
+    num_layers: int = 2,
+    num_classes: int = 4,
+    dropout: float = 0.3,
+    meta_embed_dim: int = 8,
+    rnn_type: str = "lstm",
+    bidirectional: bool = False,
+) -> nn.Module:
+    """RNN plus metadata (noise flag, concurrent path) fusion classifier."""
+    from dl.models.meta_fusion import MetaFusionClassifier
+
+    return MetaFusionClassifier(
+        in_features=in_features,
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        num_classes=num_classes,
+        dropout=dropout,
+        meta_embed_dim=meta_embed_dim,
+        rnn_type=rnn_type,
+        bidirectional=bidirectional,
+    )
+
+
+FACTORIES.update(
+    {
+        "rnn": rnn,
+        "gru": gru,
+        "lstm": lstm,
+        "bilstm": bilstm,
+        "tcn": tcn,
+        "mamba": mamba,
+        "transformer": transformer,
+        "cnn": cnn,
+        "cnn2d_rnn": cnn2d_rnn,
+        "meta_fusion": meta_fusion,
+    }
+)
+
+
+def voting_ensemble(
+    models: list[dict[str, Any]],
+    weights: list[float] | None = None,
+    num_classes: int = 4,
+) -> nn.Module:
+    """Averaging ensemble over nested member specs.
+
+    ``models`` is a list of ``{"factory": ..., "arch": {...}}``. Storing members
+    as data keeps an ensemble rebuildable from its sidecar alone.
+    """
+    from dl.models.ensemble import VotingEnsemble
+
+    members = [build(m["factory"], m.get("arch")) for m in models]
+    if weights is None:
+        weights = [1.0] * len(members)
+    return VotingEnsemble(members, list(weights))
+
+
+def stacking_ensemble(
+    base_models: list[dict[str, Any]],
+    num_classes: int = 4,
+    dropout: float = 0.3,
+) -> nn.Module:
+    """Stacking ensemble: base members feed a learned meta-learner."""
+    from dl.models.ensemble import StackingEnsemble
+
+    members = [build(m["factory"], m.get("arch")) for m in base_models]
+    return StackingEnsemble(members, num_classes=num_classes, dropout=dropout)
+
+
+FACTORIES.update(
+    {
+        "voting_ensemble": voting_ensemble,
+        "stacking_ensemble": stacking_ensemble,
+    }
+)
+
+
+# ---------------------------------------------------------------------------
+# JEPA pre-training checkpoints. These save the *base* world model (plus its
+# predictor) rather than a classifier, so they need the model classes directly
+# instead of the `<X>Classifier` wrappers.
+# ---------------------------------------------------------------------------
+
+
+def lejepa_pretrain(**arch: Any) -> nn.Module:
+    """Base LeJEPA world model (no classification head)."""
+    from dl.models.lejepa import LeJEPAModel
+
+    arch.pop("hidden_dim", None)
+    arch.pop("num_classes", None)
+    arch.pop("dropout", None)
+    return LeJEPAModel(**arch)
+
+
+def t_jepa_pretrain(**arch: Any) -> nn.Module:
+    """Base T-JEPA world model."""
+    from dl.models.t_jepa import TJEPAModel
+
+    arch.pop("hidden_dim", None)
+    arch.pop("num_classes", None)
+    arch.pop("dropout", None)
+    return TJEPAModel(**arch)
+
+
+def ts_jepa_pretrain(**arch: Any) -> nn.Module:
+    """Base TS-JEPA world model."""
+    from dl.models.ts_jepa import TSJEPAModel
+
+    arch.pop("hidden_dim", None)
+    arch.pop("num_classes", None)
+    arch.pop("dropout", None)
+    return TSJEPAModel(**arch)
+
+
+def cf_jepa_pretrain(**arch: Any) -> nn.Module:
+    """Base CF-JEPA world model."""
+    from dl.models.cf_jepa import CFJEPAModel
+
+    arch.pop("hidden_dim", None)
+    arch.pop("num_classes", None)
+    arch.pop("dropout", None)
+    return CFJEPAModel(**arch)
+
+
+FACTORIES.update(
+    {
+        "lejepa_pretrain": lejepa_pretrain,
+        "t_jepa_pretrain": t_jepa_pretrain,
+        "ts_jepa_pretrain": ts_jepa_pretrain,
+        "cf_jepa_pretrain": cf_jepa_pretrain,
+    }
+)

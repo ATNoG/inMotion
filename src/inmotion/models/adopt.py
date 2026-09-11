@@ -242,7 +242,242 @@ def _deep_stack_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
     return []
 
 
-DETECTORS = (_mamba3_grid, _sigreg_grid, _jepa_grid, _deep_stack_grid)
+def _recurrent_dims(plain: dict, prefix: str) -> tuple[int, int, bool] | None:
+    """(hidden_size, num_layers, bidirectional) from an RNN/LSTM/GRU state dict."""
+    ih0 = plain.get(f"{prefix}.weight_ih_l0")
+    hh0 = plain.get(f"{prefix}.weight_hh_l0")
+    if ih0 is None or hh0 is None:
+        return None
+    gates = 3 if prefix == "gru" else 4  # GRU has 3 gates, LSTM/RNN 1..4
+    if prefix == "rnn":
+        gates = 1
+    hidden = int(hh0.shape[1]) if prefix == "rnn" else int(hh0.shape[0]) // gates
+    bidirectional = f"{prefix}.weight_ih_l0_reverse" in plain
+    n = 0
+    while f"{prefix}.weight_ih_l{n}" in plain:
+        n += 1
+    return hidden, n, bidirectional
+
+
+def _dl_recurrent_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    """RNN / GRU / LSTM / BiLSTM candidates."""
+    out: list[tuple[str, dict]] = []
+    in_features = (
+        int(plain[[k for k in keys if k.endswith("weight_ih_l0")][0]].shape[1])
+        if any(k.endswith("weight_ih_l0") for k in keys)
+        else None
+    )
+    if in_features is None:
+        return out
+
+    has_attn = "attn.weight" in plain
+    for prefix, factories in (("rnn", ["rnn"]), ("gru", ["gru"]), ("lstm", ["bilstm", "lstm"])):
+        dims = _recurrent_dims(plain, prefix)
+        if dims is None:
+            continue
+        hidden, layers, bidir = dims
+        for fac in factories:
+            # BiLSTMClassifier is inherently bidirectional.
+            if fac == "bilstm" and not bidir:
+                continue
+            candidate = {"in_features": in_features, "hidden_size": hidden}
+            if fac == "bilstm":
+                candidate.update({"num_layers": layers, "use_attention": has_attn})
+            else:
+                candidate.update({"num_layers": layers, "bidirectional": bidir})
+                # Only the GRU/LSTM classifiers have an attention head.
+                if fac in ("gru", "lstm"):
+                    candidate["use_attention"] = has_attn
+            out.append((fac, candidate))
+    return out
+
+
+def _dl_conv_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    """TCN and multi-branch CNN candidates."""
+    out: list[tuple[str, dict]] = []
+
+    if "network.0.conv1.conv.weight_v" in plain:
+        first = plain["network.0.conv1.conv.weight_v"]
+        out.append(
+            (
+                "tcn",
+                {
+                    "in_features": int(first.shape[1]) if first.dim() == 3 else 4,
+                    "num_channels": _rows(plain["network.0.conv1.conv.bias"]),
+                    "kernel_size": int(first.shape[2]),
+                    "depth": _layers(keys, "network."),
+                },
+            )
+        )
+
+    if any(k.startswith("branches.") for k in keys):
+        n_branches = _layers(keys, "branches.")
+        kernels = []
+        for i in range(n_branches):
+            key = f"branches.{i}.0.weight"
+            if key not in plain:
+                break
+            kernels.append(int(plain[key].shape[2]))
+        out.append(
+            (
+                "cnn",
+                {
+                    # classifier.weight is (num_classes, num_filters), so the width is
+                    # the *second* dimension.
+                    "num_filters": int(plain["classifier.weight"].shape[1]),
+                    "num_blocks": _layers(keys, "res_blocks."),
+                    "kernel_sizes": kernels or None,
+                    "in_features": int(plain["branches.0.0.weight"].shape[1])
+                    if "branches.0.0.weight" in plain
+                    else 4,
+                },
+            )
+        )
+    return out
+
+
+def _dl_mamba_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    """MambaClassifier candidates.
+
+    ``d_state`` cannot be read directly: ``dt_proj`` is shaped
+    ``(d_inner, dt_rank)`` and the state width only appears in ``x_proj``, whose
+    output is ``dt_rank + 2 * d_state * mimo_rank``. Both unknowns are enumerated
+    over the values the training code uses and resolved by the strict-load check.
+    """
+    # MambaClassifier.input_proj is a Sequential(Linear, LayerNorm), so its
+    # weight lives at "input_proj.0.weight" -- not "input_proj.weight".
+    proj_key = "input_proj.0.weight" if "input_proj.0.weight" in plain else "input_proj.weight"
+    if "blocks.0.in_proj.weight" not in plain or proj_key not in plain:
+        return []
+    in_proj = plain["blocks.0.in_proj.weight"]
+    d_model = int(in_proj.shape[1])
+    d_inner = int(in_proj.shape[0]) // 2
+    dt = plain.get("blocks.0.ssm.dt_proj.weight")
+    x_proj = plain.get("blocks.0.ssm.x_proj.weight")
+
+    candidates: list[tuple[str, dict]] = []
+    if dt is None or dt.dim() != 2:
+        return [
+            (
+                "mamba",
+                {
+                    "in_features": int(plain[proj_key].shape[1]),
+                    "d_model": d_model,
+                    "num_layers": _layers(keys, "blocks."),
+                },
+            )
+        ]
+
+    dt_rank = int(dt.shape[1])
+    base = {
+        "in_features": int(plain[proj_key].shape[1]),
+        "d_model": d_model,
+        "expand": max(1, d_inner // d_model) if d_model else 2,
+        "num_layers": _layers(keys, "blocks."),
+    }
+    if x_proj is not None and x_proj.dim() == 2:
+        remainder = int(x_proj.shape[0]) - dt_rank
+        for mimo_rank in (1, 2, 4, 8):
+            if remainder <= 0:
+                break
+            d_state, leftover = divmod(remainder, 2 * mimo_rank)
+            if leftover == 0 and d_state > 0:
+                candidates.append(("mamba", {**base, "d_state": d_state, "mimo_rank": mimo_rank}))
+    if not candidates:
+        candidates.append(("mamba", {**base, "d_state": 16}))
+    return candidates
+
+
+def _dl_transformer_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    if "input_proj.weight" not in plain or not any("self_attn" in k for k in keys):
+        return []
+    if "pos_emb" not in plain:
+        return []
+    d_model = _rows(plain["input_proj.weight"])
+    return [
+        (
+            "transformer",
+            {
+                "in_features": int(plain["input_proj.weight"].shape[1]),
+                "d_model": d_model,
+                "n_heads": _heads(d_model),
+                "num_layers": _layers(keys, "encoder.layers."),
+                "max_seq_len": int(plain["pos_emb"].shape[1])
+                if plain["pos_emb"].dim() == 3
+                else 512,
+            },
+        )
+    ]
+
+
+def _dl_fusion_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    """MetaFusion, which carries metadata embeddings."""
+    if "noise_embed.weight" not in plain or "rssi_norm.weight" not in plain:
+        return []
+    # The sub-module is always named `rnn.*`, so rnn_type is not recoverable
+    # from key names; enumerate the three the classifier supports.
+    dims = _recurrent_dims(plain, "rnn")
+    if dims is None:
+        return []
+    hidden, layers, bidir = dims
+    out: list[tuple[str, dict]] = []
+    for rnn_type in ("lstm", "gru", "rnn"):
+        out.append(
+            (
+                "meta_fusion",
+                {
+                    "in_features": int(plain["rnn.weight_ih_l0"].shape[1]),
+                    "hidden_size": hidden,
+                    "num_layers": layers,
+                    "meta_embed_dim": int(plain["noise_embed.weight"].shape[1]),
+                    "rnn_type": rnn_type,
+                    "bidirectional": bidir,
+                },
+            )
+        )
+    return out
+
+
+def _dl_cnn2d_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    if "cnn.0.block.0.weight" not in plain:
+        return []
+    rnn_key = "rnn.weight_ih_l0"
+    if rnn_key not in plain:
+        return []
+    dims = _recurrent_dims(plain, "rnn")
+    if dims is None:
+        return []
+    hidden, n_rnn_layers, bidir = dims
+    out: list[tuple[str, dict]] = []
+    for rnn_type in ("lstm", "gru", "rnn"):
+        out.append(
+            (
+                "cnn2d_rnn",
+                {
+                    "num_filters": int(plain["cnn.0.block.0.weight"].shape[0]),
+                    "cnn_depth": _layers(keys, "cnn."),
+                    "hidden_size": hidden,
+                    "num_rnn_layers": n_rnn_layers,
+                    "rnn_type": rnn_type,
+                    "bidirectional": bidir,
+                },
+            )
+        )
+    return out
+
+
+DETECTORS = (
+    _mamba3_grid,
+    _sigreg_grid,
+    _jepa_grid,
+    _deep_stack_grid,
+    _dl_mamba_grid,
+    _dl_transformer_grid,
+    _dl_fusion_grid,
+    _dl_conv_grid,
+    _dl_recurrent_grid,
+    _dl_cnn2d_grid,
+)
 
 
 def search_family(plain: dict) -> tuple[str, dict, str | None] | None:
@@ -276,6 +511,112 @@ def _diag(plain: dict, factory: str, arch: dict) -> str:
     return "; ".join(parts) or "no differences"
 
 
+def resolve_plain(
+    plain: dict, *, factory: str | None = None
+) -> tuple[str, dict, str | None] | None:
+    """Resolve a *plain* (prefix-stripped) state dict to (factory, arch, prefix)."""
+    hits = match_all(plain)
+    if factory is not None:
+        hits = [h for h in hits if h[0] == factory]
+    if hits:
+        return hits[0][0], hits[0][1], hits[0][2]
+    found = search_family(plain)
+    if found is not None and (factory is None or found[0] == factory):
+        return found
+    return None
+
+
+def _members(keys: set[str], plain: dict, container: str) -> list[dict[str, Any]] | None:
+    """Recursively resolve the members of an ensemble container."""
+    indices = set()
+    for k in keys:
+        if k.startswith(f"{container}."):
+            head = k[len(container) + 1 :].split(".")[0]
+            if head.isdigit():
+                indices.add(int(head))
+    if not indices:
+        return None
+
+    members: list[dict[str, Any]] = []
+    for index in range(max(indices) + 1):
+        marker = f"{container}.{index}."
+        sub = {k[len(marker) :]: v for k, v in plain.items() if k.startswith(marker)}
+        if not sub:
+            return None
+        found = resolve_plain(plain_state(sub))
+        if found is None:
+            return None
+        factory, arch, _prefix = found
+        members.append({"factory": factory, "arch": arch})
+    return members
+
+
+def _composite_grid(keys: set[str], plain: dict) -> list[tuple[str, dict]]:
+    """Voting and stacking ensembles, rebuilt from their own members.
+
+    Each member is resolved with the same machinery used for a standalone
+    checkpoint, so an ensemble is recoverable exactly when its members are.
+    """
+    out: list[tuple[str, dict]] = []
+
+    if "weights" in plain and any(k.startswith("models.") for k in keys):
+        members = _members(keys, plain, "models")
+        if members:
+            weights = plain["weights"].flatten().tolist()
+            out.append(("voting_ensemble", {"models": members, "weights": weights}))
+
+    if any(k.startswith("base_models.") for k in keys) and any(k.startswith("meta.") for k in keys):
+        members = _members(keys, plain, "base_models")
+        if members:
+            out.append(("stacking_ensemble", {"base_models": members}))
+
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Pre-training checkpoints.
+#
+# The `*_pretrain_best.pt` files are not state dicts of a single module. They
+# hold a bundle: ``predictor`` plus either ``encoder`` (LeJEPA) or
+# ``context_encoder`` and ``target_encoder`` (T-JEPA / TS-JEPA / CF-JEPA), along
+# with ``epoch`` and ``probe_mcc``.
+#
+# Rebuilding one means loading the parts into the matching attributes, which is
+# what run_exotic.py already does. Doing that from shapes alone is ambiguous --
+# the predictor's configuration is not determined by the encoder's -- and a
+# wrong guess produces a checkpoint that loads and then quietly resumes with a
+# mis-shaped predictor. So these are recognised and reported explicitly instead
+# of being adopted speculatively. Resuming training keeps working through
+# run_exotic.py --checkpoint, which is unchanged.
+# ---------------------------------------------------------------------------
+
+PRETRAIN_MARKERS = ("predictor",)
+
+
+def looks_like_pretrain(state: dict) -> bool:
+    """True when ``state`` is a pre-training bundle rather than a state dict."""
+    if not all(marker in state for marker in PRETRAIN_MARKERS):
+        return False
+    return any(key in state for key in ("encoder", "context_encoder"))
+
+
+def describe_pretrain(state: dict) -> str:
+    """A one-line description of a pre-training bundle."""
+    encoder_key = "encoder" if "encoder" in state else "context_encoder"
+    encoder = plain_state(state[encoder_key])
+    predictor = plain_state(state.get("predictor", {}))
+    epoch = state.get("epoch", "?")
+    mcc = state.get("probe_mcc")
+    mcc_text = f", probe_mcc={mcc:.4f}" if isinstance(mcc, float) else ""
+    return (
+        f"pre-training bundle: {encoder_key}={len(encoder)} tensors, "
+        f"predictor={len(predictor)} tensors, epoch={epoch}{mcc_text}"
+    )
+
+
+DETECTORS = DETECTORS + (_composite_grid,)
+
+
 def infer(
     path: Path | str,
     *,
@@ -300,6 +641,16 @@ def infer(
         raise ValueError(f"{path}: empty state dict")
     plain = plain_state(state)
     model_name = name or path.stem
+
+    if looks_like_pretrain(state):
+        raise ValueError(
+            f"{path}: {describe_pretrain(state)}.\n"
+            "This is a pre-training checkpoint, not a classifier: it carries a "
+            "separate predictor and encoder rather than one module's weights, so "
+            "it has no single architecture to adopt. Resume training with "
+            "`inmotion run pipeline exotic -- --model <name> --checkpoint "
+            f"{path}`, which restores the parts explicitly."
+        )
 
     registry_hits = match_all(plain)
     if factory is not None:

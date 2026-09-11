@@ -169,8 +169,8 @@ class FeaturePipeline:
         stats_path = directory / STATS_FILE
         if stats_path.exists():
             with np.load(stats_path) as data:
-                mean = data["mean"] if "mean" in data else None
-                scale = data["scale"] if "scale" in data else None
+                mean = data.get("mean", None)
+                scale = data.get("scale", None)
 
         return cls(
             feature_cols=list(meta["feature_cols"]),
