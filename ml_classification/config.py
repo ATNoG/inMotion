@@ -109,7 +109,7 @@ class Config:
 
         if self.use_gpu:
             print(
-                "🚀 GPU acceleration enabled for supported classifiers (XGBoost, LightGBM, CatBoost)"
+                "GPU acceleration enabled for supported classifiers (XGBoost, LightGBM, CatBoost)"
             )
         else:
             print("⚠️ GPU not available, using CPU for all classifiers")

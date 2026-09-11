@@ -40,7 +40,10 @@ from ml_classification import (  # noqa: E402
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="WiFi Fingerprinting Classification Analysis")
     parser.add_argument(
-        "--data", type=str, default="data/processed/dataset.csv", help="Path to the dataset CSV file"
+        "--data",
+        type=str,
+        default="data/processed/dataset.csv",
+        help="Path to the dataset CSV file",
     )
     parser.add_argument(
         "--quick", action="store_true", help="Run quick mode with fewer classifiers"

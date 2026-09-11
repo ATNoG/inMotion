@@ -41,7 +41,7 @@ def _log_trial_callback(study: optuna.Study, trial: optuna.trial.FrozenTrial) ->
     elif trial.values is not None and len(trial.values) > 1:
         # Multi-objective: values = [maximize MCC, minimize params]
         mcc, n_params = trial.values[0], trial.values[1]
-        print(f"  [Trial {trial.number:03d}] MCC={mcc:.4f} params={n_params/1e6:.2f}M")
+        print(f"  [Trial {trial.number:03d}] MCC={mcc:.4f} params={n_params / 1e6:.2f}M")
     elif trial.value is not None:
         print(f"  [Trial {trial.number:03d}] value={trial.value:.4f}")
     else:
@@ -202,6 +202,7 @@ def _make_rnn_hpo_objective(
         return _train_and_eval(model, config, tr_loader, val_loader, trial)
 
     return objective  # type: ignore[return-value]
+
 
 def init_optuna_db(storage_url: str, study_names: list[str]) -> None:
     """Pre-create SQLite schema + studies in the main process to avoid spawn race.
@@ -372,12 +373,19 @@ def run_hpo_study(
     study = _make_study()
     for _attempt in range(2):
         try:
-            study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
+            study.optimize(
+                objective,
+                n_trials=config.n_trials,
+                show_progress_bar=True,
+                callbacks=[_log_trial_callback],
+            )
             break
         except ValueError as exc:
             if _attempt == 0 and "dynamic value space" in str(exc):
                 # Stale DB: search space changed since last run — delete old study and retry fresh
-                optuna.delete_study(study_name=study_name, storage=_get_optuna_storage(config.optuna_storage))
+                optuna.delete_study(
+                    study_name=study_name, storage=_get_optuna_storage(config.optuna_storage)
+                )
                 study = _make_study()
             else:
                 raise
@@ -407,7 +415,9 @@ def run_nas_study(
         storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
-    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
+    study.optimize(
+        objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback]
+    )
 
     best_trial = study.best_trial
     best_model = build_optuna_model(best_trial, config.in_features, config.num_classes)
@@ -477,7 +487,9 @@ def run_binary_moe_hpo_study(
         storage=_get_optuna_storage(config.optuna_storage),
         load_if_exists=True,
     )
-    study.optimize(objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback])
+    study.optimize(
+        objective, n_trials=config.n_trials, show_progress_bar=True, callbacks=[_log_trial_callback]
+    )
     return study
 
 
@@ -643,7 +655,9 @@ def run_moe_multiobjective_study(
         load_if_exists=True,
         sampler=sampler,
     )
-    study.optimize(objective, n_trials=n_opt, show_progress_bar=True, callbacks=[_log_trial_callback])
+    study.optimize(
+        objective, n_trials=n_opt, show_progress_bar=True, callbacks=[_log_trial_callback]
+    )
 
     # Select best from Pareto front: highest MCC among Pareto-optimal trials
     pareto_trials = study.best_trials

@@ -136,15 +136,25 @@ class LeJEPAModel(nn.Module):
         self.sigreg_lambda = sigreg_lambda
 
         from dl.sigreg import make_sigreg
+
         self.sigreg = make_sigreg()
 
         self.encoder = LeJEPAEncoder(
-            seq_len, in_channels, d_model, nhead,
-            num_layers, dim_feedforward, dropout,
+            seq_len,
+            in_channels,
+            d_model,
+            nhead,
+            num_layers,
+            dim_feedforward,
+            dropout,
         )
         self.predictor = LeJEPAPredictor(
-            seq_len, d_model, nhead,
-            pred_num_layers, dim_feedforward, dropout=0.1,
+            seq_len,
+            d_model,
+            nhead,
+            pred_num_layers,
+            dim_feedforward,
+            dropout=0.1,
         )
 
     def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:

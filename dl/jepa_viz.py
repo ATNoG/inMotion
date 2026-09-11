@@ -32,6 +32,7 @@ from torch import Tensor
 # ── Optional imports (graceful fallback if matplotlib not available) ──────────
 try:
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -95,8 +96,14 @@ class JEPAVisualizer:
     def log_finetune(self, metrics: dict) -> None:
         """Log fine-tuning metrics."""
         with open(self.save_dir / "finetune_metrics.json", "w") as f:
-            json.dump({k: float(v) if isinstance(v, (int, float, np.floating))
-                        else str(v) for k, v in metrics.items()}, f, indent=2)
+            json.dump(
+                {
+                    k: float(v) if isinstance(v, (int, float, np.floating)) else str(v)
+                    for k, v in metrics.items()
+                },
+                f,
+                indent=2,
+            )
 
     # ═══════════════════════════════════════════════════════════════════════════
     # Uniformity — collapse detection
@@ -183,9 +190,15 @@ class JEPAVisualizer:
         ax.set_ylabel("Standard deviation")
         ax.legend(fontsize=8)
         n_dead = (dim_stds < 0.01).sum()
-        ax.text(0.02, 0.95, f"Dead dims: {n_dead}/{len(dim_stds)}",
-                transform=ax.transAxes, fontsize=9, va="top",
-                color="red" if n_dead > len(dim_stds) * 0.1 else "green")
+        ax.text(
+            0.02,
+            0.95,
+            f"Dead dims: {n_dead}/{len(dim_stds)}",
+            transform=ax.transAxes,
+            fontsize=9,
+            va="top",
+            color="red" if n_dead > len(dim_stds) * 0.1 else "green",
+        )
 
         path = self.save_dir / f"latents_epoch{epoch:04d}.png"
         fig.tight_layout()
@@ -193,12 +206,14 @@ class JEPAVisualizer:
         plt.close(fig)
 
         # Store stats
-        self.latent_stats.append({
-            "epoch": epoch,
-            "pca_var_ratio": pca.explained_variance_ratio_.tolist(),
-            "n_dead_dims": int(n_dead),
-            "mean_std": float(dim_stds.mean()),
-        })
+        self.latent_stats.append(
+            {
+                "epoch": epoch,
+                "pca_var_ratio": pca.explained_variance_ratio_.tolist(),
+                "n_dead_dims": int(n_dead),
+                "mean_std": float(dim_stds.mean()),
+            }
+        )
 
         return str(path)
 
@@ -239,8 +254,7 @@ class JEPAVisualizer:
         ax = axes[0, 1]
         if self.uniformity_scores:
             ax.plot(self.uniformity_scores, color="green")
-            ax.axhline(y=-3.5, color="red", linestyle="--", alpha=0.5,
-                       label="Collapse threshold")
+            ax.axhline(y=-3.5, color="red", linestyle="--", alpha=0.5, label="Collapse threshold")
         ax.set_title("Latent Space Uniformity\n(higher = better, red = collapse)")
         ax.set_xlabel("Epoch")
         ax.set_ylabel("Uniformity")

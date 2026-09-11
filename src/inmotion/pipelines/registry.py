@@ -37,32 +37,51 @@ class Pipeline:
 
 
 PIPELINES: tuple[Pipeline, ...] = (
-    Pipeline("classification", "pipelines.classification",
-             "classical ML classifiers (EDA, CV, Optuna, feature importance)"),
-    Pipeline("dl", "pipelines.dl",
-             "supervised deep learning: baselines, ensembles, MoE, deep stacking, NAS"),
-    Pipeline("exotic", "pipelines.exotic",
-             "JEPA world models and SIGReg: SSL pretraining + fine-tuning"),
-    Pipeline("ensemble", "pipelines.ensemble",
-             "greedy ensemble selection over existing checkpoints"),
-    Pipeline("mega-ensemble", "pipelines.mega_ensemble",
-             "OOF stacking over every model family, with calibration"),
-    Pipeline("hpo-paper", "pipelines.hpo_paper",
-             "retrain the paper's HPO-best configs (Optuna DBs were deleted)"),
-    Pipeline("evaluate-checkpoints", "evaluation.checkpoints",
-             "retroactive per-class metrics for saved DL checkpoints"),
-    Pipeline("shap", "evaluation.shap",
-             "SHAP channel attribution for the world models"),
-    Pipeline("feature-importance", "evaluation.feature_importance",
-             "permutation feature importance for DL models"),
-    Pipeline("analyze-seeds", "analysis.seeds",
-             "combine and plot multi-seed results"),
-    Pipeline("analyze-interference", "analysis.interference",
-             "cross-route interference analysis from concurrent_noise_path"),
-    Pipeline("regenerate-plots", "viz.regenerate",
-             "rebuild classical-ML figures from saved CSVs"),
-    Pipeline("regenerate-dl-plots", "viz.regenerate_dl",
-             "rebuild DL figures from saved CSVs"),
+    Pipeline(
+        "classification",
+        "pipelines.classification",
+        "classical ML classifiers (EDA, CV, Optuna, feature importance)",
+    ),
+    Pipeline(
+        "dl",
+        "pipelines.dl",
+        "supervised deep learning: baselines, ensembles, MoE, deep stacking, NAS",
+    ),
+    Pipeline(
+        "exotic", "pipelines.exotic", "JEPA world models and SIGReg: SSL pretraining + fine-tuning"
+    ),
+    Pipeline(
+        "ensemble", "pipelines.ensemble", "greedy ensemble selection over existing checkpoints"
+    ),
+    Pipeline(
+        "mega-ensemble",
+        "pipelines.mega_ensemble",
+        "OOF stacking over every model family, with calibration",
+    ),
+    Pipeline(
+        "hpo-paper",
+        "pipelines.hpo_paper",
+        "retrain the paper's HPO-best configs (Optuna DBs were deleted)",
+    ),
+    Pipeline(
+        "evaluate-checkpoints",
+        "evaluation.checkpoints",
+        "retroactive per-class metrics for saved DL checkpoints",
+    ),
+    Pipeline("shap", "evaluation.shap", "SHAP channel attribution for the world models"),
+    Pipeline(
+        "feature-importance",
+        "evaluation.feature_importance",
+        "permutation feature importance for DL models",
+    ),
+    Pipeline("analyze-seeds", "analysis.seeds", "combine and plot multi-seed results"),
+    Pipeline(
+        "analyze-interference",
+        "analysis.interference",
+        "cross-route interference analysis from concurrent_noise_path",
+    ),
+    Pipeline("regenerate-plots", "viz.regenerate", "rebuild classical-ML figures from saved CSVs"),
+    Pipeline("regenerate-dl-plots", "viz.regenerate_dl", "rebuild DL figures from saved CSVs"),
 )
 
 BY_NAME: dict[str, Pipeline] = {p.name: p for p in PIPELINES}

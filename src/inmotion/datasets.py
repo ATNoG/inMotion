@@ -173,7 +173,10 @@ CURATED: list[DatasetVersion] = [
         lineage={
             "description": "current base dataset",
             "devices": 13,
-            "successors": ["data/processed/dataset_augmented2.csv", "data/processed/dataset_augmented3.csv"],
+            "successors": [
+                "data/processed/dataset_augmented2.csv",
+                "data/processed/dataset_augmented3.csv",
+            ],
         },
     ),
     DatasetVersion(

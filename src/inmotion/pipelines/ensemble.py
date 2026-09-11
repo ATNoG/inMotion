@@ -35,46 +35,80 @@ from dl.data_loader import DLDataLoader
 
 def _build_lejepa() -> nn.Module:
     from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+
     pretrained = LeJEPAModel(
-        seq_len=10, in_channels=4, d_model=256, nhead=8,
-        num_layers=4, dim_feedforward=512, pred_num_layers=2, sigreg_lambda=0.1,
+        seq_len=10,
+        in_channels=4,
+        d_model=256,
+        nhead=8,
+        num_layers=4,
+        dim_feedforward=512,
+        pred_num_layers=2,
+        sigreg_lambda=0.1,
     )
     return LeJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_t_jepa() -> nn.Module:
     from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+
     pretrained = TJEPAModel(
-        n_timesteps=10, n_channels=18, d_model=512, nhead=8,
-        num_layers=4, dim_feedforward=512, n_reg_tokens=2,
-        pred_dim=128, pred_num_layers=2,
+        n_timesteps=10,
+        n_channels=18,
+        d_model=512,
+        nhead=8,
+        num_layers=4,
+        dim_feedforward=512,
+        n_reg_tokens=2,
+        pred_dim=128,
+        pred_num_layers=2,
     )
     return TJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_ts_jepa() -> nn.Module:
     from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+
     pretrained = TSJEPAModel(
-        seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
-        num_layers=4, dim_feedforward=512, pred_dim=128, pred_num_layers=2,
+        seq_len=10,
+        patch_size=2,
+        in_channels=18,
+        embed_dim=256,
+        nhead=8,
+        num_layers=4,
+        dim_feedforward=512,
+        pred_dim=128,
+        pred_num_layers=2,
     )
     return TSJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_sigreg() -> nn.Module:
     from dl.models.sigreg_classifier import SIGRegClassifier
+
     m = SIGRegClassifier(
-        in_features=4, num_filters=192, num_blocks=3, latent_dim=128,
-        num_classes=4, sigreg_lambda=0.01,
+        in_features=4,
+        num_filters=192,
+        num_blocks=3,
+        latent_dim=128,
+        num_classes=4,
+        sigreg_lambda=0.01,
     )
     return _TupleWrap(m)
 
 
 def _build_mamba3_cnn() -> nn.Module:
     from dl.models.mamba3_cnn import Mamba3CNN
+
     return Mamba3CNN(
-        in_features=4, cnn_channels=192, d_model=192, d_state=16,
-        n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
+        in_features=4,
+        cnn_channels=192,
+        d_model=192,
+        d_state=16,
+        n_mamba_layers=3,
+        num_classes=4,
+        dropout=0.2,
+        mimo_rank=4,
     )
 
 
@@ -91,16 +125,41 @@ class _TupleWrap(nn.Module):
 
 # One entry per model. Add more by appending here.
 MODELS: list[dict] = [
-    {"name": "lejepa",   "rich": False, "build": _build_lejepa,   "ckpt": "models/exotic/lejepa_ft_seed42.pt"},
-    {"name": "t_jepa",   "rich": True,  "build": _build_t_jepa,   "ckpt": "models/exotic/t_jepa_ft_seed42.pt"},
-    {"name": "ts_jepa",  "rich": True,  "build": _build_ts_jepa,  "ckpt": "models/exotic/ts_jepa_ft_seed42.pt"},
-    {"name": "sigreg",   "rich": False, "build": _build_sigreg,   "ckpt": "models/exotic/sigreg_seed42.pt"},
-    {"name": "mamba3_cnn", "rich": False, "build": _build_mamba3_cnn, "ckpt": "models/exotic/mamba3_cnn_seed42.pt"},
+    {
+        "name": "lejepa",
+        "rich": False,
+        "build": _build_lejepa,
+        "ckpt": "models/exotic/lejepa_ft_seed42.pt",
+    },
+    {
+        "name": "t_jepa",
+        "rich": True,
+        "build": _build_t_jepa,
+        "ckpt": "models/exotic/t_jepa_ft_seed42.pt",
+    },
+    {
+        "name": "ts_jepa",
+        "rich": True,
+        "build": _build_ts_jepa,
+        "ckpt": "models/exotic/ts_jepa_ft_seed42.pt",
+    },
+    {
+        "name": "sigreg",
+        "rich": False,
+        "build": _build_sigreg,
+        "ckpt": "models/exotic/sigreg_seed42.pt",
+    },
+    {
+        "name": "mamba3_cnn",
+        "rich": False,
+        "build": _build_mamba3_cnn,
+        "ckpt": "models/exotic/mamba3_cnn_seed42.pt",
+    },
 ]
 
 
 def _strip_prefix(sd: dict, prefix: str = "c.") -> dict:
-    return {k[len(prefix):] if k.startswith(prefix) else k: v for k, v in sd.items()}
+    return {k[len(prefix) :] if k.startswith(prefix) else k: v for k, v in sd.items()}
 
 
 def _add_prefix(sd: dict, prefix: str) -> dict:
@@ -120,7 +179,9 @@ def _load_model(spec: dict, device: torch.device) -> nn.Module:
     return m.to(device).eval()
 
 
-def _predict_probs(model: nn.Module, X: np.ndarray, device: torch.device, batch: int = 256) -> np.ndarray:
+def _predict_probs(
+    model: nn.Module, X: np.ndarray, device: torch.device, batch: int = 256
+) -> np.ndarray:
     ds = TensorDataset(torch.from_numpy(X.astype(np.float32)))
     dl = DataLoader(ds, batch_size=batch, shuffle=False)
     parts = []
@@ -144,13 +205,20 @@ def _load_features(data_path: Path, rich: bool) -> np.ndarray:
 def _stratified_indices(y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Same split as run_exotic.load_supervised_data: 70/10/20 train/val/test."""
     from sklearn.model_selection import train_test_split
+
     idx = np.arange(len(y))
     tr_val_idx, test_idx = train_test_split(
-        idx, test_size=0.2, random_state=seed, stratify=y,
+        idx,
+        test_size=0.2,
+        random_state=seed,
+        stratify=y,
     )
     y_tr_val = y[tr_val_idx]
     train_idx, val_idx = train_test_split(
-        tr_val_idx, test_size=0.125, random_state=seed, stratify=y_tr_val,
+        tr_val_idx,
+        test_size=0.125,
+        random_state=seed,
+        stratify=y_tr_val,
     )
     return train_idx, val_idx, test_idx
 
@@ -184,11 +252,13 @@ def main() -> None:
 
     # Labels drive the split once; both feature variants align to the same indices.
     import pandas as pd
+
     y = pd.read_csv(args.data)["label"].values
     train_idx, val_idx, test_idx = _stratified_indices(y, args.seed)
     y_val = y[val_idx]
     y_test = y[test_idx]
     from sklearn.preprocessing import LabelEncoder
+
     y_val = LabelEncoder().fit_transform(y_val).astype(np.int64)
     y_test = LabelEncoder().fit_transform(y_test).astype(np.int64)
 

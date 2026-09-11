@@ -21,6 +21,7 @@ from torch import Tensor, nn
 # Residual CNN encoder
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class _ResBlock(nn.Module):
     """1D residual conv block with GELU activation."""
 
@@ -61,9 +62,7 @@ class _CNNEncoder(nn.Module):
         self.act = nn.GELU()
 
         # Residual blocks
-        self.blocks = nn.Sequential(*[
-            _ResBlock(num_filters, 3) for _ in range(num_blocks)
-        ])
+        self.blocks = nn.Sequential(*[_ResBlock(num_filters, 3) for _ in range(num_blocks)])
 
         self.pool = nn.AdaptiveAvgPool1d(1)
 
@@ -88,6 +87,7 @@ class _CNNEncoder(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIGReg loss — Gaussian regularizer
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class _SIGRegLoss(nn.Module):
     """Gaussian latent regularizer using ECF (Empirical Characteristic Function).
@@ -120,8 +120,8 @@ class _SIGRegLoss(nn.Module):
 
         # ECF: (1/B) * Σ_b cos(t * x_b) ≈ Re[CF(t)]
         x_t = x.unsqueeze(-1) * self.t  # (B, S, K)
-        cos_mean = x_t.cos().mean(0)    # (S, K)
-        sin_mean = x_t.sin().mean(0)    # (S, K)
+        cos_mean = x_t.cos().mean(0)  # (S, K)
+        sin_mean = x_t.sin().mean(0)  # (S, K)
 
         # Compare to N(0,1) CF
         err = (cos_mean - self.phi).square() + sin_mean.square()  # (S, K)
@@ -132,6 +132,7 @@ class _SIGRegLoss(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Full SIGReg classifier
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class SIGRegClassifier(nn.Module):
     """CNN + Gaussian latent bottleneck + SIGReg.
@@ -176,9 +177,9 @@ class SIGRegClassifier(nn.Module):
             logits: (B, num_classes)
             latents: (B, latent_dim)
         """
-        features = self.encoder(x)                     # (B, num_filters)
+        features = self.encoder(x)  # (B, num_filters)
         latents = self.latent_norm(self.latent_proj(features))  # (B, latent_dim)
-        logits = self.classifier(latents)               # (B, num_classes)
+        logits = self.classifier(latents)  # (B, num_classes)
         return logits, latents
 
     def compute_loss(

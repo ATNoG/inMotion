@@ -44,7 +44,10 @@ class CFJEPAPatchTokenizer(nn.Module):
         self.patch_size = patch_size
         self.num_patches = seq_len // patch_size
         self.proj = nn.Conv1d(
-            in_channels, embed_dim, kernel_size=patch_size, stride=patch_size,
+            in_channels,
+            embed_dim,
+            kernel_size=patch_size,
+            stride=patch_size,
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -91,9 +94,7 @@ class CFJEPAEncoder(nn.Module):
         )
         self.norm = nn.LayerNorm(embed_dim)
 
-    def forward(
-        self, x: Tensor, keep_indices: Tensor | None = None
-    ) -> Tensor:
+    def forward(self, x: Tensor, keep_indices: Tensor | None = None) -> Tensor:
         """x: (B, seq_len, in_channels) → (B, n_kept, embed_dim).
 
         When keep_indices is not None, only those patches are encoded
@@ -138,7 +139,9 @@ class CFJEPAPredictor(nn.Module):
         # Query tokens: one per future position to predict.
         # The predictor outputs predictions for ALL positions ≥ 1; the loss
         # masks out positions beyond the current horizon (annealing).
-        self.query_tokens = nn.Parameter(torch.randn(1, num_patches - 1, predictor_embed_dim) * 0.02)
+        self.query_tokens = nn.Parameter(
+            torch.randn(1, num_patches - 1, predictor_embed_dim) * 0.02
+        )
 
         # Future-position embeddings — each query knows which future step it predicts
         self.future_pos_embed = nn.Parameter(
@@ -235,11 +238,18 @@ class CFJEPAModel(nn.Module):
 
         if sigreg_lambda > 0:
             from dl.sigreg import make_sigreg
+
             self.sigreg = make_sigreg()
 
         self.context_encoder = CFJEPAEncoder(
-            seq_len, patch_size, in_channels, embed_dim, nhead,
-            num_layers, dim_feedforward, dropout,
+            seq_len,
+            patch_size,
+            in_channels,
+            embed_dim,
+            nhead,
+            num_layers,
+            dim_feedforward,
+            dropout,
         )
         self.target_encoder = copy.deepcopy(self.context_encoder)
         for p in self.target_encoder.parameters():
@@ -335,9 +345,10 @@ class CFJEPAModel(nn.Module):
     ) -> tuple[Tensor, dict[str, float]]:
         """Single pretraining step: multi-horizon forward prediction loss."""
         progress = epoch / max(total_epochs - 1, 1)
-        self.ema_momentum = self.ema_end - (self.ema_end - self.ema_start) * (
-            1.0 + math.cos(math.pi * progress)
-        ) / 2.0
+        self.ema_momentum = (
+            self.ema_end
+            - (self.ema_end - self.ema_start) * (1.0 + math.cos(math.pi * progress)) / 2.0
+        )
 
         targets, predictions, ctx_latents, horizon_mask = self.forward(x, epoch, total_epochs)
 

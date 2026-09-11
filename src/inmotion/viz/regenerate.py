@@ -6,8 +6,11 @@ all visualization plots without needing to retrain models.
 
 Usage:
     uv run python regenerate_plots.py --results-dir results_3
-    uv run python regenerate_plots.py --csv results_3/classification_results.csv --plots-dir plots_regenerated
-    uv run python regenerate_plots.py --results-dir results_3 --eda --data data/processed/dataset.csv
+    inmotion run pipeline regenerate-plots -- \
+        --csv results_3/classification_results.csv \
+        --plots-dir plots_regenerated
+    inmotion run pipeline regenerate-plots -- \
+        --results-dir results_3 --eda --data data/processed/dataset.csv
 """
 
 import argparse

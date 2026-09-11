@@ -28,6 +28,7 @@ from torch import Tensor, nn
 # Patch tokenizer — Conv1D over multi-channel input
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class PatchTokenizer(nn.Module):
     """Conv1D patch tokenizer for multi-channel time series.
 
@@ -48,20 +49,23 @@ class PatchTokenizer(nn.Module):
         self.num_patches = seq_len // patch_size
 
         self.proj = nn.Conv1d(
-            in_channels, embed_dim,
-            kernel_size=patch_size, stride=patch_size,
+            in_channels,
+            embed_dim,
+            kernel_size=patch_size,
+            stride=patch_size,
         )
 
     def forward(self, x: Tensor) -> Tensor:
         """x: (B, seq_len, in_channels) → (B, num_patches, embed_dim)."""
-        x = x.permute(0, 2, 1)          # (B, in_channels, seq_len)
-        x = self.proj(x)                # (B, embed_dim, num_patches)
-        return x.permute(0, 2, 1)      # (B, num_patches, embed_dim)
+        x = x.permute(0, 2, 1)  # (B, in_channels, seq_len)
+        x = self.proj(x)  # (B, embed_dim, num_patches)
+        return x.permute(0, 2, 1)  # (B, num_patches, embed_dim)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Mask generation — contiguous temporal blocks
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def generate_patch_masks(
     batch_size: int,
@@ -107,6 +111,7 @@ def _gather_by_index(x: Tensor, indices: Tensor) -> Tensor:
 # Encoder — shared architecture for context and target
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TSJEPAEncoder(nn.Module):
     """Transformer encoder over Conv1D patches."""
 
@@ -144,15 +149,13 @@ class TSJEPAEncoder(nn.Module):
         )
         self.norm = nn.LayerNorm(embed_dim)
 
-    def forward(
-        self, x: Tensor, keep_indices: Optional[Tensor] = None
-    ) -> Tensor:
+    def forward(self, x: Tensor, keep_indices: Optional[Tensor] = None) -> Tensor:
         """x: (B, seq_len, in_channels) → (B, n_kept, embed_dim).
 
         When keep_indices is not None, only those patches are encoded
         (context encoder path). When None, all patches (target encoder path).
         """
-        patches = self.tokenizer(x)     # (B, num_patches, embed_dim)
+        patches = self.tokenizer(x)  # (B, num_patches, embed_dim)
         patches = patches + self.pos_embed[:, : patches.size(1), :]
 
         if keep_indices is not None:
@@ -165,6 +168,7 @@ class TSJEPAEncoder(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Predictor — shallower than encoder
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TSJEPAPredictor(nn.Module):
     """Predicts masked latents from context latents.
@@ -242,8 +246,8 @@ class TSJEPAPredictor(nn.Module):
         full_seq = full_seq + self.pos_embed[:, : self.num_patches, :]
 
         # Transformer forward
-        out = self.transformer(full_seq)    # (B, num_patches, pred_dim)
-        out = self.output_proj(out)          # (B, num_patches, embed_dim)
+        out = self.transformer(full_seq)  # (B, num_patches, pred_dim)
+        out = self.output_proj(out)  # (B, num_patches, embed_dim)
 
         # Extract masked positions
         return _gather_by_index(out, mask_indices)
@@ -252,6 +256,7 @@ class TSJEPAPredictor(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Full TS-JEPA pretraining model
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TSJEPAModel(nn.Module):
     """TS-JEPA architecture for self-supervised pretraining.
@@ -294,12 +299,19 @@ class TSJEPAModel(nn.Module):
 
         if sigreg_lambda > 0:
             from dl.sigreg import make_sigreg
+
             self.sigreg = make_sigreg()
 
         # Context encoder
         self.context_encoder = TSJEPAEncoder(
-            seq_len, patch_size, in_channels, embed_dim, nhead,
-            num_layers, dim_feedforward, dropout,
+            seq_len,
+            patch_size,
+            in_channels,
+            embed_dim,
+            nhead,
+            num_layers,
+            dim_feedforward,
+            dropout,
         )
 
         # Target encoder (EMA of context)
@@ -372,9 +384,10 @@ class TSJEPAModel(nn.Module):
     ) -> tuple[Tensor, dict[str, float]]:
         """Single pretraining step."""
         progress = epoch / max(total_epochs - 1, 1)
-        self.ema_momentum = self.ema_end - (self.ema_end - self.ema_start) * (
-            1.0 + math.cos(math.pi * progress)
-        ) / 2.0
+        self.ema_momentum = (
+            self.ema_end
+            - (self.ema_end - self.ema_start) * (1.0 + math.cos(math.pi * progress)) / 2.0
+        )
 
         tgt_masked, predictions, _, _, ctx_latents = self.forward(x, epoch, total_epochs)
         loss = F.l1_loss(predictions, tgt_masked)
@@ -396,6 +409,7 @@ class TSJEPAModel(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Fine-tuning classifier
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TSJEPAClassifier(nn.Module):
     """Classifier built on pretrained TS-JEPA context encoder."""

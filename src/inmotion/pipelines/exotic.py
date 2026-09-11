@@ -51,16 +51,32 @@ if TYPE_CHECKING:
 # CLI
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Exotic model pipeline")
-    p.add_argument("--model", type=str, default="t_jepa",
-                   choices=["t_jepa", "ts_jepa", "lejepa", "cf_jepa", "sigreg",
-                            "mamba3_cnn", "mamba3_tcn", "mamba3_transformer",
-                            "mamba3_multiview"],
-                   help="Model type")
+    p.add_argument(
+        "--model",
+        type=str,
+        default="t_jepa",
+        choices=[
+            "t_jepa",
+            "ts_jepa",
+            "lejepa",
+            "cf_jepa",
+            "sigreg",
+            "mamba3_cnn",
+            "mamba3_tcn",
+            "mamba3_transformer",
+            "mamba3_multiview",
+        ],
+        help="Model type",
+    )
     p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    p.add_argument("--rich-features", action="store_true",
-                   help="Use spectral + statistical + shape channels (14 instead of 4)")
+    p.add_argument(
+        "--rich-features",
+        action="store_true",
+        help="Use spectral + statistical + shape channels (14 instead of 4)",
+    )
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--gpu", type=int, default=0, help="GPU device index")
@@ -69,35 +85,61 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pretrain-epochs", type=int, default=300)
     p.add_argument("--pretrain-lr", type=float, default=3e-4)
     p.add_argument("--pretrain-wd", type=float, default=1e-4)
-    p.add_argument("--probe-cadence", type=int, default=10,
-                   help="Pretrain: evaluate linear probe every N epochs")
-    p.add_argument("--probe-patience", type=int, default=15,
-                   help="Pretrain: early-stop after N probe evals without probe-MCC "
-                        "improvement (15 = 150 epochs of patience at cadence 10)")
+    p.add_argument(
+        "--probe-cadence",
+        type=int,
+        default=10,
+        help="Pretrain: evaluate linear probe every N epochs",
+    )
+    p.add_argument(
+        "--probe-patience",
+        type=int,
+        default=15,
+        help="Pretrain: early-stop after N probe evals without probe-MCC "
+        "improvement (15 = 150 epochs of patience at cadence 10)",
+    )
 
     # Fine-tuning / Direct supervised
     p.add_argument("--finetune-epochs", type=int, default=50)
     p.add_argument("--epochs", type=int, default=150, help="Direct supervised epochs")
-    p.add_argument("--patience", type=int, default=25,
-                   help="Early stopping patience for direct supervised models")
+    p.add_argument(
+        "--patience",
+        type=int,
+        default=25,
+        help="Early stopping patience for direct supervised models",
+    )
     p.add_argument("--finetune-lr", type=float, default=1e-3)
-    p.add_argument("--mixup-alpha", type=float, default=0.4,
-                   help="Mixup alpha for supervised fine-tuning (0 disables)")
+    p.add_argument(
+        "--mixup-alpha",
+        type=float,
+        default=0.4,
+        help="Mixup alpha for supervised fine-tuning (0 disables)",
+    )
     p.add_argument("--label-smoothing", type=float, default=0.1)
-    p.add_argument("--lr", type=float, default=1e-3,
-                   help="Learning rate for direct supervised models (SIGReg, Mamba)")
+    p.add_argument(
+        "--lr",
+        type=float,
+        default=1e-3,
+        help="Learning rate for direct supervised models (SIGReg, Mamba)",
+    )
     p.add_argument("--finetune-only", action="store_true")
     p.add_argument("--checkpoint", type=Path, default=None)
     p.add_argument("--unfreeze-encoder", action="store_true")
 
     # Model architecture
     p.add_argument("--d-model", type=int, default=256)
-    p.add_argument("--d-state", type=int, default=16,
-                   help="Mamba-3 state width (also searched by --hpo).")
-    p.add_argument("--dropout", type=float, default=0.2,
-                   help="Dropout for the Mamba-3 hybrids (also searched by --hpo).")
-    p.add_argument("--mimo-rank", type=int, default=4,
-                   help="Mamba-3 MIMO rank (also searched by --hpo).")
+    p.add_argument(
+        "--d-state", type=int, default=16, help="Mamba-3 state width (also searched by --hpo)."
+    )
+    p.add_argument(
+        "--dropout",
+        type=float,
+        default=0.2,
+        help="Dropout for the Mamba-3 hybrids (also searched by --hpo).",
+    )
+    p.add_argument(
+        "--mimo-rank", type=int, default=4, help="Mamba-3 MIMO rank (also searched by --hpo)."
+    )
     p.add_argument("--nhead", type=int, default=8)
     p.add_argument("--num-layers", type=int, default=4)
     p.add_argument("--dim-ff", type=int, default=512)
@@ -106,49 +148,86 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--pred-layers", type=int, default=2)
     p.add_argument("--ema-start", type=float, default=0.99)
     p.add_argument("--ema-end", type=float, default=0.996)
-    p.add_argument("--n-preds", type=int, default=1,
-                   help="T-JEPA: number of target masks per context (1 works best at this scale)")
-    p.add_argument("--jepa-sigreg", type=float, default=0.05,
-                   help="T-JEPA pretrain: SIGReg anti-collapse weight on context latents "
-                        "(0=off; ~0.05-0.1 prevents latent collapse)")
-    p.add_argument("--sigreg-mode", type=str, default="sigreg",
-                   choices=["sigreg", "rdm"],
-                   help="Anti-collapse regularizer: 'sigreg' (Gaussian) or "
-                        "'rdm' (Rectified Distribution Matching, sparse non-negative)")
-    p.add_argument("--rdm-p", type=float, default=1.5,
-                   help="RDMReg RGG shape parameter (p<2 → sparser than Gaussian)")
+    p.add_argument(
+        "--n-preds",
+        type=int,
+        default=1,
+        help="T-JEPA: number of target masks per context (1 works best at this scale)",
+    )
+    p.add_argument(
+        "--jepa-sigreg",
+        type=float,
+        default=0.05,
+        help="T-JEPA pretrain: SIGReg anti-collapse weight on context latents "
+        "(0=off; ~0.05-0.1 prevents latent collapse)",
+    )
+    p.add_argument(
+        "--sigreg-mode",
+        type=str,
+        default="sigreg",
+        choices=["sigreg", "rdm"],
+        help="Anti-collapse regularizer: 'sigreg' (Gaussian) or "
+        "'rdm' (Rectified Distribution Matching, sparse non-negative)",
+    )
+    p.add_argument(
+        "--rdm-p",
+        type=float,
+        default=1.5,
+        help="RDMReg RGG shape parameter (p<2 → sparser than Gaussian)",
+    )
     p.add_argument("--pooling", type=str, default="mean")
 
     # CF-JEPA specific
-    p.add_argument("--cf-horizon-start", type=int, default=1,
-                   help="CF-JEPA: initial prediction horizon (anneals to --cf-horizon-end)")
-    p.add_argument("--cf-horizon-end", type=int, default=3,
-                   help="CF-JEPA: final prediction horizon")
-    p.add_argument("--cf-ctx-min", type=int, default=1,
-                   help="CF-JEPA: min context crop length (patches)")
-    p.add_argument("--cf-ctx-max", type=int, default=3,
-                   help="CF-JEPA: max context crop length (patches)")
+    p.add_argument(
+        "--cf-horizon-start",
+        type=int,
+        default=1,
+        help="CF-JEPA: initial prediction horizon (anneals to --cf-horizon-end)",
+    )
+    p.add_argument(
+        "--cf-horizon-end", type=int, default=3, help="CF-JEPA: final prediction horizon"
+    )
+    p.add_argument(
+        "--cf-ctx-min", type=int, default=1, help="CF-JEPA: min context crop length (patches)"
+    )
+    p.add_argument(
+        "--cf-ctx-max", type=int, default=3, help="CF-JEPA: max context crop length (patches)"
+    )
 
     # SIGReg specific
-    p.add_argument("--latent-dim", type=int, default=128,
-                   help="SIGReg: latent bottleneck dimension")
-    p.add_argument("--sigreg-lambda", type=float, default=0.01,
-                   help="SIGReg: Gaussian regularizer weight")
+    p.add_argument(
+        "--latent-dim", type=int, default=128, help="SIGReg: latent bottleneck dimension"
+    )
+    p.add_argument(
+        "--sigreg-lambda", type=float, default=0.01, help="SIGReg: Gaussian regularizer weight"
+    )
 
     # HPO
     p.add_argument("--hpo", action="store_true")
     p.add_argument("--hpo-trials", type=int, default=30)
-    p.add_argument("--hpo-objective", type=str, default="mcc",
-                   choices=["mcc", "efficiency", "pareto"],
-                   help="HPO objective: 'mcc' (maximize MCC), 'efficiency' "
-                        "(maximize MCC per M params), 'pareto' (NSGA-II MCC×size frontier)")
-    p.add_argument("--hpo-pareto-train", type=int, default=0,
-                   help="pareto only: fully retrain the N selected frontier points "
-                        "(0 = just print the frontier)")
-    p.add_argument("--hpo-pareto-select", type=str, default="spread",
-                   choices=["spread", "top"],
-                   help="pareto only: how to pick the N points — 'spread' evenly "
-                        "spaced across the size range, 'top' best-MCC first")
+    p.add_argument(
+        "--hpo-objective",
+        type=str,
+        default="mcc",
+        choices=["mcc", "efficiency", "pareto"],
+        help="HPO objective: 'mcc' (maximize MCC), 'efficiency' "
+        "(maximize MCC per M params), 'pareto' (NSGA-II MCC×size frontier)",
+    )
+    p.add_argument(
+        "--hpo-pareto-train",
+        type=int,
+        default=0,
+        help="pareto only: fully retrain the N selected frontier points "
+        "(0 = just print the frontier)",
+    )
+    p.add_argument(
+        "--hpo-pareto-select",
+        type=str,
+        default="spread",
+        choices=["spread", "top"],
+        help="pareto only: how to pick the N points — 'spread' evenly "
+        "spaced across the size range, 'top' best-MCC first",
+    )
 
     # Paths
     p.add_argument("--models-dir", type=Path, default=Path("models/exotic"))
@@ -164,6 +243,7 @@ def parse_args() -> argparse.Namespace:
 # ═══════════════════════════════════════════════════════════════════════════════
 # Utilities
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def set_seed(seed: int) -> None:
     random.seed(seed)
@@ -182,6 +262,7 @@ def resolve_device(gpu: int) -> torch.device:
 # ═══════════════════════════════════════════════════════════════════════════════
 # Data loading
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def load_pretrain_data(
     config: DLConfig,
@@ -211,24 +292,39 @@ def load_pretrain_data(
     X_val = torch.from_numpy(X_norm[val_idx])
 
     from torch.utils.data import TensorDataset
+
     train_loader = DataLoader(
-        TensorDataset(X_train), batch_size=config.batch_size, shuffle=True,
-        pin_memory=True, drop_last=False,
+        TensorDataset(X_train),
+        batch_size=config.batch_size,
+        shuffle=True,
+        pin_memory=True,
+        drop_last=False,
     )
-    val_loader = DataLoader(
-        TensorDataset(X_val), batch_size=config.batch_size, shuffle=False,
-        pin_memory=True, drop_last=False,
-    ) if len(X_val) > 0 else None
+    val_loader = (
+        DataLoader(
+            TensorDataset(X_val),
+            batch_size=config.batch_size,
+            shuffle=False,
+            pin_memory=True,
+            drop_last=False,
+        )
+        if len(X_val) > 0
+        else None
+    )
 
     # Labeled loaders for the probe (smaller batch, capped size)
     probe_batch = min(config.batch_size, 256)
     probe_train_loader = DataLoader(
         RSSIDataset(X_norm[train_idx], y_all[train_idx]),
-        batch_size=probe_batch, shuffle=True, drop_last=False,
+        batch_size=probe_batch,
+        shuffle=True,
+        drop_last=False,
     )
     probe_val_loader = DataLoader(
         RSSIDataset(X_norm[val_idx], y_all[val_idx]),
-        batch_size=probe_batch, shuffle=False, drop_last=False,
+        batch_size=probe_batch,
+        shuffle=False,
+        drop_last=False,
     )
     return train_loader, val_loader, probe_train_loader, probe_val_loader
 
@@ -248,6 +344,7 @@ def load_supervised_data(
     classes = [label_map.get(i, c) for i, c in enumerate(classes)]
 
     from sklearn.model_selection import train_test_split
+
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.2, random_state=config.seed, stratify=y
     )
@@ -265,42 +362,61 @@ def load_supervised_data(
 # Model builders
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def _build_t_jepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.t_jepa import TJEPAModel
+
     n_channels = 18 if args.rich_features else 4
     return TJEPAModel(
-        n_timesteps=10, n_channels=n_channels,
-        d_model=args.d_model, nhead=args.nhead,
-        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
+        n_timesteps=10,
+        n_channels=n_channels,
+        d_model=args.d_model,
+        nhead=args.nhead,
+        num_layers=args.num_layers,
+        dim_feedforward=args.dim_ff,
         n_reg_tokens=args.n_reg_tokens,
-        pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
+        pred_dim=args.pred_dim,
+        pred_num_layers=args.pred_layers,
         mask_ratio=0.3,
         n_target_masks=getattr(args, "n_preds", 1),
         sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
-        ema_start=args.ema_start, ema_end=args.ema_end,
+        ema_start=args.ema_start,
+        ema_end=args.ema_end,
     )
 
 
 def _build_ts_jepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.ts_jepa import TSJEPAModel
+
     in_channels = 18 if args.rich_features else 4
     return TSJEPAModel(
-        seq_len=10, patch_size=2, in_channels=in_channels,
-        embed_dim=args.d_model, nhead=args.nhead,
-        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
-        pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
-        mask_ratio_start=0.4, mask_ratio_end=0.7,
-        ema_start=args.ema_start, ema_end=args.ema_end,
+        seq_len=10,
+        patch_size=2,
+        in_channels=in_channels,
+        embed_dim=args.d_model,
+        nhead=args.nhead,
+        num_layers=args.num_layers,
+        dim_feedforward=args.dim_ff,
+        pred_dim=args.pred_dim,
+        pred_num_layers=args.pred_layers,
+        mask_ratio_start=0.4,
+        mask_ratio_end=0.7,
+        ema_start=args.ema_start,
+        ema_end=args.ema_end,
     )
 
 
 def _build_lejepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.lejepa import LeJEPAModel
+
     in_channels = 18 if args.rich_features else 4
     return LeJEPAModel(
-        seq_len=10, in_channels=in_channels,
-        d_model=args.d_model, nhead=args.nhead,
-        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
+        seq_len=10,
+        in_channels=in_channels,
+        d_model=args.d_model,
+        nhead=args.nhead,
+        num_layers=args.num_layers,
+        dim_feedforward=args.dim_ff,
         pred_num_layers=args.pred_layers,
         sigreg_lambda=args.jepa_sigreg,
     )
@@ -308,27 +424,38 @@ def _build_lejepa(args: argparse.Namespace) -> nn.Module:
 
 def _build_cf_jepa(args: argparse.Namespace) -> nn.Module:
     from dl.models.cf_jepa import CFJEPAModel
+
     in_channels = 18 if args.rich_features else 4
     return CFJEPAModel(
-        seq_len=10, patch_size=2, in_channels=in_channels,
-        embed_dim=args.d_model, nhead=args.nhead,
-        num_layers=args.num_layers, dim_feedforward=args.dim_ff,
-        pred_dim=args.pred_dim, pred_num_layers=args.pred_layers,
+        seq_len=10,
+        patch_size=2,
+        in_channels=in_channels,
+        embed_dim=args.d_model,
+        nhead=args.nhead,
+        num_layers=args.num_layers,
+        dim_feedforward=args.dim_ff,
+        pred_dim=args.pred_dim,
+        pred_num_layers=args.pred_layers,
         horizon_start=getattr(args, "cf_horizon_start", 1),
         horizon_end=getattr(args, "cf_horizon_end", 3),
         ctx_min=getattr(args, "cf_ctx_min", 1),
         ctx_max=getattr(args, "cf_ctx_max", 3),
-        ema_start=args.ema_start, ema_end=args.ema_end,
+        ema_start=args.ema_start,
+        ema_end=args.ema_end,
         sigreg_lambda=args.jepa_sigreg,
     )
 
 
 def _build_sigreg(args: argparse.Namespace) -> nn.Module:
     from dl.models.sigreg_classifier import SIGRegClassifier
+
     return SIGRegClassifier(
-        in_features=4, num_filters=args.d_model,
-        num_blocks=args.num_layers, latent_dim=args.latent_dim,
-        num_classes=4, sigreg_lambda=args.sigreg_lambda,
+        in_features=4,
+        num_filters=args.d_model,
+        num_blocks=args.num_layers,
+        latent_dim=args.latent_dim,
+        num_classes=4,
+        sigreg_lambda=args.sigreg_lambda,
     )
 
 
@@ -350,15 +477,19 @@ def _build_mamba3(variant: str, args: argparse.Namespace) -> nn.Module:
     }
     if variant == "cnn":
         from dl.models.mamba3_cnn import Mamba3CNN
+
         return Mamba3CNN(cnn_channels=args.d_model, n_mamba_layers=args.num_layers, **kw)
     elif variant == "tcn":
         from dl.models.mamba3_tcn import Mamba3TCN
+
         return Mamba3TCN(tcn_channels=args.d_model, n_mamba_layers=args.num_layers, **kw)
     elif variant == "transformer":
         from dl.models.mamba3_transformer import Mamba3Transformer
+
         return Mamba3Transformer(nhead=args.nhead, num_blocks=args.num_layers, **kw)
     elif variant == "multiview":
         from dl.models.mamba3_multiview import Mamba3MultiView
+
         return Mamba3MultiView(n_mamba_layers=args.num_layers, **kw)
     raise ValueError(f"Unknown Mamba-3 variant: {variant}")
 
@@ -379,6 +510,7 @@ MODEL_BUILDERS: dict[str, callable] = {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Pretraining
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.device) -> float:
     """Compute pretrain val loss ONLY at supervised (target) positions.
@@ -405,7 +537,9 @@ def _masked_val_loss(model: nn.Module, val_loader: DataLoader, device: torch.dev
                 diff = (p - tgt_n).abs().mean(dim=-1)  # (B, num_future)
                 val_sum += (diff * horizon_mask).sum().item()
                 val_n += max(horizon_mask.sum().item(), 1)
-            elif getattr(model, "sigreg", None) is not None and not hasattr(model, "context_encoder"):
+            elif getattr(model, "sigreg", None) is not None and not hasattr(
+                model, "context_encoder"
+            ):
                 # LeJEPA: (z, z_hat) — next-step prediction MSE
                 z, z_hat = tgt, preds
                 val_sum += torch.nn.functional.mse_loss(z_hat[:, :-1], z[:, 1:]).item() * x.size(0)
@@ -507,21 +641,27 @@ def pretrain_jepa(
     encoder = getattr(model, "context_encoder", None) or getattr(model, "encoder")
     params = list(encoder.parameters()) + list(model.predictor.parameters())
     opt = torch.optim.AdamW(params, lr=args.pretrain_lr, weight_decay=args.pretrain_wd)
-    sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.pretrain_epochs,
-                                                      eta_min=args.pretrain_lr * 0.01)
+    sch = torch.optim.lr_scheduler.CosineAnnealingLR(
+        opt, T_max=args.pretrain_epochs, eta_min=args.pretrain_lr * 0.01
+    )
 
     # WandB
     pretrain_wandb = None
     if not args.no_wandb:
         try:
             import wandb
+
             pretrain_wandb = wandb.init(
                 project=args.wandb_project,
                 name=f"{args.model}_pretrain_seed{args.seed}",
-                config={"model": args.model, "phase": "pretrain",
-                        "pretrain_epochs": args.pretrain_epochs,
-                        "batch_size": args.batch_size, "lr": args.pretrain_lr,
-                        "model_size_M": sum(p.numel() for p in model.parameters()) / 1e6},
+                config={
+                    "model": args.model,
+                    "phase": "pretrain",
+                    "pretrain_epochs": args.pretrain_epochs,
+                    "batch_size": args.batch_size,
+                    "lr": args.pretrain_lr,
+                    "model_size_M": sum(p.numel() for p in model.parameters()) / 1e6,
+                },
                 reinit=True,
             )
         except Exception:
@@ -555,7 +695,9 @@ def pretrain_jepa(
         train_loss /= max(len(train_loader), 1)
 
         # ── Validation (masked, target positions only) ──
-        val_loss = _masked_val_loss(model, val_loader, device) if val_loader is not None else float("inf")
+        val_loss = (
+            _masked_val_loss(model, val_loader, device) if val_loader is not None else float("inf")
+        )
 
         # ── Probe every N epochs (logging only, not used for stopping) ──
         probe_mcc = None
@@ -589,13 +731,15 @@ def pretrain_jepa(
             viz.log_pretrain(epoch, train_loss, val_loss, latents, ema)
             if epoch % 50 == 0 and latents is not None:
                 viz.save_checkpoint_snapshot(
-                    epoch, latents,
+                    epoch,
+                    latents,
                     title=f"{args.model.upper()} Pretrain Latent Space",
                 )
 
         # ── WandB ──
         if pretrain_wandb is not None:
             import wandb
+
             log = {
                 "pretrain/train_loss": train_loss,
                 "pretrain/val_loss": val_loss,
@@ -612,8 +756,10 @@ def pretrain_jepa(
         # ── Logging ──
         if epoch % 20 == 0 or epoch == args.pretrain_epochs - 1 or probe_mcc is not None:
             probe_str = f" | probe={probe_mcc:.3f}" if probe_mcc is not None else ""
-            print(f"  epoch {epoch + 1:3d}/{args.pretrain_epochs} | "
-                  f"train={train_loss:.4f} | val={val_loss:.4f} | ema={ema:.4f}{probe_str}")
+            print(
+                f"  epoch {epoch + 1:3d}/{args.pretrain_epochs} | "
+                f"train={train_loss:.4f} | val={val_loss:.4f} | ema={ema:.4f}{probe_str}"
+            )
 
         # ── Early stopping (on PROBE MCC — the representation-health metric) ──
         # Val loss plateaus quickly for JEPA models while the probe MCC keeps
@@ -626,8 +772,10 @@ def pretrain_jepa(
             else:
                 probe_patience_counter += 1
                 if probe_patience_counter >= probe_patience and epoch > 50:
-                    print(f"  Early stopping at epoch {epoch + 1} "
-                          f"(probe MCC not improving, best={best_probe:.4f})")
+                    print(
+                        f"  Early stopping at epoch {epoch + 1} "
+                        f"(probe MCC not improving, best={best_probe:.4f})"
+                    )
                     break
         # Keep the val-loss tracking for logging/checkpoint (best ckpt is by probe)
         if val_loss < best_val_loss:
@@ -642,6 +790,7 @@ def pretrain_jepa(
 
     if pretrain_wandb is not None:
         import wandb
+
         wandb.log({"pretrain/best_probe_mcc": best_probe})
         wandb.finish()
 
@@ -651,6 +800,7 @@ def pretrain_jepa(
 # ═══════════════════════════════════════════════════════════════════════════════
 # Fine-tuning
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 def finetune_jepa(
     args: argparse.Namespace,
@@ -670,23 +820,39 @@ def finetune_jepa(
     """
     if args.model == "t_jepa":
         from dl.models.t_jepa import TJEPAClassifier
+
         clf = TJEPAClassifier(
-            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+            pretrained=pretrained_model,
+            num_classes=4,
+            hidden_dim=128,
+            dropout=0.3,
         )
     elif args.model == "lejepa":
         from dl.models.lejepa import LeJEPAClassifier
+
         clf = LeJEPAClassifier(
-            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+            pretrained=pretrained_model,
+            num_classes=4,
+            hidden_dim=128,
+            dropout=0.3,
         )
     elif args.model == "cf_jepa":
         from dl.models.cf_jepa import CFJEPAClassifier
+
         clf = CFJEPAClassifier(
-            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+            pretrained=pretrained_model,
+            num_classes=4,
+            hidden_dim=128,
+            dropout=0.3,
         )
     else:
         from dl.models.ts_jepa import TSJEPAClassifier
+
         clf = TSJEPAClassifier(
-            pretrained=pretrained_model, num_classes=4, hidden_dim=128, dropout=0.3,
+            pretrained=pretrained_model,
+            num_classes=4,
+            hidden_dim=128,
+            dropout=0.3,
         )
     clf.to(device)
 
@@ -695,7 +861,10 @@ def finetune_jepa(
         def __init__(self, c):
             super().__init__()
             self.c = c
-        def forward(self, x): return self.c(x)
+
+        def forward(self, x):
+            return self.c(x)
+
     wrapped = W(clf)
 
     config.use_wandb = not args.no_wandb
@@ -714,11 +883,16 @@ def finetune_jepa(
     print("Stage 1: Training classification head (encoder frozen)...")
     t0 = time.time()
     ft_params = sum(p.numel() for p in clf.parameters()) / 1e6
-    ft_size_cfg = {"stage": 1, "model": args.model, "pretrained": True,
-                   "model_size_M": ft_params, "n_params": int(ft_params * 1e6)}
-    r1 = Trainer(config, run_name=f"{run_name}_s1",
-                 extra_wandb_config=ft_size_cfg
-                 ).fit(wrapped, train_loader, val_loader)
+    ft_size_cfg = {
+        "stage": 1,
+        "model": args.model,
+        "pretrained": True,
+        "model_size_M": ft_params,
+        "n_params": int(ft_params * 1e6),
+    }
+    r1 = Trainer(config, run_name=f"{run_name}_s1", extra_wandb_config=ft_size_cfg).fit(
+        wrapped, train_loader, val_loader
+    )
     print(f"  Stage 1 best val MCC: {r1.best_val_mcc:.4f} ({time.time() - t0:.0f}s)")
 
     # Stage 2: Unfreeze encoder, lower LR, use the remaining budget
@@ -729,9 +903,9 @@ def finetune_jepa(
     print("Stage 2: Full fine-tuning (encoder unfrozen)...")
     ft_size_cfg["stage"] = 2
     t0 = time.time()
-    r2 = Trainer(config, run_name=f"{run_name}_s2",
-                 extra_wandb_config=ft_size_cfg
-                 ).fit(wrapped, train_loader, val_loader, save_path=save_path)
+    r2 = Trainer(config, run_name=f"{run_name}_s2", extra_wandb_config=ft_size_cfg).fit(
+        wrapped, train_loader, val_loader, save_path=save_path
+    )
 
     # Evaluate on test set
     metrics = evaluate_model_on_test(
@@ -765,11 +939,15 @@ def finetune_jepa(
                 post_latents = torch.cat(all_post, dim=0)
                 all_labels = torch.cat(all_labels, dim=0)
                 viz.save_checkpoint_snapshot(
-                    9999, pre_latents, all_labels,
+                    9999,
+                    pre_latents,
+                    all_labels,
                     title=f"{args.model.upper()} Pretrain Embeddings",
                 )
                 viz.save_checkpoint_snapshot(
-                    10000, post_latents, all_labels,
+                    10000,
+                    post_latents,
+                    all_labels,
                     title=f"{args.model.upper()} Fine-tuned Embeddings",
                 )
 
@@ -779,6 +957,7 @@ def finetune_jepa(
 # ═══════════════════════════════════════════════════════════════════════════════
 # SIGReg training
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class SIGRegWrapper(nn.Module):
     """Wraps SIGRegClassifier so Trainer can use it with compute_loss."""
@@ -798,6 +977,7 @@ class SIGRegWrapper(nn.Module):
 # HPO — Optuna hyperparameter optimization with WandB per-trial logging
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def _count_params(model: nn.Module) -> int:
     """Count trainable parameters in a model."""
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -806,9 +986,9 @@ def _count_params(model: nn.Module) -> int:
 def _params_str(n: int) -> str:
     """Human-readable parameter count."""
     if n >= 1e6:
-        return f"{n/1e6:.2f}M"
+        return f"{n / 1e6:.2f}M"
     if n >= 1e3:
-        return f"{n/1e3:.1f}K"
+        return f"{n / 1e3:.1f}K"
     return str(n)
 
 
@@ -832,6 +1012,7 @@ def _hpo_objective_value(mcc: float, n_params: int, objective: str) -> float:
 def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
     """Create a single-objective study, or a NSGA-II Pareto study."""
     from dl.optimization import _get_optuna_storage
+
     storage = _get_optuna_storage("sqlite:///optuna_exotic.db")
     if objective == "pareto":
         return optuna.create_study(
@@ -853,6 +1034,7 @@ def _make_hpo_study(study_name: str, objective: str) -> optuna.Study:
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
+
 def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
     """Run Optuna HPO, update args with best hyperparams."""
 
@@ -866,12 +1048,13 @@ def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
     X, y = dl.load_and_preprocess()
     hpo_seed = args.seed + 0x5EED
     from sklearn.model_selection import train_test_split
+
     Xt, Xv, yt, yv = train_test_split(X, y, test_size=0.2, random_state=hpo_seed, stratify=y)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"HPO: {args.model} — {args.hpo_trials} trials")
     print(f"  Train: {len(Xt)} samples, Val: {len(Xv)} samples")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if args.model in ("t_jepa", "ts_jepa", "lejepa", "cf_jepa"):
         _hpo_jepa(args, device, Xt, yt, Xv, yv)
@@ -883,12 +1066,16 @@ def _run_hpo(args: argparse.Namespace, device: torch.device) -> None:
 
 # ── WandB per-trial helpers ───────────────────────────────────────────────────
 
-def _trial_wandb_start(trial, args: argparse.Namespace, extra_config: dict | None = None) -> object | None:
+
+def _trial_wandb_start(
+    trial, args: argparse.Namespace, extra_config: dict | None = None
+) -> object | None:
     """Start a WandB run for one Optuna trial. Returns run or None."""
     if args.no_wandb:
         return None
     try:
         import wandb
+
         cfg = dict(trial.params)
         cfg.update({"trial_number": trial.number, "model": args.model, "seed": args.seed})
         if extra_config:
@@ -905,6 +1092,7 @@ def _trial_wandb_finish(run: object | None, metrics: dict) -> None:
         return
     try:
         import wandb
+
         wandb.log(metrics)
         wandb.finish()
     except Exception:
@@ -912,6 +1100,7 @@ def _trial_wandb_finish(run: object | None, metrics: dict) -> None:
 
 
 # ── JEPA HPO ──────────────────────────────────────────────────────────────────
+
 
 def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
     from torch.utils.data import DataLoader, TensorDataset
@@ -940,34 +1129,71 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         # ── Build model ───────────────────────────────────────────────
         if is_ts:
             from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
-            m = TSJEPAModel(seq_len=10, patch_size=2, in_channels=4,
-                            embed_dim=d_model, nhead=nhead, num_layers=num_layers,
-                            dim_feedforward=dim_ff, pred_dim=pred_dim,
-                            pred_num_layers=pred_layers, ema_start=ema_start).to(device)
+
+            m = TSJEPAModel(
+                seq_len=10,
+                patch_size=2,
+                in_channels=4,
+                embed_dim=d_model,
+                nhead=nhead,
+                num_layers=num_layers,
+                dim_feedforward=dim_ff,
+                pred_dim=pred_dim,
+                pred_num_layers=pred_layers,
+                ema_start=ema_start,
+            ).to(device)
         elif is_le:
             from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
-            m = LeJEPAModel(seq_len=10, in_channels=4, d_model=d_model, nhead=nhead,
-                            num_layers=num_layers, dim_feedforward=dim_ff,
-                            pred_num_layers=pred_layers,
-                            sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
+
+            m = LeJEPAModel(
+                seq_len=10,
+                in_channels=4,
+                d_model=d_model,
+                nhead=nhead,
+                num_layers=num_layers,
+                dim_feedforward=dim_ff,
+                pred_num_layers=pred_layers,
+                sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
+            ).to(device)
         elif is_cf:
             from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
-            m = CFJEPAModel(seq_len=10, patch_size=2, in_channels=4,
-                            embed_dim=d_model, nhead=nhead, num_layers=num_layers,
-                            dim_feedforward=dim_ff, pred_dim=pred_dim,
-                            pred_num_layers=pred_layers, ema_start=ema_start,
-                            sigreg_lambda=getattr(args, "jepa_sigreg", 0.0)).to(device)
+
+            m = CFJEPAModel(
+                seq_len=10,
+                patch_size=2,
+                in_channels=4,
+                embed_dim=d_model,
+                nhead=nhead,
+                num_layers=num_layers,
+                dim_feedforward=dim_ff,
+                pred_dim=pred_dim,
+                pred_num_layers=pred_layers,
+                ema_start=ema_start,
+                sigreg_lambda=getattr(args, "jepa_sigreg", 0.0),
+            ).to(device)
         else:
             from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
-            m = TJEPAModel(n_timesteps=10, n_channels=4, d_model=d_model, nhead=nhead,
-                           num_layers=num_layers, dim_feedforward=dim_ff, pred_dim=pred_dim,
-                           pred_num_layers=pred_layers, ema_start=ema_start).to(device)
 
-        n_params = _count_params(m) + _count_params(m.context_encoder if hasattr(m, "context_encoder") else m.encoder)
+            m = TJEPAModel(
+                n_timesteps=10,
+                n_channels=4,
+                d_model=d_model,
+                nhead=nhead,
+                num_layers=num_layers,
+                dim_feedforward=dim_ff,
+                pred_dim=pred_dim,
+                pred_num_layers=pred_layers,
+                ema_start=ema_start,
+            ).to(device)
+
+        n_params = _count_params(m) + _count_params(
+            m.context_encoder if hasattr(m, "context_encoder") else m.encoder
+        )
 
         # ── WandB: start trial run ────────────────────────────────────
-        run = _trial_wandb_start(trial, args, {"n_params": n_params,
-                                                "params_str": _params_str(n_params)})
+        run = _trial_wandb_start(
+            trial, args, {"n_params": n_params, "params_str": _params_str(n_params)}
+        )
 
         # ── Pretrain (50 epochs) ──────────────────────────────────────
         Xp = Xt.astype(np.float32)
@@ -976,7 +1202,9 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         ptds = TensorDataset(torch.tensor(Xp, dtype=torch.float32))
         ptl = DataLoader(ptds, batch_size=args.batch_size, shuffle=True)
 
-        params_list = list((m.context_encoder if hasattr(m, "context_encoder") else m.encoder).parameters()) + list(m.predictor.parameters())
+        params_list = list(
+            (m.context_encoder if hasattr(m, "context_encoder") else m.encoder).parameters()
+        ) + list(m.predictor.parameters())
         opt = torch.optim.AdamW(params_list, lr=pt_lr)
         for ep in range(pt_epochs):
             m.train()
@@ -995,17 +1223,25 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             avg_pt_loss = pt_loss_sum / max(pt_n, 1)
             if run is not None:
                 import wandb
-                wandb.log({"pretrain/epoch": ep, "pretrain/loss": avg_pt_loss,
-                            "pretrain/ema": getattr(m, "ema_momentum", 0.0)})
+
+                wandb.log(
+                    {
+                        "pretrain/epoch": ep,
+                        "pretrain/loss": avg_pt_loss,
+                        "pretrain/ema": getattr(m, "ema_momentum", 0.0),
+                    }
+                )
 
         # ── Fine-tune (stage 1: head only, stage 2: full) ────────────
         if is_ts:
             clf = TSJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         elif is_le:
             from dl.models.lejepa import LeJEPAClassifier
+
             clf = LeJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         elif is_cf:
             from dl.models.cf_jepa import CFJEPAClassifier
+
             clf = CFJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
         else:
             clf = TJEPAClassifier(pretrained=m, num_classes=4, hidden_dim=128).to(device)
@@ -1014,7 +1250,10 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             def __init__(self, c):
                 super().__init__()
                 self.c = c
-            def forward(self, x): return self.c(x)
+
+            def forward(self, x):
+                return self.c(x)
+
         wr = W(clf)
 
         trl = DataLoader(RSSIDataset(Xt, yt), batch_size=args.batch_size, shuffle=True)
@@ -1042,6 +1281,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
             vmcc = float(matthews_corrcoef(vat, vap))
             if run is not None:
                 import wandb
+
                 wandb.log({"ft/stage1_epoch": ep, "ft/stage1_val_mcc": vmcc})
 
         # Stage 2: unfreeze, lower LR
@@ -1067,6 +1307,7 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
                 best_mcc = vmcc
             if run is not None:
                 import wandb
+
                 wandb.log({"ft/stage2_epoch": ep, "ft/stage2_val_mcc": vmcc})
 
         # ── Final metrics ─────────────────────────────────────────────
@@ -1084,22 +1325,27 @@ def _hpo_jepa(args, device, Xt, yt, Xv, yv) -> None:
         return _hpo_objective_value(best_mcc, n_params, obj)
 
     from dl.optimization import _log_trial_callback
+
     obj = getattr(args, "hpo_objective", "mcc")
     study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
-    study.optimize(objective, n_trials=args.hpo_trials, show_progress_bar=True,
-                   callbacks=[_log_trial_callback])
+    study.optimize(
+        objective, n_trials=args.hpo_trials, show_progress_bar=True, callbacks=[_log_trial_callback]
+    )
 
     if obj == "pareto":
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
-            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1] / 1e6:.2f}M  {t.params}")
 
         n_train = getattr(args, "hpo_pareto_train", 0)
         if n_train > 0:
-            pts = _select_pareto_points(study, n_train,
-                                        getattr(args, "hpo_pareto_select", "spread"))
-            print(f"\n  Training {len(pts)} selected frontier point(s) "
-                  f"({getattr(args, 'hpo_pareto_select', 'spread')} selection)...")
+            pts = _select_pareto_points(
+                study, n_train, getattr(args, "hpo_pareto_select", "spread")
+            )
+            print(
+                f"\n  Training {len(pts)} selected frontier point(s) "
+                f"({getattr(args, 'hpo_pareto_select', 'spread')} selection)..."
+            )
             manifest_path = args.results_dir / "pareto_runs.csv"
             rows = []
             for rank, trial in enumerate(pts):
@@ -1135,10 +1381,17 @@ def _apply_best_jepa_params(args, study) -> None:
     print(f"  Params: {bp}")
     _apply_trial_params(args, bp)
     # Map study params to CLI arg names
-    _map = {"d_model": "d_model", "nhead": "nhead", "num_layers": "num_layers",
-            "dim_ff": "dim_ff", "pred_dim": "pred_dim", "pred_layers": "pred_layers",
-            "pretrain_lr": "pretrain_lr", "finetune_lr": "finetune_lr",
-            "ema_start": "ema_start"}
+    _map = {
+        "d_model": "d_model",
+        "nhead": "nhead",
+        "num_layers": "num_layers",
+        "dim_ff": "dim_ff",
+        "pred_dim": "pred_dim",
+        "pred_layers": "pred_layers",
+        "pretrain_lr": "pretrain_lr",
+        "finetune_lr": "finetune_lr",
+        "ema_start": "ema_start",
+    }
     for sk, ak in _map.items():
         if sk in bp:
             setattr(args, ak, bp[sk])
@@ -1172,16 +1425,27 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
     """
     bp = trial.params
     mcc_hpo, n_params_hpo = trial.values[0], int(trial.values[1])
-    tag = f"mcc{mcc_hpo:.3f}_p{n_params_hpo/1e6:.2f}M"
+    tag = f"mcc{mcc_hpo:.3f}_p{n_params_hpo / 1e6:.2f}M"
 
     # Apply this point's params to args (same mapping as _apply_best_jepa_params)
-    for k in ("d_model", "nhead", "num_layers", "dim_ff", "pred_dim",
-              "pred_layers", "pretrain_lr", "finetune_lr", "ema_start"):
+    for k in (
+        "d_model",
+        "nhead",
+        "num_layers",
+        "dim_ff",
+        "pred_dim",
+        "pred_layers",
+        "pretrain_lr",
+        "finetune_lr",
+        "ema_start",
+    ):
         if k in bp and hasattr(args, k):
             setattr(args, k, bp[k])
 
-    print(f"\n{'='*60}\n  Pareto point {rank}: MCC(hpo)={mcc_hpo:.4f} "
-          f"params={n_params_hpo/1e6:.2f}M\n  {bp}\n{'='*60}")
+    print(
+        f"\n{'=' * 60}\n  Pareto point {rank}: MCC(hpo)={mcc_hpo:.4f} "
+        f"params={n_params_hpo / 1e6:.2f}M\n  {bp}\n{'=' * 60}"
+    )
 
     # ── Full SSL pretraining ──────────────────────────────────────────────
     pt_config = DLConfig()
@@ -1196,8 +1460,9 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
     (pt_train, pt_val, probe_tr, probe_va) = load_pretrain_data(pt_config)
     model = MODEL_BUILDERS[args.model](args)
 
-    ckpt_path = pretrain_jepa(args, model, pt_train, pt_val, probe_tr, probe_va,
-                              device, args.models_dir)
+    ckpt_path = pretrain_jepa(
+        args, model, pt_train, pt_val, probe_tr, probe_va, device, args.models_dir
+    )
     args.checkpoint = ckpt_path
 
     # ── Full fine-tuning (reuses main()'s path via a fresh load) ─────────
@@ -1214,8 +1479,9 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
         config.wandb_project = args.wandb_project
 
     train_loader, val_loader, test_loader, classes = load_supervised_data(config)
-    metrics = finetune_jepa(args, model, config, train_loader, val_loader,
-                            test_loader, classes, device, args.models_dir)
+    metrics = finetune_jepa(
+        args, model, config, train_loader, val_loader, test_loader, classes, device, args.models_dir
+    )
 
     # Rename the ft checkpoint to encode the tradeoff point
     run_name = f"{args.model}_pareto-{tag}_seed{args.seed}"
@@ -1225,10 +1491,14 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
         src.rename(dst)
 
     row = {
-        "model": args.model, "point": rank,
-        "mcc_hpo": round(mcc_hpo, 4), "params_M": round(n_params_hpo / 1e6, 3),
-        "test_mcc": metrics.get("mcc"), "test_acc": metrics.get("accuracy"),
-        "checkpoint": str(dst), "params": json.dumps(bp),
+        "model": args.model,
+        "point": rank,
+        "mcc_hpo": round(mcc_hpo, 4),
+        "params_M": round(n_params_hpo / 1e6, 3),
+        "test_mcc": metrics.get("mcc"),
+        "test_acc": metrics.get("accuracy"),
+        "checkpoint": str(dst),
+        "params": json.dumps(bp),
         "timestamp": time.strftime("%Y-%m-%d %H:%M"),
     }
     print(f"  → {dst}  test_mcc={row['test_mcc']}")
@@ -1236,6 +1506,7 @@ def _train_pareto_point(args, device, trial, rank: int) -> dict:
 
 
 # ── SIGReg HPO ────────────────────────────────────────────────────────────────
+
 
 def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
     from dl.models.sigreg_classifier import SIGRegClassifier
@@ -1247,12 +1518,18 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
         sigreg_lambda = trial.suggest_float("sigreg_lambda", 0.001, 0.5, log=True)
         lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
 
-        m = SIGRegClassifier(in_features=4, num_filters=d_model, num_blocks=num_layers,
-                             latent_dim=latent_dim, num_classes=4,
-                             sigreg_lambda=sigreg_lambda).to(device)
+        m = SIGRegClassifier(
+            in_features=4,
+            num_filters=d_model,
+            num_blocks=num_layers,
+            latent_dim=latent_dim,
+            num_classes=4,
+            sigreg_lambda=sigreg_lambda,
+        ).to(device)
         n_params = _count_params(m)
-        run = _trial_wandb_start(trial, args, {"n_params": n_params,
-                                                "params_str": _params_str(n_params)})
+        run = _trial_wandb_start(
+            trial, args, {"n_params": n_params, "params_str": _params_str(n_params)}
+        )
 
         trl = DataLoader(RSSIDataset(Xt, yt), batch_size=args.batch_size, shuffle=True)
         val = DataLoader(RSSIDataset(Xv, yv), batch_size=args.batch_size, shuffle=False)
@@ -1280,12 +1557,26 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
                 best_mcc = vmcc
             if run is not None:
                 import wandb
-                wandb.log({"epoch": ep, "val_mcc": vmcc, "ce_loss": loss_dict.get("ce_loss", 0),
-                            "sigreg_loss": loss_dict.get("sigreg_loss", 0)})
+
+                wandb.log(
+                    {
+                        "epoch": ep,
+                        "val_mcc": vmcc,
+                        "ce_loss": loss_dict.get("ce_loss", 0),
+                        "sigreg_loss": loss_dict.get("sigreg_loss", 0),
+                    }
+                )
 
         eff = _efficiency(best_mcc, n_params)
-        _trial_wandb_finish(run, {"trial_mcc": best_mcc, "trial_n_params": n_params,
-                                   "trial_params_M": n_params / 1e6, "trial_efficiency": eff})
+        _trial_wandb_finish(
+            run,
+            {
+                "trial_mcc": best_mcc,
+                "trial_n_params": n_params,
+                "trial_params_M": n_params / 1e6,
+                "trial_efficiency": eff,
+            },
+        )
         obj = getattr(args, "hpo_objective", "mcc")
         if obj == "pareto":
             return best_mcc, float(n_params)
@@ -1297,7 +1588,7 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
     if obj == "pareto":
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
-            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1] / 1e6:.2f}M  {t.params}")
         # Apply the best-MCC frontier point so the fall-through training
         # run after HPO uses the winner's hyperparameters.
         best_pt = max(study.best_trials, key=lambda t: t.values[0])
@@ -1312,8 +1603,8 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
 
 # ── Mamba-3 HPO ───────────────────────────────────────────────────────────────
 
-def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
 
+def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
     def objective(trial):
         d_model = trial.suggest_categorical("d_model", [64, 128, 192])
         num_layers = trial.suggest_int("num_layers", 1, 4)
@@ -1334,8 +1625,9 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
             ),
         ).to(device)
         n_params = _count_params(m)
-        run = _trial_wandb_start(trial, args, {"n_params": n_params,
-                                                "params_str": _params_str(n_params)})
+        run = _trial_wandb_start(
+            trial, args, {"n_params": n_params, "params_str": _params_str(n_params)}
+        )
 
         cfg = DLConfig()
         cfg.seed = args.seed
@@ -1348,32 +1640,44 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
         val = DataLoader(RSSIDataset(Xv, yv), batch_size=args.batch_size, shuffle=False)
 
         from dl.training import Trainer
+
         result = Trainer(cfg).fit(m, trl, val)
         mcc = float(result.best_val_mcc)
 
         if run is not None:
             import wandb
-            for ep, (tl, vl, vm) in enumerate(zip(result.train_losses, result.val_losses,
-                                                   result.val_mccs), start=1):
+
+            for ep, (tl, vl, vm) in enumerate(
+                zip(result.train_losses, result.val_losses, result.val_mccs), start=1
+            ):
                 wandb.log({"epoch": ep, "train_loss": tl, "val_loss": vl, "val_mcc": vm})
 
         eff = _efficiency(mcc, n_params)
-        _trial_wandb_finish(run, {"trial_mcc": mcc, "trial_n_params": n_params,
-                                   "trial_params_M": n_params / 1e6, "trial_efficiency": eff})
+        _trial_wandb_finish(
+            run,
+            {
+                "trial_mcc": mcc,
+                "trial_n_params": n_params,
+                "trial_params_M": n_params / 1e6,
+                "trial_efficiency": eff,
+            },
+        )
         obj = getattr(args, "hpo_objective", "mcc")
         if obj == "pareto":
             return mcc, float(n_params)
         return _hpo_objective_value(mcc, n_params, obj)
 
     from dl.optimization import _log_trial_callback
+
     obj = getattr(args, "hpo_objective", "mcc")
     study = _make_hpo_study(f"exotic_{args.model}_{obj}", obj)
-    study.optimize(objective, n_trials=args.hpo_trials, show_progress_bar=True,
-                   callbacks=[_log_trial_callback])
+    study.optimize(
+        objective, n_trials=args.hpo_trials, show_progress_bar=True, callbacks=[_log_trial_callback]
+    )
     if obj == "pareto":
         print(f"\n  Pareto frontier ({len(study.best_trials)} points):")
         for t in sorted(study.best_trials, key=lambda t: t.values[0], reverse=True):
-            print(f"    MCC={t.values[0]:.4f}  params={t.values[1]/1e6:.2f}M  {t.params}")
+            print(f"    MCC={t.values[0]:.4f}  params={t.values[1] / 1e6:.2f}M  {t.params}")
         best_pt = max(study.best_trials, key=lambda t: t.values[0])
         print(f"\n  Applying best frontier point for full training: {best_pt.params}")
         _apply_trial_params(args, best_pt.params)
@@ -1388,6 +1692,7 @@ def _hpo_mamba3(args, device, Xt, yt, Xv, yv) -> None:
 # Main
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def main() -> None:
     args = parse_args()
     set_seed(args.seed)
@@ -1395,6 +1700,7 @@ def main() -> None:
     # Anti-collapse regularizer mode (SigReg vs RDMReg)
     if args.sigreg_mode == "rdm":
         from dl.sigreg import set_default_sigreg_mode
+
         set_default_sigreg_mode("rdm", p=args.rdm_p)
         print(f"Using RDMReg (p={args.rdm_p}) for anti-collapse regularization")
 
@@ -1438,8 +1744,11 @@ def main() -> None:
 
         # Setup visualization
         from dl.jepa_viz import JEPAVisualizer
+
         viz = JEPAVisualizer(
-            save_dir=args.viz_dir, model_name=args.model, seed=args.seed,
+            save_dir=args.viz_dir,
+            model_name=args.model,
+            seed=args.seed,
         )
 
         pt_config = DLConfig()
@@ -1451,15 +1760,21 @@ def main() -> None:
         if args.rich_features:
             pt_config.in_features = 18
 
-        (pt_train_loader, pt_val_loader,
-         probe_train_loader, probe_val_loader) = load_pretrain_data(pt_config)
+        (pt_train_loader, pt_val_loader, probe_train_loader, probe_val_loader) = load_pretrain_data(
+            pt_config
+        )
         pretrained_model = MODEL_BUILDERS[args.model](args)
 
         ckpt_path = pretrain_jepa(
-            args, pretrained_model,
-            pt_train_loader, pt_val_loader,
-            probe_train_loader, probe_val_loader,
-            device, args.models_dir, viz,
+            args,
+            pretrained_model,
+            pt_train_loader,
+            pt_val_loader,
+            probe_train_loader,
+            probe_val_loader,
+            device,
+            args.models_dir,
+            viz,
         )
         args.checkpoint = ckpt_path
 
@@ -1491,9 +1806,16 @@ def main() -> None:
     if pretrained_model is not None:
         # Fine-tune JEPA model
         metrics = finetune_jepa(
-            args, pretrained_model, config,
-            train_loader, val_loader, test_loader, classes,
-            device, args.models_dir, viz,
+            args,
+            pretrained_model,
+            config,
+            train_loader,
+            val_loader,
+            test_loader,
+            classes,
+            device,
+            args.models_dir,
+            viz,
         )
     elif args.model == "sigreg":
         # SIGReg direct supervised (uses compute_loss)
@@ -1548,16 +1870,22 @@ def main() -> None:
                 print(f"  epoch {epoch + 1:3d}: val_mcc={val_mcc:.4f}")
 
             if patience_counter >= args.patience:
-                print(f"  Early stopping at epoch {epoch + 1} "
-                      f"(patience={args.patience}, best={best_val_mcc:.4f})")
+                print(
+                    f"  Early stopping at epoch {epoch + 1} "
+                    f"(patience={args.patience}, best={best_val_mcc:.4f})"
+                )
                 break
         # Load best and evaluate — wrap to return logits only
         model.load_state_dict(torch.load(save_path, map_location=device, weights_only=False))
+
         class _EvalWrap(nn.Module):
             def __init__(self, m):
                 super().__init__()
                 self.m = m
-            def forward(self, x): return self.m(x)[0]
+
+            def forward(self, x):
+                return self.m(x)[0]
+
         eval_model = _EvalWrap(model)
         metrics = evaluate_model_on_test(
             eval_model, test_loader, config, classes, run_name, log_wandb=config.use_wandb
@@ -1589,22 +1917,33 @@ def main() -> None:
     results_file = args.results_dir / "exotic_results.csv"
     file_exists = results_file.exists()
     with open(results_file, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "model", "data", "seed", "pretrained", "test_mcc", "test_acc",
-            "best_val_mcc", "timestamp",
-        ])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "model",
+                "data",
+                "seed",
+                "pretrained",
+                "test_mcc",
+                "test_acc",
+                "best_val_mcc",
+                "timestamp",
+            ],
+        )
         if not file_exists:
             writer.writeheader()
-        writer.writerow({
-            "model": args.model,
-            "data": str(args.data),
-            "seed": str(args.seed),
-            "pretrained": str(pretrained_model is not None),
-            "test_mcc": metrics.get("mcc", ""),
-            "test_acc": metrics.get("accuracy", ""),
-            "best_val_mcc": metrics.get("best_val_mcc", ""),
-            "timestamp": time.strftime("%Y-%m-%d %H:%M"),
-        })
+        writer.writerow(
+            {
+                "model": args.model,
+                "data": str(args.data),
+                "seed": str(args.seed),
+                "pretrained": str(pretrained_model is not None),
+                "test_mcc": metrics.get("mcc", ""),
+                "test_acc": metrics.get("accuracy", ""),
+                "best_val_mcc": metrics.get("best_val_mcc", ""),
+                "timestamp": time.strftime("%Y-%m-%d %H:%M"),
+            }
+        )
     print(f"\nResults appended to {results_file}")
 
 

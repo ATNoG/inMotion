@@ -12,7 +12,8 @@ Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
   E. Compare: greedy-weighted, logit-avg, rank-avg, entropy-weighted, LR stack
 
 Usage:
-    MAMBA_SSM_AVAILABLE=0 uv run python mega_ensemble.py --data data/processed/dataset_augmented3.csv --seed 42
+    MAMBA_SSM_AVAILABLE=0 inmotion run pipeline mega-ensemble -- \
+        --data data/processed/dataset_augmented3.csv --seed 42
 
 Note: set MAMBA_SSM_AVAILABLE=0 to skip the (hang-prone) mamba_ssm CUDA
 extension import and use the pure-PyTorch fallback for Mamba-based models.
@@ -44,77 +45,122 @@ from dl.data_loader import DLDataLoader
 
 def _build_lejepa():
     from dl.models.lejepa import LeJEPAClassifier, LeJEPAModel
+
     # full-after-hpo Pareto winner (0.8676): d_model=128 ff=256 layers=4 pred_layers=3
     pretrained = LeJEPAModel(
-        seq_len=10, in_channels=4, d_model=128, nhead=4,
-        num_layers=4, dim_feedforward=256, pred_num_layers=3, sigreg_lambda=0.05,
+        seq_len=10,
+        in_channels=4,
+        d_model=128,
+        nhead=4,
+        num_layers=4,
+        dim_feedforward=256,
+        pred_num_layers=3,
+        sigreg_lambda=0.05,
     )
     return LeJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_t_jepa():
     from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+
     # full-after-hpo Pareto winner (0.8445): d_model=128 layers=4 ff=256 pred_layers=3
     pretrained = TJEPAModel(
-        n_timesteps=10, n_channels=18, d_model=128, nhead=4,
-        num_layers=4, dim_feedforward=256, n_reg_tokens=2,
-        pred_dim=64, pred_num_layers=3,
+        n_timesteps=10,
+        n_channels=18,
+        d_model=128,
+        nhead=4,
+        num_layers=4,
+        dim_feedforward=256,
+        n_reg_tokens=2,
+        pred_dim=64,
+        pred_num_layers=3,
     )
     return TJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_ts_jepa():
     from dl.models.ts_jepa import TSJEPAClassifier, TSJEPAModel
+
     pretrained = TSJEPAModel(
-        seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
-        num_layers=4, dim_feedforward=512, pred_dim=128, pred_num_layers=2,
+        seq_len=10,
+        patch_size=2,
+        in_channels=18,
+        embed_dim=256,
+        nhead=8,
+        num_layers=4,
+        dim_feedforward=512,
+        pred_dim=128,
+        pred_num_layers=2,
     )
     return TSJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_cf_jepa():
     from dl.models.cf_jepa import CFJEPAClassifier, CFJEPAModel
+
     # full-after-hpo best frontier point (manual run): embed 256, layers 3,
     # ff 256, pred_dim 128, pred_layers 1, 18-channel rich features
     pretrained = CFJEPAModel(
-        seq_len=10, patch_size=2, in_channels=18, embed_dim=256, nhead=8,
-        num_layers=3, dim_feedforward=256, pred_dim=128, pred_num_layers=1,
-        horizon_start=1, horizon_end=3, ctx_min=1, ctx_max=3,
-        ema_start=0.996, ema_end=0.999, sigreg_lambda=0.05,
+        seq_len=10,
+        patch_size=2,
+        in_channels=18,
+        embed_dim=256,
+        nhead=8,
+        num_layers=3,
+        dim_feedforward=256,
+        pred_dim=128,
+        pred_num_layers=1,
+        horizon_start=1,
+        horizon_end=3,
+        ctx_min=1,
+        ctx_max=3,
+        ema_start=0.996,
+        ema_end=0.999,
+        sigreg_lambda=0.05,
     )
     return CFJEPAClassifier(pretrained=pretrained, num_classes=4, hidden_dim=128, dropout=0.3)
 
 
 def _build_cnn():
     from dl.models.cnn import CNNClassifier
+
     return CNNClassifier(4, 128, 3, 4, 0.3, [3, 5, 7])
 
 
 def _build_tcn():
     from dl.models.tcn import TCNClassifier
+
     return TCNClassifier(4, 256, 3, 6, 4, 0.3)
 
 
 def _build_gru():
     from dl.models.gru import GRUClassifier
+
     return GRUClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_lstm():
     from dl.models.lstm import LSTMClassifier
+
     return LSTMClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_bilstm():
     from dl.models.bilstm import BiLSTMClassifier
+
     return BiLSTMClassifier(4, 64, 2, 4, 0.3, use_attention=True)
 
 
 def _build_sigreg():
     from dl.models.sigreg_classifier import SIGRegClassifier
+
     m = SIGRegClassifier(
-        in_features=4, num_filters=192, num_blocks=3, latent_dim=128,
-        num_classes=4, sigreg_lambda=0.01,
+        in_features=4,
+        num_filters=192,
+        num_blocks=3,
+        latent_dim=128,
+        num_classes=4,
+        sigreg_lambda=0.01,
     )
     return _TupleWrap(m)
 
@@ -122,9 +168,14 @@ def _build_sigreg():
 def _build_sigreg_full():
     """sigreg full-after-hpo checkpoint: encoder 128 filters / 3 blocks."""
     from dl.models.sigreg_classifier import SIGRegClassifier
+
     m = SIGRegClassifier(
-        in_features=4, num_filters=128, num_blocks=3, latent_dim=128,
-        num_classes=4, sigreg_lambda=0.01,
+        in_features=4,
+        num_filters=128,
+        num_blocks=3,
+        latent_dim=128,
+        num_classes=4,
+        sigreg_lambda=0.01,
     )
     return _TupleWrap(m)
 
@@ -139,6 +190,7 @@ def _make_hpo_builder(model_type: str):
     def build():
         from dl.config import DLConfig
         from inmotion.pipelines.dl import _build_hpo_best_model
+
         study = optuna.load_study(
             study_name=f"inMotion_dl_v3_{model_type}",
             storage="sqlite:///optuna_dl_9344.db",
@@ -150,36 +202,63 @@ def _make_hpo_builder(model_type: str):
 
 def _build_mamba3_cnn():
     from dl.models.mamba3_cnn import Mamba3CNN
+
     return Mamba3CNN(
-        in_features=4, cnn_channels=192, d_model=192, d_state=16,
-        n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
+        in_features=4,
+        cnn_channels=192,
+        d_model=192,
+        d_state=16,
+        n_mamba_layers=3,
+        num_classes=4,
+        dropout=0.2,
+        mimo_rank=4,
     )
 
 
 def _build_mamba3_tcn():
     from dl.models.mamba3_tcn import Mamba3TCN
+
     # backup checkpoint: tcn/d_model=128
     return Mamba3TCN(
-        in_features=4, tcn_channels=128, d_model=128, d_state=16,
-        n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
+        in_features=4,
+        tcn_channels=128,
+        d_model=128,
+        d_state=16,
+        n_mamba_layers=3,
+        num_classes=4,
+        dropout=0.2,
+        mimo_rank=4,
     )
 
 
 def _build_mamba3_transformer():
     from dl.models.mamba3_transformer import Mamba3Transformer
+
     # backup checkpoint: d_model=128
     return Mamba3Transformer(
-        in_features=4, d_model=128, d_state=16, nhead=4,
-        num_blocks=3, num_classes=4, dropout=0.2, mimo_rank=4,
+        in_features=4,
+        d_model=128,
+        d_state=16,
+        nhead=4,
+        num_blocks=3,
+        num_classes=4,
+        dropout=0.2,
+        mimo_rank=4,
     )
 
 
 def _build_mamba3_multiview():
     from dl.models.mamba3_multiview import Mamba3MultiView
+
     # backup checkpoint: d_model=256
     return Mamba3MultiView(
-        in_features=4, d_model=256, d_state=16,
-        n_mamba_layers=3, num_classes=4, dropout=0.2, mimo_rank=4,
+        in_features=4,
+        d_model=256,
+        d_state=16,
+        n_mamba_layers=3,
+        num_classes=4,
+        dropout=0.2,
+        mimo_rank=4,
     )
 
 
@@ -201,9 +280,17 @@ def _build_ds_ensemble():
     from dl.models.tcn import TCNClassifier
 
     bases: list[nn.Module] = [
-        CNN2DRNNClassifier(in_features=4, num_filters=128, cnn_depth=3, hidden_size=256,
-                           num_rnn_layers=3, num_classes=4, dropout=0.3,
-                           rnn_type="lstm", bidirectional=True),
+        CNN2DRNNClassifier(
+            in_features=4,
+            num_filters=128,
+            cnn_depth=3,
+            hidden_size=256,
+            num_rnn_layers=3,
+            num_classes=4,
+            dropout=0.3,
+            rnn_type="lstm",
+            bidirectional=True,
+        ),
         CNNClassifier(4, 64, 2, 4, 0.2, [3, 5]),
         CNNClassifier(4, 256, 4, 4, 0.3, [3, 5, 7, 9]),
         GRUClassifier(4, 64, 2, 4, 0.2),
@@ -214,7 +301,9 @@ def _build_ds_ensemble():
         TCNClassifier(4, 128, 3, 4, 4, 0.2),
         TCNClassifier(4, 512, 7, 8, 4, 0.3),
     ]
-    return DeepStackEnsemble(bases, [Level2Net(40, 4) for _ in range(4)], num_classes=4, dropout=0.3)
+    return DeepStackEnsemble(
+        bases, [Level2Net(40, 4) for _ in range(4)], num_classes=4, dropout=0.3
+    )
 
 
 class _TupleWrap(nn.Module):
@@ -229,7 +318,7 @@ class _TupleWrap(nn.Module):
 
 
 def _strip_prefix(sd: dict, prefix: str = "c.") -> dict:
-    return {k[len(prefix):] if k.startswith(prefix) else k: v for k, v in sd.items()}
+    return {k[len(prefix) :] if k.startswith(prefix) else k: v for k, v in sd.items()}
 
 
 def _add_prefix(sd: dict, prefix: str) -> dict:
@@ -306,11 +395,22 @@ def catch22_features(X: np.ndarray) -> np.ndarray:
         spec = np.abs(np.fft.rfft(xc, axis=1))
         spec_n = spec / (spec.sum(1, keepdims=True) + 1e-8)
         peak = np.argmax(np.abs(xc), axis=1).astype(np.float32)
-        feats.extend([
-            mu, sd, xc.min(1), xc.max(1), xc.max(1) - xc.min(1),
-            ((z ** 3).mean(1)), ((z ** 4).mean(1)), ac1, zc, mad,
-            (spec_n ** 2).sum(1), peak,
-        ])
+        feats.extend(
+            [
+                mu,
+                sd,
+                xc.min(1),
+                xc.max(1),
+                xc.max(1) - xc.min(1),
+                ((z**3).mean(1)),
+                ((z**4).mean(1)),
+                ac1,
+                zc,
+                mad,
+                (spec_n**2).sum(1),
+                peak,
+            ]
+        )
     return np.stack(feats, axis=1).astype(np.float32)
 
 
@@ -332,13 +432,20 @@ def _load_features(data_path: Path, rich: bool) -> np.ndarray:
 
 def _stratified_indices(y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     from sklearn.model_selection import train_test_split
+
     idx = np.arange(len(y))
     tr_val_idx, test_idx = train_test_split(
-        idx, test_size=0.2, random_state=seed, stratify=y,
+        idx,
+        test_size=0.2,
+        random_state=seed,
+        stratify=y,
     )
     y_tr_val = y[tr_val_idx]
     train_idx, val_idx = train_test_split(
-        tr_val_idx, test_size=0.125, random_state=seed, stratify=y_tr_val,
+        tr_val_idx,
+        test_size=0.125,
+        random_state=seed,
+        stratify=y_tr_val,
     )
     return train_idx, val_idx, test_idx
 
@@ -348,7 +455,9 @@ def _stratified_indices(y: np.ndarray, seed: int) -> tuple[np.ndarray, np.ndarra
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def _predict_probs(model: nn.Module, X: np.ndarray, device: torch.device, batch: int = 256) -> np.ndarray:
+def _predict_probs(
+    model: nn.Module, X: np.ndarray, device: torch.device, batch: int = 256
+) -> np.ndarray:
     ds = TensorDataset(torch.from_numpy(X.astype(np.float32)))
     dl = DataLoader(ds, batch_size=batch, shuffle=False)
     parts = []
@@ -369,11 +478,11 @@ def fit_temperature(logits: np.ndarray, y: np.ndarray, init: float = 1.0) -> flo
     for _ in range(100):
         grad = 0.0
         for _b in range(0, len(y), 512):
-            lg = logits[_b:_b + 512] / T
+            lg = logits[_b : _b + 512] / T
             lg = lg - lg.max(1, keepdims=True)
             p = np.exp(lg)
             p /= p.sum(1, keepdims=True)
-            grad += (p[np.arange(len(y[_b:_b + 512])), y[_b:_b + 512]] - 1.0).sum()
+            grad += (p[np.arange(len(y[_b : _b + 512])), y[_b : _b + 512]] - 1.0).sum()
         T -= 0.01 * grad / max(len(y), 1)
         T = max(T, 0.05)
     return T
@@ -393,7 +502,10 @@ def _renorm(p: np.ndarray) -> np.ndarray:
 
 
 def _caruana_selection(
-    val_probs: list[np.ndarray], val_y: np.ndarray, steps: int = 100, metric: str = "ce",
+    val_probs: list[np.ndarray],
+    val_y: np.ndarray,
+    steps: int = 100,
+    metric: str = "ce",
 ) -> np.ndarray:
     """Caruana ensemble selection with replacement, on CE or accuracy."""
     n = len(val_probs)
@@ -418,7 +530,9 @@ def _caruana_selection(
     return counts
 
 
-def _bagged_caruana(val_probs: list[np.ndarray], val_y: np.ndarray, n_bags: int = 20, steps: int = 50) -> np.ndarray:
+def _bagged_caruana(
+    val_probs: list[np.ndarray], val_y: np.ndarray, n_bags: int = 20, steps: int = 50
+) -> np.ndarray:
     """Bagged Caruana: repeat selection on 60% sample subsets, average pick counts."""
     n = len(val_probs)
     total = np.zeros(n)
@@ -426,7 +540,10 @@ def _bagged_caruana(val_probs: list[np.ndarray], val_y: np.ndarray, n_bags: int 
     for _ in range(n_bags):
         idx = rng.choice(len(val_y), size=int(0.6 * len(val_y)), replace=False)
         counts = _caruana_selection(
-            [p[idx] for p in val_probs], val_y[idx], steps=steps, metric="ce",
+            [p[idx] for p in val_probs],
+            val_y[idx],
+            steps=steps,
+            metric="ce",
         )
         total += counts
     s = total.sum()
@@ -465,17 +582,27 @@ def main() -> None:
     p.add_argument("--steps", type=int, default=100)
     p.add_argument("--no-tabpfn", action="store_true")
     p.add_argument("--no-classical", action="store_true")
-    p.add_argument("--members", type=str, default="all",
-                   choices=["all", "world", "world_bestdl", "best_world", "best_world_bestdl"],
-                   help="Which member subset to run: all, world (JEPA+sigreg), "
-                        "world_bestdl (world + best DL), best_world (top-3 world by test MCC), "
-                        "best_world_bestdl (top-3 world + top DL)")
-    p.add_argument("--select", action="store_true",
-                   help="Greedy member selection on validation MCC (config 6: smart selection)")
-    p.add_argument("--size-frontier", action="store_true",
-                   help="Greedy ensemble-level size/MCC frontier: at each step add "
-                        "the member with best MCC-per-added-param; writes "
-                        "results/ensemble_size_frontier.csv")
+    p.add_argument(
+        "--members",
+        type=str,
+        default="all",
+        choices=["all", "world", "world_bestdl", "best_world", "best_world_bestdl"],
+        help="Which member subset to run: all, world (JEPA+sigreg), "
+        "world_bestdl (world + best DL), best_world (top-3 world by test MCC), "
+        "best_world_bestdl (top-3 world + top DL)",
+    )
+    p.add_argument(
+        "--select",
+        action="store_true",
+        help="Greedy member selection on validation MCC (config 6: smart selection)",
+    )
+    p.add_argument(
+        "--size-frontier",
+        action="store_true",
+        help="Greedy ensemble-level size/MCC frontier: at each step add "
+        "the member with best MCC-per-added-param; writes "
+        "results/ensemble_size_frontier.csv",
+    )
     args = p.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -483,6 +610,7 @@ def main() -> None:
 
     import pandas as pd
     from sklearn.preprocessing import LabelEncoder
+
     y = pd.read_csv(args.data)["label"].values
     train_idx, val_idx, test_idx = _stratified_indices(y, args.seed)
     le = LabelEncoder()
@@ -496,42 +624,130 @@ def main() -> None:
     # ── Deep learning members ────────────────────────────────────────────────
     dl_specs = [
         # ── Best-of-family exotic (20-aug full-after-hpo, dataset_augmented3) ──
-        {"name": "lejepa", "rich": False, "build": _build_lejepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_ft_seed42.pt"},
-        {"name": "t_jepa", "rich": True, "build": _build_t_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/t_jepa_ft_seed42.pt"},
-        {"name": "ts_jepa", "rich": True, "build": _build_ts_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/ts_jepa_ft_seed42.pt"},
-        {"name": "cf_jepa", "rich": True, "build": _build_cf_jepa, "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/cf_jepa_ft_seed42.pt", "prefix": "c."},
+        {
+            "name": "lejepa",
+            "rich": False,
+            "build": _build_lejepa,
+            "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_ft_seed42.pt",
+        },
+        {
+            "name": "t_jepa",
+            "rich": True,
+            "build": _build_t_jepa,
+            "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/t_jepa_ft_seed42.pt",
+        },
+        {
+            "name": "ts_jepa",
+            "rich": True,
+            "build": _build_ts_jepa,
+            "ckpt": "20-aug/models/exotic/normal-new-ds/ts_jepa_ft_seed42.pt",
+        },
+        {
+            "name": "cf_jepa",
+            "rich": True,
+            "build": _build_cf_jepa,
+            "ckpt": "20-aug/models/exotic/normal-new-ds/full-after-hpo/cf_jepa_ft_seed42.pt",
+            "prefix": "c.",
+        },
         # sigreg: use best icaisf-trained backup (0.8795) — the full-after-hpo
         # sigreg (augmented3) does not transfer to icaisf (0.0185 there).
-        {"name": "sigreg", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed42.pt", "prefix": "m."},
-        {"name": "sigreg_s3", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed3.pt", "prefix": "m."},
-        {"name": "sigreg_s5", "rich": False, "build": _build_sigreg, "ckpt": "backup/sigreg_seed5.pt", "prefix": "m."},
+        {
+            "name": "sigreg",
+            "rich": False,
+            "build": _build_sigreg,
+            "ckpt": "backup/sigreg_seed42.pt",
+            "prefix": "m.",
+        },
+        {
+            "name": "sigreg_s3",
+            "rich": False,
+            "build": _build_sigreg,
+            "ckpt": "backup/sigreg_seed3.pt",
+            "prefix": "m.",
+        },
+        {
+            "name": "sigreg_s5",
+            "rich": False,
+            "build": _build_sigreg,
+            "ckpt": "backup/sigreg_seed5.pt",
+            "prefix": "m.",
+        },
         # ── Mamba-3 family (backup/, trained on dataset.icaisf) ──
-        {"name": "mamba3_cnn", "rich": False, "build": _build_mamba3_cnn, "ckpt": "backup/mamba3_cnn_seed42.pt"},
-        {"name": "mamba3_tcn", "rich": False, "build": _build_mamba3_tcn, "ckpt": "backup/mamba3_tcn_seed42.pt"},
-        {"name": "mamba3_transformer", "rich": False, "build": _build_mamba3_transformer, "ckpt": "backup/mamba3_transformer_seed42.pt"},
-        {"name": "mamba3_multiview", "rich": False, "build": _build_mamba3_multiview, "ckpt": "backup/mamba3_multiview_seed42.pt"},
+        {
+            "name": "mamba3_cnn",
+            "rich": False,
+            "build": _build_mamba3_cnn,
+            "ckpt": "backup/mamba3_cnn_seed42.pt",
+        },
+        {
+            "name": "mamba3_tcn",
+            "rich": False,
+            "build": _build_mamba3_tcn,
+            "ckpt": "backup/mamba3_tcn_seed42.pt",
+        },
+        {
+            "name": "mamba3_transformer",
+            "rich": False,
+            "build": _build_mamba3_transformer,
+            "ckpt": "backup/mamba3_transformer_seed42.pt",
+        },
+        {
+            "name": "mamba3_multiview",
+            "rich": False,
+            "build": _build_mamba3_multiview,
+            "ckpt": "backup/mamba3_multiview_seed42.pt",
+        },
         # ── HPO DL models (20-aug, optuna_dl_9344.db architectures) ──
-        {"name": "hpo_gru", "rich": False, "build": _make_hpo_builder("gru"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_GRU_seed42.pt"},
-        {"name": "hpo_lstm", "rich": False, "build": _make_hpo_builder("lstm"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_LSTM_seed42.pt"},
-        {"name": "hpo_cnn", "rich": False, "build": _make_hpo_builder("cnn"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_CNN_seed42.pt"},
-        {"name": "hpo_mamba", "rich": False, "build": _make_hpo_builder("mamba"), "ckpt": "20-aug/models/dl/normal-new-ds/HPO_MAMBA_seed42.pt"},
-        {"name": "deepstack", "rich": False, "build": _build_ds_ensemble, "ckpt": "models/dl/augmented/DeepStackEnsemble_seed42.pt"},
+        {
+            "name": "hpo_gru",
+            "rich": False,
+            "build": _make_hpo_builder("gru"),
+            "ckpt": "20-aug/models/dl/normal-new-ds/HPO_GRU_seed42.pt",
+        },
+        {
+            "name": "hpo_lstm",
+            "rich": False,
+            "build": _make_hpo_builder("lstm"),
+            "ckpt": "20-aug/models/dl/normal-new-ds/HPO_LSTM_seed42.pt",
+        },
+        {
+            "name": "hpo_cnn",
+            "rich": False,
+            "build": _make_hpo_builder("cnn"),
+            "ckpt": "20-aug/models/dl/normal-new-ds/HPO_CNN_seed42.pt",
+        },
+        {
+            "name": "hpo_mamba",
+            "rich": False,
+            "build": _make_hpo_builder("mamba"),
+            "ckpt": "20-aug/models/dl/normal-new-ds/HPO_MAMBA_seed42.pt",
+        },
+        {
+            "name": "deepstack",
+            "rich": False,
+            "build": _build_ds_ensemble,
+            "ckpt": "models/dl/augmented/DeepStackEnsemble_seed42.pt",
+        },
         {"name": "cnn", "rich": False, "build": _build_cnn, "ckpt": "models/dl/CNN_seed42.pt"},
         {"name": "tcn", "rich": False, "build": _build_tcn, "ckpt": "models/dl/TCN_seed42.pt"},
         {"name": "gru", "rich": False, "build": _build_gru, "ckpt": "models/dl/GRU_seed42.pt"},
         {"name": "lstm", "rich": False, "build": _build_lstm, "ckpt": "models/dl/LSTM_seed42.pt"},
-        {"name": "bilstm", "rich": False, "build": _build_bilstm, "ckpt": "models/dl/BiLSTM_seed42.pt"},
+        {
+            "name": "bilstm",
+            "rich": False,
+            "build": _build_bilstm,
+            "ckpt": "models/dl/BiLSTM_seed42.pt",
+        },
     ]
 
     val_probs, test_probs, names = [], [], []
-    member_params: list[float] = []   # millions of parameters per member
+    member_params: list[float] = []  # millions of parameters per member
     print("\n=== DL members (test MCC) ===")
 
     # ── Member subset selection ─────────────────────────────────────────────
-    world_names = {"lejepa", "t_jepa", "ts_jepa", "cf_jepa", "sigreg",
-                   "sigreg_s3", "sigreg_s5"}
-    best_world = ["sigreg", "lejepa", "ts_jepa"]      # top-3 world by test MCC
-    best_dl = ["deepstack", "mamba3_tcn"]             # top-2 DL by test MCC
+    world_names = {"lejepa", "t_jepa", "ts_jepa", "cf_jepa", "sigreg", "sigreg_s3", "sigreg_s5"}
+    best_world = ["sigreg", "lejepa", "ts_jepa"]  # top-3 world by test MCC
+    best_dl = ["deepstack", "mamba3_tcn"]  # top-2 DL by test MCC
     if args.members == "world":
         dl_specs = [s for s in dl_specs if s["name"] in world_names]
         print(f"  (world-only mode: {len(dl_specs)} members)")
@@ -587,12 +803,17 @@ def main() -> None:
                 w[j] = 1.0 / len(chosen)
             ens_t = sum(w[j] * test_probs[j] for j in chosen)
             tm = float(matthews_corrcoef(y_test, ens_t.argmax(1)))
-            sel_rows.append({
-                "step": len(chosen), "members": "+".join(names[j] for j in chosen),
-                "val_mcc": round(best_vm, 4), "test_mcc": round(tm, 4),
-            })
+            sel_rows.append(
+                {
+                    "step": len(chosen),
+                    "members": "+".join(names[j] for j in chosen),
+                    "val_mcc": round(best_vm, 4),
+                    "test_mcc": round(tm, 4),
+                }
+            )
             print(f"  +{names[best_i]:<12} val={best_vm:.4f} test={tm:.4f}")
         import csv as _csv
+
         with open("results/smart_selection.csv", "w", newline="") as fh:
             w = _csv.DictWriter(fh, fieldnames=list(sel_rows[0].keys()))
             w.writeheader()
@@ -605,6 +826,7 @@ def main() -> None:
         _raw_df = pd.read_csv(args.data)
         _raw_X = _raw_df[[str(i) for i in range(1, 11)]].values.astype(np.float32)
         from sklearn.preprocessing import StandardScaler
+
         _scaler = StandardScaler().fit(_raw_X[train_idx])
         Xtr_f = _scaler.transform(_raw_X[train_idx])
         Xva_f = _scaler.transform(_raw_X[val_idx])
@@ -624,9 +846,11 @@ def main() -> None:
                 vp = clf.predict_proba(Xva_f)
                 mcc = float(matthews_corrcoef(y_test, tp.argmax(1)))
                 # approximate "size" for classical models: training-set footprint
-                approx = {"knn": len(Xtr_f) * Xtr_f.shape[1] * 4 / 1e6,
-                          "logreg": Xtr_f.shape[1] * 4 / 1e6,
-                          "gp": len(Xtr_f) ** 2 * 4 / 1e6}[name]
+                approx = {
+                    "knn": len(Xtr_f) * Xtr_f.shape[1] * 4 / 1e6,
+                    "logreg": Xtr_f.shape[1] * 4 / 1e6,
+                    "gp": len(Xtr_f) ** 2 * 4 / 1e6,
+                }[name]
                 member_params.append(approx)
                 print(f"  {name:<12} {mcc:.4f}")
                 val_probs.append(vp)
@@ -637,8 +861,10 @@ def main() -> None:
 
         try:
             from catboost import CatBoostClassifier
-            cb = CatBoostClassifier(iterations=300, random_state=args.seed, verbose=False,
-                                    thread_count=-1)
+
+            cb = CatBoostClassifier(
+                iterations=300, random_state=args.seed, verbose=False, thread_count=-1
+            )
             cb.fit(Xtr_f, ytr)
             tp = cb.predict_proba(Xte_f)
             vp = cb.predict_proba(Xva_f)
@@ -655,6 +881,7 @@ def main() -> None:
         print("\n=== TabPFN member ===")
         try:
             from tabpfn import TabPFNClassifier
+
             tabpfn_clf = TabPFNClassifier(device="cuda" if torch.cuda.is_available() else "cpu")
             # TabPFN v8+ requires a license token (TABPFN_TOKEN); if not set it
             # raises during fit — we catch and skip gracefully.
@@ -780,8 +1007,12 @@ def main() -> None:
                     w[j] = 1.0 / len(cand)
                 ens = sum(w[j] * P[j] for j in cand)
                 mcc = float(matthews_corrcoef(y_test, ens.argmax(1)))
-                added = sizes[i] * (1.0 / len(cand))   # marginal weight this step
-                gain = (mcc - frontier_best_mcc) / max(added, 1e-6) if mcc > frontier_best_mcc else -1e9
+                added = sizes[i] * (1.0 / len(cand))  # marginal weight this step
+                gain = (
+                    (mcc - frontier_best_mcc) / max(added, 1e-6)
+                    if mcc > frontier_best_mcc
+                    else -1e9
+                )
                 if gain > best_gain:
                     best_i, best_gain = i, gain
             if best_i < 0:
@@ -795,15 +1026,19 @@ def main() -> None:
             total_size = sum(sizes[j] for j in chosen)
             improved = mcc > frontier_best_mcc + 1e-4
             frontier_best_mcc = max(frontier_best_mcc, mcc)
-            frontier_rows.append({
-                "step": len(chosen),
-                "members": "+".join(names[j] for j in chosen),
-                "total_params_M": round(total_size, 3),
-                "test_mcc": round(mcc, 4),
-                "improved": improved,
-            })
-            print(f"  +{names[best_i]:<12} size={total_size:8.2f}M  ensemble MCC={mcc:.4f}"
-                  f"{'  *' if improved else ''}")
+            frontier_rows.append(
+                {
+                    "step": len(chosen),
+                    "members": "+".join(names[j] for j in chosen),
+                    "total_params_M": round(total_size, 3),
+                    "test_mcc": round(mcc, 4),
+                    "improved": improved,
+                }
+            )
+            print(
+                f"  +{names[best_i]:<12} size={total_size:8.2f}M  ensemble MCC={mcc:.4f}"
+                f"{'  *' if improved else ''}"
+            )
         out_path = Path("results/ensemble_size_frontier.csv")
         with open(out_path, "w", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=list(frontier_rows[0].keys()))
@@ -826,9 +1061,11 @@ def main() -> None:
     # ── Save results ──────────────────────────────────────────────────────────
     try:
         import time as _time
+
         out_path = Path("results/mega_ensemble_results.csv")
         row = {
-            "data": str(args.data), "seed": args.seed,
+            "data": str(args.data),
+            "seed": args.seed,
             "members": "|".join(names),
             "bagged_caruana": results["bagged_caruana"],
             "plain_avg": results["plain_avg"],

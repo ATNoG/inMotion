@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Game-Theoretic SHAP Feature Channel Attribution for WiFi ISAC Models.
 
-Evaluates Shapley Additive exPlanations (SHAP) across the 18-channel feature hierarchy
-(or 4-channel base hierarchy) for time-series world models (TS-JEPA, LeJEPA, CF-JEPA, T-JEPA, SIGReg).
+Evaluates Shapley Additive exPlanations (SHAP) across the 18-channel feature
+hierarchy (or the 4-channel base hierarchy) for the time-series world models:
+TS-JEPA, LeJEPA, CF-JEPA, T-JEPA and SIGReg.
 
 Usage:
-    python compute_shap.py --data data/processed/dataset.csv --checkpoint backup/ts_jepa_ft_seed42.pt --samples 50 --nsamples 150
+    inmotion run pipeline shap -- \
+        --data data/processed/dataset.csv \
+        --checkpoint backup/ts_jepa_ft_seed42.pt \
+        --samples 50 --nsamples 150
 """
 
 from __future__ import annotations
@@ -50,11 +54,24 @@ FEATURE_NAMES_18 = [
 ]
 
 FEATURE_FAMILIES_18 = [
-    "Base", "Base", "Base", "Base",
-    "Spectral", "Spectral",
-    "Stats", "Stats", "Stats", "Stats", "Stats",
-    "Shape", "Shape", "Shape",
-    "Spectral", "Spectral", "Spectral", "Spectral",
+    "Base",
+    "Base",
+    "Base",
+    "Base",
+    "Spectral",
+    "Spectral",
+    "Stats",
+    "Stats",
+    "Stats",
+    "Stats",
+    "Stats",
+    "Shape",
+    "Shape",
+    "Shape",
+    "Spectral",
+    "Spectral",
+    "Spectral",
+    "Spectral",
 ]
 
 FEATURE_NAMES_4 = [
@@ -100,6 +117,7 @@ def explain_channels_shap(
     eval_samples = X_test[:num_test_samples]
 
     for s in eval_samples:
+
         def model_fn(z: np.ndarray) -> np.ndarray:
             # z is (M, n_channels) binary coalition indicators
             M = z.shape[0]
@@ -130,20 +148,37 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compute Game-Theoretic SHAP Feature Channel Attribution."
     )
-    parser.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"), help="Path to CSV dataset.")
     parser.add_argument(
-        "--model", type=str, default="ts_jepa", choices=list(MODEL_BUILDERS.keys()), help="Model type."
+        "--data", type=Path, default=Path("data/processed/dataset.csv"), help="Path to CSV dataset."
     )
     parser.add_argument(
-        "--checkpoint", type=Path, default=Path("backup/ts_jepa_ft_seed42.pt"), help="Model checkpoint path."
+        "--model",
+        type=str,
+        default="ts_jepa",
+        choices=list(MODEL_BUILDERS.keys()),
+        help="Model type.",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        default=Path("backup/ts_jepa_ft_seed42.pt"),
+        help="Model checkpoint path.",
     )
     parser.add_argument("--seed", type=int, default=42, help="Stratified split seed.")
-    parser.add_argument("--samples", type=int, default=50, help="Number of test sequences to explain.")
     parser.add_argument(
-        "--nsamples", type=int, default=150, help="Number of coalition evaluations in KernelExplainer."
+        "--samples", type=int, default=50, help="Number of test sequences to explain."
     )
     parser.add_argument(
-        "--output-dir", type=Path, default=Path("results"), help="Directory for output CSV and plots."
+        "--nsamples",
+        type=int,
+        default=150,
+        help="Number of coalition evaluations in KernelExplainer.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("results"),
+        help="Directory for output CSV and plots.",
     )
     args = parser.parse_args()
 
@@ -176,7 +211,9 @@ def main() -> None:
     bg_channels = X[train_idx].mean(axis=(0, 1), keepdims=True)
 
     # Run SHAP
-    print(f"Computing SHAP attributions for {args.samples} test samples (nsamples={args.nsamples})...")
+    print(
+        f"Computing SHAP attributions for {args.samples} test samples (nsamples={args.nsamples})..."
+    )
     shap_matrix = explain_channels_shap(
         model=model,
         X_test=X[test_idx],
@@ -193,12 +230,14 @@ def main() -> None:
     else:
         mean_abs_shap = np.abs(shap_matrix).mean(axis=(0, 2))
     # Save to DataFrame
-    df_shap = pd.DataFrame({
-        "channel_idx": range(n_channels),
-        "channel_name": feature_names,
-        "family": feature_families,
-        "mean_abs_shap": mean_abs_shap,
-    }).sort_values("mean_abs_shap", ascending=False)
+    df_shap = pd.DataFrame(
+        {
+            "channel_idx": range(n_channels),
+            "channel_name": feature_names,
+            "family": feature_families,
+            "mean_abs_shap": mean_abs_shap,
+        }
+    ).sort_values("mean_abs_shap", ascending=False)
 
     csv_path = args.output_dir / f"shap_channel_attribution_{args.model}.csv"
     df_shap.to_csv(csv_path, index=False)
@@ -209,7 +248,8 @@ def main() -> None:
         fam = row["family"]
         name = row["channel_name"]
         val = row["mean_abs_shap"]
-        print(f"  {rank+1:2d}. {name:25s} [{fam:8s}]: mean |SHAP| = {val:.5f}")
+        print(f"  {rank + 1:2d}. {name:25s} [{fam:8s}]: mean |SHAP| = {val:.5f}")
+
 
 if __name__ == "__main__":
     main()

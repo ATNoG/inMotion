@@ -13,9 +13,7 @@ from inmotion.data.paths import processed
 class DLConfig:
     # Data. `inmotion.data.paths` owns the data tiers; this is the
     # canonical processed dataset.
-    data_path: Path = field(
-        default_factory=lambda: processed("dataset.csv")
-    )
+    data_path: Path = field(default_factory=lambda: processed("dataset.csv"))
     feature_cols: list[str] = field(default_factory=lambda: [str(i) for i in range(1, 11)])
     label_col: str = "label"
     seq_len: int = 10
@@ -68,9 +66,7 @@ class DLConfig:
     # time, so every process got a different database: studies could not be
     # resumed and `evaluate_checkpoints.py` had to guess a name. Override with
     # INMOTION_OPTUNA_STORAGE for a one-off run.
-    optuna_storage: str = os.environ.get(
-        "INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"
-    )
+    optuna_storage: str = os.environ.get("INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db")
     optuna_study_prefix: str = "inMotion_dl_v3"
 
     # WandB

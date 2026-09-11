@@ -244,14 +244,16 @@ class JEPATrainer:
             )
 
             if self._wandb_run is not None:
-                wandb.log({
-                    "pretrain/train_loss": avg_train_loss,
-                    "pretrain/val_loss": val_loss,
-                    "pretrain/uniformity": uniformity,
-                    "pretrain/ema_momentum": ema_val,
-                    "pretrain/lr": scheduler.get_last_lr()[0],
-                    "pretrain/epoch": epoch,
-                })
+                wandb.log(
+                    {
+                        "pretrain/train_loss": avg_train_loss,
+                        "pretrain/val_loss": val_loss,
+                        "pretrain/uniformity": uniformity,
+                        "pretrain/ema_momentum": ema_val,
+                        "pretrain/lr": scheduler.get_last_lr()[0],
+                        "pretrain/epoch": epoch,
+                    }
+                )
 
             # ── Checkpointing ─────────────────────────────────────────────
             if val_loss < best_loss:
@@ -340,13 +342,17 @@ def prepare_jepa_data(config: DLConfig) -> tuple[DataLoader, DataLoader | None]:
         pin_memory=True,
         drop_last=False,
     )
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=config.batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True,
-        drop_last=False,
-    ) if len(X_val) > 0 else None
+    val_loader = (
+        DataLoader(
+            val_ds,
+            batch_size=config.batch_size,
+            shuffle=False,
+            num_workers=0,
+            pin_memory=True,
+            drop_last=False,
+        )
+        if len(X_val) > 0
+        else None
+    )
 
     return train_loader, val_loader

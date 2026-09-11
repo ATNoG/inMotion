@@ -37,9 +37,7 @@ class _HybridBlock(nn.Module):
             d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank
         )
         self.norm = nn.LayerNorm(d_model)
-        self.attn = nn.MultiheadAttention(
-            d_model, nhead, dropout=dropout, batch_first=True
-        )
+        self.attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=True)
         self.attn_norm = nn.LayerNorm(d_model)
         self.ffn = nn.Sequential(
             nn.Linear(d_model, d_model * 2),
@@ -93,10 +91,9 @@ class Mamba3Transformer(nn.Module):
         pe[:, 1::2] = torch.cos(pos * div)
         self.register_buffer("pos_embed", pe.unsqueeze(0))
 
-        self.blocks = nn.ModuleList([
-            _HybridBlock(d_model, d_state, nhead, dropout, mimo_rank)
-            for _ in range(num_blocks)
-        ])
+        self.blocks = nn.ModuleList(
+            [_HybridBlock(d_model, d_state, nhead, dropout, mimo_rank) for _ in range(num_blocks)]
+        )
         self.norm = nn.LayerNorm(d_model)
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.head = nn.Linear(d_model, num_classes)

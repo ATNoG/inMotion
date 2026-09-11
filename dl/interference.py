@@ -39,17 +39,19 @@ class InterferenceAnalyzer:
 
     def _setup_style(self) -> None:
         plt.style.use("seaborn-v0_8-whitegrid")
-        plt.rcParams.update({
-            "font.size": self.FONT_SIZE,
-            "axes.titlesize": self.TITLE_SIZE,
-            "axes.labelsize": self.LABEL_SIZE,
-            "xtick.labelsize": self.TICK_SIZE,
-            "ytick.labelsize": self.TICK_SIZE,
-            "legend.fontsize": self.LEGEND_SIZE,
-            "figure.titlesize": self.TITLE_SIZE + 2,
-            "pdf.fonttype": 42,
-            "ps.fonttype": 42,
-        })
+        plt.rcParams.update(
+            {
+                "font.size": self.FONT_SIZE,
+                "axes.titlesize": self.TITLE_SIZE,
+                "axes.labelsize": self.LABEL_SIZE,
+                "xtick.labelsize": self.TICK_SIZE,
+                "ytick.labelsize": self.TICK_SIZE,
+                "legend.fontsize": self.LEGEND_SIZE,
+                "figure.titlesize": self.TITLE_SIZE + 2,
+                "pdf.fonttype": 42,
+                "ps.fonttype": 42,
+            }
+        )
         sns.set_context("paper", font_scale=self.FONT_SCALE)
 
     def _save(self, name: str) -> Path:
@@ -82,8 +84,7 @@ class InterferenceAnalyzer:
 
             for j, cpath in enumerate(ROUTES):
                 sub = noise_df[
-                    (noise_df["label"] == label)
-                    & (noise_df["concurrent_noise_path"] == cpath)
+                    (noise_df["label"] == label) & (noise_df["concurrent_noise_path"] == cpath)
                 ]
                 sub_rssi = sub[FEATURE_COLS].values.flatten()
                 sub_mean = float(np.mean(sub_rssi)) if len(sub_rssi) > 0 else 0.0
@@ -105,8 +106,14 @@ class InterferenceAnalyzer:
 
         fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(
-            shift, annot=annot, fmt="", cmap="RdBu_r", center=0,
-            xticklabels=ROUTES, yticklabels=ROUTES, ax=ax,
+            shift,
+            annot=annot,
+            fmt="",
+            cmap="RdBu_r",
+            center=0,
+            xticklabels=ROUTES,
+            yticklabels=ROUTES,
+            ax=ax,
             cbar_kws={"label": "Δ RSSI (dBm)"},
             linewidths=0.5,
         )
@@ -132,23 +139,33 @@ class InterferenceAnalyzer:
                 pure_mean = pure[FEATURE_COLS].mean().values
                 pure_std = pure[FEATURE_COLS].std().values
                 ax.plot(TIME_STEPS, pure_mean, "k-", linewidth=3, label="No interference (pure)")
-                ax.fill_between(TIME_STEPS, pure_mean - pure_std, pure_mean + pure_std,
-                                alpha=0.15, color="black")
+                ax.fill_between(
+                    TIME_STEPS,
+                    pure_mean - pure_std,
+                    pure_mean + pure_std,
+                    alpha=0.15,
+                    color="black",
+                )
 
             for k, cpath in enumerate(ROUTES):
                 sub = df[
-                    (df["label"] == label)
-                    & (df["noise"])
-                    & (df["concurrent_noise_path"] == cpath)
+                    (df["label"] == label) & (df["noise"]) & (df["concurrent_noise_path"] == cpath)
                 ]
                 if len(sub) == 0:
                     continue
                 sub_mean = sub[FEATURE_COLS].mean().values
                 sub_std = sub[FEATURE_COLS].std().values
-                ax.plot(TIME_STEPS, sub_mean, marker="o", linewidth=2,
-                        color=colors[k], label=f"Interferer: {cpath}")
-                ax.fill_between(TIME_STEPS, sub_mean - sub_std, sub_mean + sub_std,
-                                alpha=0.12, color=colors[k])
+                ax.plot(
+                    TIME_STEPS,
+                    sub_mean,
+                    marker="o",
+                    linewidth=2,
+                    color=colors[k],
+                    label=f"Interferer: {cpath}",
+                )
+                ax.fill_between(
+                    TIME_STEPS, sub_mean - sub_std, sub_mean + sub_std, alpha=0.12, color=colors[k]
+                )
 
             ax.set_xlabel("Time Step")
             ax.set_ylabel("RSSI (dBm)")
@@ -156,7 +173,9 @@ class InterferenceAnalyzer:
             ax.legend(loc="best")
             ax.set_xticks(TIME_STEPS)
             plt.tight_layout()
-            plt.savefig(self._save(f"interference_trajectory_{label}"), dpi=self.DPI, bbox_inches="tight")
+            plt.savefig(
+                self._save(f"interference_trajectory_{label}"), dpi=self.DPI, bbox_inches="tight"
+            )
             plt.close()
 
     # ── Plot 3: Interference delta bar chart ────────────────────────────────
@@ -203,9 +222,7 @@ class InterferenceAnalyzer:
 
             for cpath in ROUTES:
                 sub = df[
-                    (df["label"] == label)
-                    & (df["noise"])
-                    & (df["concurrent_noise_path"] == cpath)
+                    (df["label"] == label) & (df["noise"]) & (df["concurrent_noise_path"] == cpath)
                 ]
                 vals = sub[FEATURE_COLS].values.flatten()
                 if len(vals) > 0:
@@ -228,7 +245,9 @@ class InterferenceAnalyzer:
             ax.set_ylabel("RSSI (dBm)")
             ax.set_title(f"RSSI Distribution Under Interference — Route {label}")
             plt.tight_layout()
-            plt.savefig(self._save(f"interference_violin_{label}"), dpi=self.DPI, bbox_inches="tight")
+            plt.savefig(
+                self._save(f"interference_violin_{label}"), dpi=self.DPI, bbox_inches="tight"
+            )
             plt.close()
 
     # ── Plot 5: Per-timestep interference heatmap ───────────────────────────
@@ -245,8 +264,7 @@ class InterferenceAnalyzer:
             shift_ts = np.empty((4, 10))
             for k, cpath in enumerate(ROUTES):
                 sub = noise_df[
-                    (noise_df["label"] == label)
-                    & (noise_df["concurrent_noise_path"] == cpath)
+                    (noise_df["label"] == label) & (noise_df["concurrent_noise_path"] == cpath)
                 ]
                 if len(sub) > 0:
                     sub_per_ts = sub[FEATURE_COLS].mean().values
@@ -256,8 +274,14 @@ class InterferenceAnalyzer:
 
             fig, ax = plt.subplots(figsize=(14, 6))
             sns.heatmap(
-                shift_ts, annot=True, fmt=".1f", cmap="RdBu_r", center=0,
-                xticklabels=TIME_STEPS, yticklabels=ROUTES, ax=ax,
+                shift_ts,
+                annot=True,
+                fmt=".1f",
+                cmap="RdBu_r",
+                center=0,
+                xticklabels=TIME_STEPS,
+                yticklabels=ROUTES,
+                ax=ax,
                 cbar_kws={"label": "Δ RSSI (dBm)"},
                 linewidths=0.5,
             )
@@ -265,7 +289,9 @@ class InterferenceAnalyzer:
             ax.set_ylabel("Interfering Route")
             ax.set_title(f"Per-Timestep RSSI Shift — Route {label}")
             plt.tight_layout()
-            plt.savefig(self._save(f"interference_timestep_{label}"), dpi=self.DPI, bbox_inches="tight")
+            plt.savefig(
+                self._save(f"interference_timestep_{label}"), dpi=self.DPI, bbox_inches="tight"
+            )
             plt.close()
 
     # ── Plot 6: PCA colored by interference condition ───────────────────────
@@ -283,25 +309,32 @@ class InterferenceAnalyzer:
             # Pure baseline
             mask_pure = (df["label"] == label) & (~df["noise"])
             ax.scatter(
-                X_pca[mask_pure, 0], X_pca[mask_pure, 1],
-                c=[colors[0]], label="No interference", alpha=0.6, s=60, edgecolors="black",
+                X_pca[mask_pure, 0],
+                X_pca[mask_pure, 1],
+                c=[colors[0]],
+                label="No interference",
+                alpha=0.6,
+                s=60,
+                edgecolors="black",
             )
 
             for k, cpath in enumerate(ROUTES):
                 mask = (
-                    (df["label"] == label)
-                    & (df["noise"])
-                    & (df["concurrent_noise_path"] == cpath)
+                    (df["label"] == label) & (df["noise"]) & (df["concurrent_noise_path"] == cpath)
                 )
                 if mask.sum() == 0:
                     continue
                 ax.scatter(
-                    X_pca[mask, 0], X_pca[mask, 1],
-                    c=[colors[k + 1]], label=f"Interferer: {cpath}", alpha=0.6, s=60,
+                    X_pca[mask, 0],
+                    X_pca[mask, 1],
+                    c=[colors[k + 1]],
+                    label=f"Interferer: {cpath}",
+                    alpha=0.6,
+                    s=60,
                 )
 
-            ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)")
-            ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)")
+            ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0] * 100:.1f}%)")
+            ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1] * 100:.1f}%)")
             ax.set_title(f"PCA — Route {label} Under Interference")
             ax.legend(loc="best")
             ax.grid(True, alpha=0.3)

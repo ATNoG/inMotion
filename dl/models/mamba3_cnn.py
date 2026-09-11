@@ -31,10 +31,12 @@ class _MultiScaleCNN(nn.Module):
         super().__init__()
         if kernel_sizes is None:
             kernel_sizes = [3, 5]
-        self.branches = nn.ModuleList([
-            nn.Conv1d(in_features, out_channels // len(kernel_sizes), k, padding=k // 2)
-            for k in kernel_sizes
-        ])
+        self.branches = nn.ModuleList(
+            [
+                nn.Conv1d(in_features, out_channels // len(kernel_sizes), k, padding=k // 2)
+                for k in kernel_sizes
+            ]
+        )
         self.proj = nn.Conv1d(out_channels, out_channels, 1)
         self.norm = nn.BatchNorm1d(out_channels)
         self.act = nn.GELU()
@@ -78,10 +80,12 @@ class Mamba3CNN(nn.Module):
         self.cnn_proj = (
             nn.Linear(cnn_channels, d_model) if cnn_channels != d_model else nn.Identity()
         )
-        self.mamba_blocks = nn.Sequential(*[
-            _MambaBlock(d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank)
-            for _ in range(n_mamba_layers)
-        ])
+        self.mamba_blocks = nn.Sequential(
+            *[
+                _MambaBlock(d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank)
+                for _ in range(n_mamba_layers)
+            ]
+        )
         self.norm = nn.LayerNorm(d_model)
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.head = nn.Sequential(

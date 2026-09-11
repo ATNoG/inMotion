@@ -48,8 +48,9 @@ def _zscore(X: np.ndarray) -> np.ndarray:
     return (X - X.mean(0)) / (X.std(0) + 1e-8)
 
 
-def _cv_preds(model, X: np.ndarray, y: np.ndarray, n_splits: int = 5,
-              proba: bool = False) -> np.ndarray:
+def _cv_preds(
+    model, X: np.ndarray, y: np.ndarray, n_splits: int = 5, proba: bool = False
+) -> np.ndarray:
     n_min = pd.Series(y).value_counts().min()
     k = max(2, min(n_splits, int(n_min)))
     skf = StratifiedKFold(k, shuffle=True, random_state=42)
@@ -62,20 +63,34 @@ def _mi_binned(x: np.ndarray, codes: np.ndarray, bins: int = 20) -> float:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    ap.add_argument("--out", type=Path, default=None,
-                    help="output CSV (default: <stem>_clean.csv)")
+    ap.add_argument("--out", type=Path, default=None, help="output CSV (default: <stem>_clean.csv)")
     ap.add_argument("--report-dir", type=Path, default=Path("results"))
-    ap.add_argument("--within-floor", type=float, default=0.15,
-                    help="drop device if within-device CV MCC < this")
-    ap.add_argument("--lodo-floor", type=float, default=0.05,
-                    help="drop device if leave-one-device-out MCC < this")
-    ap.add_argument("--keep-shifted", action="store_true",
-                    help="keep self-consistent devices even if LODO says shifted")
-    ap.add_argument("--drop-ambiguous", action="store_true",
-                    help="also drop samples flagged by OOF disagreement")
+    ap.add_argument(
+        "--within-floor",
+        type=float,
+        default=0.15,
+        help="drop device if within-device CV MCC < this",
+    )
+    ap.add_argument(
+        "--lodo-floor",
+        type=float,
+        default=0.05,
+        help="drop device if leave-one-device-out MCC < this",
+    )
+    ap.add_argument(
+        "--keep-shifted",
+        action="store_true",
+        help="keep self-consistent devices even if LODO says shifted",
+    )
+    ap.add_argument(
+        "--drop-ambiguous",
+        action="store_true",
+        help="also drop samples flagged by OOF disagreement",
+    )
     ap.add_argument("--ambiguity-thresh", type=float, default=0.85)
     args = ap.parse_args()
 
@@ -129,15 +144,20 @@ def main() -> None:
         shifted = lodo < args.lodo_floor
         drop = inconsistent or (shifted and not args.keep_shifted)
 
-        rows.append({
-            "mac": mac, "n": int(m.sum()), "n_classes": len(counts),
-            "rssi_mean": round(float(rd.mean()), 1),
-            "within_mcc": None if np.isnan(within) else round(within, 3),
-            "lodo_mcc": round(lodo, 3), "lodo_acc": round(lodo_acc, 3),
-            "label_inconsistent": bool(inconsistent),
-            "dist_shifted": bool(shifted),
-            "decision": "DROP" if drop else "keep",
-        })
+        rows.append(
+            {
+                "mac": mac,
+                "n": int(m.sum()),
+                "n_classes": len(counts),
+                "rssi_mean": round(float(rd.mean()), 1),
+                "within_mcc": None if np.isnan(within) else round(within, 3),
+                "lodo_mcc": round(lodo, 3),
+                "lodo_acc": round(lodo_acc, 3),
+                "label_inconsistent": bool(inconsistent),
+                "dist_shifted": bool(shifted),
+                "decision": "DROP" if drop else "keep",
+            }
+        )
     audit = pd.DataFrame(rows)
     with pd.option_context("display.width", 160):
         print("\n=== Per-device audit ===")
@@ -163,8 +183,10 @@ def main() -> None:
         flagged["oof_conf"] = conf[amb].round(3)
         flagged.to_csv(flagged_path, index=False)
         n_flagged = int(amb.sum())
-        print(f"\nAmbiguous samples (OOF conf>{args.ambiguity_thresh} AND wrong): "
-              f"{n_flagged}  → {flagged_path}")
+        print(
+            f"\nAmbiguous samples (OOF conf>{args.ambiguity_thresh} AND wrong): "
+            f"{n_flagged}  → {flagged_path}"
+        )
         if args.drop_ambiguous and n_flagged:
             survivors = survivors.loc[~amb].reset_index(drop=True)
             print(f"Dropped {n_flagged} ambiguous samples (--drop-ambiguous)")
@@ -173,37 +195,50 @@ def main() -> None:
     ys2 = survivors["label"].values
     Xs2 = _zscore(survivors[FEATS].values.astype(np.float32))
     mac2 = pd.Categorical(survivors["mac"]).codes
-    knn_after = matthews_corrcoef(ys2, _cv_preds(KNeighborsClassifier(5), Xs2, ys2)) \
-        if survivors["label"].nunique() > 1 else float("nan")
-    log_after = matthews_corrcoef(ys2, _cv_preds(LogisticRegression(max_iter=3000, C=0.5), Xs2, ys2)) \
-        if survivors["label"].nunique() > 1 else float("nan")
+    knn_after = (
+        matthews_corrcoef(ys2, _cv_preds(KNeighborsClassifier(5), Xs2, ys2))
+        if survivors["label"].nunique() > 1
+        else float("nan")
+    )
+    log_after = (
+        matthews_corrcoef(ys2, _cv_preds(LogisticRegression(max_iter=3000, C=0.5), Xs2, ys2))
+        if survivors["label"].nunique() > 1
+        else float("nan")
+    )
     mi_mac_a = _mi_binned(survivors[FEATS].values.astype(np.float32).mean(1), mac2)
 
     print("\n=== Result ===")
-    print(f"Devices: {len(set(macs))} -> {len(set(survivors['mac']))}  "
-          f"(dropped {n_drop_dev}: {', '.join(sorted(drop_set)) or '-'})")
+    print(
+        f"Devices: {len(set(macs))} -> {len(set(survivors['mac']))}  "
+        f"(dropped {n_drop_dev}: {', '.join(sorted(drop_set)) or '-'})"
+    )
     print(f"Rows:    {len(df)} -> {len(survivors)}")
     print(f"KNN-5 CV MCC:   {base_knn:.3f} -> {knn_after:.3f}")
     print(f"LogReg CV MCC:  {base_log:.3f} -> {log_after:.3f}")
-    print(f"MI(rssi,MAC):   {mi_mac:.3f} -> {mi_mac_a:.3f}   "
-          f"(MI(rssi,label) was {mi_lab:.3f})")
+    print(f"MI(rssi,MAC):   {mi_mac:.3f} -> {mi_mac_a:.3f}   (MI(rssi,label) was {mi_lab:.3f})")
 
     survivors.to_csv(out_path, index=False)
     audit.to_csv(args.report_dir / "device_audit.csv", index=False)
-    print(f"\nWrote {out_path}, {args.report_dir/'device_audit.csv'}")
+    print(f"\nWrote {out_path}, {args.report_dir / 'device_audit.csv'}")
 
     # ── Recommendation ───────────────────────────────────────────────────────
     gain = knn_after - base_knn
     if gain > 0.10:
-        print(f"\nVerdict: cleaning helped a lot (+{gain:.2f} KNN MCC). "
-              f"Retrain/HPO against {out_path}.")
+        print(
+            f"\nVerdict: cleaning helped a lot (+{gain:.2f} KNN MCC). "
+            f"Retrain/HPO against {out_path}."
+        )
     elif gain > 0.02:
-        print(f"\nVerdict: cleaning helped somewhat (+{gain:.2f}). "
-              f"Worth retraining, but also inspect flagged samples for relabeling.")
+        print(
+            f"\nVerdict: cleaning helped somewhat (+{gain:.2f}). "
+            f"Worth retraining, but also inspect flagged samples for relabeling."
+        )
     else:
-        print("\nVerdict: cleaning barely moved the ceiling. The remaining confusion "
-              "is likely genuine class overlap (AA-vs-BA style), not bad devices — "
-              "consider relabeling flagged samples instead.")
+        print(
+            "\nVerdict: cleaning barely moved the ceiling. The remaining confusion "
+            "is likely genuine class overlap (AA-vs-BA style), not bad devices — "
+            "consider relabeling flagged samples instead."
+        )
 
 
 if __name__ == "__main__":

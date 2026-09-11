@@ -45,6 +45,7 @@ from dl.models.transformer import TransformerClassifier
 
 # ── Model-building helpers ────────────────────────────────────────────────────
 
+
 def _build_single_model(name: str, config: DLConfig) -> nn.Module:
     """Build a single (non-HPO) model by name."""
     base_kw = {
@@ -68,19 +69,53 @@ def _build_single_model(name: str, config: DLConfig) -> nn.Module:
         case "TCN":
             return TCNClassifier(config.in_features, 256, 3, 6, config.num_classes, config.dropout)
         case "Transformer":
-            return TransformerClassifier(config.in_features, 128, 8, 4, config.num_classes, config.dropout)
+            return TransformerClassifier(
+                config.in_features, 128, 8, 4, config.num_classes, config.dropout
+            )
         case "CNN2DLSTM":
-            return CNN2DRNNClassifier(config.in_features, 64, 3, config.hidden_size, config.num_layers,
-                                       config.num_classes, config.dropout, "lstm")
+            return CNN2DRNNClassifier(
+                config.in_features,
+                64,
+                3,
+                config.hidden_size,
+                config.num_layers,
+                config.num_classes,
+                config.dropout,
+                "lstm",
+            )
         case "CNN2DGRU":
-            return CNN2DRNNClassifier(config.in_features, 64, 3, config.hidden_size, config.num_layers,
-                                       config.num_classes, config.dropout, "gru")
+            return CNN2DRNNClassifier(
+                config.in_features,
+                64,
+                3,
+                config.hidden_size,
+                config.num_layers,
+                config.num_classes,
+                config.dropout,
+                "gru",
+            )
         case "Mamba":
-            return MambaClassifier(config.in_features, config.d_model, 16, config.num_layers, 2,
-                                    config.num_classes, config.dropout, mimo_rank=4)
+            return MambaClassifier(
+                config.in_features,
+                config.d_model,
+                16,
+                config.num_layers,
+                2,
+                config.num_classes,
+                config.dropout,
+                mimo_rank=4,
+            )
         case "Autoformer":
-            return MambaClassifier(config.in_features, config.d_model, 16, config.num_layers, 2,
-                                    config.num_classes, config.dropout, mimo_rank=4)
+            return MambaClassifier(
+                config.in_features,
+                config.d_model,
+                16,
+                config.num_layers,
+                2,
+                config.num_classes,
+                config.dropout,
+                mimo_rank=4,
+            )
         case _:
             raise ValueError(f"Unknown single model: {name}")
 
@@ -91,55 +126,98 @@ def _build_hpo_model(model_type: str, config: DLConfig, params: dict) -> nn.Modu
     kernel_sets = [[3], [3, 5], [3, 5, 7], [3, 5, 7, 9]]
     match model_type:
         case "rnn":
-            return RNNClassifier(config.in_features, int(params.get("hidden_size", 64)),
-                                  int(params.get("num_layers", 2)), config.num_classes, dropout,
-                                  bool(params.get("bidirectional", False)))
+            return RNNClassifier(
+                config.in_features,
+                int(params.get("hidden_size", 64)),
+                int(params.get("num_layers", 2)),
+                config.num_classes,
+                dropout,
+                bool(params.get("bidirectional", False)),
+            )
         case "gru":
-            return GRUClassifier(config.in_features, int(params.get("hidden_size", 64)),
-                                  int(params.get("num_layers", 2)), config.num_classes, dropout,
-                                  bool(params.get("bidirectional", False)),
-                                  bool(params.get("use_attention", False)))
+            return GRUClassifier(
+                config.in_features,
+                int(params.get("hidden_size", 64)),
+                int(params.get("num_layers", 2)),
+                config.num_classes,
+                dropout,
+                bool(params.get("bidirectional", False)),
+                bool(params.get("use_attention", False)),
+            )
         case "lstm":
-            return LSTMClassifier(config.in_features, int(params.get("hidden_size", 64)),
-                                   int(params.get("num_layers", 2)), config.num_classes, dropout,
-                                   bool(params.get("bidirectional", False)),
-                                   bool(params.get("use_attention", False)))
+            return LSTMClassifier(
+                config.in_features,
+                int(params.get("hidden_size", 64)),
+                int(params.get("num_layers", 2)),
+                config.num_classes,
+                dropout,
+                bool(params.get("bidirectional", False)),
+                bool(params.get("use_attention", False)),
+            )
         case "bilstm":
-            return BiLSTMClassifier(config.in_features, int(params.get("hidden_size", 64)),
-                                     int(params.get("num_layers", 2)), config.num_classes, dropout,
-                                     bool(params.get("use_attention", True)))
+            return BiLSTMClassifier(
+                config.in_features,
+                int(params.get("hidden_size", 64)),
+                int(params.get("num_layers", 2)),
+                config.num_classes,
+                dropout,
+                bool(params.get("use_attention", True)),
+            )
         case "cnn":
             ks = kernel_sets[int(params.get("kernel_set", 0))]
-            return CNNClassifier(config.in_features, int(params.get("num_filters", 64)),
-                                  int(params.get("num_blocks", 2)), config.num_classes, dropout, ks)
+            return CNNClassifier(
+                config.in_features,
+                int(params.get("num_filters", 64)),
+                int(params.get("num_blocks", 2)),
+                config.num_classes,
+                dropout,
+                ks,
+            )
         case "tcn":
-            return TCNClassifier(config.in_features, int(params.get("num_channels", 128)),
-                                  int(params.get("kernel_size", 3)), int(params.get("depth", 4)),
-                                  config.num_classes, dropout)
+            return TCNClassifier(
+                config.in_features,
+                int(params.get("num_channels", 128)),
+                int(params.get("kernel_size", 3)),
+                int(params.get("depth", 4)),
+                config.num_classes,
+                dropout,
+            )
         case "transformer":
             d_model = int(params.get("d_model", 64))
             n_heads = int(params.get("n_heads", 4))
             while d_model % n_heads != 0:
                 n_heads = max(1, n_heads // 2)
-            return TransformerClassifier(config.in_features, d_model, n_heads,
-                                          int(params.get("num_layers", 2)), config.num_classes, dropout)
+            return TransformerClassifier(
+                config.in_features,
+                d_model,
+                n_heads,
+                int(params.get("num_layers", 2)),
+                config.num_classes,
+                dropout,
+            )
         case "cnn2drnn":
-            return CNN2DRNNClassifier(in_features=config.in_features,
-                                       num_filters=int(params.get("num_filters", 32)),
-                                       cnn_depth=int(params.get("cnn_depth", 2)),
-                                       hidden_size=int(params.get("hidden_size", 64)),
-                                       num_rnn_layers=int(params.get("num_rnn_layers", 2)),
-                                       num_classes=config.num_classes, dropout=dropout,
-                                       rnn_type=str(params.get("rnn_type", "lstm")),
-                                       bidirectional=bool(params.get("bidirectional", False)))
+            return CNN2DRNNClassifier(
+                in_features=config.in_features,
+                num_filters=int(params.get("num_filters", 32)),
+                cnn_depth=int(params.get("cnn_depth", 2)),
+                hidden_size=int(params.get("hidden_size", 64)),
+                num_rnn_layers=int(params.get("num_rnn_layers", 2)),
+                num_classes=config.num_classes,
+                dropout=dropout,
+                rnn_type=str(params.get("rnn_type", "lstm")),
+                bidirectional=bool(params.get("bidirectional", False)),
+            )
         case "mamba":
-            return MambaClassifier(in_features=config.in_features,
-                                    d_model=int(params.get("d_model", config.d_model)),
-                                    d_state=int(params.get("d_state", 16)),
-                                    num_layers=int(params.get("num_layers", config.num_layers)),
-                                    expand=int(params.get("expand", 2)),
-                                    num_classes=config.num_classes, dropout=dropout,
-                                    mimo_rank=int(params.get("mimo_rank", 4)))
+            return MambaClassifier(
+                in_features=config.in_features,
+                d_model=int(params.get("d_model", config.d_model)),
+                d_state=int(params.get("d_state", 16)),
+                num_layers=int(params.get("num_layers", config.num_layers)),
+                expand=int(params.get("expand", 2)),
+                num_classes=config.num_classes,
+                dropout=dropout,
+                mimo_rank=int(params.get("mimo_rank", 4)),
+            )
         case _:
             raise ValueError(f"Unknown HPO model type: {model_type}")
 
@@ -150,11 +228,15 @@ def _build_ds_variant(name: str, config: DLConfig) -> nn.Module:
         case "DS_RNN_A":
             return RNNClassifier(config.in_features, 64, 2, config.num_classes, 0.2)
         case "DS_RNN_B":
-            return RNNClassifier(config.in_features, 256, 4, config.num_classes, 0.3, bidirectional=True)
+            return RNNClassifier(
+                config.in_features, 256, 4, config.num_classes, 0.3, bidirectional=True
+            )
         case "DS_GRU_A":
             return GRUClassifier(config.in_features, 64, 2, config.num_classes, 0.2)
         case "DS_GRU_B":
-            return GRUClassifier(config.in_features, 256, 3, config.num_classes, 0.3, bidirectional=True)
+            return GRUClassifier(
+                config.in_features, 256, 3, config.num_classes, 0.3, bidirectional=True
+            )
         case "DS_LSTM_A":
             return LSTMClassifier(config.in_features, 64, 2, config.num_classes, 0.2, False, True)
         case "DS_LSTM_B":
@@ -176,18 +258,35 @@ def _build_ds_variant(name: str, config: DLConfig) -> nn.Module:
         case "DS_BiLSTM_B":
             return BiLSTMClassifier(config.in_features, 256, 3, config.num_classes, 0.3, True)
         case "DS_CNN2DRNN_A":
-            return CNN2DRNNClassifier(config.in_features, 32, 2, 64, 2, config.num_classes, 0.2, "lstm")
+            return CNN2DRNNClassifier(
+                config.in_features, 32, 2, 64, 2, config.num_classes, 0.2, "lstm"
+            )
         case "DS_CNN2DRNN_B":
-            return CNN2DRNNClassifier(config.in_features, 128, 3, 256, 3, config.num_classes, 0.3, "lstm", bidirectional=True)
+            return CNN2DRNNClassifier(
+                config.in_features,
+                128,
+                3,
+                256,
+                3,
+                config.num_classes,
+                0.3,
+                "lstm",
+                bidirectional=True,
+            )
         case "DS_Mamba_A":
-            return MambaClassifier(config.in_features, 64, 16, 2, 2, config.num_classes, 0.2, mimo_rank=4)
+            return MambaClassifier(
+                config.in_features, 64, 16, 2, 2, config.num_classes, 0.2, mimo_rank=4
+            )
         case "DS_Mamba_B":
-            return MambaClassifier(config.in_features, 256, 32, 4, 2, config.num_classes, 0.3, mimo_rank=8)
+            return MambaClassifier(
+                config.in_features, 256, 32, 4, 2, config.num_classes, 0.3, mimo_rank=8
+            )
         case _:
             raise ValueError(f"Unknown DS variant: {name}")
 
 
 # ── Checkpoint → model mapping ───────────────────────────────────────────────
+
 
 def _load_hpo_best_params(model_type: str, config: DLConfig) -> dict | None:
     """Load best Optuna HPO params from the DB for a given model type."""
@@ -247,16 +346,26 @@ def _load_nas_best_params(config: DLConfig) -> dict | None:
 
 # ── Main evaluation logic ────────────────────────────────────────────────────
 
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Retroactive DL checkpoint evaluation")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
     p.add_argument("--checkpoints-dir", type=Path, default=Path("models/dl"))
-    p.add_argument("--output", type=Path, default=None, help="Output CSV path (default: results/dl/dl_detailed_seed{seed}.csv)")
+    p.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Output CSV path (default: results/dl/dl_detailed_seed{seed}.csv)",
+    )
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--no-wandb", action="store_true")
     p.add_argument("--models-dir", type=Path, default=None)
-    p.add_argument("--optuna-db", type=str, default=os.environ.get("INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"))
+    p.add_argument(
+        "--optuna-db",
+        type=str,
+        default=os.environ.get("INMOTION_OPTUNA_STORAGE", "sqlite:///optuna_dl.db"),
+    )
     return p.parse_args()
 
 
@@ -368,18 +477,48 @@ def main() -> None:
     rows: list[dict] = []
 
     SINGLE_MODELS = [
-        "RNN", "GRU", "LSTM", "CNN", "TCN", "Transformer", "BiLSTM",
-        "CNN2DLSTM", "CNN2DGRU", "Mamba",
+        "RNN",
+        "GRU",
+        "LSTM",
+        "CNN",
+        "TCN",
+        "Transformer",
+        "BiLSTM",
+        "CNN2DLSTM",
+        "CNN2DGRU",
+        "Mamba",
     ]
     HPO_MODEL_MAP = {
-        "HPO_RNN": "rnn", "HPO_GRU": "gru", "HPO_LSTM": "lstm", "HPO_CNN": "cnn",
-        "HPO_TCN": "tcn", "HPO_TRANSFORMER": "transformer", "HPO_BILSTM": "bilstm",
-        "HPO_CNN2DRNN": "cnn2drnn", "HPO_MAMBA": "mamba", "HPO_AUTOFORMER": "mamba",
+        "HPO_RNN": "rnn",
+        "HPO_GRU": "gru",
+        "HPO_LSTM": "lstm",
+        "HPO_CNN": "cnn",
+        "HPO_TCN": "tcn",
+        "HPO_TRANSFORMER": "transformer",
+        "HPO_BILSTM": "bilstm",
+        "HPO_CNN2DRNN": "cnn2drnn",
+        "HPO_MAMBA": "mamba",
+        "HPO_AUTOFORMER": "mamba",
     }
     DS_VARIANTS = [
-        "DS_RNN_A", "DS_RNN_B", "DS_GRU_A", "DS_GRU_B", "DS_LSTM_A", "DS_LSTM_B",
-        "DS_CNN_A", "DS_CNN_B", "DS_TCN_A", "DS_TCN_B", "DS_Transformer_A", "DS_Transformer_B",
-        "DS_BiLSTM_A", "DS_BiLSTM_B", "DS_CNN2DRNN_A", "DS_CNN2DRNN_B", "DS_Mamba_A", "DS_Mamba_B",
+        "DS_RNN_A",
+        "DS_RNN_B",
+        "DS_GRU_A",
+        "DS_GRU_B",
+        "DS_LSTM_A",
+        "DS_LSTM_B",
+        "DS_CNN_A",
+        "DS_CNN_B",
+        "DS_TCN_A",
+        "DS_TCN_B",
+        "DS_Transformer_A",
+        "DS_Transformer_B",
+        "DS_BiLSTM_A",
+        "DS_BiLSTM_B",
+        "DS_CNN2DRNN_A",
+        "DS_CNN2DRNN_B",
+        "DS_Mamba_A",
+        "DS_Mamba_B",
     ]
 
     for ckpt_path in ckpt_files:
@@ -397,12 +536,24 @@ def main() -> None:
             # ── Case 1: Single models ───────────────────────────────────
             if model_name in SINGLE_MODELS:
                 metrics = evaluate_single_checkpoint(
-                    ckpt_path, model_name, config, test_loader, classes,
+                    ckpt_path,
+                    model_name,
+                    config,
+                    test_loader,
+                    classes,
                     lambda n=model_name: _build_single_model(n, config),
                 )
                 if metrics:
-                    rows.append(metrics_to_extended_row(model_name, "single", args.seed, "cpu",
-                                                         metrics, extra={"member_count": None}))
+                    rows.append(
+                        metrics_to_extended_row(
+                            model_name,
+                            "single",
+                            args.seed,
+                            "cpu",
+                            metrics,
+                            extra={"member_count": None},
+                        )
+                    )
 
             # ── Case 2: HPO models ──────────────────────────────────────
             elif model_name in HPO_MODEL_MAP:
@@ -410,12 +561,24 @@ def main() -> None:
                 params = hpo_best_params.get(model_type, {})
                 if params:
                     metrics = evaluate_single_checkpoint(
-                        ckpt_path, model_name, config, test_loader, classes,
+                        ckpt_path,
+                        model_name,
+                        config,
+                        test_loader,
+                        classes,
                         lambda mt=model_type, p=params: _build_hpo_model(mt, config, p),
                     )
                     if metrics:
-                        rows.append(metrics_to_extended_row(model_name, "hpo", args.seed, "cpu",
-                                                             metrics, extra={"best_arch": json.dumps(params)}))
+                        rows.append(
+                            metrics_to_extended_row(
+                                model_name,
+                                "hpo",
+                                args.seed,
+                                "cpu",
+                                metrics,
+                                extra={"best_arch": json.dumps(params)},
+                            )
+                        )
                 else:
                     print(f"[skip] {model_name}: no HPO best params found in Optuna DB")
 
@@ -425,16 +588,30 @@ def main() -> None:
                 try:
                     model = torch.load(str(ckpt_path), map_location="cpu", weights_only=False)
                     model = model.to(device)
-                    metrics = evaluate_model_on_test(model, test_loader, config, classes, model_name)
-                    rows.append(metrics_to_extended_row(model_name, "ds_base", args.seed, "cpu", metrics))
+                    metrics = evaluate_model_on_test(
+                        model, test_loader, config, classes, model_name
+                    )
+                    rows.append(
+                        metrics_to_extended_row(model_name, "ds_base", args.seed, "cpu", metrics)
+                    )
                 except Exception as e:
-                    print(f"[warn] {model_name}: full-model load failed ({e}), trying state_dict...")
+                    print(
+                        f"[warn] {model_name}: full-model load failed ({e}), trying state_dict..."
+                    )
                     metrics = evaluate_single_checkpoint(
-                        ckpt_path, model_name, config, test_loader, classes,
+                        ckpt_path,
+                        model_name,
+                        config,
+                        test_loader,
+                        classes,
                         lambda n=model_name: _build_ds_variant(n, config),
                     )
                     if metrics:
-                        rows.append(metrics_to_extended_row(model_name, "ds_base", args.seed, "cpu", metrics))
+                        rows.append(
+                            metrics_to_extended_row(
+                                model_name, "ds_base", args.seed, "cpu", metrics
+                            )
+                        )
 
             # ── Case 4: MetaFusion models ───────────────────────────────
             elif model_name in ("MetaFusion_LSTM", "MetaFusion_GRU"):
@@ -453,9 +630,17 @@ def main() -> None:
                         state = torch.load(str(ckpt_path), map_location="cpu", weights_only=True)
                         model.load_state_dict(state, strict=False)
                         metrics = evaluate_model_on_test(
-                            model, test_meta_loader, config, classes, model_name,
+                            model,
+                            test_meta_loader,
+                            config,
+                            classes,
+                            model_name,
                         )
-                        rows.append(metrics_to_extended_row(model_name, "meta_fusion", args.seed, "cpu", metrics))
+                        rows.append(
+                            metrics_to_extended_row(
+                                model_name, "meta_fusion", args.seed, "cpu", metrics
+                            )
+                        )
                     except Exception as e:
                         print(f"[ERROR] {model_name}: {e}")
                 else:
@@ -469,8 +654,16 @@ def main() -> None:
                     try:
                         expert_params = {
                             k: best_params[k]
-                            for k in ("dropout", "hidden_size", "num_layers", "bidirectional",
-                                       "use_attention", "num_filters", "num_blocks", "kernel_set")
+                            for k in (
+                                "dropout",
+                                "hidden_size",
+                                "num_layers",
+                                "bidirectional",
+                                "use_attention",
+                                "num_filters",
+                                "num_blocks",
+                                "kernel_set",
+                            )
                             if k in best_params
                         }
                         gate_hidden = int(best_params.get("gate_hidden", 64))
@@ -494,11 +687,19 @@ def main() -> None:
                         )
                         state = torch.load(str(ckpt_path), map_location="cpu", weights_only=True)
                         model.load_state_dict(state, strict=False)
-                        metrics = evaluate_model_on_test(model, test_loader, config, classes, model_name)
-                        rows.append(metrics_to_extended_row(
-                            model_name, "soft_moe", args.seed, "cpu", metrics,
-                            extra={"arch_list": "+".join(arch_list)},
-                        ))
+                        metrics = evaluate_model_on_test(
+                            model, test_loader, config, classes, model_name
+                        )
+                        rows.append(
+                            metrics_to_extended_row(
+                                model_name,
+                                "soft_moe",
+                                args.seed,
+                                "cpu",
+                                metrics,
+                                extra={"arch_list": "+".join(arch_list)},
+                            )
+                        )
                     except Exception as e:
                         print(f"[ERROR] {model_name}: {e}")
                 else:
@@ -524,19 +725,32 @@ def main() -> None:
                         model = _build_single_model(arch.upper(), config)
                     state = torch.load(str(ckpt_path), map_location="cpu", weights_only=True)
                     model.load_state_dict(state, strict=False)
-                    metrics = evaluate_model_on_test(model, test_loader, config, classes, "OptunaNet_NAS")
-                    rows.append(metrics_to_extended_row(
-                        "OptunaNet_NAS", "optuna_nas", args.seed, "cpu", metrics,
-                        extra={"best_arch": json.dumps(params)},
-                    ))
+                    metrics = evaluate_model_on_test(
+                        model, test_loader, config, classes, "OptunaNet_NAS"
+                    )
+                    rows.append(
+                        metrics_to_extended_row(
+                            "OptunaNet_NAS",
+                            "optuna_nas",
+                            args.seed,
+                            "cpu",
+                            metrics,
+                            extra={"best_arch": json.dumps(params)},
+                        )
+                    )
                 else:
                     print("[skip] OptunaNet: no NAS best params")
 
             # ── Case 7: Voting/Stacking Ensembles ────────────────────────
             elif model_name.startswith("Ensemble_") or model_name.startswith("Stacking_"):
                 # Extract member models from filename
-                member_names_raw = model_name.replace("Ensemble_", "").replace("Stacking_", "").replace("All",
-                    "RNN,GRU,LSTM,CNN,TCN,Transformer,BiLSTM,CNN2DLSTM,CNN2DGRU,Mamba",
+                member_names_raw = (
+                    model_name.replace("Ensemble_", "")
+                    .replace("Stacking_", "")
+                    .replace(
+                        "All",
+                        "RNN,GRU,LSTM,CNN,TCN,Transformer,BiLSTM,CNN2DLSTM,CNN2DGRU,Mamba",
+                    )
                 )
                 member_names_src = member_names_raw.replace("_", ",")
                 member_names = [m.strip() for m in member_names_src.split(",") if m.strip()]
@@ -552,27 +766,45 @@ def main() -> None:
                             m.eval().to(device)
                             members.append(m)
                         else:
-                            print(f"[warn] {model_name}: member checkpoint not found: {member_path}")
+                            print(
+                                f"[warn] {model_name}: member checkpoint not found: {member_path}"
+                            )
 
                     if members:
                         if model_name.startswith("Ensemble_"):
                             model = VotingEnsemble(members).to(device)
                         else:
                             model = StackingEnsemble(
-                                members, num_classes=config.num_classes, dropout=config.dropout,
+                                members,
+                                num_classes=config.num_classes,
+                                dropout=config.dropout,
                             ).to(device)
                             try:
-                                state = torch.load(str(ckpt_path), map_location="cpu", weights_only=True)
+                                state = torch.load(
+                                    str(ckpt_path), map_location="cpu", weights_only=True
+                                )
                                 model.load_state_dict(state, strict=False)
                             except Exception as e:
                                 print(f"[warn] {model_name}: ensemble state_dict load failed: {e}")
 
-                        metrics = evaluate_model_on_test(model, test_loader, config, classes, model_name)
-                        row_type = "voting_ensemble" if model_name.startswith("Ensemble_") else "stacking_ensemble"
-                        rows.append(metrics_to_extended_row(
-                            model_name, row_type, args.seed, "cpu", metrics,
-                            extra={"members": "+".join(member_names)},
-                        ))
+                        metrics = evaluate_model_on_test(
+                            model, test_loader, config, classes, model_name
+                        )
+                        row_type = (
+                            "voting_ensemble"
+                            if model_name.startswith("Ensemble_")
+                            else "stacking_ensemble"
+                        )
+                        rows.append(
+                            metrics_to_extended_row(
+                                model_name,
+                                row_type,
+                                args.seed,
+                                "cpu",
+                                metrics,
+                                extra={"members": "+".join(member_names)},
+                            )
+                        )
                     else:
                         print(f"[skip] {model_name}: no member models could be loaded")
                 except Exception as e:
@@ -580,7 +812,10 @@ def main() -> None:
 
             # ── Case 8: DeepStackEnsemble ────────────────────────────────
             elif model_name == "DeepStackEnsemble":
-                print(f"[skip] {model_name}: requires full DeepStack training pipeline — evaluate via run_dl.py")
+                print(
+                    f"[skip] {model_name}: requires the full DeepStack training "
+                    "pipeline; run it through `inmotion run pipeline dl`"
+                )
 
             else:
                 print(f"[skip] {model_name}: unrecognized model type")
@@ -588,6 +823,7 @@ def main() -> None:
         except Exception as e:
             print(f"[ERROR] {model_name}: {e}")
             import traceback
+
             traceback.print_exc()
 
         if model is not None and hasattr(model, "cpu"):
@@ -599,6 +835,7 @@ def main() -> None:
     if rows:
         output_path = args.output or (config.results_dir / f"dl_detailed_seed{args.seed}.csv")
         import pandas as pd
+
         df = pd.DataFrame(rows)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(output_path, index=False)

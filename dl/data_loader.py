@@ -51,8 +51,8 @@ def _expand_features_rich(X_seq: np.ndarray) -> np.ndarray:
     pad = np.pad(raw, ((0, 0), (1, 1)), mode="edge")  # (N, T+2)
     windows = np.stack([pad[:, :-2], pad[:, 1:-1], pad[:, 2:]], axis=-1)  # (N, T, 3)
     spec = np.abs(np.fft.rfft(windows, axis=-1))  # (N, T, 2)
-    band_dc = spec[:, :, 0]                       # mean level
-    band_ac = spec[:, :, 1]                       # local oscillation energy
+    band_dc = spec[:, :, 0]  # mean level
+    band_ac = spec[:, :, 1]  # local oscillation energy
 
     # --- window statistics (rolling) ---
     roll_mean = windows.mean(axis=-1)
@@ -61,15 +61,17 @@ def _expand_features_rich(X_seq: np.ndarray) -> np.ndarray:
     # skew/kurtosis over a 3-sample window are near-degenerate; use a wider 5-sample
     # window for higher moments so the statistic actually varies.
     pad5 = np.pad(raw, ((0, 0), (2, 2)), mode="edge")
-    win5 = np.stack([pad5[:, :-4], pad5[:, 1:-3], pad5[:, 2:-2], pad5[:, 3:-1], pad5[:, 4:]], axis=-1)
+    win5 = np.stack(
+        [pad5[:, :-4], pad5[:, 1:-3], pad5[:, 2:-2], pad5[:, 3:-1], pad5[:, 4:]], axis=-1
+    )
     mu = win5.mean(axis=-1, keepdims=True)
     s = win5.std(axis=-1, keepdims=True) + 1e-8
     roll_skew = ((win5 - mu) ** 3).mean(axis=-1) / (s[..., 0] ** 3)
     roll_kurt = ((win5 - mu) ** 4).mean(axis=-1) / (s[..., 0] ** 4)
 
     # --- cross-timestep shape ---
-    peak_loc = np.argmax(np.abs(win5), axis=-1)      # 0..4 within window
-    slope_sign = np.sign(diff1)                       # +1 / 0 / -1 per step
+    peak_loc = np.argmax(np.abs(win5), axis=-1)  # 0..4 within window
+    slope_sign = np.sign(diff1)  # +1 / 0 / -1 per step
     sign_change = np.abs(np.diff(slope_sign, axis=1))  # 0/1/2 per boundary
     sign_change = np.concatenate([zeros_col, sign_change], axis=1)  # align to T
 
@@ -84,16 +86,26 @@ def _expand_features_rich(X_seq: np.ndarray) -> np.ndarray:
     edges = np.linspace(0, n_bins, 5, dtype=np.int64)
     bands = []
     for i in range(4):
-        b = stft[:, edges[i]:edges[i + 1]]
+        b = stft[:, edges[i] : edges[i + 1]]
         bands.append(np.log1p(b.mean(axis=1)))  # (N,)
     stft_feats = np.stack(bands, axis=1)  # (N, 4)
     stft_feats = np.repeat(stft_feats[:, None, :], T, axis=1)  # (N, T, 4)
 
     feats = [
-        raw, diff1, diff2, dev,      # base 4
-        band_dc, band_ac,            # local spectral 2
-        roll_mean, roll_range, roll_std, roll_skew, roll_kurt,  # stats 5
-        peak_loc.astype(np.float32), slope_sign.astype(np.float32), sign_change.astype(np.float32),  # shape 3
+        raw,
+        diff1,
+        diff2,
+        dev,  # base 4
+        band_dc,
+        band_ac,  # local spectral 2
+        roll_mean,
+        roll_range,
+        roll_std,
+        roll_skew,
+        roll_kurt,  # stats 5
+        peak_loc.astype(np.float32),
+        slope_sign.astype(np.float32),
+        sign_change.astype(np.float32),  # shape 3
     ]
     feats_t = np.stack(feats, axis=-1)  # (N, T, 14)
     return np.concatenate([feats_t, stft_feats], axis=-1)  # (N, T, 18)
@@ -117,7 +129,7 @@ def _expand_features_device_invariant(X_seq: np.ndarray) -> np.ndarray:
     z = (raw - mu) / std  # (N, T)
 
     zeros_col = np.zeros((N, 1), dtype=np.float32)
-    dz = np.concatenate([zeros_col, np.diff(z, axis=1)], axis=1)   # slope
+    dz = np.concatenate([zeros_col, np.diff(z, axis=1)], axis=1)  # slope
     d2z = np.concatenate([zeros_col, np.diff(dz, axis=1)], axis=1)  # curvature
 
     # Spectral shape: log-power spectrum of the standardized signal.

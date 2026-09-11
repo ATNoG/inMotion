@@ -29,7 +29,8 @@ try:
     import torch  # noqa: F811
 except ImportError:
     import sys as _sys
-    _sys.stderr.write('ERROR: PyTorch not installed. Run:  uv sync\n')
+
+    _sys.stderr.write("ERROR: PyTorch not installed. Run:  uv sync\n")
     raise SystemExit(1)
 
 from sklearn.metrics import matthews_corrcoef
@@ -73,12 +74,16 @@ SEED = 42
 # Model names to evaluate (order matters for plot legends)
 SINGLE_MODELS = ["CNN", "TCN", "GRU", "Mamba"]
 DEEPSTACK_DS_VARIANTS = [
-    "DS_RNN_A", "DS_RNN_B",
+    "DS_RNN_A",
+    "DS_RNN_B",
     "DS_GRU_A",
-    "DS_CNN_A", "DS_CNN_B",
-    "DS_TCN_A", "DS_TCN_B",
+    "DS_CNN_A",
+    "DS_CNN_B",
+    "DS_TCN_A",
+    "DS_TCN_B",
     "DS_CNN2DRNN_B",
-    "DS_Mamba_A", "DS_Mamba_B",
+    "DS_Mamba_A",
+    "DS_Mamba_B",
 ]
 
 # Output
@@ -167,8 +172,13 @@ def build_model(name: str, config: DLConfig) -> nn.Module:
 
 
 def train_or_load(
-    name: str, config: DLConfig, X_tr: np.ndarray, y_tr: np.ndarray,
-    X_val: np.ndarray, y_val: np.ndarray, device: torch.device,
+    name: str,
+    config: DLConfig,
+    X_tr: np.ndarray,
+    y_tr: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+    device: torch.device,
 ) -> nn.Module:
     """Train model from scratch or load saved checkpoint."""
     checkpoint = CHECKPOINT_DIR / f"{name}_seed{SEED}.pt"
@@ -207,6 +217,7 @@ def train_or_load(
 def _clone_config(config: DLConfig) -> DLConfig:
     """Shallow copy with needed overrides for standalone training."""
     import copy
+
     c = copy.copy(config)
     c.use_wandb = False
     c.num_epochs = 100
@@ -256,8 +267,10 @@ def permutation_importance(
 
             importance[c, t] = float(np.mean(mcc_drops))
             idx = c * N_TIMESTEPS + t + 1
-            print(f"    [{idx}/{total}] {CHANNEL_NAMES[c]:25s} t={t+1:2d}  "
-                  f"ΔMCC={importance[c,t]:.4f}")
+            print(
+                f"    [{idx}/{total}] {CHANNEL_NAMES[c]:25s} t={t + 1:2d}  "
+                f"ΔMCC={importance[c, t]:.4f}"
+            )
 
     return importance, baseline_mcc
 
@@ -268,7 +281,7 @@ def permutation_importance(
 
 
 def plot_heatmap(
-    all_importances: np.ndarray,       # (n_models, 4, 10)
+    all_importances: np.ndarray,  # (n_models, 4, 10)
     model_names: list[str],
     baseline_mccs: list[float],
 ) -> None:
@@ -312,7 +325,7 @@ def plot_heatmap(
 
 
 def plot_per_model_heatmaps(
-    all_importances: np.ndarray,       # (n_models, 4, 10)
+    all_importances: np.ndarray,  # (n_models, 4, 10)
     model_names: list[str],
     baseline_mccs: list[float],
 ) -> None:
@@ -324,7 +337,8 @@ def plot_per_model_heatmaps(
     nrows = (n_models + ncols - 1) // ncols
 
     fig, axes = plt.subplots(
-        nrows, ncols,
+        nrows,
+        ncols,
         figsize=(8 * ncols, 5 * nrows),
         squeeze=False,
     )
@@ -364,7 +378,7 @@ def plot_per_model_heatmaps(
 
 
 def plot_channel_bars(
-    all_importances: np.ndarray,       # (n_models, 4, 10)
+    all_importances: np.ndarray,  # (n_models, 4, 10)
     model_names: list[str],
 ) -> None:
     """Channel-level bar chart: mean importance +/- std across timesteps & models."""
@@ -373,8 +387,8 @@ def plot_channel_bars(
 
     # Mean across timesteps per model -> (n_models, 4)
     per_model = all_importances.mean(axis=2)
-    means = per_model.mean(axis=0)   # (4,)
-    stds = per_model.std(axis=0)     # (4,)
+    means = per_model.mean(axis=0)  # (4,)
+    stds = per_model.std(axis=0)  # (4,)
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -444,10 +458,7 @@ def _try_load_deepstack(
     n_base = len(base_models)
     in_features = n_base * config.num_classes
     n_l2 = 5
-    level2_nets = [
-        Level2Net(in_features, config.num_classes, config.dropout)
-        for _ in range(n_l2)
-    ]
+    level2_nets = [Level2Net(in_features, config.num_classes, config.dropout) for _ in range(n_l2)]
 
     ensemble = DeepStackEnsemble(
         base_models=base_models,
@@ -481,17 +492,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         description="Permutation feature importance for the DL baselines.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--data", type=Path, default=None,
-                        help="Dataset CSV. Defaults to the processed dataset.csv.")
+    parser.add_argument(
+        "--data",
+        type=Path,
+        default=None,
+        help="Dataset CSV. Defaults to the processed dataset.csv.",
+    )
     parser.add_argument("--seed", type=int, default=SEED, help="Random seed.")
     parser.add_argument("--epochs", type=int, default=100, help="Epochs per model.")
     parser.add_argument("--patience", type=int, default=20, help="Early-stopping patience.")
-    parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR,
-                        help="Directory for the generated figures.")
-    parser.add_argument("--checkpoints-dir", type=Path, default=CHECKPOINT_DIR,
-                        help="Directory holding trained DL checkpoints.")
-    parser.add_argument("--n-repeats", type=int, default=None,
-                        help="Permutation repeats (default: module constant).")
+    parser.add_argument(
+        "--output-dir", type=Path, default=OUTPUT_DIR, help="Directory for the generated figures."
+    )
+    parser.add_argument(
+        "--checkpoints-dir",
+        type=Path,
+        default=CHECKPOINT_DIR,
+        help="Directory holding trained DL checkpoints.",
+    )
+    parser.add_argument(
+        "--n-repeats",
+        type=int,
+        default=None,
+        help="Permutation repeats (default: module constant).",
+    )
     return parser.parse_args(argv)
 
 
@@ -529,10 +553,18 @@ def main(args: argparse.Namespace | None = None) -> None:
 
     # Stratified holdout: 64% train / 16% val / 20% test
     X_tr_val, X_test, y_tr_val, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=SEED, stratify=y,
+        X,
+        y,
+        test_size=0.2,
+        random_state=SEED,
+        stratify=y,
     )
     X_tr, X_val, y_tr, y_val = train_test_split(
-        X_tr_val, y_tr_val, test_size=0.2, random_state=SEED, stratify=y_tr_val,
+        X_tr_val,
+        y_tr_val,
+        test_size=0.2,
+        random_state=SEED,
+        stratify=y_tr_val,
     )
     print(f"  Train: {X_tr.shape}  Val: {X_val.shape}  Test: {X_test.shape}")
 
@@ -541,8 +573,7 @@ def main(args: argparse.Namespace | None = None) -> None:
 
     # DeepStack: only attempt if all 8 DS base checkpoints exist
     ds_available = all(
-        (CHECKPOINT_DIR / f"{ds_name}_seed{SEED}.pt").exists()
-        for ds_name in DEEPSTACK_DS_VARIANTS
+        (CHECKPOINT_DIR / f"{ds_name}_seed{SEED}.pt").exists() for ds_name in DEEPSTACK_DS_VARIANTS
     )
     if ds_available:
         ds_ckpt = CHECKPOINT_DIR / f"DeepStackEnsemble_seed{SEED}.pt"
@@ -577,11 +608,7 @@ def main(args: argparse.Namespace | None = None) -> None:
 
         print(f"\n  Baseline MCC: {baseline_mcc:.4f}")
         print("  Top 5 most important features:")
-        flat = [
-            (c, t, imp[c, t])
-            for c in range(N_CHANNELS)
-            for t in range(N_TIMESTEPS)
-        ]
+        flat = [(c, t, imp[c, t]) for c in range(N_CHANNELS) for t in range(N_TIMESTEPS)]
         flat.sort(key=lambda x: -x[2])
         for c, t, val in flat[:5]:
             print(f"    {CHANNEL_NAMES[c]:30s} t={t + 1:2d}  ΔMCC={val:.4f}")

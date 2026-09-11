@@ -413,14 +413,14 @@ class Visualizer:
             capsize=3,
             alpha=0.8,
         )
-        
+
         for i, (mean, std) in enumerate(zip(df["Mean_Importance"], df["Std_Importance"])):
             ax.text(
-            mean + std + 0.005,
-            i,
-            f"{mean:.3f}±{std:.3f}",
-            va="center",
-            fontsize=self.config.plot_tick_size - 1,
+                mean + std + 0.005,
+                i,
+                f"{mean:.3f}±{std:.3f}",
+                va="center",
+                fontsize=self.config.plot_tick_size - 1,
             )
         ax.set_yticks(range(len(df)))
         ax.set_yticklabels(df["Feature"])

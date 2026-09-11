@@ -2,7 +2,8 @@
 """Analyze cross-route interference using the `concurrent_noise_path` column.
 
 Usage:
-    uv run python analyze_interference.py --data data/processed/dataset.csv --output-dir plots/interference
+    inmotion run pipeline analyze-interference -- \
+        --data data/processed/dataset.csv --output-dir plots/interference
 """
 
 from __future__ import annotations
@@ -17,10 +18,18 @@ from dl.interference import InterferenceAnalyzer
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Cross-route interference analysis")
-    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"),
-                   help="Path to dataset CSV with concurrent_noise_path column")
-    p.add_argument("--output-dir", type=Path, default=Path("plots/interference"),
-                   help="Output directory for plots")
+    p.add_argument(
+        "--data",
+        type=Path,
+        default=Path("data/processed/dataset.csv"),
+        help="Path to dataset CSV with concurrent_noise_path column",
+    )
+    p.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("plots/interference"),
+        help="Output directory for plots",
+    )
     return p.parse_args()
 
 

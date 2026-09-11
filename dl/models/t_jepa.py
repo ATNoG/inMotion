@@ -28,6 +28,7 @@ from torch import Tensor, nn
 # Mask generation
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 def generate_masks(
     batch_size: int,
     n_timesteps: int,
@@ -48,8 +49,7 @@ def generate_masks(
     """
     total = n_timesteps * n_channels
     ctx_mask = torch.zeros(batch_size, total, device=device)
-    tgt_masks = [torch.zeros(batch_size, total, device=device)
-                 for _ in range(n_target_masks)]
+    tgt_masks = [torch.zeros(batch_size, total, device=device) for _ in range(n_target_masks)]
 
     n_mask = max(1, int(n_timesteps * mask_ratio))
     for b in range(batch_size):
@@ -74,6 +74,7 @@ def generate_masks(
 # Learnable [REG] tokens — the paper's key collapse-prevention mechanism
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class RegularizationTokens(nn.Module):
     """Learnable [REG] tokens.
 
@@ -95,6 +96,7 @@ class RegularizationTokens(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Feature tokenizer — maps each (timestep, channel) to a d_model embedding
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class FeatureTokenizer(nn.Module):
     """Per-feature linear projection + feature-index embedding.
@@ -118,9 +120,7 @@ class FeatureTokenizer(nn.Module):
         self.n_reg_tokens = n_reg_tokens
 
         # Per-feature projection weights
-        self.weight = nn.Parameter(
-            torch.empty(n_reg_tokens + self.total_features, d_model)
-        )
+        self.weight = nn.Parameter(torch.empty(n_reg_tokens + self.total_features, d_model))
         self.bias = nn.Parameter(torch.zeros(self.total_features, d_model))
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
@@ -145,20 +145,24 @@ class FeatureTokenizer(nn.Module):
 
         # Linear projection (each position has its own weight row)
         out = self.weight[None] * x_with_reg[:, :, None]  # (B, N, d_model)
-        bias_pad = torch.cat([
-            torch.zeros(self.n_reg_tokens, self.d_model, device=x.device),
-            self.bias,
-        ], dim=0)
+        bias_pad = torch.cat(
+            [
+                torch.zeros(self.n_reg_tokens, self.d_model, device=x.device),
+                self.bias,
+            ],
+            dim=0,
+        )
         out = out + bias_pad[None]
 
         # Add feature-index embeddings
-        feat_idx_emb = self.feat_idx_embed(
-            torch.arange(self.total_features, device=x.device)
+        feat_idx_emb = self.feat_idx_embed(torch.arange(self.total_features, device=x.device))
+        feat_idx_emb = torch.cat(
+            [
+                torch.zeros(self.n_reg_tokens, self.d_model, device=x.device),
+                feat_idx_emb,
+            ],
+            dim=0,
         )
-        feat_idx_emb = torch.cat([
-            torch.zeros(self.n_reg_tokens, self.d_model, device=x.device),
-            feat_idx_emb,
-        ], dim=0)
         out = out + feat_idx_emb[None]
 
         # Apply mask (if provided) — vectorized: zero masked tokens and
@@ -167,7 +171,7 @@ class FeatureTokenizer(nn.Module):
             reg_mask = torch.ones(B, self.n_reg_tokens, dtype=mask.dtype, device=mask.device)
             full_mask = torch.cat([reg_mask, mask], dim=1)  # (B, n_reg + total)
             out = out * full_mask.unsqueeze(-1)
-            self._last_key_padding = (full_mask == 0)  # True = padded/masked
+            self._last_key_padding = full_mask == 0  # True = padded/masked
 
         return out
 
@@ -175,6 +179,7 @@ class FeatureTokenizer(nn.Module):
 # ═══════════════════════════════════════════════════════════════════════════════
 # Encoder — shared architecture for context and target branches
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TJEPAEncoder(nn.Module):
     """Transformer encoder for T-JEPA context/target branch."""
@@ -222,7 +227,9 @@ class TJEPAEncoder(nn.Module):
         out = self.transformer(out, src_key_padding_mask=key_pad)
         return self.norm(out)
 
+
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TJEPAPredictor(nn.Module):
     """Predicts target latents from context latents.
@@ -327,16 +334,17 @@ class TJEPAPredictor(nn.Module):
 
         # Transformer forward
         out = self.transformer(full_seq)  # (B, total_positions, pred_dim)
-        out = self.output_proj(out)       # (B, total_positions, d_model)
+        out = self.output_proj(out)  # (B, total_positions, d_model)
 
         # Extract target predictions (strip REG tokens)
-        predictions = out[:, reg:, :]     # (B, total_features, d_model)
+        predictions = out[:, reg:, :]  # (B, total_features, d_model)
         return [predictions]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Full T-JEPA pretraining model
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TJEPAModel(nn.Module):
     """T-JEPA architecture for self-supervised pretraining.
@@ -382,12 +390,19 @@ class TJEPAModel(nn.Module):
         # collapsing to a low-rank cluster (the T-JEPA failure mode).
         if sigreg_lambda > 0:
             from dl.sigreg import make_sigreg
+
             self.sigreg = make_sigreg()
 
         # Context encoder — trained by gradient descent
         self.context_encoder = TJEPAEncoder(
-            n_timesteps, n_channels, d_model, nhead, num_layers,
-            dim_feedforward, dropout, n_reg_tokens,
+            n_timesteps,
+            n_channels,
+            d_model,
+            nhead,
+            num_layers,
+            dim_feedforward,
+            dropout,
+            n_reg_tokens,
         )
 
         # Target encoder — updated via EMA of context encoder
@@ -398,9 +413,13 @@ class TJEPAModel(nn.Module):
         # Predictor — shallower, narrower
         self.predictor = TJEPAPredictor(
             total_features=n_timesteps * n_channels,
-            d_model=d_model, pred_dim=pred_dim, nhead=nhead,
-            num_layers=pred_num_layers, dim_feedforward=dim_feedforward // 2,
-            dropout=dropout, n_reg_tokens=n_reg_tokens,
+            d_model=d_model,
+            pred_dim=pred_dim,
+            nhead=nhead,
+            num_layers=pred_num_layers,
+            dim_feedforward=dim_feedforward // 2,
+            dropout=dropout,
+            n_reg_tokens=n_reg_tokens,
         )
 
     @torch.no_grad()
@@ -428,23 +447,24 @@ class TJEPAModel(nn.Module):
         B, device = x.size(0), x.device
 
         ctx_mask, tgt_masks = generate_masks(
-            B, self.n_timesteps, self.n_channels,
-            self.mask_ratio, self.n_target_masks, device,
+            B,
+            self.n_timesteps,
+            self.n_channels,
+            self.mask_ratio,
+            self.n_target_masks,
+            device,
         )
 
         # Target encoder: encode ALL features → (B, n_reg + total, d_model)
         with torch.no_grad():
             tgt_full = self.target_encoder(x, mask=None)
-            tgt_latents = tgt_full[:, self.context_encoder.n_reg_tokens:, :]
+            tgt_latents = tgt_full[:, self.context_encoder.n_reg_tokens :, :]
 
         # Context encoder: encode only unmasked features
         ctx_latents = self.context_encoder(x, mask=ctx_mask)
 
         # Predictor: predict target latents for each target mask
-        predictions = [
-            self.predictor(ctx_latents, ctx_mask, tgt_mask)[0]
-            for tgt_mask in tgt_masks
-        ]
+        predictions = [self.predictor(ctx_latents, ctx_mask, tgt_mask)[0] for tgt_mask in tgt_masks]
 
         return tgt_latents, predictions, ctx_mask, tgt_masks, ctx_latents
 
@@ -454,9 +474,10 @@ class TJEPAModel(nn.Module):
         """Single pretraining step: forward + loss + EMA update."""
         # Cosine EMA schedule
         progress = epoch / max(total_epochs - 1, 1)
-        self.ema_momentum = self.ema_end - (self.ema_end - self.ema_start) * (
-            1.0 + math.cos(math.pi * progress)
-        ) / 2.0
+        self.ema_momentum = (
+            self.ema_end
+            - (self.ema_end - self.ema_start) * (1.0 + math.cos(math.pi * progress)) / 2.0
+        )
 
         tgt, preds, _, tgt_masks, ctx_latents = self.forward(x)
 
@@ -485,13 +506,14 @@ class TJEPAModel(nn.Module):
         self.eval()
         latents = self.context_encoder(x, mask=None)
         # Strip REG tokens, flatten to (B*total_features, d_model)
-        latents = latents[:, self.context_encoder.n_reg_tokens:, :]
+        latents = latents[:, self.context_encoder.n_reg_tokens :, :]
         return latents.reshape(-1, self.d_model)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Fine-tuning classifier
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TJEPAClassifier(nn.Module):
     """Classifier built on pretrained T-JEPA context encoder.
@@ -520,7 +542,7 @@ class TJEPAClassifier(nn.Module):
         """x: (B, n_timesteps, n_channels) → (B, num_classes)."""
         latents = self.encoder(x, mask=None)  # (B, n_reg+total, d_model)
         # Pool all features except REG tokens with learned attention
-        latents = latents[:, self.encoder.n_reg_tokens:, :]  # (B, total, d_model)
+        latents = latents[:, self.encoder.n_reg_tokens :, :]  # (B, total, d_model)
         w = self.attn(latents).softmax(dim=1)  # (B, total, 1)
         pooled = (latents * w).sum(dim=1)  # (B, d_model)
         return self.head(pooled)

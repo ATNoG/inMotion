@@ -42,7 +42,6 @@ def suppress_stderr():
             sys.stderr = old_stderr
 
 
-
 @dataclass
 class ClassifierResult:
     """Results from training a classifier."""
@@ -244,7 +243,9 @@ class TrainingPipeline:
 
             if verbose:
                 print(
-                    f"Accuracy: {result.accuracy:.4f}, CV: {result.cv_mean:.4f}±{result.cv_std:.4f}, Time: {format_time(result.train_time)}"
+                    f"Accuracy: {result.accuracy:.4f}, "
+                    f"CV: {result.cv_mean:.4f}+/-{result.cv_std:.4f}, "
+                    f"Time: {format_time(result.train_time)}"
                 )
 
         return self.get_results_dataframe()

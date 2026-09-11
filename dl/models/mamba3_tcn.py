@@ -66,13 +66,17 @@ class Mamba3TCN(nn.Module):
         self.tcn_proj = nn.Linear(tcn_channels, d_model)
 
         self.mamba_input_proj = nn.Linear(in_features, d_model)
-        self.mamba = nn.Sequential(*[
-            _MambaBlock(d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank)
-            for _ in range(n_mamba_layers)
-        ])
+        self.mamba = nn.Sequential(
+            *[
+                _MambaBlock(d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank)
+                for _ in range(n_mamba_layers)
+            ]
+        )
 
         self.combined_proj = nn.Sequential(
-            nn.Linear(d_model * 2, d_model), nn.GELU(), nn.Dropout(dropout),
+            nn.Linear(d_model * 2, d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
         )
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.head = nn.Linear(d_model, num_classes)

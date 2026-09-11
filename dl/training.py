@@ -97,16 +97,12 @@ class Trainer:
                     )
                     idx = torch.randperm(X_batch.size(0), device=X_batch.device)
                     X_mixed = lam * X_batch + (1.0 - lam) * X_batch[idx]
-                    logits = (
-                        model(X_mixed, meta_batch) if has_meta else model(X_mixed)
-                    )
+                    logits = model(X_mixed, meta_batch) if has_meta else model(X_mixed)
                     loss = lam * criterion(logits, y_batch) + (1.0 - lam) * criterion(
                         logits, y_batch[idx]
                     )
                 else:
-                    logits = (
-                        model(X_batch, meta_batch) if has_meta else model(X_batch)
-                    )
+                    logits = model(X_batch, meta_batch) if has_meta else model(X_batch)
                     loss = criterion(logits, y_batch)
                 if train:
                     loss = loss + self._l1_loss(model)
@@ -262,24 +258,42 @@ class Trainer:
                     precision_score,
                     recall_score,
                 )
+
                 val_loss, val_preds, val_targets = self._step(
                     model, val_loader, criterion, None, train=False
                 )
-                final_log.update({
-                    "final_val_loss": val_loss,
-                    "final_val_acc": float((val_targets == val_preds).mean()),
-                    "final_val_f1_macro": float(f1_score(val_targets, val_preds, average="macro", zero_division=0)),
-                    "final_val_precision_macro": float(precision_score(val_targets, val_preds, average="macro", zero_division=0)),
-                    "final_val_recall_macro": float(recall_score(val_targets, val_preds, average="macro", zero_division=0)),
-                })
+                final_log.update(
+                    {
+                        "final_val_loss": val_loss,
+                        "final_val_acc": float((val_targets == val_preds).mean()),
+                        "final_val_f1_macro": float(
+                            f1_score(val_targets, val_preds, average="macro", zero_division=0)
+                        ),
+                        "final_val_precision_macro": float(
+                            precision_score(
+                                val_targets, val_preds, average="macro", zero_division=0
+                            )
+                        ),
+                        "final_val_recall_macro": float(
+                            recall_score(val_targets, val_preds, average="macro", zero_division=0)
+                        ),
+                    }
+                )
                 try:
                     classes = getattr(self.config, "_classes", ["AA", "AB", "BA", "BB"])
                     final_log["final_val_confusion_matrix"] = wandb.plot.confusion_matrix(
-                        probs=None, y_true=val_targets.tolist(), preds=val_preds.tolist(),
+                        probs=None,
+                        y_true=val_targets.tolist(),
+                        preds=val_preds.tolist(),
                         class_names=classes,
                     )
-                    report = classification_report(val_targets, val_preds, target_names=classes,
-                                                    output_dict=True, zero_division=0)
+                    report = classification_report(
+                        val_targets,
+                        val_preds,
+                        target_names=classes,
+                        output_dict=True,
+                        zero_division=0,
+                    )
                     for cls_name, cls_metrics in report.items():
                         if isinstance(cls_metrics, dict):
                             for mk, mv in cls_metrics.items():

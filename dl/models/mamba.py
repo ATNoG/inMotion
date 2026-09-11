@@ -130,7 +130,9 @@ class _SelectiveSSM(nn.Module):
         configurations to avoid OOM.
         """
         return torch.utils.checkpoint.checkpoint(
-            self._forward_impl, x, use_reentrant=False,
+            self._forward_impl,
+            x,
+            use_reentrant=False,
         )
 
     def _forward_impl(self, x: Tensor) -> Tensor:

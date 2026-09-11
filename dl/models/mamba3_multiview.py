@@ -20,9 +20,12 @@ class _LocalView(nn.Module):
         super().__init__()
         self.conv = nn.Sequential(
             nn.Conv1d(in_features, out_dim, 3, padding=1),
-            nn.BatchNorm1d(out_dim), nn.GELU(), nn.Dropout(dropout),
+            nn.BatchNorm1d(out_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
             nn.Conv1d(out_dim, out_dim, 5, padding=2, groups=out_dim),
-            nn.BatchNorm1d(out_dim), nn.GELU(),
+            nn.BatchNorm1d(out_dim),
+            nn.GELU(),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -35,8 +38,10 @@ class _GlobalView(nn.Module):
     def __init__(self, seq_len: int, in_features: int, out_dim: int) -> None:
         super().__init__()
         self.mlp = nn.Sequential(
-            nn.Flatten(), nn.Linear(seq_len * in_features, out_dim * 2),
-            nn.GELU(), nn.Linear(out_dim * 2, out_dim),
+            nn.Flatten(),
+            nn.Linear(seq_len * in_features, out_dim * 2),
+            nn.GELU(),
+            nn.Linear(out_dim * 2, out_dim),
         )
 
     def forward(self, x: Tensor) -> Tensor:
@@ -47,7 +52,9 @@ class _SwitchGate(nn.Module):
     def __init__(self, n_views: int, d_model: int) -> None:
         super().__init__()
         self.score_net = nn.Sequential(
-            nn.Linear(d_model, d_model // 4), nn.GELU(), nn.Linear(d_model // 4, 1),
+            nn.Linear(d_model, d_model // 4),
+            nn.GELU(),
+            nn.Linear(d_model // 4, 1),
         )
 
     def forward(self, views: list[Tensor]) -> Tensor:
@@ -57,9 +64,13 @@ class _SwitchGate(nn.Module):
 
 
 class _TangoMamba(nn.Module):
-    def __init__(self, d_model: int, d_state: int = 16, dropout: float = 0.1, mimo_rank: int = 4) -> None:
+    def __init__(
+        self, d_model: int, d_state: int = 16, dropout: float = 0.1, mimo_rank: int = 4
+    ) -> None:
         super().__init__()
-        self.mamba = _MambaBlock(d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank)
+        self.mamba = _MambaBlock(
+            d_model=d_model, d_state=d_state, dropout=dropout, mimo_rank=mimo_rank
+        )
 
     def forward(self, x: Tensor) -> Tensor:
         fwd = self.mamba(x)
@@ -69,8 +80,13 @@ class _TangoMamba(nn.Module):
 
 class Mamba3MultiView(nn.Module):
     def __init__(
-        self, in_features: int = 4, d_model: int = 128, d_state: int = 16,
-        n_mamba_layers: int = 2, num_classes: int = 4, dropout: float = 0.2,
+        self,
+        in_features: int = 4,
+        d_model: int = 128,
+        d_state: int = 16,
+        n_mamba_layers: int = 2,
+        num_classes: int = 4,
+        dropout: float = 0.2,
         mimo_rank: int = 4,
     ) -> None:
         super().__init__()
@@ -78,9 +94,9 @@ class Mamba3MultiView(nn.Module):
         self.global_view = _GlobalView(10, in_features, d_model)
         self.raw_view = nn.Linear(in_features, d_model)
         self.gate = _SwitchGate(3, d_model)
-        self.mamba_blocks = nn.Sequential(*[
-            _TangoMamba(d_model, d_state, dropout, mimo_rank) for _ in range(n_mamba_layers)
-        ])
+        self.mamba_blocks = nn.Sequential(
+            *[_TangoMamba(d_model, d_state, dropout, mimo_rank) for _ in range(n_mamba_layers)]
+        )
         self.norm = nn.LayerNorm(d_model)
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.head = nn.Linear(d_model, num_classes)

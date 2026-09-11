@@ -426,6 +426,7 @@ def data_augment(ctx: typer.Context) -> None:
 # run — training / evaluation pipelines
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @run_app.command("list")
 def run_list() -> None:
     """List the available pipelines."""

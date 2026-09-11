@@ -35,9 +35,7 @@ except ImportError:
     _WANDB_AVAILABLE = False
 
 
-def compute_metrics(
-    y_true: np.ndarray, y_pred: np.ndarray, classes: list[str]
-) -> dict:
+def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray, classes: list[str]) -> dict:
     mcc = float(matthews_corrcoef(y_true, y_pred))
     acc = float((y_true == y_pred).mean())
     cm = confusion_matrix(y_true, y_pred)
@@ -175,7 +173,9 @@ def evaluate_model_on_test(
             f"{model_name}/test_recall_macro": metrics["recall_macro"],
         }
         for cls_name, cls_metrics in metrics["per_class"].items():
-            wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/precision"] = cls_metrics["precision"]
+            wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/precision"] = cls_metrics[
+                "precision"
+            ]
             wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/recall"] = cls_metrics["recall"]
             wandb_log_dict[f"{model_name}/test_per_class/{cls_name}/f1"] = cls_metrics["f1"]
         wandb_log_dict[f"{model_name}/test_confusion_matrix"] = wandb.plot.confusion_matrix(
@@ -227,7 +227,12 @@ def evaluate_checkpoint_from_disk(
     state = torch.load(str(checkpoint_path), map_location="cpu", weights_only=True)
     model.load_state_dict(state)
     metrics = evaluate_model_on_test(
-        model, test_loader, config, classes, model_name, log_wandb=log_wandb,
+        model,
+        test_loader,
+        config,
+        classes,
+        model_name,
+        log_wandb=log_wandb,
     )
     return metrics
 

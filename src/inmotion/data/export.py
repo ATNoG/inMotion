@@ -8,7 +8,6 @@ import pandas as pd
 def extract_rssi_and_mac_pairs(
     data_dict: dict[str, list[dict[str, Any]]],
 ) -> list[tuple[float, str]]:
-
     pairs = []
 
     mac_to_rssis: dict[str, list[float]] = {}
@@ -29,7 +28,6 @@ def extract_rssi_and_mac_pairs(
             mean_rssi = sum(rssi_list) / len(rssi_list)
             pairs.append((mean_rssi, mac))
 
-
     return pairs
 
 
@@ -42,7 +40,6 @@ def export_to_csv(
     group_labels: list[str] | None = None,
     noise_label: str = "False",
 ) -> None:
-
     data = []
     dict_strs = []
     with open(input_file) as f:
@@ -75,7 +72,7 @@ def export_to_csv(
             # Expected format: LABEL:mac1,mac2,...
             try:
                 label_name, mac_list = group_def.split(":", 1)
-                for mac in mac_list.split(','):
+                for mac in mac_list.split(","):
                     mac_norm = mac.strip().lower()
                     if mac_norm:
                         mac_to_group[mac_norm] = label_name
@@ -137,22 +134,34 @@ def export_to_csv(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export wavecom data to CSV")
     parser.add_argument(
-        "--label", "-l", type=str, default="AB", help="Default label for data (used when --group not provided or MAC not matched)"
+        "--label",
+        "-l",
+        type=str,
+        default="AB",
+        help="Default label for data (used when --group not provided or MAC not matched)",
     )
     parser.add_argument(
-        "--group", "-g", action="append", help="Group definition in the form label:mac1,mac2,... (repeatable)"
+        "--group",
+        "-g",
+        action="append",
+        help="Group definition in the form label:mac1,mac2,... (repeatable)",
     )
     parser.add_argument(
-        "--group-label", "-G", action="append", help="Map group name to final label, e.g., G1:AB (repeatable)"
+        "--group-label",
+        "-G",
+        action="append",
+        help="Map group name to final label, e.g., G1:AB (repeatable)",
     )
+    parser.add_argument("--input", "-i", type=str, required=True, help="Input wavecom data file")
+    parser.add_argument("--output", "-o", type=str, required=True, help="Output CSV file")
     parser.add_argument(
-        "--input", "-i", type=str, required=True, help="Input wavecom data file"
-    )
-    parser.add_argument(
-        "--output", "-o", type=str, required=True, help="Output CSV file"
-    )
-    parser.add_argument(
-        "--noise-label", "-n", type=str, default="False", help="Value for noise column in output CSV"
+        "--noise-label",
+        "-n",
+        type=str,
+        default="False",
+        help="Value for noise column in output CSV",
     )
     args = parser.parse_args()
-    export_to_csv(args.input, args.output, 10, args.label, args.group, args.group_label, args.noise_label)
+    export_to_csv(
+        args.input, args.output, 10, args.label, args.group, args.group_label, args.noise_label
+    )

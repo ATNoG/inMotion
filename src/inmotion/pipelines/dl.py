@@ -167,7 +167,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--no-resume",
         action="store_true",
-        help="Force retrain even when .pt checkpoint exists. By default, existing checkpoints are reused.",
+        help=(
+            "Force retrain even when a .pt checkpoint exists. "
+            "By default, existing checkpoints are reused."
+        ),
     )
     return p.parse_args()
 
@@ -263,6 +266,7 @@ def _build_model_by_name(name: str, config: DLConfig) -> nn.Module:
             # This builds the classifier with a randomly-initialized encoder;
             # pretraining should be done separately via pretrain_t_jepa.py.
             from dl.models.t_jepa import TJEPAClassifier, TJEPAModel
+
             pretrained = TJEPAModel(
                 n_features=10,
                 d_model=config.d_model,
@@ -394,10 +398,19 @@ def _single_model_worker(
         state = torch.load(str(save_path), map_location="cpu", weights_only=True)
         model.load_state_dict(state)
         metrics = evaluate_model_on_test(
-            model, test_loader, config, classes, name, log_wandb=config.use_wandb,
+            model,
+            test_loader,
+            config,
+            classes,
+            name,
+            log_wandb=config.use_wandb,
         )
         return metrics_to_extended_row(
-            name, "single", config.seed, device_str, metrics,
+            name,
+            "single",
+            config.seed,
+            device_str,
+            metrics,
             extra={},
         )
 
@@ -418,8 +431,13 @@ def _single_model_worker(
         torch.cuda.empty_cache()
 
     row = metrics_to_extended_row(
-        name, "single", config.seed, device_str, metrics,
-        best_val_mcc=result.best_val_mcc, best_epoch=result.best_epoch,
+        name,
+        "single",
+        config.seed,
+        device_str,
+        metrics,
+        best_val_mcc=result.best_val_mcc,
+        best_epoch=result.best_epoch,
         train_time_s=round(elapsed, 1),
         extra={"val_mccs": result.val_mccs},
     )
@@ -553,8 +571,11 @@ def _hpo_worker(
             import optuna
 
             from dl.optimization import _get_optuna_storage
+
             study_name = f"{config.optuna_study_prefix}_{model_type}"
-            study = optuna.load_study(study_name=study_name, storage=_get_optuna_storage(config.optuna_storage))
+            study = optuna.load_study(
+                study_name=study_name, storage=_get_optuna_storage(config.optuna_storage)
+            )
             if study.trials:
                 best_params = study.best_trial.params
                 print(f"  [HPO {model_type}] study + checkpoint exist, skipping → {save_path}")
@@ -562,19 +583,35 @@ def _hpo_worker(
                 state = torch.load(str(save_path), map_location="cpu", weights_only=True)
                 model.load_state_dict(state)
                 metrics = evaluate_model_on_test(
-                    model, test_loader, config, classes, model_name, log_wandb=config.use_wandb,
+                    model,
+                    test_loader,
+                    config,
+                    classes,
+                    model_name,
+                    log_wandb=config.use_wandb,
                 )
                 return {
-                    "model_type": model_type, "device": device_str,
-                    "best_val_mcc": study.best_value, "best_params": best_params,
-                    "n_trials": len(study.trials), "model": model_name, "type": "hpo",
-                    "seed": config.seed, "test_mcc": metrics["mcc"],
-                    "test_acc": metrics["accuracy"], "precision_macro": metrics["precision_macro"],
-                    "recall_macro": metrics["recall_macro"], "f1_macro": metrics["f1_macro"],
+                    "model_type": model_type,
+                    "device": device_str,
+                    "best_val_mcc": study.best_value,
+                    "best_params": best_params,
+                    "n_trials": len(study.trials),
+                    "model": model_name,
+                    "type": "hpo",
+                    "seed": config.seed,
+                    "test_mcc": metrics["mcc"],
+                    "test_acc": metrics["accuracy"],
+                    "precision_macro": metrics["precision_macro"],
+                    "recall_macro": metrics["recall_macro"],
+                    "f1_macro": metrics["f1_macro"],
                     "precision_weighted": metrics["precision_weighted"],
-                    "recall_weighted": metrics["recall_weighted"], "f1_weighted": metrics["f1_weighted"],
-                    "per_class": metrics["per_class"], "confusion_matrix": metrics["confusion_matrix"],
-                    "best_epoch": 0, "train_time_s": 0.0, "val_mccs": [],
+                    "recall_weighted": metrics["recall_weighted"],
+                    "f1_weighted": metrics["f1_weighted"],
+                    "per_class": metrics["per_class"],
+                    "confusion_matrix": metrics["confusion_matrix"],
+                    "best_epoch": 0,
+                    "train_time_s": 0.0,
+                    "val_mccs": [],
                 }
         except Exception:
             pass  # fall through to full training
@@ -694,7 +731,11 @@ def _nas_worker(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     return metrics_to_extended_row(
-        "OptunaNet_NAS", "optuna_nas", config.seed, device_str, metrics,
+        "OptunaNet_NAS",
+        "optuna_nas",
+        config.seed,
+        device_str,
+        metrics,
         best_val_mcc=study.best_value,
         extra={"best_arch": json.dumps(study.best_trial.params), "val_mccs": []},
     )
@@ -888,7 +929,11 @@ def _ds_base_worker(
         model = torch.load(str(save_path), map_location="cpu", weights_only=False)
         metrics = evaluate_model_on_test(model, test_loader, config, classes, name, log_wandb=False)
         return metrics_to_extended_row(
-            name, "ds_base", config.seed, device_str, metrics,
+            name,
+            "ds_base",
+            config.seed,
+            device_str,
+            metrics,
             extra={"save_path": str(save_path)},
         )
 
@@ -904,7 +949,11 @@ def _ds_base_worker(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     row = metrics_to_extended_row(
-        name, "ds_base", config.seed, device_str, metrics,
+        name,
+        "ds_base",
+        config.seed,
+        device_str,
+        metrics,
         best_val_mcc=result.best_val_mcc,
         extra={"val_mccs": result.val_mccs, "save_path": str(save_path)},
     )
@@ -1031,7 +1080,11 @@ def _softmoe_combo_worker(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     row = metrics_to_extended_row(
-        combo_name, "soft_moe", config.seed, device_str, metrics,
+        combo_name,
+        "soft_moe",
+        config.seed,
+        device_str,
+        metrics,
         best_val_mcc=result.best_val_mcc,
         extra={"arch_list": "+".join(arch_list), "val_mccs": result.val_mccs},
     )
@@ -1086,8 +1139,13 @@ def _meta_model_worker(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     row = metrics_to_extended_row(
-        name, "meta_fusion", config.seed, device_str, metrics,
-        best_val_mcc=result.best_val_mcc, best_epoch=result.best_epoch,
+        name,
+        "meta_fusion",
+        config.seed,
+        device_str,
+        metrics,
+        best_val_mcc=result.best_val_mcc,
+        best_epoch=result.best_epoch,
         train_time_s=round(elapsed, 1),
         extra={"val_mccs": result.val_mccs},
     )
@@ -1252,7 +1310,9 @@ def main() -> None:
         "Ensemble_RNN_GRU_LSTM": ["RNN", "GRU", "LSTM"],
         "Ensemble_All": SINGLE_MODEL_NAMES,
     }
-    for ens_name, member_names in tqdm(ensemble_combos.items(), desc="Phase 2: ensembles", unit="combo"):
+    for ens_name, member_names in tqdm(
+        ensemble_combos.items(), desc="Phase 2: ensembles", unit="combo"
+    ):
         members = [trained_models[n] for n in member_names]
         ensemble = VotingEnsemble(members).to(main_device)
         metrics = evaluate_model_on_test(
@@ -1262,10 +1322,16 @@ def main() -> None:
             ensemble.state_dict(),
             config.models_dir / f"{ens_name}_seed{config.seed}.pt",
         )
-        all_results.append(metrics_to_extended_row(
-            ens_name, "voting_ensemble", config.seed, str(main_device), metrics,
-            extra={"members": "+".join(member_names)},
-        ))
+        all_results.append(
+            metrics_to_extended_row(
+                ens_name,
+                "voting_ensemble",
+                config.seed,
+                str(main_device),
+                metrics,
+                extra={"members": "+".join(member_names)},
+            )
+        )
 
     print("  [Stacking_All] training meta-learner…")
     stacking = StackingEnsemble(
@@ -1280,10 +1346,16 @@ def main() -> None:
     metrics = evaluate_model_on_test(
         stacking, test_loader, config, classes, "Stacking_All", log_wandb=config.use_wandb
     )
-    all_results.append(metrics_to_extended_row(
-        "Stacking_All", "stacking_ensemble", config.seed, str(main_device), metrics,
-        best_val_mcc=stack_result.best_val_mcc,
-    ))
+    all_results.append(
+        metrics_to_extended_row(
+            "Stacking_All",
+            "stacking_ensemble",
+            config.seed,
+            str(main_device),
+            metrics,
+            best_val_mcc=stack_result.best_val_mcc,
+        )
+    )
     curve_data.append({"name": "Stacking_All", "val_mccs": stack_result.val_mccs})
     print(f"  [Stacking_All] test_mcc={float(metrics['mcc']):.4f}")
 
@@ -1350,7 +1422,9 @@ def main() -> None:
                                 row[f"CM_{true_cls}_pred_{pred_cls}"] = int(cm[i, j])
                     all_results.append(row)
                     curve_data.append({"name": str(res["model"]), "val_mccs": hpo_val_mccs})
-                    pbar.set_postfix_str(f"HPO {res['model_type']} mcc={float(res['test_mcc']):.3f}")
+                    pbar.set_postfix_str(
+                        f"HPO {res['model_type']} mcc={float(res['test_mcc']):.3f}"
+                    )
                     pbar.update(1)
 
         print("  [NAS] architecture search…")
@@ -1370,7 +1444,7 @@ def main() -> None:
         curve_data.append({"name": "OptunaNet_NAS", "val_mccs": nas_val_mccs})
         nas_mcc = float(nas_row.get("test_mcc", 0))  # type: ignore[arg-type]
         nas_arch = nas_row.get("best_arch", "{}")
-        print(f"  [NAS] {nas_row.get('device','cpu')}  arch={nas_arch}  test_mcc={nas_mcc:.4f}")
+        print(f"  [NAS] {nas_row.get('device', 'cpu')}  arch={nas_arch}  test_mcc={nas_mcc:.4f}")
 
     # ── Phase 4: Mixture-of-Experts — end-to-end SoftMoE with multi-objective HPO ─
     if not args.no_moe:
@@ -1404,7 +1478,9 @@ def main() -> None:
                     for future in as_completed(mo_futures):
                         res = future.result()
                         combo_best_params[str(res["combo_name"])] = dict(res["best_params"])  # type: ignore[arg-type]
-                        pbar.set_postfix_str(f"{res['combo_name']} mcc={float(res['pareto_best_mcc']):.3f}")
+                        pbar.set_postfix_str(
+                            f"{res['combo_name']} mcc={float(res['pareto_best_mcc']):.3f}"
+                        )
                         pbar.update(1)
         else:
             combo_best_params = {name: {} for name in MOE_COMBOS}
@@ -1432,7 +1508,9 @@ def main() -> None:
                 ): combo_name
                 for i, (combo_name, arch_list) in enumerate(MOE_COMBOS.items())
             }
-            with tqdm(total=len(train_futures), desc="Phase 4b: SoftMoE training", unit="combo") as pbar:
+            with tqdm(
+                total=len(train_futures), desc="Phase 4b: SoftMoE training", unit="combo"
+            ) as pbar:
                 for future in as_completed(train_futures):
                     res = future.result()
                     moe_val_mccs: list[float] = list(res.pop("val_mccs", []))  # type: ignore[arg-type]
@@ -1607,11 +1685,17 @@ def main() -> None:
             "DeepStackEnsemble",
             log_wandb=config.use_wandb,
         )
-        all_results.append(metrics_to_extended_row(
-            "DeepStackEnsemble", "deep_stack", config.seed, str(dev0), ds_metrics,
-            best_val_mcc=ft_result.best_val_mcc,
-            extra={"val_mccs": ft_result.val_mccs},
-        ))
+        all_results.append(
+            metrics_to_extended_row(
+                "DeepStackEnsemble",
+                "deep_stack",
+                config.seed,
+                str(dev0),
+                ds_metrics,
+                best_val_mcc=ft_result.best_val_mcc,
+                extra={"val_mccs": ft_result.val_mccs},
+            )
+        )
         curve_data.append({"name": "DeepStackEnsemble", "val_mccs": ft_result.val_mccs})
         ds_mcc = float(ds_metrics["mcc"])
         ds_acc = float(ds_metrics["accuracy"])

@@ -76,7 +76,9 @@ class DLVisualizer:
         ax.set_ylabel("True Label")
         ax.set_title(f"Confusion Matrix — {model_name}")
         plt.tight_layout()
-        plt.savefig(self._save(f"confusion_matrix_{model_name}"), dpi=self.PLOT_DPI, bbox_inches="tight")
+        plt.savefig(
+            self._save(f"confusion_matrix_{model_name}"), dpi=self.PLOT_DPI, bbox_inches="tight"
+        )
         plt.close()
 
     def plot_all_confusion_matrices(
@@ -125,13 +127,22 @@ class DLVisualizer:
         top_n: int = 10,
     ) -> None:
         metric_cols = []
-        for m in ["f1_macro", "f1_weighted", "test_acc", "test_mcc", "precision_macro", "recall_macro"]:
+        for m in [
+            "f1_macro",
+            "f1_weighted",
+            "test_acc",
+            "test_mcc",
+            "precision_macro",
+            "recall_macro",
+        ]:
             if m in results_df.columns:
                 metric_cols.append(m)
         if not metric_cols:
             return
 
-        df = results_df.nlargest(top_n, "test_mcc" if "test_mcc" in results_df.columns else metric_cols[0]).copy()
+        df = results_df.nlargest(
+            top_n, "test_mcc" if "test_mcc" in results_df.columns else metric_cols[0]
+        ).copy()
 
         fig, ax = plt.subplots(figsize=(16, 10))
         x = np.arange(len(df))
@@ -139,7 +150,9 @@ class DLVisualizer:
 
         for i, metric in enumerate(metric_cols):
             offset = (i - len(metric_cols) / 2 + 0.5) * width
-            ax.bar(x + offset, df[metric], width, label=metric, color=self.colors[i % len(self.colors)])
+            ax.bar(
+                x + offset, df[metric], width, label=metric, color=self.colors[i % len(self.colors)]
+            )
 
         ax.set_xlabel("Model")
         ax.set_ylabel("Score")
@@ -177,7 +190,13 @@ class DLVisualizer:
 
             for i, model_name in enumerate(models):
                 offset = (i - len(models) / 2 + 0.5) * width
-                ax.bar(x + offset, data[i], width, label=model_name, color=self.colors[i % len(self.colors)])
+                ax.bar(
+                    x + offset,
+                    data[i],
+                    width,
+                    label=model_name,
+                    color=self.colors[i % len(self.colors)],
+                )
 
             ax.set_xlabel("Class")
             ax.set_ylabel(metric.capitalize())
@@ -187,7 +206,9 @@ class DLVisualizer:
             ax.legend(loc="lower right", fontsize=self.LEGEND_SIZE)
             ax.set_ylim(0, 1.1)
             plt.tight_layout()
-            plt.savefig(self._save(f"class_performance_{metric}"), dpi=self.PLOT_DPI, bbox_inches="tight")
+            plt.savefig(
+                self._save(f"class_performance_{metric}"), dpi=self.PLOT_DPI, bbox_inches="tight"
+            )
             plt.close()
 
     # ── Metric Heatmap ───────────────────────────────────────────────────────
@@ -198,13 +219,22 @@ class DLVisualizer:
         top_n: int = 15,
     ) -> None:
         metric_cols = []
-        for m in ["test_mcc", "test_acc", "f1_macro", "f1_weighted", "precision_macro", "recall_macro"]:
+        for m in [
+            "test_mcc",
+            "test_acc",
+            "f1_macro",
+            "f1_weighted",
+            "precision_macro",
+            "recall_macro",
+        ]:
             if m in results_df.columns:
                 metric_cols.append(m)
         if not metric_cols:
             return
 
-        df = results_df.nlargest(top_n, "test_mcc" if "test_mcc" in results_df.columns else metric_cols[0])
+        df = results_df.nlargest(
+            top_n, "test_mcc" if "test_mcc" in results_df.columns else metric_cols[0]
+        )
         heatmap_df = df[["model"] + metric_cols].set_index("model")
 
         fig, ax = plt.subplots(figsize=(14, max(8, len(df) * 0.5)))
@@ -283,7 +313,9 @@ class DLVisualizer:
             return
 
         fig, ax = plt.subplots(figsize=(14, max(8, len(df) * 0.4)))
-        colors = ["green" if t < 100 else "orange" if t < 400 else "red" for t in df["train_time_s"]]
+        colors = [
+            "green" if t < 100 else "orange" if t < 400 else "red" for t in df["train_time_s"]
+        ]
         ax.barh(range(len(df)), df["train_time_s"], color=colors)
         ax.set_yticks(range(len(df)))
         ax.set_yticklabels(df["model"])
@@ -320,4 +352,6 @@ class DLVisualizer:
             self.plot_all_confusion_matrices(confusion_matrices, class_names, top_n=top_n_models)
 
         if per_class_reports:
-            self.plot_class_performance(per_class_reports, class_names, top_n=min(5, len(per_class_reports)))
+            self.plot_class_performance(
+                per_class_reports, class_names, top_n=min(5, len(per_class_reports))
+            )

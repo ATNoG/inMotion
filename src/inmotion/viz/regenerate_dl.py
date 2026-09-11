@@ -2,8 +2,12 @@
 """Regenerate DL-specific paper plots from extended results CSV.
 
 Usage:
-    uv run python regenerate_dl_plots.py --results-csv results/dl/dl_detailed_seed42.csv --output-dir plots/dl/42
-    uv run python regenerate_dl_plots.py --results-csv results/dl/dl_detailed_seed42.csv --eda --data data/processed/dataset.csv
+    inmotion run pipeline regenerate-dl-plots -- \
+        --results-csv results/dl/dl_detailed_seed42.csv \
+        --output-dir plots/dl/42
+    inmotion run pipeline regenerate-dl-plots -- \
+        --results-csv results/dl/dl_detailed_seed42.csv --eda \
+        --data data/processed/dataset.csv
 """
 
 from __future__ import annotations
@@ -18,18 +22,27 @@ from dl.visualization import DLVisualizer
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Regenerate DL result plots")
-    p.add_argument("--results-csv", type=Path, required=True,
-                   help="Path to extended DL results CSV (e.g., dl_detailed_seed42.csv)")
-    p.add_argument("--output-dir", type=Path, default=None,
-                   help="Output directory for plots (default: inferred from CSV path)")
-    p.add_argument("--top-n", type=int, default=15,
-                   help="Number of top models in ranking plots")
-    p.add_argument("--eda", action="store_true",
-                   help="Also generate EDA plots")
-    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"),
-                   help="Dataset CSV for EDA (only with --eda)")
-    p.add_argument("--seed", type=int, default=42,
-                   help="Random seed for reproducibility")
+    p.add_argument(
+        "--results-csv",
+        type=Path,
+        required=True,
+        help="Path to extended DL results CSV (e.g., dl_detailed_seed42.csv)",
+    )
+    p.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Output directory for plots (default: inferred from CSV path)",
+    )
+    p.add_argument("--top-n", type=int, default=15, help="Number of top models in ranking plots")
+    p.add_argument("--eda", action="store_true", help="Also generate EDA plots")
+    p.add_argument(
+        "--data",
+        type=Path,
+        default=Path("data/processed/dataset.csv"),
+        help="Dataset CSV for EDA (only with --eda)",
+    )
+    p.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     return p.parse_args()
 
 
@@ -60,7 +73,9 @@ def main() -> None:
     config.plots_dir = output_dir
 
     # Load results
-    results_df, confusion_matrices, class_names, per_class_reports = load_extended_results(results_csv)
+    results_df, confusion_matrices, class_names, per_class_reports = load_extended_results(
+        results_csv
+    )
     print(f"Loaded {len(results_df)} DL model results")
     print(f"  Class names: {class_names}")
     print(f"  Confusion matrices: {len(confusion_matrices)}")
@@ -71,7 +86,10 @@ def main() -> None:
     reader_output.mkdir(parents=True, exist_ok=True)
     viz = DLVisualizer(config, output_dir=reader_output)
     viz.create_all_plots(
-        results_df, confusion_matrices, class_names, per_class_reports,
+        results_df,
+        confusion_matrices,
+        class_names,
+        per_class_reports,
         top_n_models=args.top_n,
     )
     print(f"Plots saved → {reader_output}")
@@ -80,6 +98,7 @@ def main() -> None:
     if args.eda:
         print("\nRunning EDA...")
         from dl.eda import run_eda_for_dl
+
         run_eda_for_dl(config)
 
 

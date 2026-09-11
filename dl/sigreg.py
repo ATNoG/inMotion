@@ -96,7 +96,7 @@ def make_sigreg(p: float | None = None) -> nn.Module:
 def set_default_sigreg_mode(mode: str = "sigreg", p: float = 1.5) -> None:
     """Switch the default regularizer: 'sigreg' (Gaussian) or 'rdm' (sparse RGG)."""
     global _USE_RDM, _RDM_P
-    _USE_RDM = (mode.lower() == "rdm")
+    _USE_RDM = mode.lower() == "rdm"
     _RDM_P = p
 
 
@@ -120,6 +120,7 @@ def sigreg_moments(z: Tensor) -> Tensor:
 # GBDT/XGBoost/CatBoost (they already threshold), and sparsity regularizes
 # the small dataset. p < 2 → sparser than Gaussian (p=2 recovers LeJEPA).
 
+
 class RDMReg(nn.Module):
     """Rectified Distribution Matching regularizer (sparse, non-negative).
 
@@ -133,10 +134,10 @@ class RDMReg(nn.Module):
 
     def __init__(
         self,
-        p: float = 1.5,          # RGG shape; p<2 → sparser than Gaussian
-        sigma: float = 1.0,      # pre-rectification scale
+        p: float = 1.5,  # RGG shape; p<2 → sparser than Gaussian
+        sigma: float = 1.0,  # pre-rectification scale
         n_projections: int = 64,  # a handful of projections suffices (paper)
-        n_samples: int = 512,    # target samples per projection
+        n_samples: int = 512,  # target samples per projection
     ) -> None:
         super().__init__()
         self.p = p

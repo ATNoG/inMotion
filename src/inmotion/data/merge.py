@@ -129,7 +129,8 @@ def merge_csv_files(input_dir: str, output_file: str, pattern: str = "*.csv") ->
                 if pd.notna(path):
                     print(f"  {path}: {count} samples")
             print(
-                f"  None (no concurrent noise): {merged_df['concurrent_noise_path'].isna().sum()} samples"
+                "  None (no concurrent noise): "
+                f"{merged_df['concurrent_noise_path'].isna().sum()} samples"
             )
 
 
