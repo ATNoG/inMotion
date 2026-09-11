@@ -244,3 +244,11 @@ backup/
 
 
 .omp/
+
+# Generated analysis outputs (kept on disk, not in git).
+# `plots/` and `results/` are regenerable; the few result files that the papers
+# cite are force-added individually.
+plots/
+results/
+combined/
+catboost_info/
