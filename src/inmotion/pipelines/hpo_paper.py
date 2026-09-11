@@ -18,9 +18,7 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import copy
-from pathlib import Path
 
 import numpy as np
 import torch
@@ -29,6 +27,7 @@ from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
 from inmotion.dl.evaluation import evaluate_model_on_test
 from inmotion.dl.training import Trainer
+from inmotion.pipelines.hpo_paper_config import RunConfig
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Paper HPO-best configs (docs/icaisf/hpo_supplementary.md)
@@ -235,23 +234,12 @@ def _apply_training_hps(cfg: DLConfig, p: dict) -> DLConfig:
     return cfg
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--epochs", type=int, default=150)
-    ap.add_argument(
-        "--patience",
-        type=int,
-        default=20,
-        help="Early-stopping patience (run_dl HPO trials use 20)",
-    )
-    ap.add_argument(
-        "--models", nargs="+", default=list(PAPER_HPO_CONFIGS), choices=list(PAPER_HPO_CONFIGS)
-    )
-    ap.add_argument("--models-dir", type=Path, default=Path("models/dl"))
-    ap.add_argument("--results-dir", type=Path, default=Path("results/dl"))
-    args = ap.parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     for mt in args.models:
         p = PAPER_HPO_CONFIGS[mt]
@@ -322,7 +310,3 @@ def main() -> None:
         print(f"  Best val MCC: {result.best_val_mcc:.4f}")
         print(f"  Test MCC:     {metrics['mcc']:.4f}")
         print(f"  Saved → {save_path}")
-
-
-if __name__ == "__main__":
-    main()

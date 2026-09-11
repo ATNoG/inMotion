@@ -20,7 +20,6 @@ Run:
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +30,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
+from inmotion.pipelines.ensemble_config import RunConfig
 
 
 def _build_lejepa() -> nn.Module:
@@ -240,12 +240,12 @@ def _greedy_weights(val_probs: list[np.ndarray], val_y: np.ndarray, steps: int =
     return counts
 
 
-def main() -> None:
-    p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("data/processed/dataset_augmented3.csv"))
-    p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--steps", type=int, default=50)
-    args = p.parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
@@ -290,7 +290,3 @@ def main() -> None:
     ens_acc = float((ens.argmax(1) == y_test).mean())
     print(f"\nEnsemble test MCC:  {ens_mcc:.4f}")
     print(f"Ensemble test acc:  {ens_acc:.4f}")
-
-
-if __name__ == "__main__":
-    main()

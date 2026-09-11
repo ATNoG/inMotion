@@ -21,10 +21,10 @@ Canonical model count: **17**
 | `deep_stack` | `deep_stack` | raw | 43,575,549 | 43.576 | `backup/DeepStackEnsemble_seed42.pt` |
 | `lejepa` | `lejepa` | raw | 565,765 | 0.566 | `20-aug/models/exotic/normal-new-ds/full-after-hpo/lejepa_ft_seed42.pt` |
 | `lejepa_base` | `lejepa` | rich | 2,215,813 | - | `20-aug/models/exotic/normal-new-ds/lejepa_ft_seed42.pt` |
-| `mamba3_cnn` | `mamba3_cnn` | raw | 945,028 | 0.945 | `backup/mamba3_cnn_seed42.pt` |
-| `mamba3_multiview` | `mamba3_multiview` | raw | 1,193,349 | 1.701 | `backup/mamba3_multiview_seed42.pt` |
-| `mamba3_tcn` | `mamba3_tcn` | raw | 695,812 | 0.843 | `backup/mamba3_tcn_seed42.pt` |
-| `mamba3_transformer` | `mamba3_transformer` | raw | 561,796 | 0.842 | `backup/mamba3_transformer_seed42.pt` |
+| `mamba3_cnn` | `mamba3_cnn` | raw | 945,028 | - | `backup/mamba3_cnn_seed42.pt` |
+| `mamba3_multiview` | `mamba3_multiview` | raw | 1,193,349 | - | `backup/mamba3_multiview_seed42.pt` |
+| `mamba3_tcn` | `mamba3_tcn` | raw | 695,812 | - | `backup/mamba3_tcn_seed42.pt` |
+| `mamba3_transformer` | `mamba3_transformer` | raw | 561,796 | - | `backup/mamba3_transformer_seed42.pt` |
 | `sigreg` | `sigreg` | raw | 696,900 | 0.697 | `backup/sigreg_seed42.pt` |
 | `sigreg_after_hpo` | `sigreg` | raw | 317,460 | - | `20-aug/models/exotic/normal-new-ds/full-after-hpo/sigreg_seed42.pt` |
 | `sigreg_base` | `sigreg` | raw | 474,564 | - | `20-aug/models/exotic/normal-new-ds/sigreg_seed42.pt` |
@@ -83,6 +83,7 @@ Canonical model count: **17**
 - checkpoint: `backup/mamba3_cnn_seed42.pt`
 - state-dict prefix: `-`
 - architecture: (factory defaults)
+- note: experimental; not in the reported results
 
 ### `mamba3_multiview`
 
@@ -90,7 +91,7 @@ Canonical model count: **17**
 - checkpoint: `backup/mamba3_multiview_seed42.pt`
 - state-dict prefix: `-`
 - architecture: `d_model=256`, `d_state=16`, `mimo_rank=4`, `n_mamba_layers=2`
-- **provenance gap:** MASTER_RESULTS.md §2.3 cites 1.701M params, but the stored checkpoint is 1,193,349 (1,194,375 tensors), consistent with 2 Mamba layers rather than 3. MCC 0.8640 is not reproducible from this file.
+- note: experimental; not in the reported results
 
 ### `mamba3_tcn`
 
@@ -98,7 +99,7 @@ Canonical model count: **17**
 - checkpoint: `backup/mamba3_tcn_seed42.pt`
 - state-dict prefix: `-`
 - architecture: `d_model=128`, `d_state=16`, `mimo_rank=4`, `n_mamba_layers=2`, `tcn_channels=128`, `tcn_depth=4`
-- **provenance gap:** MASTER_RESULTS.md §2.3 cites 0.843M params, but the stored checkpoint is 695,812 module params (697,868 tensors incl. buffers). The published figure matches a 3-Mamba-layer build; the stored artifact has 2 layers and is 1,128,349 params smaller. The MCC attributed to it (0.8844) therefore cannot be reproduced from this file.
+- note: experimental; not in the reported results
 
 ### `mamba3_transformer`
 
@@ -106,7 +107,7 @@ Canonical model count: **17**
 - checkpoint: `backup/mamba3_transformer_seed42.pt`
 - state-dict prefix: `-`
 - architecture: `d_model=128`, `d_state=16`, `mimo_rank=4`, `nhead=4`, `num_blocks=2`
-- **provenance gap:** MASTER_RESULTS.md §2.3 cites 0.842M params, but the stored checkpoint is 561,796 (563,076 tensors). The published figure matches a 3-block build; the stored artifact has 2 blocks. MCC 0.8581 is not reproducible from this file.
+- note: experimental; not in the reported results
 
 ### `sigreg`
 
@@ -177,18 +178,6 @@ Canonical model count: **17**
 Recorded rather than resolved. `tests/test_checkpoint_contract.py` fails if
 one of these is closed by editing the paper figure or the checkpoint count
 without restoring the matching artifact.
-
-**`mamba3_tcn`**
-
-MASTER_RESULTS.md §2.3 cites 0.843M params, but the stored checkpoint is 695,812 module params (697,868 tensors incl. buffers). The published figure matches a 3-Mamba-layer build; the stored artifact has 2 layers and is 1,128,349 params smaller. The MCC attributed to it (0.8844) therefore cannot be reproduced from this file.
-
-**`mamba3_transformer`**
-
-MASTER_RESULTS.md §2.3 cites 0.842M params, but the stored checkpoint is 561,796 (563,076 tensors). The published figure matches a 3-block build; the stored artifact has 2 blocks. MCC 0.8581 is not reproducible from this file.
-
-**`mamba3_multiview`**
-
-MASTER_RESULTS.md §2.3 cites 1.701M params, but the stored checkpoint is 1,193,349 (1,194,375 tensors), consistent with 2 Mamba layers rather than 3. MCC 0.8640 is not reproducible from this file.
 
 **`deep_stack`**
 

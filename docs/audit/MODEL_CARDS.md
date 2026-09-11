@@ -15,6 +15,9 @@ loadability.
 
 **Members:** `t_jepa`, `ts_jepa`, `lejepa`, `cf_jepa`, `sigreg`
 
+> The `mamba3_*` hybrids are registered and loadable but were explored rather
+> than reported; no metric is claimed for them.
+
 **Purpose.** Learn a representation of a 10-second RSSI window without labels,
 then fine-tune a linear or shallow head for route classification. The premise is
 that interference-invariant structure is easier to learn as a prediction task
@@ -45,11 +48,6 @@ loss.
 - Leave-one-device-out performance is materially below the in-distribution
   number. The in-distribution MCC should not be read as cross-device
   generalisation.
-- The stored `mamba3_*` Mamba-3 hybrids do not match the published parameter
-  counts; see `docs/reproducibility.md`.
-- The Mamba-3 HPO search space was partly inert before the fix recorded in
-  `docs/reproducibility.md`; stored HPO logs reflect three active dimensions
-  out of five reported.
 
 **Out of scope.** Any safety-critical decision. This is a research classifier on
 a 4-class toy mobility task, and it is explicitly subject to device and
@@ -93,7 +91,7 @@ variants
 member probabilities with selection weights.
 
 **Combiner choices.** The rationale and the literature behind them are in
-`docs/ENSEMBLE_TECHNIQUES_REPORT.md`. Briefly: Caruana-style forward selection
+`../ENSEMBLE_TECHNIQUES_REPORT.md`. Briefly: Caruana-style forward selection
 with replacement over the member library, temperature calibration per member on
 the validation fold, and a regularised logistic-regression stacker as the
 alternative.

@@ -31,15 +31,14 @@ Usage
 
 from __future__ import annotations
 
-import argparse
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import matthews_corrcoef, mutual_info_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
+
+from inmotion.data.clean_config import RunConfig
 
 FEATS = [str(i) for i in range(1, 11)]
 
@@ -62,37 +61,12 @@ def _mi_binned(x: np.ndarray, codes: np.ndarray, bins: int = 20) -> float:
     return float(mutual_info_score(b, codes))
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    ap.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    ap.add_argument("--out", type=Path, default=None, help="output CSV (default: <stem>_clean.csv)")
-    ap.add_argument("--report-dir", type=Path, default=Path("results"))
-    ap.add_argument(
-        "--within-floor",
-        type=float,
-        default=0.15,
-        help="drop device if within-device CV MCC < this",
-    )
-    ap.add_argument(
-        "--lodo-floor",
-        type=float,
-        default=0.05,
-        help="drop device if leave-one-device-out MCC < this",
-    )
-    ap.add_argument(
-        "--keep-shifted",
-        action="store_true",
-        help="keep self-consistent devices even if LODO says shifted",
-    )
-    ap.add_argument(
-        "--drop-ambiguous",
-        action="store_true",
-        help="also drop samples flagged by OOF disagreement",
-    )
-    ap.add_argument("--ambiguity-thresh", type=float, default=0.85)
-    args = ap.parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     out_path = args.out or args.data.with_name(args.data.stem + "_clean.csv")
     args.report_dir.mkdir(parents=True, exist_ok=True)
@@ -239,7 +213,3 @@ def main() -> None:
             "is likely genuine class overlap (AA-vs-BA style), not bad devices — "
             "consider relabeling flagged samples instead."
         )
-
-
-if __name__ == "__main__":
-    main()

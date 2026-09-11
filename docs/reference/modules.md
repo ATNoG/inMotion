@@ -23,42 +23,28 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.cli`
 
-`src/inmotion/cli.py` - 617 lines
+`src/inmotion/cli/__init__.py` - 63 lines
 
-inmotion command-line interface.
+The `inmotion` command-line interface.
 
-One entry point for the whole project. `model` and `datasets` are implemented
-natively; the training and evaluation pipelines are currently invoked as
-subprocesses because their internals still parse ``sys.argv`` directly. That
-delegation is temporary and tracked in ``docs/reports/MIGRATION.md``:
+One package, one module per command group:
 
-    inmotion run dl -- --seed 42          # legacy argparse passthrough
+``model``     inspect, verify, predict and adopt checkpoints
+``datasets``  dataset versions, provenance and checksums
+``data``      build and clean datasets (export, merge, clean, augment)
+``train``     train models (classification, dl, exotic, hpo-paper)
+``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
+``analyze``   analyse results (seeds, interference)
+``plots``     regenerate figures from saved results
+``doctor``    report on the environment and the artifact store
 
-The important distinction is that `model` does not delegate: loading, verifying
-and running a trained checkpoint is a first-class operation with no prior
-knowledge of the training scripts required.
+Each command builds a typed ``RunConfig`` and calls the pipeline's ``run()``.
+The CLI holds no pipeline logic, and the pipelines hold no argument parsing, so
+either side can change without touching the other.
 
 Public API:
 
-- func `main` - inMotion — WiFi RSSI mobility classification.
-- func `model_list` - List every registered model.
-- func `model_info` - Show the architecture and provenance of one model.
-- func `model_verify` - Strict-load every model and check it against its recorded parameter count.
-- func `model_predict` - Run a trained model over a CSV of RSSI windows.
-- func `model_adopt` - Recover a checkpoint's architecture and write a sidecar.
-- func `model_inventory` - Adopt every checkpoint under a directory and report what is recoverable.
-- func `data_export` - Turn a raw Wavecom capture into a per-route CSV.
-- func `data_merge` - Merge per-route CSVs into one dataset.
-- func `data_clean` - Audit a dataset per device and drop rows that poison training.
-- func `data_augment` - Augment a dataset with noise injection and intra-class mixup.
-- func `run_list` - List the available pipelines.
-- func `run_pipeline` - Run one pipeline, passing remaining arguments straight through.
-- func `doctor` - Report on the environment and the artifact store.
-- func `datasets_list` - List recorded dataset versions, newest lineage last.
-- func `datasets_show` - Show lineage and label provenance for one dataset version.
-- func `datasets_verify` - Re-check every dataset against its recorded checksum and row count.
-- func `datasets_manifest` - Regenerate the manifest's measured fields, or print it.
-- func `datasets_resolve` - Print the path of a dataset version, warning when it is not trustworthy.
+- func `main` - [bold]inMotion[/] — WiFi RSSI mobility classification.
 
 ### `inmotion.datasets`
 
@@ -178,7 +164,7 @@ Public API:
 
 ### `inmotion.data.clean`
 
-`src/inmotion/data/clean.py` - 245 lines
+`src/inmotion/data/clean.py` - 215 lines
 
 Dataset cleaning audit — find and drop devices/samples that poison training.
 
@@ -211,7 +197,7 @@ Usage
 
 Public API:
 
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.data.augment`
 
@@ -240,7 +226,7 @@ Public API:
 
 ### `inmotion.models.registry`
 
-`src/inmotion/models/registry.py` - 362 lines
+`src/inmotion/models/registry.py` - 349 lines
 
 Model registry — the single source of truth for loadable models.
 
@@ -403,35 +389,139 @@ Public API:
 - func `add_prefix` - Prepend ``prefix`` to every key.
 - func `normalise_state` - Return ``state`` shaped the way the target module expects.
 
-## Pipelines
+## CLI
 
-### `inmotion.pipelines.registry`
+### `inmotion.cli`
 
-`src/inmotion/pipelines/registry.py` - 125 lines
+`src/inmotion/cli/__init__.py` - 63 lines
 
-Pipeline registry.
+The `inmotion` command-line interface.
 
-Each pipeline is an existing module with a ``main()`` that reads ``sys.argv``.
-:func:`run` is the single place that invokes one, so the CLI does not need to
-know how any particular pipeline is wired.
+One package, one module per command group:
 
-Pipelines are run **in process** with ``sys.argv`` temporarily replaced, rather
-than by spawning a subprocess. That keeps tracebacks readable, lets a debugger
-and a profiler attach normally, and means the CLI does not depend on the current
-working directory containing a script file.
+``model``     inspect, verify, predict and adopt checkpoints
+``datasets``  dataset versions, provenance and checksums
+``data``      build and clean datasets (export, merge, clean, augment)
+``train``     train models (classification, dl, exotic, hpo-paper)
+``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
+``analyze``   analyse results (seeds, interference)
+``plots``     regenerate figures from saved results
+``doctor``    report on the environment and the artifact store
 
-Every pipeline still has its own module-level ``__main__`` guard, so
-``uv run python -m inmotion.pipelines.exotic --help`` also works.
+Each command builds a typed ``RunConfig`` and calls the pipeline's ``run()``.
+The CLI holds no pipeline logic, and the pipelines hold no argument parsing, so
+either side can change without touching the other.
 
 Public API:
 
-- class `Pipeline` - One runnable pipeline.
-- func `get` - Look up a pipeline, or raise with the available names.
-- func `run` - Run a pipeline with ``args``, returning its exit code.
+- func `main` - [bold]inMotion[/] — WiFi RSSI mobility classification.
+
+### `inmotion.cli.model`
+
+`src/inmotion/cli/model.py` - 292 lines
+
+`inmotion model` - inspect, verify, predict and adopt checkpoints.
+
+Public API:
+
+- func `model_list` - List every registered model.
+- func `model_info` - Show the architecture and provenance of one model.
+- func `model_verify` - Strict-load every model and check it against its recorded parameter count.
+- func `model_predict` - Run a trained model over a CSV of RSSI windows.
+- func `model_adopt` - Recover a checkpoint's architecture and write a sidecar.
+- func `model_inventory` - Adopt every checkpoint under a directory and report what is recoverable.
+
+### `inmotion.cli.datasets`
+
+`src/inmotion/cli/datasets.py` - 131 lines
+
+`inmotion datasets` - dataset versions, provenance and checksums.
+
+Public API:
+
+- func `datasets_list` - List recorded dataset versions, newest lineage last.
+- func `datasets_show` - Show lineage and label provenance for one dataset version.
+- func `datasets_verify` - Re-check every dataset against its recorded checksum and row count.
+- func `datasets_manifest` - Regenerate the manifest's measured fields, or print it.
+- func `datasets_resolve` - Print the path of a dataset version, warning when it is not trustworthy.
+
+### `inmotion.cli.data`
+
+`src/inmotion/cli/data.py` - 99 lines
+
+`inmotion data` — build and clean datasets.
+
+Public API:
+
+- func `export` - Pivot 10-second captures into one row per route.
+- func `merge` - Concatenate the interim CSVs and label concurrent-noise rows.
+- func `clean` - Quantify which devices or samples carry inconsistent labels.
+- func `augment` - Add class-conditioned noise and mixup rows, flagged `synthetic`.
+
+### `inmotion.cli.train`
+
+`src/inmotion/cli/train.py` - 271 lines
+
+`inmotion train` — train models.
+
+Public API:
+
+- func `dl` - Train the supervised deep-learning models and their ensembles.
+- func `exotic` - Pretrain and fine-tune a world model, or train SIGReg / a Mamba-3 hybrid.
+- func `classification` - Run the classical machine-learning comparison.
+- func `hpo_paper` - Rebuild the HPO-best models, since the Optuna databases were deleted.
+
+### `inmotion.cli.evaluate`
+
+`src/inmotion/cli/evaluate.py` - 152 lines
+
+`inmotion evaluate` — evaluate and combine models.
+
+Public API:
+
+- func `ensemble` - Combine saved checkpoints with Caruana forward selection.
+- func `mega_ensemble` - Combine DL, JEPA, classical ML and TabPFN members into one model.
+- func `checkpoints` - Evaluate every checkpoint in a directory with extended metrics.
+- func `shap` - Attribute predictions to the 18 feature channels.
+- func `feature_importance` - Shuffle each feature channel and measure the MCC drop.
+
+### `inmotion.cli.analyze`
+
+`src/inmotion/cli/analyze.py` - 47 lines
+
+`inmotion analyze` — analyse results across seeds and routes.
+
+Public API:
+
+- func `seeds` - Compute cross-seed statistics and ranking stability.
+- func `interference` - Quantify how a concurrent device's route degrades classification.
+
+### `inmotion.cli.plots`
+
+`src/inmotion/cli/plots.py` - 72 lines
+
+`inmotion plots` — regenerate figures from saved results.
+
+Public API:
+
+- func `classical` - Rebuild the figures without retraining.
+- func `dl` - Rebuild the DL figures without retraining.
+
+### `inmotion.cli.doctor`
+
+`src/inmotion/cli/doctor.py` - 41 lines
+
+`inmotion doctor` - report on the environment and the artifact store.
+
+Public API:
+
+- func `doctor` - Report on the environment and the artifact store.
+
+## Training pipelines
 
 ### `inmotion.pipelines.classification`
 
-`src/inmotion/pipelines/classification.py` - 302 lines
+`src/inmotion/pipelines/classification.py` - 303 lines
 
 Main script for WiFi Fingerprinting Classification Analysis.
 
@@ -442,77 +532,189 @@ Public API:
 
 - func `parse_args`
 - func `save_detailed_classifier_reports` - Save detailed per-classifier reports to a CSV file.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.pipelines.dl`
 
-`src/inmotion/pipelines/dl.py` - 1723 lines
+`src/inmotion/pipelines/dl/__init__.py` - 42 lines
 
-Main DL pipeline — multi-GPU parallel training.
+DL pipeline: supervised baselines, HPO/NAS, MoE and DeepStack.
 
-Each model trains on its own GPU (round-robin). No DataParallel.
-HPO studies also distributed across GPUs in parallel.
+Split from a single 1,700-line module into:
 
-Usage:
-    uv run inmotion run pipeline dl -- [OPTIONS]
+``config``    model lists and the typed :class:`RunConfig`
+``devices``   GPU pool selection and seeding
+``builders``  model construction, including from saved HPO parameters
+``workers``   spawn-safe worker functions used by ``ProcessPoolExecutor``
+``pipeline``  :func:`run`, the orchestration
 
-Options:
-    --seed INT          Random seed (default 42)
-    --epochs INT        Max epochs per model (default 150)
-    --trials INT        Optuna trials per study (default 50)
-    --batch-size INT    Batch size (default 128)
-    --num-gpus INT      GPUs to use, 0 = auto-detect all (default 0)
-    --no-wandb          Disable WandB logging
-    --no-optuna         Skip Optuna HPO/NAS studies
-    --data PATH         Path to dataset CSV (default data/processed/dataset.csv)
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.dl.config`
+
+`src/inmotion/pipelines/dl/config.py` - 82 lines
+
+DL pipeline configuration: model lists and run options.
+
+Public API:
+
+- class `RunConfig` - Typed options for the DL pipeline.
+
+### `inmotion.pipelines.dl.devices`
+
+`src/inmotion/pipelines/dl/devices.py` - 28 lines
+
+Device pool selection and seeding.
 
 Public API:
 
 - func `set_seed`
-- func `parse_args`
-- func `main`
+
+### `inmotion.pipelines.dl.builders`
+
+`src/inmotion/pipelines/dl/builders.py` - 297 lines
+
+Model construction for the DL pipeline.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.dl.workers`
+
+`src/inmotion/pipelines/dl/workers.py` - 723 lines
+
+Spawn-safe worker functions for parallel training and HPO.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.dl.pipeline`
+
+`src/inmotion/pipelines/dl/pipeline.py` - 626 lines
+
+DL pipeline orchestration.
+
+Public API:
+
+- func `run` - Execute the DL pipeline.
 
 ### `inmotion.pipelines.exotic`
 
-`src/inmotion/pipelines/exotic.py` - 1953 lines
+`src/inmotion/pipelines/exotic/__init__.py` - 37 lines
 
-Exotic model pipeline — SSL pretraining + supervised fine-tuning.
+World-model (self-supervised) pipeline.
 
-Three model families:
-  1. T-JEPA   — tabular feature masking, learns temporal structure
-  2. TS-JEPA  — time-series patch masking, learns interference-invariant features
-  3. SIGReg   — CNN + Gaussian latent regularizer (no pretraining needed)
+Split from a single 1,950-line module into modules with one job each:
 
-Plus Mamba-3 hybrids (supervised only).
+``config``     the typed :class:`RunConfig` (54 options)
+``devices``    device selection and seeding
+``data``       pretraining and supervised data loading
+``builders``   the model family and its dispatch table
+``training``   stage-1 pretraining, linear probing, stage-2 fine-tuning
+``hpo``        shared Optuna helpers and per-trial logging
+``hpo_jepa``   the JEPA search (also holds the Pareto machinery)
+``hpo_sigreg`` the SIGReg search
+``hpo_mamba3`` the Mamba-3 search
+``pipeline``   :func:`run`, the orchestration
 
-Usage:
-    # T-JEPA: pretrain + fine-tune
-    uv run inmotion run pipeline exotic -- --model t_jepa         --pretrain-epochs 300 --finetune-epochs 50
+No public classes or functions; this module provides data or constants consumed elsewhere.
 
-    # TS-JEPA: pretrain + fine-tune
-    uv run inmotion run pipeline exotic -- --model ts_jepa         --pretrain-epochs 300 --finetune-epochs 50
+### `inmotion.pipelines.exotic.config`
 
-    # SIGReg: direct supervised (no pretraining)
-    uv run inmotion run pipeline exotic -- --model sigreg --epochs 200
+`src/inmotion/pipelines/exotic/config.py` - 72 lines
 
-    # Mamba-3: direct supervised
-    uv run inmotion run pipeline exotic -- --model mamba3_cnn --epochs 150
+Options for the world-model pipeline.
 
 Public API:
 
-- func `parse_args`
+- class `RunConfig` - Typed options for the exotic pipeline.
+
+### `inmotion.pipelines.exotic.devices`
+
+`src/inmotion/pipelines/exotic/devices.py` - 26 lines
+
+Device selection and seeding.
+
+Public API:
+
 - func `set_seed`
 - func `resolve_device`
+
+### `inmotion.pipelines.exotic.data`
+
+`src/inmotion/pipelines/exotic/data.py` - 109 lines
+
+Data loading for pretraining and supervised training.
+
+Public API:
+
 - func `load_pretrain_data` - Load data for SSL pretraining.
 - func `load_supervised_data` - Load data for supervised training.
+
+### `inmotion.pipelines.exotic.builders`
+
+`src/inmotion/pipelines/exotic/builders.py` - 156 lines
+
+Model construction for the world-model family.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.exotic.training`
+
+`src/inmotion/pipelines/exotic/training.py` - 456 lines
+
+Stage-1 pretraining, probing and stage-2 fine-tuning.
+
+Public API:
+
 - func `pretrain_jepa` - Pretrain a JEPA model (T-JEPA or TS-JEPA).
 - func `finetune_jepa` - Fine-tune a pretrained JEPA encoder for classification.
+
+### `inmotion.pipelines.exotic.hpo`
+
+`src/inmotion/pipelines/exotic/hpo.py` - 161 lines
+
+Shared Optuna helpers and per-trial logging.
+
+Public API:
+
 - class `SIGRegWrapper` - Wraps SIGRegClassifier so Trainer can use it with compute_loss.
-- func `main`
+
+### `inmotion.pipelines.exotic.hpo_jepa`
+
+`src/inmotion/pipelines/exotic/hpo_jepa.py` - 428 lines
+
+Hyperparameter search for the JEPA models.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.exotic.hpo_sigreg`
+
+`src/inmotion/pipelines/exotic/hpo_sigreg.py` - 118 lines
+
+Hyperparameter search for SIGReg.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.exotic.hpo_mamba3`
+
+`src/inmotion/pipelines/exotic/hpo_mamba3.py` - 109 lines
+
+Hyperparameter search for the Mamba-3 hybrids.
+
+No public classes or functions; this module provides data or constants consumed elsewhere.
+
+### `inmotion.pipelines.exotic.pipeline`
+
+`src/inmotion/pipelines/exotic/pipeline.py` - 284 lines
+
+World-model pipeline orchestration.
+
+Public API:
+
+- func `run` - Execute the exotic (world-model) pipeline.
 
 ### `inmotion.pipelines.ensemble`
 
-`src/inmotion/pipelines/ensemble.py` - 296 lines
+`src/inmotion/pipelines/ensemble.py` - 292 lines
 
 Greedy ensemble selection over existing checkpoints.
 
@@ -535,11 +737,11 @@ Run:
 
 Public API:
 
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.pipelines.mega_ensemble`
 
-`src/inmotion/pipelines/mega_ensemble.py` - 1091 lines
+`src/inmotion/pipelines/mega_ensemble.py` - 1064 lines
 
 Mega-ensemble across every model family.
 
@@ -565,11 +767,11 @@ Public API:
 - func `rocket_features` - MiniRocket-style random convolutional features + PPV pooling.
 - func `catch22_features` - Hand-crafted time-series statistics per channel (catch22-inspired subset).
 - func `fit_temperature` - Fit a single temperature scalar to minimize NLL on the calibration set.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.pipelines.hpo_paper`
 
-`src/inmotion/pipelines/hpo_paper.py` - 328 lines
+`src/inmotion/pipelines/hpo_paper.py` - 312 lines
 
 Train the paper's HPO-best models using configs from docs/icaisf/hpo_supplementary.md.
 
@@ -589,13 +791,13 @@ Usage:
 
 Public API:
 
-- func `main`
+- func `run` - Execute the pipeline.
 
 ## Evaluation
 
 ### `inmotion.evaluation.checkpoints`
 
-`src/inmotion/evaluation/checkpoints.py` - 848 lines
+`src/inmotion/evaluation/checkpoints.py` - 851 lines
 
 Retroactive DL checkpoint evaluation — produce extended results CSV with per-class metrics.
 
@@ -607,11 +809,11 @@ Public API:
 - func `parse_args`
 - func `set_seed`
 - func `evaluate_single_checkpoint` - Load a checkpoint, build model, evaluate. Returns metrics dict or None.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.evaluation.shap`
 
-`src/inmotion/evaluation/shap.py` - 255 lines
+`src/inmotion/evaluation/shap.py` - 218 lines
 
 Game-Theoretic SHAP Feature Channel Attribution for WiFi ISAC Models.
 
@@ -625,11 +827,11 @@ Usage:
 Public API:
 
 - func `explain_channels_shap` - Compute channel-level Shapley values across test sequences.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.evaluation.feature_importance`
 
-`src/inmotion/evaluation/feature_importance.py` - 643 lines
+`src/inmotion/evaluation/feature_importance.py` - 646 lines
 
 Permutation feature importance for DL movement classification models.
 
@@ -655,13 +857,13 @@ Public API:
 - func `plot_per_model_heatmaps` - Multi-panel figure: one 4x10 heatmap per model.
 - func `plot_channel_bars` - Channel-level bar chart: mean importance +/- std across timesteps & models.
 - func `parse_args` - Command-line interface.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ## Analysis and figures
 
 ### `inmotion.analysis.seeds`
 
-`src/inmotion/analysis/seeds.py` - 453 lines
+`src/inmotion/analysis/seeds.py` - 455 lines
 
 Analyze and combine results from multi-seed experiments.
 
@@ -680,11 +882,11 @@ Public API:
 - func `plot_multi_metric_heatmap` - Plot heatmap of mean metrics across seeds.
 - func `plot_seed_stability_ranking` - Plot how classifier rankings change across seeds.
 - func `generate_summary_report` - Generate a comprehensive summary report.
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.analysis.interference`
 
-`src/inmotion/analysis/interference.py` - 63 lines
+`src/inmotion/analysis/interference.py` - 64 lines
 
 Analyze cross-route interference using the `concurrent_noise_path` column.
 
@@ -694,11 +896,11 @@ Usage:
 Public API:
 
 - func `parse_args`
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.viz.regenerate`
 
-`src/inmotion/viz/regenerate.py` - 209 lines
+`src/inmotion/viz/regenerate.py` - 206 lines
 
 Regenerate plots from saved CSV results.
 
@@ -713,11 +915,11 @@ Usage:
 Public API:
 
 - func `parse_args`
-- func `main`
+- func `run` - Execute the pipeline.
 
 ### `inmotion.viz.regenerate_dl`
 
-`src/inmotion/viz/regenerate_dl.py` - 106 lines
+`src/inmotion/viz/regenerate_dl.py` - 107 lines
 
 Regenerate DL-specific paper plots from extended results CSV.
 
@@ -728,7 +930,7 @@ Usage:
 Public API:
 
 - func `parse_args`
-- func `main`
+- func `run` - Execute the pipeline.
 
 ## Deep learning library (inmotion.dl)
 

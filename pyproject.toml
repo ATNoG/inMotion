@@ -65,9 +65,12 @@ dev = [
 ]
 
 
+# `scripts/oneoff/` holds archived, unreferenced scripts kept only for
+# provenance; they are excluded from lint rather than reformatted.
 [tool.ruff]
 line-length = 100
 src = ["src", "."]
+exclude = ["scripts/oneoff"]
 
 [tool.ruff.lint]
 ignore = [

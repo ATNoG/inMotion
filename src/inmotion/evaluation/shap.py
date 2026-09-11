@@ -14,14 +14,12 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import shap
 import torch
 
+from inmotion.evaluation.shap_config import RunConfig
 from inmotion.pipelines.mega_ensemble import (
     _build_cf_jepa,
     _build_lejepa,
@@ -144,43 +142,12 @@ def explain_channels_shap(
     return np.array(all_attributions)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Compute Game-Theoretic SHAP Feature Channel Attribution."
-    )
-    parser.add_argument(
-        "--data", type=Path, default=Path("data/processed/dataset.csv"), help="Path to CSV dataset."
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="ts_jepa",
-        choices=list(MODEL_BUILDERS.keys()),
-        help="Model type.",
-    )
-    parser.add_argument(
-        "--checkpoint",
-        type=Path,
-        default=Path("backup/ts_jepa_ft_seed42.pt"),
-        help="Model checkpoint path.",
-    )
-    parser.add_argument("--seed", type=int, default=42, help="Stratified split seed.")
-    parser.add_argument(
-        "--samples", type=int, default=50, help="Number of test sequences to explain."
-    )
-    parser.add_argument(
-        "--nsamples",
-        type=int,
-        default=150,
-        help="Number of coalition evaluations in KernelExplainer.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("results"),
-        help="Directory for output CSV and plots.",
-    )
-    args = parser.parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -249,7 +216,3 @@ def main() -> None:
         name = row["channel_name"]
         val = row["mean_abs_shap"]
         print(f"  {rank + 1:2d}. {name:25s} [{fam:8s}]: mean |SHAP| = {val:.5f}")
-
-
-if __name__ == "__main__":
-    main()

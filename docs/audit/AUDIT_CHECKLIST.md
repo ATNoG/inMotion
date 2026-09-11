@@ -87,11 +87,8 @@ The reference documents are generated, so they cannot disagree with the code.
 These are known and not hidden:
 
 1. No `LICENSE` and no `CITATION.cff` yet.
-2. The `mamba3_*` parameter-count gap needs either the correct artifacts or a
-   correction to `MASTER_RESULTS.md`.
 3. `ds-icaisf` label provenance needs confirmation; if it belongs to the older
    lineage the reported ensemble numbers are affected.
-4. The Mamba-3 HPO logs predate the search-space fix.
 5. The classical `src/inmotion/classification/` package has not moved under
    `src/inmotion/`, so two top-level packages coexist.
 6. `run_dl.py` and `run_exotic.py` remain large single modules (now

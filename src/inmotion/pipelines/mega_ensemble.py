@@ -21,7 +21,6 @@ extension import and use the pure-PyTorch fallback for Mamba-based models.
 
 from __future__ import annotations
 
-import argparse
 import csv
 from pathlib import Path
 
@@ -37,6 +36,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
+from inmotion.pipelines.mega_ensemble_config import RunConfig
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Model registry — each entry knows how to build, load, and run the model
@@ -575,35 +575,12 @@ def _entropy_weighted(probs: list[np.ndarray]) -> np.ndarray:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def main() -> None:
-    p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("data/processed/dataset.csv"))
-    p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--steps", type=int, default=100)
-    p.add_argument("--no-tabpfn", action="store_true")
-    p.add_argument("--no-classical", action="store_true")
-    p.add_argument(
-        "--members",
-        type=str,
-        default="all",
-        choices=["all", "world", "world_bestdl", "best_world", "best_world_bestdl"],
-        help="Which member subset to run: all, world (JEPA+sigreg), "
-        "world_bestdl (world + best DL), best_world (top-3 world by test MCC), "
-        "best_world_bestdl (top-3 world + top DL)",
-    )
-    p.add_argument(
-        "--select",
-        action="store_true",
-        help="Greedy member selection on validation MCC (config 6: smart selection)",
-    )
-    p.add_argument(
-        "--size-frontier",
-        action="store_true",
-        help="Greedy ensemble-level size/MCC frontier: at each step add "
-        "the member with best MCC-per-added-param; writes "
-        "results/ensemble_size_frontier.csv",
-    )
-    args = p.parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
@@ -1085,7 +1062,3 @@ def main() -> None:
         print(f"Saved → {out_path}")
     except Exception as e:
         print(f"[warn] could not save results: {e}")
-
-
-if __name__ == "__main__":
-    main()

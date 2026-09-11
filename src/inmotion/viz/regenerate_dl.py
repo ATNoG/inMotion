@@ -18,6 +18,7 @@ from pathlib import Path
 from inmotion.dl.config import DLConfig
 from inmotion.dl.results import load_extended_results
 from inmotion.dl.visualization import DLVisualizer
+from inmotion.viz.regenerate_dl_config import RunConfig
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,8 +47,12 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     results_csv = args.results_csv
     if not results_csv.exists():
@@ -100,7 +105,3 @@ def main() -> None:
         from inmotion.dl.eda import run_eda_for_dl
 
         run_eda_for_dl(config)
-
-
-if __name__ == "__main__":
-    main()

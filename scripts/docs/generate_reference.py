@@ -49,11 +49,36 @@ MODULE_GROUPS: dict[str, list[str]] = {
         "inmotion.models.adopt",
         "inmotion.models.wrappers",
     ],
-    "Pipelines": [
-        "inmotion.pipelines.registry",
+    "CLI": [
+        "inmotion.cli",
+        "inmotion.cli.model",
+        "inmotion.cli.datasets",
+        "inmotion.cli.data",
+        "inmotion.cli.train",
+        "inmotion.cli.evaluate",
+        "inmotion.cli.analyze",
+        "inmotion.cli.plots",
+        "inmotion.cli.doctor",
+    ],
+    "Training pipelines": [
         "inmotion.pipelines.classification",
         "inmotion.pipelines.dl",
+        "inmotion.pipelines.dl.config",
+        "inmotion.pipelines.dl.devices",
+        "inmotion.pipelines.dl.builders",
+        "inmotion.pipelines.dl.workers",
+        "inmotion.pipelines.dl.pipeline",
         "inmotion.pipelines.exotic",
+        "inmotion.pipelines.exotic.config",
+        "inmotion.pipelines.exotic.devices",
+        "inmotion.pipelines.exotic.data",
+        "inmotion.pipelines.exotic.builders",
+        "inmotion.pipelines.exotic.training",
+        "inmotion.pipelines.exotic.hpo",
+        "inmotion.pipelines.exotic.hpo_jepa",
+        "inmotion.pipelines.exotic.hpo_sigreg",
+        "inmotion.pipelines.exotic.hpo_mamba3",
+        "inmotion.pipelines.exotic.pipeline",
         "inmotion.pipelines.ensemble",
         "inmotion.pipelines.mega_ensemble",
         "inmotion.pipelines.hpo_paper",
@@ -166,8 +191,10 @@ def gen_modules() -> str:
                 lines += [f"- {item}" for item in api]
                 lines.append("")
             else:
-                lines.append("No public classes or functions; this module provides data or "
-                             "constants consumed elsewhere.")
+                lines.append(
+                    "No public classes or functions; this module provides data or "
+                    "constants consumed elsewhere."
+                )
                 lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -275,7 +302,8 @@ def gen_datasets() -> str:
         first = entry["first_commit"]
         lines.append(
             f"- first commit: `{first[:12]}` ({entry['first_commit_date']})"
-            if first else "- first commit: not recorded"
+            if first
+            else "- first commit: not recorded"
         )
         lines.append(f"- role: {entry['role']}; status: **{entry['status']}**")
         lines.append(f"- label audit: **{entry['label_audit']}**")
@@ -307,7 +335,8 @@ def gen_datasets() -> str:
         "|---|---|---|",
         "| `data/raw/` | captures off the access point (Wavecom `.txt`) | field collection |",
         "| `data/interim/` | one CSV per collection session | `inmotion data export` |",
-        "| `data/processed/` | merged and augmented training sets | `inmotion data merge`, `inmotion data augment` |",
+        "| `data/processed/` | merged and augmented training sets |",
+        "| | | `inmotion data merge`, `inmotion data augment` |",
         "",
         "`inmotion.data.paths.resolve` searches processed, interim and raw in that",
         "order, so a bare filename still resolves.",
@@ -325,7 +354,7 @@ def gen_cli() -> str:
     lines = [
         "# CLI reference",
         "",
-        "Generated from the typer application in `src/inmotion/cli.py` by walking the",
+        "Generated from the typer application in `src/inmotion/cli/` by walking the",
         "click command tree, so it lists exactly what the program accepts.",
         "",
         "```",
@@ -367,21 +396,33 @@ def gen_cli() -> str:
     for name in sorted(root.commands):  # type: ignore[attr-defined]
         render_help(root.commands[name], name, 0)  # type: ignore[attr-defined]
 
-    from inmotion.pipelines.registry import PIPELINES
-
     lines += [
-        "## Pipelines",
+        "## Pipeline modules",
         "",
-        "`inmotion run pipeline <name> -- <args>` forwards everything after `--` to the",
-        "pipeline's own argument parser. Each pipeline also runs standalone as",
-        "`python -m inmotion.<module>`.",
+        "Every training, evaluation and analysis pipeline exposes the same shape:",
+        "a typed `RunConfig` dataclass and a `run(args) -> int` function. The CLI",
+        "builds the config from typed options, so the pipelines contain no argument",
+        "parsing and can be driven from Python directly:",
         "",
-        "| name | module | purpose |",
+        "```python",
+        "from inmotion.pipelines.exotic import RunConfig, run",
+        "",
+        "run(RunConfig(model='ts_jepa', seed=42, pretrain_epochs=500))",
+        "```",
+        "",
+        "The two largest pipelines are packages with one module per responsibility:",
+        "",
+        "| pipeline | package | modules |",
         "|---|---|---|",
+        "| `inmotion train dl` | `inmotion.pipelines.dl` |",
+        "| | | config, devices, builders, workers, pipeline |",
+        "| `inmotion train exotic` | `inmotion.pipelines.exotic` |",
+        "| | | config, devices, data, builders, training, |",
+        "| | | hpo, hpo_jepa, hpo_sigreg, hpo_mamba3, pipeline |",
+        "",
+        "`python -m inmotion.pipelines.<name>` runs the same CLI for those packages.",
+        "",
     ]
-    for p in PIPELINES:
-        lines.append(f"| `{p.name}` | `inmotion.{p.module}` | {p.summary} |")
-    lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -395,8 +436,9 @@ GENERATORS = {
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true",
-                        help="Fail if the committed files are stale.")
+    parser.add_argument(
+        "--check", action="store_true", help="Fail if the committed files are stale."
+    )
     args = parser.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)

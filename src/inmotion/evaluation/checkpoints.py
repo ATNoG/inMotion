@@ -17,6 +17,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from inmotion.evaluation.checkpoints_config import RunConfig
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from torch import nn
@@ -403,8 +405,13 @@ def evaluate_single_checkpoint(
         return None
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
+
     set_seed(args.seed)
 
     config = DLConfig(
@@ -842,7 +849,3 @@ def main() -> None:
         print(f"\nSaved {len(rows)} evaluation rows → {output_path}")
     else:
         print("\nNo results produced.")
-
-
-if __name__ == "__main__":
-    main()

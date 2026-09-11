@@ -24,6 +24,7 @@ from inmotion.classification import (
     load_results_from_csv,
     set_random_seeds,
 )
+from inmotion.viz.regenerate_config import RunConfig
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,8 +90,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     # Determine paths
     if args.results_dir:
@@ -199,11 +204,3 @@ def main() -> int:
     print("Done!")
 
     return 0
-
-
-if __name__ == "__main__":
-    exit(main())
-
-
-if __name__ == "__main__":
-    exit(main())

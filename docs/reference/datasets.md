@@ -147,7 +147,8 @@ Canonical training set: **`ds-augmented-v3`**
 |---|---|---|
 | `data/raw/` | captures off the access point (Wavecom `.txt`) | field collection |
 | `data/interim/` | one CSV per collection session | `inmotion data export` |
-| `data/processed/` | merged and augmented training sets | `inmotion data merge`, `inmotion data augment` |
+| `data/processed/` | merged and augmented training sets |
+| | | `inmotion data merge`, `inmotion data augment` |
 
 `inmotion.data.paths.resolve` searches processed, interim and raw in that
 order, so a bare filename still resolves.

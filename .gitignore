@@ -252,3 +252,12 @@ plots/
 results/
 combined/
 catboost_info/
+
+# Removed from git at the project owner's request, kept on disk for now.
+# `docs/isac/paper-support/` holds working notes for the ISAC paper that are not
+# yet ready to be published alongside the code. Re-add with:
+#   git add -f docs/isac/paper-support
+docs/isac/paper-support/
+# `results/` is regenerable output; the one file that was tracked for
+# provenance is force-added if it needs to come back.
+results/

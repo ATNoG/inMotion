@@ -1,11 +1,34 @@
 # CLI reference
 
-Generated from the typer application in `src/inmotion/cli.py` by walking the
+Generated from the typer application in `src/inmotion/cli/` by walking the
 click command tree, so it lists exactly what the program accepts.
 
 ```
 inmotion --help
 ```
+
+## `analyze`
+
+Analyse results.
+
+### `analyze interference`
+
+Cross-route interference from the concurrent_noise_path column.
+
+Options:
+
+- `--data` (default: `data/processed/dataset.csv`) - Dataset CSV with concurrent_noise_path.
+- `--output-dir` (default: `plots/interference`) - Figure output directory.
+
+### `analyze seeds`
+
+Combine and plot results from multi-seed runs.
+
+Options:
+
+- `--results-dir` (default: `results`) - Directory of per-seed result CSVs.
+- `--output-dir` (default: `combined`) - Where to write the combined analysis.
+- `--seeds` (default: `3,5,42`) - Comma-separated seeds to combine.
 
 ## `data`
 
@@ -15,9 +38,22 @@ Build and clean datasets.
 
 Augment a dataset with noise injection and intra-class mixup.
 
+Options:
+
+- `--data` - Dataset CSV to augment.
+- `--output`, `-o` - Destination CSV.
+
 ### `data clean`
 
 Audit a dataset per device and drop rows that poison training.
+
+Options:
+
+- `--data` - Dataset CSV to audit.
+- `--output` - Write the cleaned CSV here.
+- `--keep-shifted` (default: `False`) - Keep device-shifted but self-consistent rows.
+- `--drop-ambiguous` (default: `False`) - Also drop samples the model rejects.
+- `--ambiguity-thresh` (default: `0.9`) - Confidence above which a wrong prediction is dropped.
 
 ### `data export`
 
@@ -25,10 +61,10 @@ Turn a raw Wavecom capture into a per-route CSV.
 
 Options:
 
-- `--input`, `-i` - Wavecom capture file.
+- `--input`, `-i` - Raw Wavecom capture (.txt).
 - `--output`, `-o` - Destination CSV.
-- `--group` (default: `[]`) - label:mac1,mac2,... (repeatable).
-- `--group-label` (default: `[]`) - group_name:final_label (repeatable).
+- `--group` - label:mac1,mac2,... (repeatable).
+- `--group-label` - group_name:final_label (repeatable).
 
 ### `data merge`
 
@@ -83,6 +119,73 @@ Re-check every dataset against its recorded checksum and row count.
 ## `doctor`
 
 Report on the environment and the artifact store.
+
+## `evaluate`
+
+Evaluate and combine models.
+
+### `evaluate checkpoints`
+
+Retroactive per-class metrics for saved DL checkpoints.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--checkpoints-dir` (default: `models/dl`) - Directory of .pt checkpoints.
+- `--output-dir` (default: `results/dl`) - Where to write the results.
+- `--optuna-db` - Optuna storage URL, for HPO checkpoints.
+- `--no-wandb` (default: `False`) - Disable WandB logging.
+
+### `evaluate ensemble`
+
+Greedy ensemble selection over existing checkpoints.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--rich` (default: `False`) - Use the 18-channel feature set.
+
+### `evaluate feature-importance`
+
+Permutation feature importance for the DL models.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--epochs` (default: `100`) - Epochs per model.
+- `--patience` (default: `20`) - Early-stopping patience.
+- `--output-dir` (default: `docs/icaisf/paper/images`) - Figure output directory.
+- `--checkpoints-dir` (default: `models/dl`) - Directory of DL checkpoints.
+
+### `evaluate mega-ensemble`
+
+OOF stacking over every model family, with calibration.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--size-frontier` (default: `False`) - Report the ensemble-size frontier.
+- `--no-tabpfn` (default: `False`) - Exclude TabPFN.
+- `--no-classical` (default: `False`) - Exclude the classical ML members.
+- `--output` - Write the result table here.
+
+### `evaluate shap`
+
+SHAP channel attribution for the world models.
+
+Options:
+
+- `--checkpoint` (default: `backup/ts_jepa_ft_seed42.pt`) - Model checkpoint to explain.
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--model` (default: `ts_jepa`) - Model family: t_jepa, ts_jepa, lejepa, cf_jepa or sigreg.
+- `--samples` (default: `50`) - Number of samples to explain.
+- `--nsamples` (default: `150`) - SHAP evaluation budget.
+- `--seed` (default: `42`) - Random seed.
+- `--output-dir` (default: `plots/shap`) - Figure output directory.
 
 ## `model`
 
@@ -159,42 +262,152 @@ Arguments:
 
 - `NAME` (optional) - Verify one model.
 
-## `run`
+## `plots`
 
-Run a training or evaluation pipeline.
+Regenerate figures from saved results.
 
-### `run list`
+### `plots classical`
 
-List the available pipelines.
+Rebuild the classical-ML figures from saved CSVs.
 
-### `run pipeline`
+Options:
 
-Run one pipeline, passing remaining arguments straight through.
+- `--csv` - A single classification_results.csv.
+- `--results-dir` - A directory of result CSVs.
+- `--plots-dir` (default: `plots`) - Figure output directory.
+- `--eda` (default: `False`) - Also regenerate the EDA figures.
+- `--data` - Dataset CSV, needed with --eda.
 
-Example:  inmotion run pipeline exotic -- --model ts_jepa --seed 42
+### `plots dl`
 
-Arguments:
+Rebuild the DL figures from saved CSVs.
 
-- `PIPELINE` (required) - Pipeline name; see `inmotion run list`.
+Options:
 
-## Pipelines
+- `--results-csv` (default: `results/dl/dl_detailed_seed42.csv`) - Extended DL results CSV.
+- `--output-dir` (default: `plots/dl`) - Figure output directory.
+- `--eda` (default: `False`) - Also regenerate the EDA figures.
+- `--data` - Dataset CSV, needed with --eda.
 
-`inmotion run pipeline <name> -- <args>` forwards everything after `--` to the
-pipeline's own argument parser. Each pipeline also runs standalone as
-`python -m inmotion.<module>`.
+## `train`
 
-| name | module | purpose |
+Train models.
+
+### `train classification`
+
+Classical ML classifiers: EDA, CV, Optuna, importance.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--optimize` (default: `False`) - Run the Optuna tuning stage.
+- `--dashboard` (default: `False`) - Launch optuna-dashboard after tuning.
+- `--models-dir` (default: `models`) - Model output directory.
+- `--results-dir` (default: `results`) - Results output directory.
+- `--plots-dir` (default: `plots`) - Figure output directory.
+
+### `train dl`
+
+Supervised deep learning: baselines, HPO/NAS, MoE, DeepStack.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--epochs` (default: `150`) - Max epochs per model.
+- `--trials` (default: `50`) - Optuna trials per study.
+- `--batch-size` (default: `64`) - Batch size.
+- `--num-gpus` (default: `0`) - GPUs to use; 0 = auto-detect.
+- `--models-dir` - Checkpoint output directory.
+- `--results-dir` - Results CSV directory.
+- `--plots-dir` - Figure output directory.
+- `--wandb-project` - Override the WandB project.
+- `--no-wandb` (default: `False`) - Disable WandB logging.
+- `--no-optuna` (default: `False`) - Skip HPO and NAS studies.
+- `--no-moe` (default: `False`) - Skip the mixture-of-experts phase.
+- `--no-deepstack` (default: `False`) - Skip the DeepStack phase.
+- `--no-meta` (default: `False`) - Skip the metadata-fusion phases.
+- `--no-resume` (default: `False`) - Retrain even when a checkpoint exists.
+
+### `train exotic`
+
+JEPA world models and SIGReg: SSL pretraining and fine-tuning.
+
+Options:
+
+- `--model` (default: `t_jepa`) - t_jepa, ts_jepa, lejepa, cf_jepa, sigreg or mamba3_<variant>.
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--batch-size` (default: `128`) - Batch size.
+- `--gpu` (default: `0`) - GPU device index.
+- `--rich-features` (default: `False`) - Use the 18-channel feature set.
+- `--pretrain-epochs` (default: `300`) - Stage-1 epochs.
+- `--finetune-epochs` (default: `50`) - Stage-2 epochs.
+- `--epochs` (default: `150`) - Epochs for directly-supervised models.
+- `--patience` (default: `25`) - Early-stopping patience.
+- `--lr` (default: `0.001`) - Learning rate for directly-supervised models.
+- `--pretrain-lr` (default: `0.0003`) - Stage-1 learning rate.
+- `--finetune-lr` (default: `0.001`) - Stage-2 learning rate.
+- `--probe-cadence` (default: `10`) - Epochs between linear probes.
+- `--probe-patience` (default: `15`) - Probe-based patience.
+- `--checkpoint` - Resume from a pretrained encoder.
+- `--finetune-only` (default: `False`) - Skip pretraining.
+- `--d-model` (default: `256`) - Model width.
+- `--nhead` (default: `8`) - Attention heads.
+- `--num-layers` (default: `4`) - Transformer layers.
+- `--dim-ff` (default: `512`) - Feed-forward width.
+- `--pred-dim` (default: `128`) - Predictor width.
+- `--pred-layers` (default: `2`) - Predictor depth.
+- `--d-state` (default: `16`) - Mamba-3 state width.
+- `--dropout` (default: `0.2`) - Dropout for the Mamba-3 hybrids.
+- `--mimo-rank` (default: `4`) - Mamba-3 MIMO rank.
+- `--latent-dim` (default: `128`) - SIGReg latent width.
+- `--sigreg-lambda` (default: `0.01`) - SIGReg regulariser weight.
+- `--hpo` (default: `False`) - Run an Optuna study first.
+- `--hpo-trials` (default: `30`) - Trials per study.
+- `--hpo-objective` (default: `mcc`) - mcc, efficiency or pareto.
+- `--models-dir` (default: `models/exotic`) - Checkpoint output directory.
+- `--results-dir` (default: `results/exotic`) - Results CSV directory.
+- `--viz-dir` (default: `models/exotic/viz`) - Figure output directory.
+- `--no-wandb` (default: `False`) - Disable WandB logging.
+- `--wandb-project` (default: `inMotion-exotic-hpo`) - WandB project name.
+
+### `train hpo-paper`
+
+Retrain the paper's HPO-best configurations.
+
+Options:
+
+- `--data` (default: `/home/andre/Desktop/UA/IT/inMotion/inMotion/data/processed/dataset.csv`) - Dataset CSV.
+- `--seed` (default: `42`) - Random seed.
+- `--epochs` (default: `150`) - Epochs per model.
+- `--patience` (default: `20`) - Early-stopping patience.
+- `--models` - Comma-separated subset, e.g. gru,tcn.
+- `--models-dir` (default: `models/dl`) - Checkpoint output directory.
+- `--results-dir` (default: `results/dl`) - Results output directory.
+
+## Pipeline modules
+
+Every training, evaluation and analysis pipeline exposes the same shape:
+a typed `RunConfig` dataclass and a `run(args) -> int` function. The CLI
+builds the config from typed options, so the pipelines contain no argument
+parsing and can be driven from Python directly:
+
+```python
+from inmotion.pipelines.exotic import RunConfig, run
+
+run(RunConfig(model='ts_jepa', seed=42, pretrain_epochs=500))
+```
+
+The two largest pipelines are packages with one module per responsibility:
+
+| pipeline | package | modules |
 |---|---|---|
-| `classification` | `inmotion.pipelines.classification` | classical ML classifiers (EDA, CV, Optuna, feature importance) |
-| `dl` | `inmotion.pipelines.dl` | supervised deep learning: baselines, ensembles, MoE, deep stacking, NAS |
-| `exotic` | `inmotion.pipelines.exotic` | JEPA world models and SIGReg: SSL pretraining + fine-tuning |
-| `ensemble` | `inmotion.pipelines.ensemble` | greedy ensemble selection over existing checkpoints |
-| `mega-ensemble` | `inmotion.pipelines.mega_ensemble` | OOF stacking over every model family, with calibration |
-| `hpo-paper` | `inmotion.pipelines.hpo_paper` | retrain the paper's HPO-best configs (Optuna DBs were deleted) |
-| `evaluate-checkpoints` | `inmotion.evaluation.checkpoints` | retroactive per-class metrics for saved DL checkpoints |
-| `shap` | `inmotion.evaluation.shap` | SHAP channel attribution for the world models |
-| `feature-importance` | `inmotion.evaluation.feature_importance` | permutation feature importance for DL models |
-| `analyze-seeds` | `inmotion.analysis.seeds` | combine and plot multi-seed results |
-| `analyze-interference` | `inmotion.analysis.interference` | cross-route interference analysis from concurrent_noise_path |
-| `regenerate-plots` | `inmotion.viz.regenerate` | rebuild classical-ML figures from saved CSVs |
-| `regenerate-dl-plots` | `inmotion.viz.regenerate_dl` | rebuild DL figures from saved CSVs |
+| `inmotion train dl` | `inmotion.pipelines.dl` |
+| | | config, devices, builders, workers, pipeline |
+| `inmotion train exotic` | `inmotion.pipelines.exotic` |
+| | | config, devices, data, builders, training, |
+| | | hpo, hpo_jepa, hpo_sigreg, hpo_mamba3, pipeline |
+
+`python -m inmotion.pipelines.<name>` runs the same CLI for those packages.

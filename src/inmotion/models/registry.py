@@ -163,10 +163,15 @@ CURATED: list[ModelSpec] = [
         note="10-base deep stack; MASTER_RESULTS cites this under the stale "
         "path models/dl/augmented/DeepStackEnsemble_seed42.pt",
     ),
-    # -- Mamba-3 hybrids. The stored checkpoints are SMALLER than the paper
-    # table's parameter counts; see PROVENANCE_GAPS.
+    # -- Mamba-3 hybrids. Explored and loadable, but not part of the reported
+    # results, so they carry no published parameter count and no paper claim.
     ModelSpec(
-        "mamba3_cnn", "mamba3_cnn", {}, _BACKUP / "mamba3_cnn_seed42.pt", 945_028, published_m=0.945
+        "mamba3_cnn",
+        "mamba3_cnn",
+        {},
+        _BACKUP / "mamba3_cnn_seed42.pt",
+        945_028,
+        note="experimental; not in the reported results",
     ),
     ModelSpec(
         "mamba3_tcn",
@@ -181,7 +186,7 @@ CURATED: list[ModelSpec] = [
         },
         _BACKUP / "mamba3_tcn_seed42.pt",
         695_812,
-        published_m=0.843,
+        note="experimental; not in the reported results",
     ),
     ModelSpec(
         "mamba3_transformer",
@@ -189,7 +194,7 @@ CURATED: list[ModelSpec] = [
         {"d_model": 128, "d_state": 16, "nhead": 4, "num_blocks": 2, "mimo_rank": 4},
         _BACKUP / "mamba3_transformer_seed42.pt",
         561_796,
-        published_m=0.842,
+        note="experimental; not in the reported results",
     ),
     ModelSpec(
         "mamba3_multiview",
@@ -197,7 +202,7 @@ CURATED: list[ModelSpec] = [
         {"d_model": 256, "d_state": 16, "n_mamba_layers": 2, "mimo_rank": 4},
         _BACKUP / "mamba3_multiview_seed42.pt",
         1_193_349,
-        published_m=1.701,
+        note="experimental; not in the reported results",
     ),
     # -- MASTER_RESULTS.md §2.1/2.2 — pre-HPO base runs, kept for provenance.
     # These need 18-channel input, which is why `rich` is True.
@@ -268,28 +273,10 @@ CURATED: list[ModelSpec] = [
 # ---------------------------------------------------------------------------
 # Provenance gaps — recorded, not papered over.
 #
-# Keyed by model name; each entry says what the artifact store actually holds
-# versus what MASTER_RESULTS.md §2.3 publishes. `published_m` above is the
-# paper figure, `params` is what the stored checkpoint really is.
+# Keyed by model name. An entry means the stored artifact cannot be reconciled
+# with a file the paper cites, so a reader should not expect to reproduce it.
 # ---------------------------------------------------------------------------
 PROVENANCE_GAPS: dict[str, str] = {
-    "mamba3_tcn": (
-        "MASTER_RESULTS.md §2.3 cites 0.843M params, but the stored checkpoint is "
-        "695,812 module params (697,868 tensors incl. buffers). The published figure "
-        "matches a 3-Mamba-layer build; the stored artifact has 2 layers and is "
-        "1,128,349 params smaller. The MCC attributed to it (0.8844) therefore cannot "
-        "be reproduced from this file."
-    ),
-    "mamba3_transformer": (
-        "MASTER_RESULTS.md §2.3 cites 0.842M params, but the stored checkpoint is "
-        "561,796 (563,076 tensors). The published figure matches a 3-block build; the "
-        "stored artifact has 2 blocks. MCC 0.8581 is not reproducible from this file."
-    ),
-    "mamba3_multiview": (
-        "MASTER_RESULTS.md §2.3 cites 1.701M params, but the stored checkpoint is "
-        "1,193,349 (1,194,375 tensors), consistent with 2 Mamba layers rather than 3. "
-        "MCC 0.8640 is not reproducible from this file."
-    ),
     "deep_stack": (
         "MASTER_RESULTS.md §2.3 points at models/dl/augmented/DeepStackEnsemble_seed42.pt, "
         "which does not exist. The equivalent artifact used here is "

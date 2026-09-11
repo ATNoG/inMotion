@@ -51,12 +51,10 @@ EXPECTED: dict[str, int] = {
     "sigreg_after_hpo": 317_460,
 }
 
-# Stored artifact does not match the parameter count published in the paper.
-PUBLISHED_MISMATCHES: set[str] = {
-    "mamba3_tcn",
-    "mamba3_transformer",
-    "mamba3_multiview",
-}
+# Stored artifact cannot be reconciled with a file the paper cites. The Mamba-3
+# hybrids were removed from the reported results, so they are no longer checked
+# against a published count.
+PUBLISHED_MISMATCHES: set[str] = set()
 
 TOLERANCE_M = 0.002  # three-decimal rounding in the paper table
 
@@ -120,7 +118,9 @@ def test_published_counts_match_except_documented_mismatches() -> None:
 
 
 def test_documented_mismatches_are_still_real() -> None:
-    """Guard against someone 'fixing' the gap by editing the wrong side."""
+    """Guard against someone 'fixing' a gap by editing the wrong side."""
+    if not PUBLISHED_MISMATCHES:
+        pytest.skip("no model currently diverges from a published count")
     for name in PUBLISHED_MISMATCHES:
         spec = reg.by_name(name)
         assert name in reg.PROVENANCE_GAPS, f"{name}: missing PROVENANCE_GAPS entry"

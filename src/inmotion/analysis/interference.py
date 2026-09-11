@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from inmotion.analysis.interference_config import RunConfig
 from inmotion.dl.interference import InterferenceAnalyzer
 
 
@@ -33,8 +34,12 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     if not args.data.exists():
         print(f"ERROR: Dataset not found: {args.data}")
@@ -57,7 +62,3 @@ def main() -> None:
     print(f"Generated {len(plots)} plots:")
     for p in plots:
         print(f"  {p.relative_to(args.output_dir)}")
-
-
-if __name__ == "__main__":
-    main()

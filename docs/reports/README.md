@@ -10,7 +10,7 @@
 | `ROADMAP_TO_90.md` | the MCC → 0.90 plan (historical) |
 | `research_sources.md` | per-model citations for the ISAC paper |
 | `.research_plan.md` | the exotic-models implementation plan (historical) |
-| `ENSEMBLE_TECHNIQUES_REPORT.md` | the research basis for the ensemble combiner |
+| `../ENSEMBLE_TECHNIQUES_REPORT.md` | the research basis for the ensemble combiner |
 
 `MASTER_RESULTS.md` stays under `docs/isac/results/` because the raw CSVs it
 cites are next to it.

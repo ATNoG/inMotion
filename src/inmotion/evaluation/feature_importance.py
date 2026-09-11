@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+from inmotion.evaluation.feature_importance_config import RunConfig
+
 # Pre-flight: torch must be available (run `uv sync` first if missing)
 try:
     import torch  # noqa: F811
@@ -519,8 +521,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(args: argparse.Namespace | None = None) -> None:
-    args = args or parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
+
     set_seed(args.seed)
     device = get_device()
     print(f"Device: {device}")
@@ -542,7 +549,7 @@ def main(args: argparse.Namespace | None = None) -> None:
     # ── Load data ─────────────────────────────────────────────────────────
     from inmotion.data.paths import resolve
 
-    data_path = args.data or resolve("dataset.csv")
+    data_path = args.resolved_data() if hasattr(args, "resolved_data") else args.data
     if not data_path.exists():
         data_path = resolve("dataset_augmented.csv")
     print(f"\nLoading: {data_path}")
@@ -637,7 +644,3 @@ def main(args: argparse.Namespace | None = None) -> None:
         plot_per_model_heatmaps(all_imp, model_labels, all_baseline_mccs)
 
     print("\n✓ Done.")
-
-
-if __name__ == "__main__":
-    main()

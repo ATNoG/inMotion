@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from conftest import requires_artifacts
 from typer.testing import CliRunner
 
@@ -76,14 +77,45 @@ def test_model_list_json_covers_registry() -> None:
     assert all({"name", "factory", "params"} <= set(r) for r in rows)
 
 
-def test_run_list_documents_pipelines() -> None:
-    result = _invoke("run", "list")
+def test_every_group_is_registered() -> None:
+    """The command tree is the documented surface; it must stay complete."""
+    result = _invoke("--help")
     assert result.exit_code == 0
-    assert "exotic" in result.stdout
+    for group in ("model", "datasets", "data", "train", "evaluate", "analyze", "plots"):
+        assert group in result.stdout, f"missing command group: {group}"
 
 
-def test_unknown_pipeline_exits_nonzero() -> None:
-    result = _invoke("run", "pipeline", "not-a-pipeline")
+@pytest.mark.parametrize(
+    ("group", "command"),
+    [
+        ("train", "dl"),
+        ("train", "exotic"),
+        ("train", "classification"),
+        ("train", "hpo-paper"),
+        ("evaluate", "ensemble"),
+        ("evaluate", "mega-ensemble"),
+        ("evaluate", "checkpoints"),
+        ("evaluate", "shap"),
+        ("evaluate", "feature-importance"),
+        ("analyze", "seeds"),
+        ("analyze", "interference"),
+        ("plots", "classical"),
+        ("plots", "dl"),
+        ("data", "export"),
+        ("data", "merge"),
+        ("data", "clean"),
+        ("data", "augment"),
+    ],
+)
+def test_each_command_has_help(group: str, command: str) -> None:
+    """Every pipeline must be reachable as a native command with options."""
+    result = _invoke(group, command, "--help")
+    assert result.exit_code == 0, result.stdout
+    assert "--help" in result.stdout
+
+
+def test_unknown_command_exits_nonzero() -> None:
+    result = _invoke("train", "not-a-pipeline")
     assert result.exit_code != 0
 
 
@@ -96,10 +128,19 @@ def test_model_verify_passes_for_lean_model() -> None:
 
 @requires_artifacts
 def test_model_info_surfaces_provenance_gap() -> None:
+    """A model whose artifact cannot be reconciled with a cited file must say so."""
+    result = _invoke("model", "info", "deep_stack")
+    assert result.exit_code == 0
+    assert "provenance gap" in result.stdout
+
+
+@requires_artifacts
+def test_model_info_marks_experimental_models() -> None:
+    """The Mamba-3 hybrids are loadable but carry no paper claim."""
     result = _invoke("model", "info", "mamba3_tcn")
     assert result.exit_code == 0
-    assert "DIFFERS" in result.stdout
-    assert "provenance gap" in result.stdout
+    assert "not in the reported results" in result.stdout
+    assert "DIFFERS" not in result.stdout
 
 
 @requires_artifacts

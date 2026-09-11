@@ -25,7 +25,7 @@ behavioural change with real regression risk, and the model-loading work was
 higher value. The wrappers are honest about what they are: one entry point, no
 behaviour change.
 
-When a pipeline is converted, its `PIPELINES` entry in `src/inmotion/cli.py`
+When a pipeline is converted, its `PIPELINES` entry in `src/inmotion/cli/`
 becomes a native typer command and the mapping above is dropped.
 
 ## What moved

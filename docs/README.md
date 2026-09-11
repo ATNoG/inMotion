@@ -43,7 +43,7 @@ these are stale.
 | [`isac/results/MASTER_RESULTS.md`](isac/results/MASTER_RESULTS.md) | the single source of truth for reported numbers, each mapped to its artifact |
 | `eucnc/`, `icaisf/`, `isac/` | the LaTeX sources, frozen |
 | [`supplementary/`](supplementary/) | hyperparameter search spaces and optima |
-| [`ENSEMBLE_TECHNIQUES_REPORT.md`](ENSEMBLE_TECHNIQUES_REPORT.md) | the literature basis for the ensemble combiner |
+| [`../ENSEMBLE_TECHNIQUES_REPORT.md`](ENSEMBLE_TECHNIQUES_REPORT.md) | the literature basis for the ensemble combiner |
 
 ## Working notes and history
 

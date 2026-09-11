@@ -7,12 +7,13 @@ predicting location classes based on WiFi RSSI fingerprints.
 
 import argparse
 import os
-import sys
 import time
 import warnings
 from pathlib import Path
 
 from sklearn.linear_model import LogisticRegression
+
+from inmotion.pipelines.classification_config import RunConfig
 
 # Suppress XGBoost verbosity before importing it
 os.environ["XGBOOST_VERBOSITY"] = "0"
@@ -140,8 +141,12 @@ def save_detailed_classifier_reports(
     return detailed_path
 
 
-def main() -> int:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
 
     suffix = "" if args.no_seed_suffix else f"_{args.seed}"
 
@@ -296,7 +301,3 @@ def main() -> int:
     print(f"\nBest model saved at: {config.models_dir / best_name}.joblib")
 
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

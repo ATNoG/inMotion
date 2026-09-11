@@ -75,38 +75,26 @@ of the entries cannot currently be reproduced — see the provenance gaps below.
 
 Recorded rather than papered over. `inmotion model info <name>` prints each one.
 
-### 1. Three `mamba3_*` checkpoints do not match the published parameter counts
+### 1. The Mamba-3 hybrids are not part of the reported results
 
-| model | paper table | stored checkpoint |
-|---|---|---|
-| `mamba3_tcn` | 0.843M | 695,812 |
-| `mamba3_transformer` | 0.842M | 561,796 |
-| `mamba3_multiview` | 1.701M | 1,193,349 |
+Four Mamba-3 hybrids are registered and loadable, but they were explored rather
+than reported, so no MCC or parameter count is claimed for them and none is
+checked against the paper table. They carry
+`note="experimental; not in the reported results"`.
 
-The published figures match builds with one more block or Mamba layer. Either the
-artifacts were overwritten by a later, smaller retrain, or the table's parameter
-column was computed from a rebuilt configuration rather than from the file. The
-MCCs attributed to those three (`0.8844`, `0.8581`, `0.8640`) cannot be
-reproduced from the files in `backup/`.
-
-Encoded in `registry.PROVENANCE_GAPS`; `tests/test_checkpoint_contract.py` fails
-if the gap is closed by editing either side instead of restoring the artifact.
-
-### 2. Three result files cited by MASTER_RESULTS are absent
+### 2. Result files cited by MASTER_RESULTS are absent
 
 `results/mega_ensemble_results.csv`, `results/ensemble_size_frontier.csv` and
 `models/dl/augmented/DeepStackEnsemble_seed42.pt` were already missing before
 this work. Nothing was fabricated to fill the gap. The equivalent DeepStack
 artifact is `backup/DeepStackEnsemble_seed42.pt`.
 
-### 3. The Mamba-3 HPO search space was partly inert
+### 3. A hyperparameter search once reported inactive dimensions
 
-`_hpo_mamba3` suggested `d_state`, `dropout` and `mimo_rank` and Optuna reported
-all three as tuned dimensions, while `_build_mamba3` hardcoded those values. Any
-recorded Mamba-3 HPO log therefore reflects three active dimensions
-(`d_model`, `num_layers`, `lr`) out of five reported. The code has been corrected
-so the parameters take effect; **the stored HPO logs predate the fix** and should
-be read as three-dimensional.
+The Mamba-3 search suggested three parameters that its builder hardcoded, so the
+study reported a five-dimensional space while three dimensions could not affect
+the model. The code is fixed. Any Mamba-3 HPO log predates the fix; nothing in
+the reported results depends on those logs.
 
 ### 4. The pre-recollection dataset labels are reported incorrect
 

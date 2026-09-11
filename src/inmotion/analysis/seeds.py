@@ -6,13 +6,14 @@ computes statistics, and generates comparison plots.
 """
 
 import argparse
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+from inmotion.analysis.seeds_config import RunConfig
 
 SEEDS = [3, 5, 42]
 
@@ -384,8 +385,13 @@ def generate_summary_report(
     return report_text
 
 
-def main() -> int:
-    args = parse_args()
+def run(args: RunConfig) -> int:
+    """Execute the pipeline.
+
+    ``args`` keeps the field names the argparse namespace used, so the body
+    is unchanged; the CLI builds it from typed options.
+    """
+
     setup_plot_style()
 
     output_dir = Path(args.output_dir)
@@ -447,7 +453,3 @@ def main() -> int:
     print("  - multi_metric_heatmap.pdf")
 
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
