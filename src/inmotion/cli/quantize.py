@@ -192,3 +192,89 @@ def evaluate(
         "\nbaseline reproduced: fp32 matches BASELINE_MCC on dataset.csv",
         fg=typer.colors.GREEN,
     )
+
+
+@app.command("stats", help="Write the quantization statistics tables the figures read.")
+def stats(
+    models: Annotated[
+        str | None,
+        typer.Option("--models", help="Comma-separated; default: all five world models."),
+    ] = None,
+    formats: Annotated[
+        str | None, typer.Option("--formats", help="Comma-separated; default: all.")
+    ] = None,
+    data: Annotated[
+        Path | None, typer.Option("--data", help="Dataset CSV; default: dataset.csv.")
+    ] = None,
+    seed: Annotated[int, typer.Option("--seed", help="Split seed.")] = 42,
+    sweep: Annotated[
+        Path,
+        typer.Option("--sweep", help="Accuracy/size CSV from `quantize eval`."),
+    ] = Path("results/quant/sweep_dataset.csv"),
+    out_dir: Annotated[
+        Path, typer.Option("--out-dir", help="Where the tables and raw capture go.")
+    ] = Path("results/quant"),
+    latency_iters: Annotated[
+        int,
+        typer.Option("--latency-iters", help="Batch-1 torch reference timings; 0 disables."),
+    ] = 200,
+    latency_warmup: Annotated[
+        int, typer.Option("--latency-warmup", help="Warmup iterations per measurement.")
+    ] = 20,
+) -> None:
+    """Produce size, accuracy, coverage, latency and per-layer tables.
+
+    Inputs are artifacts, never transcribed numbers: the sweep CSV from
+    ``quantize eval``, a raw per-tensor capture this command writes, and every
+    device benchmark JSON already in ``--out-dir``. The fp32 rows are re-checked
+    against ``BASELINE_MCC`` before anything is written, so a table that
+    disagrees with the enforced baseline fails instead of publishing.
+    """
+    from inmotion.viz.quant_stats import (
+        MANIFEST_JSON,
+        RAW_JSON,
+        build_tables,
+        collect,
+        device_json_paths,
+        latency_rows,
+        measure_reference_latency,
+        write_json,
+    )
+
+    try:
+        chosen_formats = _parse_formats(formats)
+    except typer.BadParameter as exc:
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
+
+    chosen_models = _parse_models(models)
+    typer.echo("capturing per-tensor quantization reports")
+    payload = collect(chosen_models, chosen_formats, dataset=data, seed=seed)
+    write_json(payload, RAW_JSON)
+
+    artifacts = device_json_paths(out_dir)
+    typer.echo(f"ingesting {len(artifacts)} device artifact(s): {[p.name for p in artifacts]}")
+    latency = latency_rows(artifacts)
+
+    if latency_iters > 0:
+        # One row per model, at fp32: on the dequantizing torch path the
+        # precision does not change what is executed, so timing every precision
+        # would only manufacture a latency curve out of noise.
+        typer.echo("measuring torch reference latency on this machine (fp32)")
+        for model_name in chosen_models:
+            latency.append(
+                measure_reference_latency(
+                    model_name,
+                    "fp32",
+                    dataset=data,
+                    seed=seed,
+                    iterations=latency_iters,
+                    warmup=latency_warmup,
+                )
+            )
+
+    written = build_tables(out_dir, sweep=sweep, raw=RAW_JSON, latency=latency)
+    typer.secho(
+        f"\nwrote {len(written)} tables + {MANIFEST_JSON.name}",
+        fg=typer.colors.GREEN,
+    )
