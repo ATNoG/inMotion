@@ -1,0 +1,5 @@
+# The detected part has 4 MB of flash; the ESP-IDF default of 2 MB would
+# under-report the flash budget the feasibility table is measured against.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+# CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160 is not set

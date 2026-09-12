@@ -1,0 +1,55 @@
+{
+  "device": "ESP32-D0WD-V3 (revision v3.1)",
+  "chip_id_command": "sg dialout -c 'uv run --extra esp python -m esptool --port /dev/ttyUSB0 --no-stub chip-id'",
+  "flash_mb": 4,
+  "psram": "none",
+  "usable_heap_kib": 281,
+  "cpu_clocks_mhz": [
+    160,
+    240
+  ],
+  "model": "lejepa",
+  "precision": "int8",
+  "blob_bytes": 617604,
+  "weights_mb_dataset_csv": 0.609,
+  "total_mb_dataset_csv": 0.609,
+  "protocol": "one serial line in: 10 timesteps x 4 channels; one line out: RESULT class= confidence= latency_ms= heap_delta= heap_free= flash_bytes=",
+  "host_parity": {
+    "harness": "firmware/host/jepa_model_test.tsv.c",
+    "golden_source": "inmotion.quant.export.write_golden('lejepa', quant='int8')",
+    "cases": 16,
+    "max_abs_diff": 6.884e-06,
+    "tolerance": 0.0002,
+    "result": "PASS",
+    "class_agreement": "16/16"
+  },
+  "runs": {
+    "160mhz": {
+      "n_runs": 48,
+      "cases_per_pass": 16,
+      "repeats": 3,
+      "latency_ms_min": 879.795,
+      "latency_ms_median": 888.4765,
+      "latency_ms_max": 893.675,
+      "heap_free_bytes_after_run_min": 193872,
+      "heap_delta_bytes_during_run_max": 0,
+      "flash_weight_bytes_per_forward": 589460,
+      "device_vs_pytorch_class_agreement": "16/16"
+    },
+    "240mhz": {
+      "n_runs": 48,
+      "cases_per_pass": 16,
+      "repeats": 3,
+      "latency_ms_min": 630.892,
+      "latency_ms_median": 636.6825,
+      "latency_ms_max": 640.164,
+      "heap_free_bytes_after_run_min": 193872,
+      "heap_delta_bytes_during_run_max": 0,
+      "flash_weight_bytes_per_forward": 589460,
+      "device_vs_pytorch_class_agreement": "16/16"
+    }
+  },
+  "note": "results/ is gitignored, so the raw per-run JSON lives there and this tracked copy carries the summary the report cites. Regenerate with firmware/tools/run_on_device.py.",
+  "app_image_bytes": 828656,
+  "app_partition_free_percent": 21
+}
