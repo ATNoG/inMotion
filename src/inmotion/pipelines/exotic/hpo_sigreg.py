@@ -29,16 +29,19 @@ def _hpo_sigreg(args, device, Xt, yt, Xv, yv) -> None:
     from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     def objective(trial):
-        d_model = trial.suggest_categorical("d_model", [128, 192, 256])
-        num_layers = trial.suggest_int("num_layers", 1, 4)
+        # Named after what they are for sigreg, so the winner applied below
+        # lands on --num-filters/--num-blocks rather than on the transformer
+        # flags whose names mean something else.
+        num_filters = trial.suggest_categorical("num_filters", [128, 192, 256])
+        num_blocks = trial.suggest_int("num_blocks", 1, 4)
         latent_dim = trial.suggest_categorical("latent_dim", [128, 256])
         sigreg_lambda = trial.suggest_float("sigreg_lambda", 0.001, 0.5, log=True)
         lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
 
         m = SIGRegClassifier(
             in_features=4,
-            num_filters=d_model,
-            num_blocks=num_layers,
+            num_filters=num_filters,
+            num_blocks=num_blocks,
             latent_dim=latent_dim,
             num_classes=4,
             sigreg_lambda=sigreg_lambda,

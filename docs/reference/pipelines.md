@@ -18,7 +18,7 @@ Return value is the exit code, so a caller can check it.
 | command | pipeline module | options |
 |---|---|---:|
 | `inmotion train dl` | `inmotion.pipelines.dl` | 16 |
-| `inmotion train exotic` | `inmotion.pipelines.exotic` | 54 |
+| `inmotion train exotic` | `inmotion.pipelines.exotic` | 56 |
 | `inmotion train classification` | `inmotion.pipelines.classification` | 13 |
 | `inmotion train hpo-paper` | `inmotion.pipelines.hpo_paper` | 7 |
 | `inmotion evaluate ensemble` | `inmotion.pipelines.ensemble` | 3 |
@@ -108,6 +108,8 @@ Typed options for the exotic pipeline.
 | `--cf-horizon-end` | `int` | `3` |
 | `--cf-ctx-min` | `int` | `1` |
 | `--cf-ctx-max` | `int` | `3` |
+| `--num-filters` | `int` | `192` |
+| `--num-blocks` | `int` | `3` |
 | `--latent-dim` | `int` | `128` |
 | `--sigreg-lambda` | `float` | `0.01` |
 | `--hpo` | `bool` | `False` |

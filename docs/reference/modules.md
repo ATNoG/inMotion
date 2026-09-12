@@ -456,7 +456,7 @@ Public API:
 
 ### `inmotion.models.registry`
 
-`src/inmotion/models/registry.py` - 376 lines
+`src/inmotion/models/registry.py` - 377 lines
 
 Model registry — the single source of truth for loadable models.
 
@@ -690,7 +690,7 @@ Public API:
 
 ### `inmotion.cli.train`
 
-`src/inmotion/cli/train.py` - 271 lines
+`src/inmotion/cli/train.py` - 277 lines
 
 `inmotion train` — train models.
 
@@ -862,7 +862,7 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.pipelines.exotic.config`
 
-`src/inmotion/pipelines/exotic/config.py` - 72 lines
+`src/inmotion/pipelines/exotic/config.py` - 78 lines
 
 Options for the world-model pipeline.
 
@@ -894,7 +894,7 @@ Public API:
 
 ### `inmotion.pipelines.exotic.builders`
 
-`src/inmotion/pipelines/exotic/builders.py` - 156 lines
+`src/inmotion/pipelines/exotic/builders.py` - 164 lines
 
 Model construction for the world-model family.
 
@@ -931,7 +931,7 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.pipelines.exotic.hpo_sigreg`
 
-`src/inmotion/pipelines/exotic/hpo_sigreg.py` - 118 lines
+`src/inmotion/pipelines/exotic/hpo_sigreg.py` - 121 lines
 
 Hyperparameter search for SIGReg.
 

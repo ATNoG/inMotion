@@ -424,6 +424,8 @@ Options:
 - `--d-state` (default: `16`) - Mamba-3 state width.
 - `--dropout` (default: `0.2`) - Dropout for the Mamba-3 hybrids.
 - `--mimo-rank` (default: `4`) - Mamba-3 MIMO rank.
+- `--num-filters` (default: `192`) - SIGReg convolutional filters.
+- `--num-blocks` (default: `3`) - SIGReg residual blocks.
 - `--latent-dim` (default: `128`) - SIGReg latent width.
 - `--sigreg-lambda` (default: `0.01`) - SIGReg regulariser weight.
 - `--hpo` (default: `False`) - Run an Optuna study first.

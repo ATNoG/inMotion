@@ -58,6 +58,12 @@ class RunConfig:
     cf_horizon_end: int = 3
     cf_ctx_min: int = 1
     cf_ctx_max: int = 3
+    #: SIGReg's architecture, stated rather than inferred. ``d_model`` and
+    #: ``num_layers`` mean width and depth for the transformer family, so
+    #: reading sigreg's filter count out of them let a documented transformer
+    #: flag silently build the wrong model.
+    num_filters: int = 192
+    num_blocks: int = 3
     latent_dim: int = 128
     sigreg_lambda: float = 0.01
     hpo: bool = False

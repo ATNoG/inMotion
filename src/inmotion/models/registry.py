@@ -145,9 +145,10 @@ CURATED: list[ModelSpec] = [
         note="retrained on dataset.csv: 192 filters / 3 blocks / latent 128, "
         "seed 42, lr 1e-3, batch 128, sigreg_lambda 0.01, 29 of 150 epochs, "
         "val MCC 0.6181, test MCC 0.6333; reproduce with `inmotion train exotic "
-        "--model sigreg --data data/processed/dataset.csv --seed 42 --d-model 192 "
-        "--num-layers 3 --latent-dim 128` (the arch flags are required), full "
-        "config in 20-aug/models/exotic/dataset-csv/sigreg_seed42.json",
+        "--model sigreg --data data/processed/dataset.csv --seed 42`, whose "
+        "defaults ARE this architecture (--num-filters 192, --num-blocks 3, "
+        "--latent-dim 128); full config in "
+        "20-aug/models/exotic/dataset-csv/sigreg_seed42.json",
     ),
     ModelSpec(
         "sigreg_icaisf",

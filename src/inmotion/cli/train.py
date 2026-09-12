@@ -133,6 +133,10 @@ def exotic(
         float, typer.Option("--dropout", help="Dropout for the Mamba-3 hybrids.")
     ] = 0.2,
     mimo_rank: Annotated[int, typer.Option("--mimo-rank", help="Mamba-3 MIMO rank.")] = 4,
+    num_filters: Annotated[
+        int, typer.Option("--num-filters", help="SIGReg convolutional filters.")
+    ] = 192,
+    num_blocks: Annotated[int, typer.Option("--num-blocks", help="SIGReg residual blocks.")] = 3,
     latent_dim: Annotated[int, typer.Option("--latent-dim", help="SIGReg latent width.")] = 128,
     sigreg_lambda: Annotated[
         float, typer.Option("--sigreg-lambda", help="SIGReg regulariser weight.")
@@ -186,6 +190,8 @@ def exotic(
         d_state=d_state,
         dropout=dropout,
         mimo_rank=mimo_rank,
+        num_filters=num_filters,
+        num_blocks=num_blocks,
         latent_dim=latent_dim,
         sigreg_lambda=sigreg_lambda,
         hpo=hpo,

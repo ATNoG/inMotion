@@ -96,12 +96,20 @@ def _build_cf_jepa(args: RunConfig) -> nn.Module:
 
 
 def _build_sigreg(args: RunConfig) -> nn.Module:
+    """Build SIGReg from its own flags.
+
+    The defaults (192 filters, 3 blocks, latent 128) are the architecture of the
+    registered ``sigreg`` checkpoint. ``args.d_model``/``args.num_layers`` are
+    deliberately *not* consulted: they are width and depth for the transformer
+    family, and reusing them here built a 256-filter model from the documented
+    retrain command while the registry expected 192.
+    """
     from inmotion.dl.models.sigreg_classifier import SIGRegClassifier
 
     return SIGRegClassifier(
         in_features=4,
-        num_filters=args.d_model,
-        num_blocks=args.num_layers,
+        num_filters=args.num_filters,
+        num_blocks=args.num_blocks,
         latent_dim=args.latent_dim,
         num_classes=4,
         sigreg_lambda=args.sigreg_lambda,
