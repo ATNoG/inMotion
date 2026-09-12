@@ -289,6 +289,17 @@ Options:
 - `--eda` (default: `False`) - Also regenerate the EDA figures.
 - `--data` - Dataset CSV, needed with --eda.
 
+### `plots quantization`
+
+Rebuild the quantization figures from the statistics CSVs.
+
+Options:
+
+- `--data-dir` (default: `results/quant`) - Statistics CSVs and device benchmark JSONs.
+- `--perf-dir` (default: `results/perf`) - Before/after latency CSVs.
+- `--out-dir` (default: `results/quant/figures`) - Figure output directory.
+- `--dpi` (default: `600`) - Raster DPI (PDF is vector).
+
 ## `quantize`
 
 Quantize models and measure the cost.

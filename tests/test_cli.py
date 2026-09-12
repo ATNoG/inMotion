@@ -11,7 +11,7 @@ import json
 import re
 
 import pytest
-from conftest import requires_artifacts
+from conftest import REPO_ROOT, requires_artifacts
 from typer.testing import CliRunner
 
 from inmotion.cli import app
@@ -102,6 +102,7 @@ def test_every_group_is_registered() -> None:
         ("analyze", "interference"),
         ("plots", "classical"),
         ("plots", "dl"),
+        ("plots", "quantization"),
         ("data", "export"),
         ("data", "merge"),
         ("data", "clean"),
@@ -113,6 +114,48 @@ def test_each_command_has_help(group: str, command: str) -> None:
     result = _invoke(group, command, "--help")
     assert result.exit_code == 0, result.stdout
     assert "--help" in result.stdout
+
+
+QUANT_FIGURE_STEMS = (
+    "fig1_fits_map",
+    "fig2_size_accuracy_pareto",
+    "fig3_accuracy_vs_bits",
+    "fig4_coverage",
+    "fig5_latency_by_device",
+    "fig6_size_compression_vs_bits",
+)
+
+requires_quant_artifacts = pytest.mark.skipif(
+    not (
+        (REPO_ROOT / "results/quant/stats_size.csv").exists()
+        and (REPO_ROOT / "results/perf/summary.csv").exists()
+    ),
+    reason="quantization statistics not present (results/ is gitignored)",
+)
+
+
+@requires_quant_artifacts
+def test_plots_quantization_writes_the_six_figures() -> None:
+    """The figures must be regenerable by one command, in both formats."""
+    out_dir = REPO_ROOT / "results/quant/figures"
+    result = _invoke(
+        "plots",
+        "quantization",
+        "--data-dir",
+        str(REPO_ROOT / "results/quant"),
+        "--perf-dir",
+        str(REPO_ROOT / "results/perf"),
+        "--out-dir",
+        str(out_dir),
+    )
+    assert result.exit_code == 0, result.stdout
+    for stem in QUANT_FIGURE_STEMS:
+        for suffix in ("pdf", "png"):
+            path = out_dir / f"{stem}.{suffix}"
+            assert path.exists(), path
+            assert path.stat().st_size > 5_000, f"{path} is suspiciously small"
+    assert (out_dir / "data/fig1_device_budgets.csv").exists()
+    assert (out_dir / "data/fig5_latency_rows.csv").exists()
 
 
 def test_unknown_command_exits_nonzero() -> None:

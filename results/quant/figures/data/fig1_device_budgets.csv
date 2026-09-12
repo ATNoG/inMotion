@@ -1,0 +1,5 @@
+device,device_label,kind,budget_bytes,source
+esp32,"ESP32-D0WD-V3 (classic, no PSRAM)",resident,307200,"part spec 520 KB SRAM / no PSRAM; ~300 KB usable for weights (results/quant JSONs measure 617604 B flash-mapped, heap free 193872 B)"
+esp32,"ESP32-D0WD-V3 (classic, no PSRAM)",flash,4194304,part spec 4 MB flash; weights must be memory-mapped from it
+router,"wave-router (Celeron J3455, no AVX/FMA)",resident,3391000000,results/quant/edge_router_j3455.json:ram_available_mb=3391
+host,this machine (i5-1135G7),resident,16444817408,/proc/meminfo MemTotal at generation

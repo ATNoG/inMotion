@@ -70,3 +70,30 @@ def dl(
             data=data,
         ),
     )
+
+
+@app.command("quantization", help="Rebuild the quantization figures from the statistics CSVs.")
+def quantization(
+    data_dir: Annotated[
+        Path, typer.Option("--data-dir", help="Statistics CSVs and device benchmark JSONs.")
+    ] = Path("results/quant"),
+    perf_dir: Annotated[
+        Path, typer.Option("--perf-dir", help="Before/after latency CSVs.")
+    ] = Path("results/perf"),
+    out_dir: Annotated[
+        Path, typer.Option("--out-dir", help="Figure output directory.")
+    ] = Path("results/quant/figures"),
+    dpi: Annotated[int, typer.Option("--dpi", help="Raster DPI (PDF is vector).")] = 600,
+) -> None:
+    """Rebuild the six quantization figures without re-measuring anything."""
+    from inmotion.viz.quant_figures import RunConfig, run
+
+    run_pipeline(
+        run,
+        RunConfig(
+            data_dir=str(data_dir),
+            perf_dir=str(perf_dir),
+            out_dir=str(out_dir),
+            dpi=dpi,
+        ),
+    )

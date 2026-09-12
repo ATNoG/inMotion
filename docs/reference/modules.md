@@ -728,7 +728,7 @@ Public API:
 
 ### `inmotion.cli.plots`
 
-`src/inmotion/cli/plots.py` - 72 lines
+`src/inmotion/cli/plots.py` - 99 lines
 
 `inmotion plots` — regenerate figures from saved results.
 
@@ -736,6 +736,7 @@ Public API:
 
 - func `classical` - Rebuild the figures without retraining.
 - func `dl` - Rebuild the DL figures without retraining.
+- func `quantization` - Rebuild the six quantization figures without re-measuring anything.
 
 ### `inmotion.cli.quantize`
 
