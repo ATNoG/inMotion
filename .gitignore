@@ -261,3 +261,6 @@ docs/isac/paper-support/
 # `results/` is regenerable output; the one file that was tracked for
 # provenance is force-added if it needs to come back.
 results/
+
+# AgentTeams working state (tooling, not source)
+.agent-teams/
