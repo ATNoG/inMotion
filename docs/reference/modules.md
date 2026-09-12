@@ -373,13 +373,19 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 235 lines
+`src/inmotion/quant/evaluate.py` - 253 lines
 
-Accuracy under quantization, measured on the paper's split.
+Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
-The point of this module is that the numbers it produces are comparable with
-``docs/isac/results/MASTER_RESULTS.md``. It therefore reuses the *same* splits
-and the same feature pipeline the models were trained with:
+Every number this module produces is on **dataset.csv**. It is *not* on
+``dataset.icaisf.csv``, so it is **not** comparable with the MCC values in
+``docs/isac/results/MASTER_RESULTS.md`` section 2.3 (lejepa 0.8850, t_jepa
+0.8694, ts_jepa 0.8785, cf_jepa 0.8661, sigreg 0.8858), which were measured on
+the icaisf variant. The two splits differ in size and in score; MASTER_RESULTS
+is left untouched as the record of what was published on icaisf.
+
+Otherwise the harness reuses the *same* splits and the same feature pipeline the
+models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
@@ -396,14 +402,14 @@ Public API:
 - class `EvalRow` - One (model, precision) measurement.
 - func `load_split` - Features, labels and test indices, using the training convention.
 - func `evaluate` - Measure one (model, precision) pair on the test split.
-- func `check_baseline` - Confirm fp32 reproduces the recorded MCC, within tolerance.
+- func `check_baseline` - Confirm fp32 reproduces the recorded MCC on the baseline dataset.
 - func `sweep` - Evaluate every (model, precision) pair and optionally write a CSV.
 - func `write_csv` - Write the sweep as one row per measurement.
 - func `write_json`
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 289 lines
+`src/inmotion/quant/export.py` - 388 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -450,7 +456,7 @@ Public API:
 
 ### `inmotion.models.registry`
 
-`src/inmotion/models/registry.py` - 349 lines
+`src/inmotion/models/registry.py` - 376 lines
 
 Model registry — the single source of truth for loadable models.
 
@@ -733,7 +739,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 187 lines
+`src/inmotion/cli/quantize.py` - 280 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 
@@ -743,6 +749,7 @@ Public API:
 - func `show` - Report the size, compression and weight error for one scheme.
 - func `export_cmd` - Export an artifact plus the golden vectors a Rust runtime must reproduce.
 - func `evaluate` - Sweep models x formats and write one row per measurement.
+- func `stats` - Produce size, accuracy, coverage, latency and per-layer tables.
 
 ### `inmotion.cli.doctor`
 

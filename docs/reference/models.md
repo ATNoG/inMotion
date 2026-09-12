@@ -12,7 +12,7 @@ in `docs/isac/results/MASTER_RESULTS.md`. Where the two disagree the stored
 checkpoint is not the model that table describes, and the gap is recorded in
 `PROVENANCE_GAPS`.
 
-Canonical model count: **17**
+Canonical model count: **18**
 
 | name | factory | features | params | paper (M) | checkpoint |
 |---|---|---|---:|---:|---|
@@ -25,9 +25,10 @@ Canonical model count: **17**
 | `mamba3_multiview` | `mamba3_multiview` | raw | 1,193,349 | - | `backup/mamba3_multiview_seed42.pt` |
 | `mamba3_tcn` | `mamba3_tcn` | raw | 695,812 | - | `backup/mamba3_tcn_seed42.pt` |
 | `mamba3_transformer` | `mamba3_transformer` | raw | 561,796 | - | `backup/mamba3_transformer_seed42.pt` |
-| `sigreg` | `sigreg` | raw | 696,900 | 0.697 | `backup/sigreg_seed42.pt` |
+| `sigreg` | `sigreg` | raw | 696,900 | 0.697 | `20-aug/models/exotic/dataset-csv/sigreg_seed42.pt` |
 | `sigreg_after_hpo` | `sigreg` | raw | 317,460 | - | `20-aug/models/exotic/normal-new-ds/full-after-hpo/sigreg_seed42.pt` |
 | `sigreg_base` | `sigreg` | raw | 474,564 | - | `20-aug/models/exotic/normal-new-ds/sigreg_seed42.pt` |
+| `sigreg_icaisf` | `sigreg` | raw | 696,900 | 0.697 | `backup/sigreg_seed42.pt` |
 | `sigreg_seed3` | `sigreg` | raw | 696,900 | 0.697 | `backup/sigreg_seed3.pt` |
 | `sigreg_seed5` | `sigreg` | raw | 696,900 | 0.697 | `backup/sigreg_seed5.pt` |
 | `t_jepa` | `t_jepa` | rich | 633,477 | 0.633 | `20-aug/models/exotic/normal-new-ds/full-after-hpo/t_jepa_ft_seed42.pt` |
@@ -112,10 +113,10 @@ Canonical model count: **17**
 ### `sigreg`
 
 - factory: `sigreg`
-- checkpoint: `backup/sigreg_seed42.pt`
+- checkpoint: `20-aug/models/exotic/dataset-csv/sigreg_seed42.pt`
 - state-dict prefix: `m.`
 - architecture: `num_filters=192`
-- note: 192-filter encoder; paper §2.3 checkpoint
+- note: retrained on dataset.csv: 192 filters / 3 blocks / latent 128, seed 42, lr 1e-3, batch 128, sigreg_lambda 0.01, 29 of 150 epochs, val MCC 0.6181, test MCC 0.6333; reproduce with `inmotion train exotic --model sigreg --data data/processed/dataset.csv --seed 42 --d-model 192 --num-layers 3 --latent-dim 128` (the arch flags are required), full config in 20-aug/models/exotic/dataset-csv/sigreg_seed42.json
 
 ### `sigreg_after_hpo`
 
@@ -132,6 +133,14 @@ Canonical model count: **17**
 - state-dict prefix: `m.`
 - architecture: `num_blocks=2`, `num_filters=192`
 - note: pre-HPO base run (2.1), 2 residual blocks
+
+### `sigreg_icaisf`
+
+- factory: `sigreg`
+- checkpoint: `backup/sigreg_seed42.pt`
+- state-dict prefix: `m.`
+- architecture: `num_filters=192`
+- note: superseded by `sigreg` for dataset.csv work; this is the artifact MASTER_RESULTS.md §2.3 cites (192-filter encoder, icaisf split)
 
 ### `sigreg_seed3`
 

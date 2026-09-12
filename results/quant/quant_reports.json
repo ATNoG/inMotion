@@ -12375,7 +12375,7 @@
           "n_values": 768,
           "payload_bytes": 1536,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0009604692459106445,
+          "reconstruction_error": 0.0009686946868896484,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12389,7 +12389,7 @@
           "n_values": 1280,
           "payload_bytes": 2560,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0009695589542388916,
+          "reconstruction_error": 0.0004850327968597412,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12403,7 +12403,7 @@
           "n_values": 1792,
           "payload_bytes": 3584,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.000973433256149292,
+          "reconstruction_error": 0.00048798322677612305,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12417,7 +12417,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0009605288505554199,
+          "reconstruction_error": 0.00022588670253753662,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12431,7 +12431,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0005917847156524658,
+          "reconstruction_error": 0.00022467970848083496,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12445,7 +12445,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0009330809116363525,
+          "reconstruction_error": 0.00022935867309570312,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12459,7 +12459,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00048673152923583984,
+          "reconstruction_error": 0.00022599101066589355,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12473,7 +12473,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0008602440357208252,
+          "reconstruction_error": 0.00023924559354782104,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12487,7 +12487,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00048735737800598145,
+          "reconstruction_error": 0.00021056830883026123,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12500,7 +12500,7 @@
           "n_values": 24576,
           "payload_bytes": 49152,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00048257410526275635,
+          "reconstruction_error": 0.00024405866861343384,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -12513,7 +12513,7 @@
           "n_values": 512,
           "payload_bytes": 1024,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0004377514123916626,
+          "reconstruction_error": 0.0002427920699119568,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -12527,7 +12527,7 @@
       "buffer_bytes": 5492,
       "total_bytes": 1399292,
       "compression": 2.0,
-      "max_error": 0.000973433256149292
+      "max_error": 0.0009686946868896484
     },
     {
       "model": "sigreg",
@@ -12549,7 +12549,7 @@
           "n_values": 768,
           "payload_bytes": 1536,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00011819601058959961,
+          "reconstruction_error": 0.00011962652206420898,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12563,7 +12563,7 @@
           "n_values": 1280,
           "payload_bytes": 2560,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0001220703125,
+          "reconstruction_error": 6.102025508880615e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12577,7 +12577,7 @@
           "n_values": 1792,
           "payload_bytes": 3584,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00011238455772399902,
+          "reconstruction_error": 6.0945749282836914e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12591,7 +12591,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 7.730722427368164e-05,
+          "reconstruction_error": 2.2329390048980713e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12605,7 +12605,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00010350346565246582,
+          "reconstruction_error": 3.0219554901123047e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12619,7 +12619,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00011742115020751953,
+          "reconstruction_error": 2.6755034923553467e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12633,7 +12633,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.00011712312698364258,
+          "reconstruction_error": 3.049522638320923e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12647,7 +12647,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 0.0001163184642791748,
+          "reconstruction_error": 1.52587890625e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12661,7 +12661,7 @@
           "n_values": 110592,
           "payload_bytes": 221184,
           "metadata_bytes": 0,
-          "reconstruction_error": 6.099045276641846e-05,
+          "reconstruction_error": 2.8818845748901367e-05,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12674,7 +12674,7 @@
           "n_values": 24576,
           "payload_bytes": 49152,
           "metadata_bytes": 0,
-          "reconstruction_error": 6.097555160522461e-05,
+          "reconstruction_error": 3.0517578125e-05,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -12687,7 +12687,7 @@
           "n_values": 512,
           "payload_bytes": 1024,
           "metadata_bytes": 0,
-          "reconstruction_error": 5.6803226470947266e-05,
+          "reconstruction_error": 2.9824674129486084e-05,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -12701,7 +12701,7 @@
       "buffer_bytes": 5492,
       "total_bytes": 1399292,
       "compression": 2.0,
-      "max_error": 0.0001220703125
+      "max_error": 0.00011962652206420898
     },
     {
       "model": "sigreg",
@@ -12723,7 +12723,7 @@
           "n_values": 768,
           "payload_bytes": 768,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.0014413446187973022,
+          "reconstruction_error": 0.0011790096759796143,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12737,7 +12737,7 @@
           "n_values": 1280,
           "payload_bytes": 1280,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.0012108050286769867,
+          "reconstruction_error": 0.0009192079305648804,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12751,7 +12751,7 @@
           "n_values": 1792,
           "payload_bytes": 1792,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.001216195523738861,
+          "reconstruction_error": 0.0008703283965587616,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12765,7 +12765,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0012555858120322227,
+          "reconstruction_error": 0.0002750903367996216,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12779,7 +12779,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0009864242747426033,
+          "reconstruction_error": 0.00026200059801340103,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12793,7 +12793,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0010777413845062256,
+          "reconstruction_error": 0.00026211701333522797,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12807,7 +12807,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0010315913241356611,
+          "reconstruction_error": 0.00030390918254852295,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12821,7 +12821,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0011055544018745422,
+          "reconstruction_error": 0.0002760365605354309,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12835,7 +12835,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 960,
-          "reconstruction_error": 0.0008767284452915192,
+          "reconstruction_error": 0.00028277747333049774,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -12848,7 +12848,7 @@
           "n_values": 24576,
           "payload_bytes": 24576,
           "metadata_bytes": 640,
-          "reconstruction_error": 0.0006613284349441528,
+          "reconstruction_error": 0.00035139918327331543,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -12861,7 +12861,7 @@
           "n_values": 512,
           "payload_bytes": 512,
           "metadata_bytes": 20,
-          "reconstruction_error": 0.0005916468799114227,
+          "reconstruction_error": 0.00034578144550323486,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -13065,7 +13065,7 @@
       "buffer_bytes": 10984,
       "total_bytes": 728524,
       "compression": 3.9578201354556626,
-      "max_error": 0.0014413446187973022
+      "max_error": 0.0011790096759796143
     },
     {
       "model": "sigreg",
@@ -13087,7 +13087,7 @@
           "n_values": 768,
           "payload_bytes": 768,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.0014413446187973022,
+          "reconstruction_error": 0.0011790096759796143,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13101,7 +13101,7 @@
           "n_values": 1280,
           "payload_bytes": 1280,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.0012108050286769867,
+          "reconstruction_error": 0.0009192079305648804,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13115,7 +13115,7 @@
           "n_values": 1792,
           "payload_bytes": 1792,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.001216195523738861,
+          "reconstruction_error": 0.0008703283965587616,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13129,7 +13129,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.001254018396139145,
+          "reconstruction_error": 0.00027236342430114746,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13143,7 +13143,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.000979847740381956,
+          "reconstruction_error": 0.00026200059801340103,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13157,7 +13157,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.0010712780058383942,
+          "reconstruction_error": 0.00025520031340420246,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13171,7 +13171,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.0010071247816085815,
+          "reconstruction_error": 0.00029924861155450344,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13185,7 +13185,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.0011030510067939758,
+          "reconstruction_error": 0.0002717995084822178,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13199,7 +13199,7 @@
           "n_values": 110592,
           "payload_bytes": 110592,
           "metadata_bytes": 8640,
-          "reconstruction_error": 0.0008738785982131958,
+          "reconstruction_error": 0.00028248131275177,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13212,7 +13212,7 @@
           "n_values": 24576,
           "payload_bytes": 24576,
           "metadata_bytes": 1920,
-          "reconstruction_error": 0.0006507933139801025,
+          "reconstruction_error": 0.00035069510340690613,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -13225,7 +13225,7 @@
           "n_values": 512,
           "payload_bytes": 512,
           "metadata_bytes": 40,
-          "reconstruction_error": 0.0005916468799114227,
+          "reconstruction_error": 0.00034578144550323486,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -13429,7 +13429,7 @@
       "buffer_bytes": 10984,
       "total_bytes": 775904,
       "compression": 3.7068679406884,
-      "max_error": 0.0014413446187973022
+      "max_error": 0.0011790096759796143
     },
     {
       "model": "sigreg",
@@ -13451,7 +13451,7 @@
           "n_values": 768,
           "payload_bytes": 384,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.024446800351142883,
+          "reconstruction_error": 0.021123796701431274,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13465,7 +13465,7 @@
           "n_values": 1280,
           "payload_bytes": 640,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.021557316184043884,
+          "reconstruction_error": 0.01687374897301197,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13479,7 +13479,7 @@
           "n_values": 1792,
           "payload_bytes": 896,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.020706363022327423,
+          "reconstruction_error": 0.014988511800765991,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13493,7 +13493,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.022570038214325905,
+          "reconstruction_error": 0.004924193024635315,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13507,7 +13507,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.017560064792633057,
+          "reconstruction_error": 0.004739658907055855,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13521,7 +13521,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.01925838738679886,
+          "reconstruction_error": 0.004703890532255173,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13535,7 +13535,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.018317151814699173,
+          "reconstruction_error": 0.005259600467979908,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13549,7 +13549,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.017319373786449432,
+          "reconstruction_error": 0.004952378571033478,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13563,7 +13563,7 @@
           "n_values": 110592,
           "payload_bytes": 55296,
           "metadata_bytes": 17280,
-          "reconstruction_error": 0.01591099426150322,
+          "reconstruction_error": 0.004713468253612518,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13576,7 +13576,7 @@
           "n_values": 24576,
           "payload_bytes": 12288,
           "metadata_bytes": 3840,
-          "reconstruction_error": 0.011801311746239662,
+          "reconstruction_error": 0.006042160093784332,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -13589,7 +13589,7 @@
           "n_values": 512,
           "payload_bytes": 256,
           "metadata_bytes": 80,
-          "reconstruction_error": 0.010741539299488068,
+          "reconstruction_error": 0.0061670932918787,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -13793,7 +13793,7 @@
       "buffer_bytes": 10984,
       "total_bytes": 483464,
       "compression": 6.090413368513633,
-      "max_error": 0.024446800351142883
+      "max_error": 0.021123796701431274
     },
     {
       "model": "sigreg",
@@ -13815,7 +13815,7 @@
           "n_values": 768,
           "payload_bytes": 192,
           "metadata_bytes": 320,
-          "reconstruction_error": 0.1771271675825119,
+          "reconstruction_error": 0.15017999708652496,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13829,7 +13829,7 @@
           "n_values": 1280,
           "payload_bytes": 320,
           "metadata_bytes": 640,
-          "reconstruction_error": 0.15239213407039642,
+          "reconstruction_error": 0.1149376630783081,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13843,7 +13843,7 @@
           "n_values": 1792,
           "payload_bytes": 448,
           "metadata_bytes": 640,
-          "reconstruction_error": 0.14477944374084473,
+          "reconstruction_error": 0.10434833914041519,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13857,7 +13857,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.1362086683511734,
+          "reconstruction_error": 0.03357245400547981,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13871,7 +13871,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.1117325872182846,
+          "reconstruction_error": 0.033277273178100586,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13885,7 +13885,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.13453339040279388,
+          "reconstruction_error": 0.03204074874520302,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13899,7 +13899,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.12475038319826126,
+          "reconstruction_error": 0.03740629926323891,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13913,7 +13913,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.11392611265182495,
+          "reconstruction_error": 0.033990971744060516,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13927,7 +13927,7 @@
           "n_values": 110592,
           "payload_bytes": 27648,
           "metadata_bytes": 34560,
-          "reconstruction_error": 0.10649554431438446,
+          "reconstruction_error": 0.0339202843606472,
           "tensor_class": "Conv1d.weight",
           "role": "weight"
         },
@@ -13940,7 +13940,7 @@
           "n_values": 24576,
           "payload_bytes": 6144,
           "metadata_bytes": 7680,
-          "reconstruction_error": 0.08087395131587982,
+          "reconstruction_error": 0.04369611293077469,
           "tensor_class": "Linear.weight",
           "role": "weight"
         },
@@ -13953,7 +13953,7 @@
           "n_values": 512,
           "payload_bytes": 128,
           "metadata_bytes": 160,
-          "reconstruction_error": 0.07111095637083054,
+          "reconstruction_error": 0.043917957693338394,
           "tensor_class": "Linear.weight",
           "role": "weight"
         }
@@ -14157,7 +14157,7 @@
       "buffer_bytes": 10984,
       "total_bytes": 418584,
       "compression": 7.103816167418958,
-      "max_error": 0.1771271675825119
+      "max_error": 0.15017999708652496
     }
   ]
 }

@@ -12,19 +12,19 @@
   "torch": "2.9.1+cu126",
   "pandas": "2.3.3",
   "inputs": {
-    "results/quant/sweep_dataset.csv": "5788477ae318f3f677b789b7166b6b00",
-    "results/quant/quant_reports.json": "2c4ce1ee6c69d2a6efe93bcb18faad5f"
+    "results/quant/sweep_dataset.csv": "f8fd24a8bdc2795b5ead57424ee47f84",
+    "results/quant/quant_reports.json": "fb0bfbcd42bca2c54ea2a7bd4c197a72"
   },
   "tables": {
     "size": {
       "path": "results/quant/stats_size.csv",
       "rows": 35,
-      "md5": "2ef5102cd2c4eac28c465e2031a55507"
+      "md5": "42e7d00c9da636fae94d468eebc10edf"
     },
     "accuracy": {
       "path": "results/quant/stats_accuracy.csv",
       "rows": 35,
-      "md5": "a4e1d3bf4cd88f5048ca04998b06d975"
+      "md5": "69fa0cebb9fa01bac9b6030d0722bbfa"
     },
     "coverage": {
       "path": "results/quant/stats_coverage.csv",
@@ -34,12 +34,12 @@
     "latency": {
       "path": "results/quant/stats_latency.csv",
       "rows": 7,
-      "md5": "99070f1335c3ad9ea91df3870c761701"
+      "md5": "0ad1065662d2a246bb05ee948010292f"
     },
     "layers": {
       "path": "results/quant/stats_layers.csv",
       "rows": 644,
-      "md5": "f64256319e5158a4ffa53cda7bce7cd7"
+      "md5": "c48bed2ab077439063b5dacaddf4b40f"
     }
   },
   "latency_artifacts": [

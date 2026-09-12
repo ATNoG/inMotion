@@ -36,6 +36,7 @@ EXPECTED: dict[str, int] = {
     "ts_jepa": 2_153_349,
     "cf_jepa": 1_232_261,
     "sigreg": 696_900,
+    "sigreg_icaisf": 696_900,
     "sigreg_seed3": 696_900,
     "sigreg_seed5": 696_900,
     "deep_stack": 43_575_549,

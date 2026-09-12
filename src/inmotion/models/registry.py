@@ -32,6 +32,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 _ISAC = Path("20-aug/models/exotic/normal-new-ds")
 _BACKUP = Path("backup")
+#: Retrain lineage for data/processed/dataset.csv, beside the augmented3/icaisf
+#: ``normal-new-ds`` line. Copied out of the training command's ``models/exotic``
+#: output so that re-running that command cannot overwrite a registered artifact.
+#: The one-line sidecar JSON next to each checkpoint records its config, metrics
+#: and digest.
+_DATASET_CSV = Path("20-aug/models/exotic/dataset-csv")
 
 
 @dataclass(frozen=True)
@@ -123,15 +129,36 @@ CURATED: list[ModelSpec] = [
         published_m=1.232,
         note="after-HPO frontier point",
     ),
+    # SIGReg is the one model whose published checkpoint came from the earlier
+    # 8-device pool: on dataset.csv it collapses to 0.4872 MCC (near chance)
+    # while the four JEPA models move by about +0.03. This is the retrain on
+    # dataset.csv, same architecture, so the Rust port and its goldens stay
+    # valid. The artifact it supersedes is registered as `sigreg_icaisf`.
     ModelSpec(
         "sigreg",
+        "sigreg",
+        {"num_filters": 192},
+        _DATASET_CSV / "sigreg_seed42.pt",
+        696_900,
+        prefix="m.",
+        published_m=0.697,
+        note="retrained on dataset.csv: 192 filters / 3 blocks / latent 128, "
+        "seed 42, lr 1e-3, batch 128, sigreg_lambda 0.01, 29 of 150 epochs, "
+        "val MCC 0.6181, test MCC 0.6333; reproduce with `inmotion train exotic "
+        "--model sigreg --data data/processed/dataset.csv --seed 42 --d-model 192 "
+        "--num-layers 3 --latent-dim 128` (the arch flags are required), full "
+        "config in 20-aug/models/exotic/dataset-csv/sigreg_seed42.json",
+    ),
+    ModelSpec(
+        "sigreg_icaisf",
         "sigreg",
         {"num_filters": 192},
         _BACKUP / "sigreg_seed42.pt",
         696_900,
         prefix="m.",
         published_m=0.697,
-        note="192-filter encoder; paper §2.3 checkpoint",
+        note="superseded by `sigreg` for dataset.csv work; this is the artifact "
+        "MASTER_RESULTS.md §2.3 cites (192-filter encoder, icaisf split)",
     ),
     ModelSpec(
         "sigreg_seed3",

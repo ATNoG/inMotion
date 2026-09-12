@@ -273,13 +273,19 @@ def test_check_baseline_accepts_the_recorded_values() -> None:
     assert EV.check_baseline(rows) == []
 
 
-def test_check_baseline_trips_when_a_recorded_value_moves() -> None:
-    """Perturb one recorded MCC and the guard must fail loudly, naming it."""
-    rows = [_fp32_row(model, mcc) for model, mcc in EV.BASELINE_MCC.items()]
-    rows[0].mcc += 0.02
+@pytest.mark.parametrize("model", sorted(EV.BASELINE_MCC))
+def test_check_baseline_trips_when_a_recorded_value_moves(model: str) -> None:
+    """Perturb one recorded MCC and the guard must fail loudly, naming it.
+
+    Every recorded value is perturbed in turn, so the guard is proved live for
+    each model rather than only for whichever one happens to be first.
+    """
+    rows = [_fp32_row(name, mcc) for name, mcc in EV.BASELINE_MCC.items()]
+    moved = next(row for row in rows if row.model == model)
+    moved.mcc += 0.02
     problems = EV.check_baseline(rows)
-    assert problems, "guard accepted a moved baseline"
-    assert rows[0].model in problems[0]
+    assert problems, f"guard accepted a moved {model} baseline"
+    assert moved.model in problems[0]
 
 
 def test_check_baseline_rejects_an_unrecorded_model() -> None:

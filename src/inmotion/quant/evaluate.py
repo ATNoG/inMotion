@@ -54,7 +54,10 @@ BASELINE_MCC: dict[str, float] = {
     "t_jepa": 0.8982207226632052,
     "ts_jepa": 0.9194244062588919,
     "cf_jepa": 0.9083210968710779,
-    "sigreg": 0.48717085728503073,
+    # Retrained on dataset.csv; config in
+    # 20-aug/models/exotic/dataset-csv/sigreg_seed42.json. The icaisf lineage
+    # checkpoint (registry `sigreg_icaisf`) scored 0.4872 here.
+    "sigreg": 0.6333303415465718,
 }
 
 

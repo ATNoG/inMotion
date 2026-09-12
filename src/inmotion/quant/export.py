@@ -47,7 +47,8 @@ from safetensors.numpy import save_file
 
 from inmotion.data.paths import resolve as resolve_path
 from inmotion.models import registry as reg
-from inmotion.quant.evaluate import load_split
+from inmotion.models.wrappers import strip_prefix
+from inmotion.quant.evaluate import BASELINE_DATASET, load_split
 from inmotion.quant.model import _is_quantizable, apply, apply_cast, quantize_tensor
 from inmotion.quant.packing import fold_bias_into_zero_point, pack
 from inmotion.quant.spec import FLOAT_PRECISIONS, QuantSpec
@@ -140,6 +141,89 @@ def _fold_weight_norm(model: torch.nn.Module) -> dict[str, np.ndarray]:
     return out
 
 
+def _transformer_arch(model: torch.nn.Module) -> dict[str, object]:
+    """Describe a JEPA transformer for a non-Python runtime.
+
+    The registry's ``arch`` holds the *factory arguments*, and it is empty for
+    models whose factory takes its defaults (``ts_jepa``, ``cf_jepa``). The
+    runtime cannot load those without ``num_layers``/``nhead``, and it selects
+    its tokenizer and tail from these fields, so they are read from the module
+    that is actually being exported rather than from a name.
+
+    Returns ``{}`` for models that are not one of the transformer families, so
+    this stays callable from a generic exporter.
+    """
+    if not _is_transformer(model):
+        return {}
+    encoder = model.encoder
+    layers = encoder.transformer.layers
+    first = layers[0]
+    arch: dict[str, object] = {
+        "family": "transformer",
+        "d_model": int(first.linear1.in_features),
+        "nhead": int(first.self_attn.num_heads),
+        "num_layers": len(layers),
+        "tail": "proj_bn" if hasattr(encoder, "bn") else "layernorm",
+        # T-JEPA prepends [REG] slots (dropped again before pooling) and projects
+        # the tokens before the transformer; nothing else does. Both are recorded
+        # so the runtime selects a code path instead of inferring one.
+        "n_reg": int(getattr(encoder, "n_reg_tokens", 0)),
+        "input_proj": hasattr(encoder, "input_proj"),
+    }
+    tokenizer = encoder.tokenizer
+    if hasattr(tokenizer, "feat_idx_embed"):
+        # T-JEPA: one token per input slot, scaled elementwise, plus a
+        # feature-index embedding instead of a positional one.
+        arch["tokenizer"] = "feature"
+        arch["total_features"] = int(tokenizer.total_features)
+        arch["n_tokens"] = arch["n_reg"] + arch["total_features"]
+    elif hasattr(tokenizer, "proj"):
+        arch["tokenizer"] = "patch"
+        arch["patch_size"] = int(tokenizer.proj.kernel_size[0])
+        arch["n_tokens"] = int(encoder.pos_embed.shape[1])
+    else:
+        arch["tokenizer"] = "linear"
+        arch["n_tokens"] = int(encoder.pos_embed.shape[1])
+    return arch
+
+
+def _sigreg_arch(model: torch.nn.Module) -> dict[str, object]:
+    """Describe the SIGReg CNN for a non-Python runtime.
+
+    Read from the module, for the same reason `_transformer_arch` is: the runtime
+    selects its code path from these fields and must not have to assume them.
+
+    Returns ``{}`` for models that are not the SIGReg CNN.
+    """
+    inner = getattr(model, "m", model)  # `TupleWrap` nests the model under `m.`
+    encoder = getattr(inner, "encoder", None)
+    if encoder is None or not hasattr(encoder, "blocks"):
+        return {}
+    return {
+        "family": "sigreg_cnn",
+        "in_features": int(encoder.conv3.in_channels),
+        "num_filters": int(encoder.bn.num_features),
+        "num_blocks": len(encoder.blocks),
+        "front_kernels": [
+            int(encoder.conv3.kernel_size[0]),
+            int(encoder.conv5.kernel_size[0]),
+            int(encoder.conv7.kernel_size[0]),
+        ],
+        "block_kernels": [
+            int(encoder.blocks[0].block[0].kernel_size[0]),
+            int(encoder.blocks[0].block[3].kernel_size[0]),
+        ],
+        "latent_dim": int(inner.latent_proj.out_features),
+        "num_classes": int(inner.classifier.out_features),
+    }
+
+
+def _is_transformer(model: torch.nn.Module) -> bool:
+    """True for the JEPA classifiers, whose block stack `_transformer_arch` reads."""
+    encoder = getattr(model, "encoder", None)
+    return encoder is not None and hasattr(encoder, "transformer")
+
+
 def export(
     model_name: str,
     out_dir: Path,
@@ -155,6 +239,12 @@ def export(
 
     raw = _fold_weight_norm(model)
     _split_qkv(raw, model)
+    if spec_obj.prefix:
+        # `TupleWrap` (SIGReg) nests the model under `m.`, so a raw state dict
+        # would read `m.encoder...`. The artifact is the runtime's interface, so
+        # it carries the model's own names; the registry already declares the
+        # prefix, so nothing is renamed by hand.
+        raw = strip_prefix(raw, spec_obj.prefix)
 
     quant_spec: QuantSpec | None = resolve_spec(quant) if quant else None
     tensors: dict[str, np.ndarray] = {}
@@ -173,7 +263,11 @@ def export(
             ).astype(np.int32)
             index[name] = {
                 "quantized": True,
-                "shape": list(qt.shape),
+                # The *original* shape, as `TensorInfo.shape` promises. `qt.shape`
+                # is the flattened quantization view (a Conv1d (out, in, k) becomes
+                # (out, in*k) under per-group), and recording that made a 3-D
+                # weight load as a matrix.
+                "shape": list(array.shape),
                 "bits": quant_spec.bits,
                 "granularity": quant_spec.granularity.value,
                 "group_size": quant_spec.group_size,
@@ -197,7 +291,10 @@ def export(
         "artifact_version": ARTIFACT_VERSION,
         "model": model_name,
         "factory": spec_obj.factory,
-        "arch": spec_obj.arch,
+        # Registry args first, then what the module actually is: the two
+        # describe different things and the module wins on conflict. Only one of
+        # the two descriptors ever returns anything.
+        "arch": {**spec_obj.arch, **_transformer_arch(model), **_sigreg_arch(model)},
         "rich_features": spec_obj.rich,
         "seq_len": 10,
         "in_channels": 18 if spec_obj.rich else 4,
@@ -244,8 +341,10 @@ def write_golden(
 ) -> Path:
     """Write input/output pairs for a non-Python runtime to reproduce.
 
-    Inputs come from the real test split rather than a normal distribution, so
-    the parity test exercises the value ranges the model actually sees.
+    Inputs come from the real test split of the same dataset the accuracy
+    harness uses (``evaluate.BASELINE_DATASET``) rather than a normal
+    distribution, so the parity test exercises the value ranges the model
+    actually sees and no second dataset creeps back into the quant path.
 
     ``quant`` must match the artifact's scheme. The golden outputs are produced by
     the *same* quantized weights the artifact contains, because the runtime
@@ -254,7 +353,7 @@ def write_golden(
     and would be reported as a parity failure.
     """
     spec_obj = reg.by_name(model_name)
-    path = dataset or resolve_path("dataset.icaisf.csv")
+    path = dataset or resolve_path(BASELINE_DATASET)
     X, _y, test_idx, classes = load_split(model_name, path, seed)
 
     model = reg.load(spec_obj, strict=True).eval()

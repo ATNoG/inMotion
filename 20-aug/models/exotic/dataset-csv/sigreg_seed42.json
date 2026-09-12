@@ -1,0 +1,64 @@
+{
+  "model": "sigreg",
+  "checkpoint": "20-aug/models/exotic/dataset-csv/sigreg_seed42.pt",
+  "checkpoint_sha256": "36b952424366149a845a4d60978fc61eda7574c766f23b4186a1ad8d36f43d4f",
+  "also_copied_to": "models/exotic/sigreg_seed42.pt (the training command's own output path, same sha256)",
+  "params": 696900,
+  "architecture": {
+    "in_features": 4,
+    "num_filters": 192,
+    "num_blocks": 3,
+    "latent_dim": 128,
+    "num_classes": 4,
+    "sigreg_lambda": 0.01
+  },
+  "training": {
+    "dataset": "data/processed/dataset.csv",
+    "dataset_sha256": "39dc03701e7882ac850262500b287e36afab5d7a9657edc4618604b0052dccc1",
+    "dataset_rows": 3511,
+    "seed": 42,
+    "batch_size": 128,
+    "lr": 0.001,
+    "optimizer": "AdamW",
+    "scheduler": "CosineAnnealingLR(T_max=epochs)",
+    "epochs_requested": 150,
+    "epochs_run": 29,
+    "patience": 25,
+    "device": "cpu",
+    "wall_clock_seconds": 187.3,
+    "command": "uv run inmotion train exotic --model sigreg --data data/processed/dataset.csv --seed 42 --d-model 192 --num-layers 3 --latent-dim 128"
+  },
+  "metrics": {
+    "best_val_mcc": 0.6181172796872655,
+    "test_mcc_dataset_csv": 0.6333303415465718,
+    "test_accuracy_dataset_csv": 0.7240398293029872,
+    "test_mcc_of_superseded_icaisf_checkpoint": 0.48717085728503073
+  },
+  "config_selection": [
+    {
+      "config": "lr=1e-3, epochs=150, patience=25",
+      "best_val_mcc": 0.6181172796872655,
+      "chosen": true
+    },
+    {
+      "config": "lr=3e-4, epochs=60, patience=20",
+      "best_val_mcc": 0.6114314067971595,
+      "chosen": false
+    },
+    {
+      "config": "lr=1e-3, epochs=30, patience=30",
+      "best_val_mcc": 0.6109868556555359,
+      "chosen": false
+    }
+  ],
+  "env": {
+    "torch": "2.9.1+cu126",
+    "git": "301453b532ecb408edcaa366848a53a21e40be77"
+  },
+  "notes": [
+    "Chosen on best validation MCC only; the test MCC above was not used for selection.",
+    "The --d-model 192 --num-layers 3 flags matter: the entry point maps d_model to num_filters and num_layers to num_blocks for sigreg, and the CLI defaults (256/4) would build a different architecture.",
+    "Same architecture as the superseded backup/sigreg_seed42.pt (registry name sigreg_icaisf): identical state_dict keys and shapes (62 tensors, 696,900 parameters), so the Rust port and its parity goldens stay valid in shape; only the weights differ.",
+    "The superseded checkpoint remains registered and on disk because MASTER_RESULTS.md section 2.3 cites it."
+  ]
+}

@@ -27,10 +27,10 @@ cf_jepa,int8,8,dataset.csv,42,703,0.90634571928855,0.9288762446657184,0.92930613
 cf_jepa,q8,8,dataset.csv,42,703,0.90634571928855,0.9288762446657184,0.929306131650971,-0.0019753775825278597,0.004799,results/quant/sweep_dataset.csv,inmotion quantize stats
 cf_jepa,q4,4,dataset.csv,42,703,0.9047495583672421,0.9274537695590327,0.928049247384107,-0.003571538503835736,0.087759,results/quant/sweep_dataset.csv,inmotion quantize stats
 cf_jepa,q2,2,dataset.csv,42,703,0.45297825100306244,0.5633001422475107,0.5014812262334185,-0.45534284586801543,0.606633,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,fp32,32,dataset.csv,42,703,0.48717085728503073,0.6145092460881935,0.6148720566491226,0.0,0.0,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,bf16,16,dataset.csv,42,703,0.48717085728503073,0.6145092460881935,0.6148720566491226,0.0,0.000973,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,fp16,16,dataset.csv,42,703,0.48717085728503073,0.6145092460881935,0.6148720566491226,0.0,0.000122,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,int8,8,dataset.csv,42,703,0.48717085728503073,0.6145092460881935,0.6148720566491226,0.0,0.001441,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,q8,8,dataset.csv,42,703,0.48717085728503073,0.6145092460881935,0.6148720566491226,0.0,0.001441,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,q4,4,dataset.csv,42,703,0.49275599163455397,0.6187766714082503,0.6191079037234042,0.005585134349523235,0.024447,results/quant/sweep_dataset.csv,inmotion quantize stats
-sigreg,q2,2,dataset.csv,42,703,0.28131802304278686,0.45803698435277385,0.4491706752938542,-0.20585283424224388,0.177127,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,fp32,32,dataset.csv,42,703,0.6333303415465718,0.7240398293029872,0.7245963497788281,0.0,0.0,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,bf16,16,dataset.csv,42,703,0.6333303415465718,0.7240398293029872,0.7245963497788281,0.0,0.000969,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,fp16,16,dataset.csv,42,703,0.6333303415465718,0.7240398293029872,0.7245963497788281,0.0,0.00012,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,int8,8,dataset.csv,42,703,0.6333303415465718,0.7240398293029872,0.7245963497788281,0.0,0.001179,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,q8,8,dataset.csv,42,703,0.6333303415465718,0.7240398293029872,0.7245963497788281,0.0,0.001179,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,q4,4,dataset.csv,42,703,0.6275338851196712,0.7197724039829303,0.7207376902109833,-0.00579645642690052,0.021124,results/quant/sweep_dataset.csv,inmotion quantize stats
+sigreg,q2,2,dataset.csv,42,703,0.5908593053867298,0.6913229018492176,0.6897967795997783,-0.042471036159841935,0.15018,results/quant/sweep_dataset.csv,inmotion quantize stats

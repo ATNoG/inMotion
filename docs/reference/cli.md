@@ -295,15 +295,15 @@ Quantize models and measure the cost.
 
 ### `quantize eval`
 
-Measure accuracy under quantization on the paper's split.
+Measure accuracy under quantization on dataset.csv.
 
 Options:
 
-- `--models` - Comma-separated; default: the JEPA family.
+- `--models` - Comma-separated; default: all five world models.
 - `--formats` - Comma-separated; default: all.
-- `--data` - Dataset CSV; default: dataset.icaisf.csv.
+- `--data` - Dataset CSV; default: dataset.csv.
 - `--seed` (default: `42`) - Split seed.
-- `--out` (default: `results/quant/sweep.csv`) - Where to write the results CSV.
+- `--out` (default: `results/quant/sweep_dataset.csv`) - Where to write the results CSV.
 
 ### `quantize export`
 
@@ -335,6 +335,21 @@ Arguments:
 Options:
 
 - `--format`, `-f` (default: `int8`) - Scheme, e.g. q4.
+
+### `quantize stats`
+
+Write the quantization statistics tables the figures read.
+
+Options:
+
+- `--models` - Comma-separated; default: all five world models.
+- `--formats` - Comma-separated; default: all.
+- `--data` - Dataset CSV; default: dataset.csv.
+- `--seed` (default: `42`) - Split seed.
+- `--sweep` (default: `results/quant/sweep_dataset.csv`) - Accuracy/size CSV from `quantize eval`.
+- `--out-dir` (default: `results/quant`) - Where the tables and raw capture go.
+- `--latency-iters` (default: `200`) - Batch-1 torch reference timings; 0 disables.
+- `--latency-warmup` (default: `20`) - Warmup iterations per measurement.
 
 ## `train`
 
