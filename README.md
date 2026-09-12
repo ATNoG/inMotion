@@ -130,7 +130,15 @@ uv run ruff format --check src dl ml_classification tests
 uv run python scripts/docs/generate_reference.py --check
 ```
 
-All of these also run in CI (`.github/workflows/ci.yaml`).
+`scripts/check.sh` runs all of them at once:
+
+```bash
+./scripts/check.sh          # lint, format, docs, tests, rust checks
+./scripts/check.sh --full   # also the demo suite and the Rust parity test
+```
+
+There is deliberately no CI: the checks run locally, on demand, so they cost
+nothing.
 
 Model tests verify that every documented checkpoint loads with `strict=True` and
 matches its recorded parameter count, and that each model's output still matches

@@ -13,7 +13,7 @@ Writes:
 
 Generating beats hand-writing here: a reference that is derived from the code
 cannot disagree with it. `--check` re-generates in memory and fails if the
-committed files are stale, which is what CI runs.
+committed files are stale, which is what `scripts/check.sh` runs.
 """
 
 from __future__ import annotations

@@ -73,12 +73,13 @@ is untracked and regenerable.
 
 `docs/` now holds an architecture guide, a reproducibility statement, two task
 guides, four generated references, model cards and an audit checklist. The
-reference documents are generated from the code and CI fails when they are stale.
+reference documents are generated from the code, and `scripts/check.sh` fails
+when they are stale.
 
 ### Auditability
 
-CI runs lint, formatting, doc-staleness, the root suite, the demo suite and a
-secret guard. `docs/audit/AUDIT_CHECKLIST.md` maps every claim to the command
+`scripts/check.sh` runs lint, formatting, doc-staleness, the test suites and a
+secret guard locally, with no CI minutes spent. `docs/audit/AUDIT_CHECKLIST.md` maps every claim to the command
 that verifies it.
 
 ## Findings that need a decision

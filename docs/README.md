@@ -20,8 +20,8 @@ reference you need. `../README.md` is the project front page.
 
 ## Reference (generated from the code)
 
-Regenerate with `uv run python scripts/docs/generate_reference.py`; CI fails if
-these are stale.
+Regenerate with `uv run python scripts/docs/generate_reference.py`. The docs
+freshness check in `scripts/check.sh` fails if they are stale.
 
 | document | contents |
 |---|---|

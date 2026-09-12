@@ -58,7 +58,7 @@ DOCUMENTED_MISSING = {
 # A backticked path with a slash or a known extension, e.g. `docs/foo.md`,
 # `src/inmotion/cli.py`, `backup/x.pt`.
 _PATH_IN_BACKTICKS = re.compile(
-    r"`((?:docs|src|tests|scripts|data|demo|dl|ml_classification|backup|models|20-aug)"
+    r"`((?:\.github|docs|src|tests|scripts|data|demo|dl|ml_classification|backup|models|20-aug)"
     r"/[A-Za-z0-9_./{}<>-]+)`"
 )
 

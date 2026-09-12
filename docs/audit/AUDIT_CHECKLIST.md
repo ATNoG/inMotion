@@ -43,7 +43,8 @@ by editing the wrong side.
 | reference docs current | `uv run python scripts/docs/generate_reference.py --check` | up to date |
 | no committed secrets | `uv run pytest tests/test_no_secrets.py` | pass |
 
-All of the above run in CI on every push.
+All of the above run together via `./scripts/check.sh`. There is no CI by
+choice, so run it before pushing.
 
 ## 5. Are hidden failure modes covered by tests?
 
