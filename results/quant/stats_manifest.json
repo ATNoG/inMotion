@@ -1,0 +1,48 @@
+{
+  "command": "inmotion quantize stats",
+  "reproduce": "uv run inmotion quantize stats",
+  "argv": [
+    "/home/andre/Desktop/UA/IT/inMotion/inMotion/.venv/bin/inmotion",
+    "quantize",
+    "stats"
+  ],
+  "cwd": "/home/andre/Desktop/UA/IT/inMotion/inMotion",
+  "hostname": "andreribeiro",
+  "python": "3.13.7",
+  "torch": "2.9.1+cu126",
+  "pandas": "2.3.3",
+  "inputs": {
+    "results/quant/sweep_dataset.csv": "5788477ae318f3f677b789b7166b6b00",
+    "results/quant/quant_reports.json": "2c4ce1ee6c69d2a6efe93bcb18faad5f"
+  },
+  "tables": {
+    "size": {
+      "path": "results/quant/stats_size.csv",
+      "rows": 35,
+      "md5": "2ef5102cd2c4eac28c465e2031a55507"
+    },
+    "accuracy": {
+      "path": "results/quant/stats_accuracy.csv",
+      "rows": 35,
+      "md5": "a4e1d3bf4cd88f5048ca04998b06d975"
+    },
+    "coverage": {
+      "path": "results/quant/stats_coverage.csv",
+      "rows": 735,
+      "md5": "cd4619ab24ebcdd5c35e6b534ad9c579"
+    },
+    "latency": {
+      "path": "results/quant/stats_latency.csv",
+      "rows": 7,
+      "md5": "99070f1335c3ad9ea91df3870c761701"
+    },
+    "layers": {
+      "path": "results/quant/stats_layers.csv",
+      "rows": 644,
+      "md5": "f64256319e5158a4ffa53cda7bce7cd7"
+    }
+  },
+  "latency_artifacts": [
+    "results/quant/edge_router_j3455.json"
+  ]
+}
