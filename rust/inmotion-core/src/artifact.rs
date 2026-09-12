@@ -67,6 +67,62 @@ pub struct Meta {
     pub quant: Option<serde_json::Value>,
 }
 
+impl Meta {
+    /// Read an integer architecture field the exporter recorded.
+    ///
+    /// The runtime selects its code path from these fields, so a missing one is
+    /// an error rather than a default: guessing produced a model that ran and
+    /// returned confident wrong answers.
+    pub fn usize_field(&self, key: &str) -> Result<usize, String> {
+        self.arch
+            .get(key)
+            .and_then(serde_json::Value::as_u64)
+            .map(|v| v as usize)
+            .ok_or_else(|| {
+                format!("artifact does not record `{key}`; re-export it from the registry entry")
+            })
+    }
+
+    /// Read a boolean architecture field the exporter recorded.
+    pub fn bool_field(&self, key: &str) -> Result<bool, String> {
+        self.arch
+            .get(key)
+            .and_then(serde_json::Value::as_bool)
+            .ok_or_else(|| {
+                format!("artifact does not record `{key}`; re-export it from the registry entry")
+            })
+    }
+
+    /// Read a list-of-integers architecture field the exporter recorded.
+    pub fn usize_list_field(&self, key: &str) -> Result<Vec<usize>, String> {
+        let missing =
+            || format!("artifact does not record `{key}`; re-export it from the registry entry");
+        let items = self
+            .arch
+            .get(key)
+            .and_then(serde_json::Value::as_array)
+            .ok_or_else(missing)?;
+        items
+            .iter()
+            .map(|item| {
+                item.as_u64()
+                    .map(|v| v as usize)
+                    .ok_or_else(|| format!("`{key}` must be a list of integers, got {item}"))
+            })
+            .collect()
+    }
+
+    /// Read a string architecture field the exporter recorded.
+    pub fn str_field<'a>(&'a self, key: &str) -> Result<&'a str, String> {
+        self.arch
+            .get(key)
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| {
+                format!("artifact does not record `{key}`; re-export it from the registry entry")
+            })
+    }
+}
+
 /// Normalization epsilons, taken from the artifact rather than hardcoded.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Eps {

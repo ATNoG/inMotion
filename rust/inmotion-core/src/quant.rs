@@ -125,15 +125,21 @@ pub fn dequantize(qw: &QuantizedWeight) -> Result<Tensor, String> {
                 .collect()
         }
         Granularity::PerGroup => {
-            // Groups run along the flattened last axis, so the metadata is laid
-            // out as (rows, n_groups) and scale[i] pairs with the i-th group of
-            // the i / n_groups-th row.
-            let last = *qw.shape.last().ok_or("per_group needs a last axis")?;
+            // Groups run along the last axis *after* the exporter flattened every
+            // trailing axis into one, so a Conv1d (out, in, kernel) weight groups
+            // over in*kernel, not over kernel. The artifact still declares the
+            // original shape, so the row length is recovered from it rather than
+            // from `shape.last()`. Metadata is laid out as (rows, n_groups) and
+            // scale[i] pairs with the i-th group of the i / n_groups-th row.
             let group = qw.group_size;
             if group == 0 {
                 return Err("per_group requires group_size > 0".into());
             }
-            let rows = count.checked_div(last).filter(|_| last > 0).unwrap_or(0);
+            let rows = *qw.shape.first().ok_or("per_group needs a leading axis")?;
+            if rows == 0 {
+                return Err("per_group weight has a zero-length leading axis".into());
+            }
+            let last = count / rows;
             let n_groups = last.div_ceil(group);
             if qw.scale.len() != rows * n_groups {
                 return Err(format!(
@@ -281,6 +287,27 @@ mod tests {
         // row 0 codes 0,1,2,3 -> groups [g0,g0,g1,g1] -> scales [1,1,2,2]
         // row 1 codes 4,5,6,7 -> groups [g0,g0,g1,g1] -> scales [3,3,4,4]
         assert_eq!(got.data, vec![0.0, 1.0, 4.0, 6.0, 12.0, 15.0, 24.0, 28.0]);
+    }
+
+    #[test]
+    fn per_group_flattens_the_trailing_axes_of_a_conv_weight() {
+        // A Conv1d (out=2, in=1, k=3) weight under per-group is grouped over the
+        // flattened row of length 3, so the artifact's 3-D shape must not be read
+        // as "groups run along the kernel axis".
+        let qw = weight(
+            vec![2, 1, 3],
+            8,
+            PerGroup,
+            2,
+            0,
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![0; 4],
+        );
+        let got = dequantize(&qw).unwrap();
+        assert_eq!(got.shape, vec![2, 1, 3]);
+        // Codes 0..5; row 0 = [0,1,2] -> groups [g0,g0,g1] -> scales [1,1,2];
+        // row 1 = [3,4,5] -> groups [g0,g0,g1] -> scales [3,3,4].
+        assert_eq!(got.data, vec![0.0, 1.0, 4.0, 9.0, 12.0, 20.0]);
     }
 
     #[test]

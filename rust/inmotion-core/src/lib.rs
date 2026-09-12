@@ -6,16 +6,18 @@
 //! 1. **It does not depend on `PyTorch`, ONNX Runtime or `ndarray`.** The target
 //!    includes an ESP32-S3, and the graph is small and fixed-shape.
 //! 2. **It is verified against the reference, not assumed correct.** The Python
-//!    exporter writes golden input/output pairs from the real test split and
-//!    `tests/parity.rs` asserts this port reproduces them. A port that is not
-//!    checked against the original is worthless.
+//!    exporter writes golden input/output pairs from the real test split and the
+//!    CLI replays them. A port that is not checked against the original is
+//!    worthless.
 
 pub mod artifact;
-pub mod lejepa;
+pub mod model;
 pub mod ops;
 pub mod quant;
+pub mod sigreg;
 pub mod tensor;
+pub mod world_model;
 
 pub use artifact::Artifact;
-pub use lejepa::LeJepa;
+pub use model::{Family, Model};
 pub use tensor::Tensor;

@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use inmotion_core::{Artifact, LeJepa, Tensor};
+use inmotion_core::{Artifact, Model, Tensor};
 
 fn usage() -> &'static str {
     "usage:\n  \
@@ -50,16 +50,18 @@ fn read_window(path: &Path, seq_len: usize, channels: usize) -> Result<Tensor, S
 
 fn describe(artifact_dir: &Path) -> Result<(), String> {
     let artifact = Artifact::load(artifact_dir)?;
-    let model = LeJepa::load(&artifact)?;
+    let model = Model::load(&artifact)?;
     println!("model        : {}", artifact.meta.model);
     println!("artifact     : {}", artifact_dir.display());
     println!("tensors      : {}", artifact.tensor_count());
-    println!("seq_len      : {}", model.config.seq_len);
-    println!("in_channels  : {}", model.config.in_channels);
-    println!("d_model      : {}", model.config.d_model);
-    println!("n_heads      : {}", model.config.n_heads);
-    println!("num_layers   : {}", model.config.num_layers);
-    println!("num_classes  : {}", model.config.num_classes);
+    println!("family       : {}", model.family().as_str());
+    println!("seq_len      : {}", model.seq_len());
+    println!("in_channels  : {}", model.in_channels());
+    println!("num_classes  : {}", model.num_classes());
+    // Each family reports the hyperparameters that shape its own graph.
+    for (name, value) in model.describe() {
+        println!("{name:<13}: {value}");
+    }
     match &artifact.meta.quant {
         Some(q) => println!("quantization : {q}"),
         None => println!("quantization : none (fp32)"),
@@ -69,8 +71,8 @@ fn describe(artifact_dir: &Path) -> Result<(), String> {
 
 fn predict(artifact_dir: &Path, input: &Path) -> Result<(), String> {
     let artifact = Artifact::load(artifact_dir)?;
-    let model = LeJepa::load(&artifact)?;
-    let x = read_window(input, model.config.seq_len, model.config.in_channels)?;
+    let model = Model::load(&artifact)?;
+    let x = read_window(input, model.seq_len(), model.in_channels())?;
 
     let logits = model.forward(&x);
     let probs =
@@ -90,7 +92,7 @@ fn predict(artifact_dir: &Path, input: &Path) -> Result<(), String> {
 
 fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
     let artifact = Artifact::load(artifact_dir)?;
-    let model = LeJepa::load(&artifact)?;
+    let model = Model::load(&artifact)?;
     let text = fs::read_to_string(golden_dir.join("golden.json"))
         .map_err(|e| format!("golden.json: {e}"))?;
     let golden: serde_json::Value =
@@ -120,7 +122,7 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
             .map(|v| v.as_f64().unwrap() as f32)
             .collect();
 
-        let x = Tensor::new(input, vec![model.config.seq_len, model.config.in_channels]);
+        let x = Tensor::new(input, vec![model.seq_len(), model.in_channels()]);
         let got = model.forward(&x).data;
         let diff = got
             .iter()
@@ -149,12 +151,13 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
 ///
 /// A single timed run on a quiet machine is noise, so this warms up first and
 /// reports the median and the tail, which is what an embedded deployment is
-/// actually judged on.
-fn bench(artifact_dir: &Path, iterations: usize, warmup: usize) -> Result<(), String> {
+/// actually judged on. `--json` emits the same numbers as one JSON object, so a
+/// benchmark taken on the router lands in `results/perf/` without a parser.
+fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> Result<(), String> {
     let artifact = Artifact::load(artifact_dir)?;
-    let model = LeJepa::load(&artifact)?;
-    let channels = model.config.in_channels;
-    let seq_len = model.config.seq_len;
+    let model = Model::load(&artifact)?;
+    let channels = model.in_channels();
+    let seq_len = model.seq_len();
 
     let rng = (0..seq_len * channels)
         .map(|i| ((i * 37) % 41) as f32 - 60.0)
@@ -179,15 +182,33 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize) -> Result<(), St
     let max = samples[samples.len() - 1];
     let mean = samples.iter().sum::<f64>() / samples.len() as f64;
 
-    println!("model       : {}", artifact.meta.model);
-    println!("artifact    : {}", artifact_dir.display());
-    println!("iterations  : {iterations} (+{warmup} warmup)");
-    println!("min         : {min:.4} ms");
-    println!("median      : {median:.4} ms");
-    println!("mean        : {mean:.4} ms");
-    println!("p95         : {p95:.4} ms");
-    println!("max         : {max:.4} ms");
-    println!("throughput  : {:.1} inferences/s", 1000.0 / median);
+    let throughput = 1000.0 / median;
+    if json {
+        // Schema matches `results/quant/edge_router_j3455.json`'s `benchmark`
+        // block, so the two can be diffed field by field.
+        println!(
+            "{{\"model\":{},\"artifact\":{},\"iterations\":{iterations},\"warmup\":{warmup},\
+             \"quantization\":{},\"min_ms\":{min:.4},\"median_ms\":{median:.4},\
+             \"mean_ms\":{mean:.4},\"p95_ms\":{p95:.4},\"max_ms\":{max:.4},\
+             \"throughput_per_s\":{throughput:.1}}}",
+            serde_json::to_string(&artifact.meta.model).unwrap(),
+            serde_json::to_string(&artifact_dir.display().to_string()).unwrap(),
+            match &artifact.meta.quant {
+                Some(q) => serde_json::to_string(q).unwrap(),
+                None => "null".to_string(),
+            },
+        );
+    } else {
+        println!("model       : {}", artifact.meta.model);
+        println!("artifact    : {}", artifact_dir.display());
+        println!("iterations  : {iterations} (+{warmup} warmup)");
+        println!("min         : {min:.4} ms");
+        println!("median      : {median:.4} ms");
+        println!("mean        : {mean:.4} ms");
+        println!("p95         : {p95:.4} ms");
+        println!("max         : {max:.4} ms");
+        println!("throughput  : {throughput:.1} inferences/s");
+    }
     Ok(())
 }
 
@@ -217,7 +238,7 @@ fn main() -> ExitCode {
             let warmup = arg_value(&args, "--warmup")
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(20);
-            bench(&artifact_dir, iterations, warmup)
+            bench(&artifact_dir, iterations, warmup, args.iter().any(|a| a == "--json"))
         }
         "check" => match arg_value(&args, "--golden") {
             Some(p) => check(&artifact_dir, &PathBuf::from(p)),
