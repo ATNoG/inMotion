@@ -13,8 +13,9 @@ app = typer.Typer(no_args_is_help=True, help="Quantize models and measure the co
 NAME = "quantize"
 HELP = "Quantize models and measure the cost."
 
-#: Models that can be deployed; the JEPA family is the target.
-DEPLOY_MODELS = ("lejepa", "t_jepa", "ts_jepa", "cf_jepa")
+#: Models the quantization sweep evaluates: the deployable family plus the
+#: SIGReg CNN, which :data:`inmotion.quant.evaluate.BASELINE_MCC` also records.
+DEPLOY_MODELS = ("lejepa", "t_jepa", "ts_jepa", "cf_jepa", "sigreg")
 ALL_FORMATS = (*FLOAT_PRECISIONS, *sorted(PRESET_SPECS))
 
 
@@ -138,27 +139,30 @@ def export_cmd(
         )
 
 
-@app.command("eval", help="Measure accuracy under quantization on the paper's split.")
+@app.command("eval", help="Measure accuracy under quantization on dataset.csv.")
 def evaluate(
     models: Annotated[
-        str | None, typer.Option("--models", help="Comma-separated; default: the JEPA family.")
+        str | None,
+        typer.Option("--models", help="Comma-separated; default: all five world models."),
     ] = None,
     formats: Annotated[
         str | None, typer.Option("--formats", help="Comma-separated; default: all.")
     ] = None,
     data: Annotated[
-        Path | None, typer.Option("--data", help="Dataset CSV; default: dataset.icaisf.csv.")
+        Path | None, typer.Option("--data", help="Dataset CSV; default: dataset.csv.")
     ] = None,
     seed: Annotated[int, typer.Option("--seed", help="Split seed.")] = 42,
     out: Annotated[Path, typer.Option("--out", help="Where to write the results CSV.")] = Path(
-        "results/quant/sweep.csv"
+        "results/quant/sweep_dataset.csv"
     ),
 ) -> None:
     """Sweep models x formats and write one row per measurement.
 
-    The unquantized run must reproduce the MCC recorded in MASTER_RESULTS.md; if
-    it does not, the harness is wrong and the command fails rather than
-    publishing numbers nobody can trace.
+    The unquantized run must reproduce the baseline MCC recorded in
+    ``inmotion.quant.evaluate.BASELINE_MCC`` for dataset.csv; if it does not,
+    the harness is wrong and the command fails rather than publishing numbers
+    nobody can trace. MASTER_RESULTS.md is a different dataset and is not
+    consulted.
     """
     from inmotion.quant.evaluate import check_baseline, sweep, write_csv
 
@@ -184,4 +188,7 @@ def evaluate(
         for problem in problems:
             typer.secho(f"  {problem}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
-    typer.secho("\nbaseline reproduced: fp32 matches MASTER_RESULTS", fg=typer.colors.GREEN)
+    typer.secho(
+        "\nbaseline reproduced: fp32 matches BASELINE_MCC on dataset.csv",
+        fg=typer.colors.GREEN,
+    )

@@ -1,8 +1,14 @@
-"""Accuracy under quantization, measured on the paper's split.
+"""Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
-The point of this module is that the numbers it produces are comparable with
-``docs/isac/results/MASTER_RESULTS.md``. It therefore reuses the *same* splits
-and the same feature pipeline the models were trained with:
+Every number this module produces is on **dataset.csv**. It is *not* on
+``dataset.icaisf.csv``, so it is **not** comparable with the MCC values in
+``docs/isac/results/MASTER_RESULTS.md`` section 2.3 (lejepa 0.8850, t_jepa
+0.8694, ts_jepa 0.8785, cf_jepa 0.8661, sigreg 0.8858), which were measured on
+the icaisf variant. The two splits differ in size and in score; MASTER_RESULTS
+is left untouched as the record of what was published on icaisf.
+
+Otherwise the harness reuses the *same* splits and the same feature pipeline the
+models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
@@ -36,18 +42,20 @@ from inmotion.quant.model import apply, apply_cast
 from inmotion.quant.spec import FLOAT_PRECISIONS
 from inmotion.quant.spec import resolve as resolve_spec
 
-#: Test MCC recorded in MASTER_RESULTS.md section 2.3, on dataset.icaisf.csv.
-#: Used only to validate the harness; the sweep reports what it measures.
-PAPER_REFERENCE: dict[str, float] = {
-    "lejepa": 0.8850,
-    "ts_jepa": 0.8785,
-    "t_jepa": 0.8694,
-    "cf_jepa": 0.8661,
-}
-BASELINE_TOLERANCE = 0.02
+#: The one dataset quantization is evaluated on.
+BASELINE_DATASET = "dataset.csv"
 
-#: The dataset the reference numbers above were measured on.
-PAPER_REFERENCE_DATASET = "dataset.icaisf.csv"
+#: fp32 test MCC measured on :data:`BASELINE_DATASET` by this harness.
+#: These are *measurements*, not paper numbers: MASTER_RESULTS.md section 2.3
+#: reports the same models on ``dataset.icaisf.csv``, which scores differently.
+#: Regenerate with ``inmotion quantize eval`` and edit only on purpose.
+BASELINE_MCC: dict[str, float] = {
+    "lejepa": 0.9142641066646362,
+    "t_jepa": 0.8982207226632052,
+    "ts_jepa": 0.9194244062588919,
+    "cf_jepa": 0.9083210968710779,
+    "sigreg": 0.48717085728503073,
+}
 
 
 @dataclass
@@ -122,7 +130,7 @@ def evaluate(
 ) -> EvalRow:
     """Measure one (model, precision) pair on the test split."""
     spec = reg.by_name(model_name)
-    path = dataset or resolve_path("dataset.icaisf.csv")
+    path = dataset or resolve_path(BASELINE_DATASET)
     X, y, test_idx, _ = load_split(model_name, path, seed)
 
     model = reg.load(spec, strict=True)
@@ -153,21 +161,28 @@ def evaluate(
 
 
 def check_baseline(rows: list[EvalRow]) -> list[str]:
-    """Confirm fp32 reproduces the recorded MCC, within tolerance.
+    """Confirm fp32 reproduces the recorded MCC on the baseline dataset.
+
+    The comparison is exact. The recorded values were measured by this harness
+    on this split, so any movement means the model, the split or the harness
+    changed and every number below is untrustworthy. Rows measured on another
+    dataset cannot be compared and are skipped, but an fp32 row whose model has
+    no recorded baseline is itself a problem, so a new model cannot slip in
+    unchecked.
 
     Returns human-readable problems; empty means the harness is trustworthy.
     """
     problems: list[str] = []
     for row in rows:
-        if row.precision != "fp32" or row.dataset != PAPER_REFERENCE_DATASET:
+        if row.precision != "fp32" or row.dataset != BASELINE_DATASET:
             continue
-        expected = PAPER_REFERENCE.get(row.model)
+        expected = BASELINE_MCC.get(row.model)
         if expected is None:
+            problems.append(f"{row.model}: no recorded fp32 baseline on {BASELINE_DATASET}")
             continue
-        if abs(row.mcc - expected) > BASELINE_TOLERANCE:
+        if row.mcc != expected:
             problems.append(
-                f"{row.model}: fp32 MCC {row.mcc:.4f} vs MASTER_RESULTS {expected:.4f} "
-                f"(tolerance {BASELINE_TOLERANCE})"
+                f"{row.model}: fp32 MCC {row.mcc!r} vs recorded {expected!r} on {BASELINE_DATASET}"
             )
     return problems
 

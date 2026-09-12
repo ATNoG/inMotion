@@ -13,9 +13,12 @@ tests pin exact arithmetic rather than approximate behaviour:
 
 from __future__ import annotations
 
+import csv
+
 import numpy as np
 import pytest
 
+from inmotion.quant import evaluate as EV
 from inmotion.quant.packing import fold_bias_into_zero_point, n_bytes_for, pack, unpack
 from inmotion.quant.reference import dequantize, quantize
 from inmotion.quant.spec import Granularity, QuantSpec, Rounding, resolve
@@ -232,3 +235,107 @@ def test_folded_bias_makes_dequant_a_single_formula() -> None:
     assert np.array_equal(
         pack(codes.astype(np.int8), bits), pack((biased - bias).astype(np.int8), bits)
     )
+
+
+# ---------------------------------------------------------------------------
+# dataset.csv baseline (the guard that makes every other number traceable)
+# ---------------------------------------------------------------------------
+
+
+def _fp32_row(model: str, mcc: float, dataset: str = EV.BASELINE_DATASET) -> EV.EvalRow:
+    """A minimal fp32 row; check_baseline only reads model/precision/dataset/mcc."""
+    return EV.EvalRow(
+        model=model,
+        precision="fp32",
+        bits=32,
+        dataset=dataset,
+        seed=42,
+        mcc=mcc,
+        accuracy=0.0,
+        f1_macro=0.0,
+        n_test=1,
+        total_mb=0.0,
+        weights_mb=0.0,
+        compression=1.0,
+        max_weight_error=0.0,
+        n_params=0,
+    )
+
+
+def test_baseline_covers_all_five_world_models_on_dataset_csv() -> None:
+    assert EV.BASELINE_DATASET == "dataset.csv"
+    assert set(EV.BASELINE_MCC) == {"lejepa", "t_jepa", "ts_jepa", "cf_jepa", "sigreg"}
+
+
+def test_check_baseline_accepts_the_recorded_values() -> None:
+    """The guard must be satisfiable, or it is just noise."""
+    rows = [_fp32_row(model, mcc) for model, mcc in EV.BASELINE_MCC.items()]
+    assert EV.check_baseline(rows) == []
+
+
+def test_check_baseline_trips_when_a_recorded_value_moves() -> None:
+    """Perturb one recorded MCC and the guard must fail loudly, naming it."""
+    rows = [_fp32_row(model, mcc) for model, mcc in EV.BASELINE_MCC.items()]
+    rows[0].mcc += 0.02
+    problems = EV.check_baseline(rows)
+    assert problems, "guard accepted a moved baseline"
+    assert rows[0].model in problems[0]
+
+
+def test_check_baseline_rejects_an_unrecorded_model() -> None:
+    problems = EV.check_baseline([_fp32_row("mamba3_cnn", 0.8567)])
+    assert len(problems) == 1
+    assert "no recorded fp32 baseline" in problems[0]
+
+
+def test_check_baseline_does_not_compare_another_dataset() -> None:
+    """icaisf rows are not the baseline and must not be silently accepted."""
+    icaisf = [_fp32_row(model, 0.999, dataset="dataset.icaisf.csv") for model in EV.BASELINE_MCC]
+    assert EV.check_baseline(icaisf) == []
+
+
+def test_committed_sweep_is_the_dataset_csv_baseline() -> None:
+    """results/quant/sweep_dataset.csv: 5 models x 7 precisions, fp32 == baseline."""
+    from inmotion.data.paths import REPO_ROOT
+
+    path = REPO_ROOT / "results/quant/sweep_dataset.csv"
+    assert path.exists(), f"missing {path}; run `inmotion quantize eval`"
+
+    int_fields = {"bits", "seed", "n_test", "n_params"}
+    str_fields = {"model", "precision", "dataset"}
+
+    def cast(key: str, value: str):
+        if key in str_fields:
+            return value
+        return int(value) if key in int_fields else float(value)
+
+    rows = []
+    with path.open(newline="") as handle:
+        for raw in csv.DictReader(handle):
+            rows.append(EV.EvalRow(**{k: cast(k, v) for k, v in raw.items()}))
+
+    assert len(rows) == len(EV.BASELINE_MCC) * len(EV.DEFAULT_PRECISIONS), len(rows)
+    assert {row.dataset for row in rows} == {EV.BASELINE_DATASET}
+    assert {row.model for row in rows} == set(EV.BASELINE_MCC)
+    assert {row.precision for row in rows} == set(EV.DEFAULT_PRECISIONS)
+    assert EV.check_baseline(rows) == []
+
+    fp32 = {row.model: row.mcc for row in rows if row.precision == "fp32"}
+    assert fp32 == EV.BASELINE_MCC
+
+
+def test_cli_eval_defaults_to_dataset_csv(tmp_path) -> None:
+    """`inmotion quantize eval` with no --data must measure dataset.csv."""
+    from typer.testing import CliRunner
+
+    from inmotion.cli.quantize import app
+
+    out = tmp_path / "sweep.csv"
+    result = CliRunner().invoke(
+        app, ["eval", "--models", "lejepa", "--formats", "fp32", "--out", str(out)]
+    )
+    assert result.exit_code == 0, result.output
+    with out.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert [row["dataset"] for row in rows] == [EV.BASELINE_DATASET]
+    assert float(rows[0]["mcc"]) == EV.BASELINE_MCC["lejepa"]
