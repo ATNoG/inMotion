@@ -145,6 +145,52 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
     }
 }
 
+/// Time repeated inference and report latency statistics.
+///
+/// A single timed run on a quiet machine is noise, so this warms up first and
+/// reports the median and the tail, which is what an embedded deployment is
+/// actually judged on.
+fn bench(artifact_dir: &Path, iterations: usize, warmup: usize) -> Result<(), String> {
+    let artifact = Artifact::load(artifact_dir)?;
+    let model = LeJepa::load(&artifact)?;
+    let channels = model.config.in_channels;
+    let seq_len = model.config.seq_len;
+
+    let rng = (0..seq_len * channels)
+        .map(|i| ((i * 37) % 41) as f32 - 60.0)
+        .collect();
+    let x = Tensor::new(rng, vec![seq_len, channels]);
+
+    for _ in 0..warmup {
+        let _ = model.forward(&x);
+    }
+
+    let mut samples = Vec::with_capacity(iterations);
+    for _ in 0..iterations {
+        let start = std::time::Instant::now();
+        let _ = model.forward(&x);
+        samples.push(start.elapsed().as_secs_f64() * 1e3); // milliseconds
+    }
+    samples.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let median = samples[samples.len() / 2];
+    let p95 = samples[(samples.len() * 95) / 100];
+    let min = samples[0];
+    let max = samples[samples.len() - 1];
+    let mean = samples.iter().sum::<f64>() / samples.len() as f64;
+
+    println!("model       : {}", artifact.meta.model);
+    println!("artifact    : {}", artifact_dir.display());
+    println!("iterations  : {iterations} (+{warmup} warmup)");
+    println!("min         : {min:.4} ms");
+    println!("median      : {median:.4} ms");
+    println!("mean        : {mean:.4} ms");
+    println!("p95         : {p95:.4} ms");
+    println!("max         : {max:.4} ms");
+    println!("throughput  : {:.1} inferences/s", 1000.0 / median);
+    Ok(())
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
@@ -164,6 +210,15 @@ fn main() -> ExitCode {
             Some(p) => predict(&artifact_dir, &PathBuf::from(p)),
             None => Err("--input is required".into()),
         },
+        "bench" => {
+            let iterations = arg_value(&args, "--iterations")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(200);
+            let warmup = arg_value(&args, "--warmup")
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(20);
+            bench(&artifact_dir, iterations, warmup)
+        }
         "check" => match arg_value(&args, "--golden") {
             Some(p) => check(&artifact_dir, &PathBuf::from(p)),
             None => Err("--golden is required".into()),

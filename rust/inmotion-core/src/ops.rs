@@ -406,3 +406,132 @@ mod tests {
         }
     }
 }
+
+/// 1-D convolution over a `(channels_in, length)` signal.
+///
+/// Only what the patch tokenizer needs: no padding, no dilation, explicit
+/// stride. Output is `(channels_out, out_len)` with
+/// `out_len = (length - kernel_size) / stride + 1`.
+#[must_use]
+pub fn conv1d(x: &Tensor, weight: &Tensor, bias: &Tensor, stride: usize) -> Tensor {
+    assert_eq!(x.shape.len(), 2, "conv1d expects (channels, length)");
+    assert_eq!(
+        weight.shape.len(),
+        3,
+        "conv1d weight must be (out, in, kernel)"
+    );
+    let (channels_in, length) = (x.shape[0], x.shape[1]);
+    let (channels_out, w_in, kernel) = (weight.shape[0], weight.shape[1], weight.shape[2]);
+    assert_eq!(
+        channels_in, w_in,
+        "conv1d: input channels {channels_in} != weight {w_in}"
+    );
+    assert_eq!(
+        bias.len(),
+        channels_out,
+        "conv1d: bias length != out channels"
+    );
+    assert!(length >= kernel, "conv1d: signal shorter than the kernel");
+    let out_len = (length - kernel) / stride + 1;
+
+    let mut out = vec![0.0f32; channels_out * out_len];
+    for co in 0..channels_out {
+        for t in 0..out_len {
+            let mut acc = bias.data[co];
+            for ci in 0..channels_in {
+                for k in 0..kernel {
+                    let value = x.data[ci * length + t * stride + k];
+                    let w = weight.data[(co * channels_in + ci) * kernel + k];
+                    acc += value * w;
+                }
+            }
+            out[co * out_len + t] = acc;
+        }
+    }
+    Tensor::new(out, vec![channels_out, out_len])
+}
+
+/// Move the channel axis in front of the time axis: `(B, T, C) -> (B, C, T)`.
+///
+/// The patch tokenizer convolves over `(channels, length)`, so it has to move
+/// the channel axis in front and back. This is a real permutation of the data,
+/// not a reinterpretation of the same memory.
+#[must_use]
+pub fn transpose_time_channel(x: &Tensor) -> Tensor {
+    assert_eq!(x.shape.len(), 3, "expected (batch, time, channels)");
+    let (batch, time, channels) = (x.shape[0], x.shape[1], x.shape[2]);
+    let mut out = vec![0.0f32; x.len()];
+    for b in 0..batch {
+        for t in 0..time {
+            for c in 0..channels {
+                out[(b * channels + c) * time + t] = x.data[(b * time + t) * channels + c];
+            }
+        }
+    }
+    Tensor::new(out, vec![batch, channels, time])
+}
+
+/// Inverse of :func:`transpose_time_channel`.
+#[must_use]
+pub fn transpose_channel_time(x: &Tensor) -> Tensor {
+    assert_eq!(x.shape.len(), 3, "expected (batch, channels, time)");
+    let (batch, channels, time) = (x.shape[0], x.shape[1], x.shape[2]);
+    let mut out = vec![0.0f32; x.len()];
+    for b in 0..batch {
+        for c in 0..channels {
+            for t in 0..time {
+                out[(b * time + t) * channels + c] = x.data[(b * channels + c) * time + t];
+            }
+        }
+    }
+    Tensor::new(out, vec![batch, time, channels])
+}
+
+#[cfg(test)]
+mod conv_tests {
+    use super::*;
+
+    fn t(data: &[f32], shape: &[usize]) -> Tensor {
+        Tensor::new(data.to_vec(), shape.to_vec())
+    }
+
+    #[test]
+    fn conv1d_matches_hand_computation() {
+        // [1,2,3,4] with kernel 2 and stride 2 sums the pairs (1,2) and (3,4).
+        let x = t(&[1.0, 2.0, 3.0, 4.0], &[1, 4]);
+        let w = t(&[1.0, 1.0], &[1, 1, 2]);
+        let y = conv1d(&x, &w, &t(&[0.0], &[1]), 2);
+        assert_eq!(y.shape, vec![1, 2]);
+        assert_eq!(y.data, vec![3.0, 7.0]);
+        // Bias is added at every output position.
+        assert_eq!(conv1d(&x, &w, &t(&[10.0], &[1]), 2).data, vec![13.0, 17.0]);
+    }
+
+    #[test]
+    fn conv1d_gives_the_patch_count_the_jepa_models_expect() {
+        // (10 - 2)/2 + 1 = 5 patches, which is what TS-JEPA and CF-JEPA use.
+        // Heap-allocated: a 36 KB stack array trips clippy's large-stack-array lint.
+        let x = Tensor::new(vec![0.0; 18 * 10], vec![18, 10]);
+        let w = Tensor::new(vec![0.0; 256 * 18 * 2], vec![256, 18, 2]);
+        let b = Tensor::new(vec![0.0; 256], vec![256]);
+        assert_eq!(conv1d(&x, &w, &b, 2).shape, vec![256, 5]);
+    }
+
+    #[test]
+    fn transpose_time_channel_round_trips() {
+        let x = t(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[1, 2, 3]); // (batch 1, time 2, ch 3)
+        let a = transpose_time_channel(&x);
+        assert_eq!(a.shape, vec![1, 3, 2]);
+        assert_eq!(a.data, vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
+        assert_eq!(transpose_channel_time(&a).data, x.data);
+    }
+
+    #[test]
+    #[should_panic(expected = "input channels")]
+    fn conv1d_rejects_mismatched_channels() {
+        let x = t(&[0.0; 4], &[1, 4]); // 1 input channel
+        let w = t(&[0.0; 8], &[2, 2, 2]); // but the weight expects 2
+        let b = t(&[0.0; 2], &[2]);
+        let _ = conv1d(&x, &w, &b, 1);
+    }
+}
