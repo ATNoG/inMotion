@@ -161,9 +161,7 @@ def _esp32_documents(data_dir: Path) -> list[tuple[Path, dict]]:
     by_digest: dict[str, list[tuple[Path, dict]]] = {}
     for path in sorted(Path(data_dir).glob("esp32_*.json")):
         payload = json.loads(path.read_text())
-        by_digest.setdefault(hashlib.md5(path.read_bytes()).hexdigest(), []).append(
-            (path, payload)
-        )
+        by_digest.setdefault(hashlib.md5(path.read_bytes()).hexdigest(), []).append((path, payload))
 
     documents: list[tuple[Path, dict]] = []
     for copies in by_digest.values():
@@ -296,9 +294,7 @@ def load_latency(cfg: RunConfig) -> tuple[pd.DataFrame, set[tuple[str, str]]]:
     builds, so the acceleration is visible next to the absolute time); ESP32 rows
     come from the on-device JSONs, which carry a nested ``latency_ms`` block.
     """
-    summary = _read_csv(
-        Path(cfg.perf_dir) / "summary.csv", missing="sh run_bench.sh host|router"
-    )
+    summary = _read_csv(Path(cfg.perf_dir) / "summary.csv", missing="sh run_bench.sh host|router")
     rows: list[dict[str, object]] = []
     for record in summary.to_dict("records"):
         for build, median_key, p95_key in (
@@ -396,9 +392,7 @@ def fig_fits_map(inputs: Inputs) -> Figure:
     devices = ["esp32", "router", "host"]
     labels = dict(zip(inputs.budgets.device, inputs.budgets.device_label, strict=True))
     models = list(MODEL_COLORS)
-    requirement = (
-        inputs.size.set_index(["model", "precision"]).total_mb.to_dict()
-    )
+    requirement = inputs.size.set_index(["model", "precision"]).total_mb.to_dict()
 
     codes = {state: index for index, state in enumerate(FIT_STATES)}
     fig, axes = plt.subplots(1, len(devices), figsize=FIG_FULL, sharey=True)

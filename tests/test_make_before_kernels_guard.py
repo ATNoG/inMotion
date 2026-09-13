@@ -15,12 +15,12 @@ when invoked, from a given working directory, with given arguments.
 from __future__ import annotations
 
 import hashlib
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 from conftest import REPO_ROOT
-import shutil
 
 SCRIPT = REPO_ROOT / "results" / "perf" / "make_before_kernels.py"
 OPS = REPO_ROOT / "rust" / "inmotion-core" / "src" / "ops.rs"
@@ -65,7 +65,8 @@ def test_out_writes_elsewhere_and_leaves_the_checkout_alone(tmp_path: Path) -> N
     result = run("--out", str(target), cwd=REPO_ROOT)
     assert result.returncode == 0, result.stderr
     assert digest(OPS) == before, "--out modified the file it read"
-    assert target.is_file() and target.stat().st_size > 0
+    assert target.is_file()
+    assert target.stat().st_size > 0
     assert digest(target) != before, "--out produced an identity instead of a revert"
 
 

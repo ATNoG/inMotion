@@ -77,12 +77,12 @@ def quantization(
     data_dir: Annotated[
         Path, typer.Option("--data-dir", help="Statistics CSVs and device benchmark JSONs.")
     ] = Path("results/quant"),
-    perf_dir: Annotated[
-        Path, typer.Option("--perf-dir", help="Before/after latency CSVs.")
-    ] = Path("results/perf"),
-    out_dir: Annotated[
-        Path, typer.Option("--out-dir", help="Figure output directory.")
-    ] = Path("results/quant/figures"),
+    perf_dir: Annotated[Path, typer.Option("--perf-dir", help="Before/after latency CSVs.")] = Path(
+        "results/perf"
+    ),
+    out_dir: Annotated[Path, typer.Option("--out-dir", help="Figure output directory.")] = Path(
+        "results/quant/figures"
+    ),
     dpi: Annotated[int, typer.Option("--dpi", help="Raster DPI (PDF is vector).")] = 600,
 ) -> None:
     """Rebuild the six quantization figures without re-measuring anything."""

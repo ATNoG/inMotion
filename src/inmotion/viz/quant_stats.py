@@ -299,9 +299,7 @@ def _base_columns(entry: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def size_table(
-    rows: list[EvalRow], reports: list[dict[str, Any]], command: str
-) -> pd.DataFrame:
+def size_table(rows: list[EvalRow], reports: list[dict[str, Any]], command: str) -> pd.DataFrame:
     """Size and compression per (model, precision)."""
     table = []
     for entry in reports:
@@ -315,24 +313,18 @@ def size_table(
                 "n_params": entry["n_params_total"],
                 "fp32_weight_mb": round(entry["fp32_weight_bytes"] / 1e6, 6),
                 "payload_mb": round(entry["packed_bytes"] / 1e6, 6),
-                "metadata_mb": round(
-                    (entry["quantized_bytes"] - entry["packed_bytes"]) / 1e6, 6
-                ),
+                "metadata_mb": round((entry["quantized_bytes"] - entry["packed_bytes"]) / 1e6, 6),
                 "quantized_mb": round(entry["quantized_bytes"] / 1e6, 6),
                 "skipped_mb": round(entry["skipped_param_bytes"] / 1e6, 6),
                 "buffers_mb": round(entry["buffer_bytes"] / 1e6, 6),
                 "total_mb": round(entry["total_bytes"] / 1e6, 6),
                 "compression": round(entry["compression"], 6),
-                "bits_per_quantized_param": round(
-                    entry["quantized_bytes"] * 8 / n_quantized, 4
-                ),
+                "bits_per_quantized_param": round(entry["quantized_bytes"] * 8 / n_quantized, 4),
                 "bytes_per_param_incl_extras": round(
                     entry["total_bytes"] / total_params_with_buffers, 4
                 ),
                 "max_weight_error": round(entry["max_error"], 6),
-                "artifact": (
-                    "results/quant/sweep_dataset.csv; results/quant/quant_reports.json"
-                ),
+                "artifact": ("results/quant/sweep_dataset.csv; results/quant/quant_reports.json"),
                 "generated_by": command,
             }
         )
@@ -544,9 +536,7 @@ def _rows_from_payload(payload: Any, source: str) -> list[dict[str, Any]]:
         bench = payload["benchmark"]
         runtime = str(payload.get("build", {}).get("target", ""))
         note = str(payload.get("note") or _SYNTHETIC_NOTE)
-        out = [
-            _bench_row(payload.get("device"), bench, runtime=runtime, source=source, note=note)
-        ]
+        out = [_bench_row(payload.get("device"), bench, runtime=runtime, source=source, note=note)]
         reference = payload.get("reference_dev_machine")
         if reference:
             # The reference block carries only its own measurements (median and
