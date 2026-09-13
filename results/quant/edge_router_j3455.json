@@ -1,0 +1,44 @@
+{
+  "device": {
+    "ssh_alias": "wave-router",
+    "hostname": "CARRIS",
+    "kernel": "5.15.162",
+    "arch": "x86_64",
+    "cpu": "Intel(R) Celeron(R) CPU J3455 @ 1.50GHz",
+    "cpu_flags_relevant": ["sse4_2", "aes", "sha_ni"],
+    "avx_avx2_fma": false,
+    "ram_total_mb": 3854,
+    "ram_available_mb": 3391,
+    "toolchain": "none (no gcc, no python3); static musl binary deployed",
+    "storage": "/mnt/extra/cargo/inmotion/run (21 GB free on /mnt/extra)"
+  },
+  "build": {
+    "target": "x86_64-unknown-linux-musl",
+    "profile": "release (lto, codegen-units=1)",
+    "reason_static": "dev machine glibc 2.43 > router glibc 2.37, so a dynamically linked binary would not run",
+    "transfer": "tar over ssh (scp blocked: no sftp subsystem; base64 unavailable)",
+    "integrity": "sha256 verified after transfer"
+  },
+  "benchmark": {
+    "model": "lejepa",
+    "quantization": "q4_g32_sym",
+    "iterations": 200,
+    "warmup": 20,
+    "median_ms": 8.9002,
+    "p95_ms": 9.1982,
+    "min_ms": 8.7456,
+    "max_ms": 9.3405,
+    "throughput_per_s": 112.4
+  },
+  "parity_on_device": {
+    "max_abs_diff": 3.22e-06,
+    "tolerance": 2e-04,
+    "result": "PARITY OK",
+    "note": "identical to the dev machine, so the port is numerically device-independent"
+  },
+  "reference_dev_machine": {
+    "median_ms": 6.9937,
+    "throughput_per_s": 143.0,
+    "note": "router is ~1.27x slower"
+  }
+}

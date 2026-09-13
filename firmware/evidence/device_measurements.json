@@ -49,7 +49,28 @@
       "device_vs_pytorch_class_agreement": "16/16"
     }
   },
-  "note": "results/ is gitignored, so the raw per-run JSON lives there and this tracked copy carries the summary the report cites. Regenerate with firmware/tools/run_on_device.py.",
+  "clock_provenance": {
+    "how": "run_on_device.py reads `cpu_start: cpu freq: <Hz>` out of the boot log the device prints on reset and writes it into the measurement as clock_mhz; it refuses to write an artifact whose clock it could not read.",
+    "remeasured": true,
+    "artifacts": {
+      "results/quant/esp32_lejepa_160mhz.json": {
+        "clock_mhz": 160,
+        "clock_source": "I (426) cpu_start: cpu freq: 160000000 Hz",
+        "latency_ms_median": 888.4805,
+        "md5": "1f00c69bd722ee018040a1d27505f197",
+        "note": "measured on an image built with CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160; that image was replaced by the committed 240 MHz build afterwards"
+      },
+      "results/quant/esp32_lejepa_240mhz.json": {
+        "clock_mhz": 240,
+        "clock_source": "I (426) cpu_start: cpu freq: 240000000 Hz",
+        "latency_ms_median": 636.6805,
+        "md5": "84255803a3a2e22777c80217e05bfc1e",
+        "note": "measured on the committed image; reproduces the earlier 636.6825 ms run"
+      }
+    },
+    "device_restored_to": "results/quant/esp32_lejepa_240mhz.json's image (flash verified byte-for-byte against a pre-flash dump)"
+  },
+  "note": "results/ is gitignored, so the raw per-run JSON lives there and this tracked copy carries the summary the report cites. Regenerate with firmware/tools/run_on_device.py. Measured truth: 160 MHz -> 888.48 ms, 240 MHz -> 636.69 ms; the clock in each artifact comes from that run's own boot log, not from its filename.",
   "app_image_bytes": 828656,
   "app_partition_free_percent": 21
 }

@@ -33,8 +33,9 @@
     },
     "latency": {
       "path": "results/quant/stats_latency.csv",
-      "rows": 7,
-      "md5": "0ad1065662d2a246bb05ee948010292f"
+      "rows": 9,
+      "md5": null,
+      "varying": "machine-timed rows; regenerate with this command"
     },
     "layers": {
       "path": "results/quant/stats_layers.csv",
@@ -43,6 +44,8 @@
     }
   },
   "latency_artifacts": [
-    "results/quant/edge_router_j3455.json"
+    "results/quant/edge_router_j3455.json",
+    "results/quant/esp32_lejepa_160mhz.json",
+    "results/quant/esp32_lejepa_240mhz.json"
   ]
 }

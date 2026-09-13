@@ -549,13 +549,40 @@ def _rows_from_payload(payload: Any, source: str) -> list[dict[str, Any]]:
         ]
         reference = payload.get("reference_dev_machine")
         if reference:
+            # The reference block carries only its own measurements (median and
+            # throughput). Merging it over ``bench`` handed it the router's
+            # dispersion columns and the router's target label, which is how a
+            # reference row ended up with min_ms above its own median. Take the
+            # context from ``bench`` and nothing else.
             out.append(
                 _bench_row(
-                    socket.gethostname(),
-                    {**bench, **reference},
-                    runtime=runtime,
+                    {
+                        "hostname": socket.gethostname(),
+                        "cpu": reference.get("cpu") or _cpu_name(),
+                    },
+                    {
+                        key: bench[key]
+                        for key in (
+                            "model",
+                            "precision",
+                            "dataset",
+                            "seed",
+                            "iterations",
+                            "warmup",
+                        )
+                        if key in bench
+                    }
+                    | {
+                        "median_ms": reference.get("median_ms", ""),
+                        "throughput_per_s": reference.get("throughput_per_s", ""),
+                    },
+                    runtime=reference.get("runtime") or f"native {platform.machine()}",
                     source=source,
-                    note="reference_dev_machine in the artifact (build host); " + _SYNTHETIC_NOTE,
+                    note=(
+                        "reference_dev_machine in the artifact (build host); the "
+                        "reference records only median/throughput, so no dispersion "
+                        "is claimed for it"
+                    ),
                 )
             )
         return out
@@ -687,6 +714,14 @@ def build_tables(
         "layers": layers_table(reports, command),
     }
 
+    # A latency table holding only device artifacts is reproducible; one with a
+    # row timed on this machine (e.g. ``measured by this command``) is not.
+    varying = (
+        {"latency"}
+        if any(not Path(str(row.get("artifact", ""))).exists() for row in (latency or []))
+        else set()
+    )
+
     written: dict[str, Path] = {}
     for name, frame in tables.items():
         id_columns = ["model", "precision", "dataset", "seed"]
@@ -711,7 +746,19 @@ def build_tables(
         "pandas": pd.__version__,
         "inputs": {str(path): _md5(path) for path in (sweep, raw) if Path(path).exists()},
         "tables": {
-            name: {"path": str(path), "rows": len(tables[name]), "md5": _md5(path)}
+            name: (
+                {
+                    "path": str(path),
+                    "rows": len(tables[name]),
+                    # A table holding rows timed on the machine running this
+                    # command has no reproducible hash; say so rather than
+                    # publishing a number that is true for exactly one run.
+                    "md5": None,
+                    "varying": "machine-timed rows; regenerate with this command",
+                }
+                if name in varying
+                else {"path": str(path), "rows": len(tables[name]), "md5": _md5(path)}
+            )
             for name, path in written.items()
         },
         "latency_artifacts": sorted(

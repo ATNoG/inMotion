@@ -28,6 +28,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -149,47 +150,94 @@ def _read_csv(path: Path, *, missing: str) -> pd.DataFrame:
 
 
 def _esp32_documents(data_dir: Path) -> list[tuple[Path, dict]]:
-    """The ESP32 benchmark JSONs, with byte-identical duplicates collapsed.
+    """The ESP32 benchmark JSONs, one per measured clock, duplicates collapsed.
 
-    ``esp32_lejepa.json`` and ``esp32_lejepa_160mhz.json`` are the same run; the
-    duplicate carrying the clock in its filename is the one kept, and the alias
-    is reported so the collapse is visible rather than silent.
+    A byte-identical alias is dropped rather than plotted twice, and the survivor
+    is chosen by what the artifact says: the copy carrying ``clock_mhz`` wins,
+    with the filename only breaking ties between two clocked copies. Picking by
+    filename order instead is what lost the 888.48 ms row's clock, because the
+    clockless alias sorted first.
     """
-    seen: dict[str, tuple[Path, dict]] = {}
-    aliases: dict[str, str] = {}
+    by_digest: dict[str, list[tuple[Path, dict]]] = {}
     for path in sorted(Path(data_dir).glob("esp32_*.json")):
-        digest = hashlib.md5(path.read_bytes()).hexdigest()
         payload = json.loads(path.read_text())
-        if digest in seen:
-            aliases[str(path)] = str(seen[digest][0])
-            continue
-        seen[digest] = (path, payload)
-    for alias, kept in aliases.items():
-        print(f"  {alias} is byte-identical to {kept}; keeping the clocked name")
-    return list(seen.values())
+        by_digest.setdefault(hashlib.md5(path.read_bytes()).hexdigest(), []).append(
+            (path, payload)
+        )
+
+    documents: list[tuple[Path, dict]] = []
+    for copies in by_digest.values():
+        # Keyed by what the payload says first, so no filename ordering (and no
+        # md5 ordering) can promote a clockless alias over a measured copy.
+        kept = min(
+            copies,
+            key=lambda item: (
+                item[1].get("clock_mhz") is None,
+                hashlib.md5(str(item[0]).encode()).hexdigest(),
+                item[0].name,
+            ),
+        )
+        if len(copies) > 1:
+            dropped = ", ".join(str(path) for path, _ in copies if path != kept[0])
+            print(
+                f"  {dropped} is byte-identical to {kept[0]}; keeping it as the "
+                "copy that carries the measured clock"
+            )
+        documents.append(kept)
+    return documents
 
 
-def _clock_mhz(path: Path) -> str:
-    stem = Path(path).stem
-    if stem.endswith("mhz"):
-        digits = stem.split("_")[-1].removesuffix("mhz")
-        if digits.isdigit():
-            return f"{digits} MHz"
-    return "unknown clock"
+def _clock_label(payload: dict) -> str:
+    """The clock the device ran at, from the measurement itself.
+
+    ``clock_mhz`` is written by ``run_on_device.py`` from the device's own boot
+    log, so this label is the run's property. The filename is deliberately not
+    consulted: a label that moved when a file was renamed was the defect this
+    function used to have.
+    """
+    clock = payload.get("clock_mhz")
+    if clock is None:
+        raise ValueError(
+            "measurement has no clock_mhz field; re-measure with "
+            "firmware/tools/run_on_device.py so the artifact names its own clock"
+        )
+    return f"{int(clock)} MHz"
 
 
 def _exported_blob(data_dir: Path) -> int | None:
-    """The flash blob the ESP32 really held, from its own artifact."""
-    for path in sorted(Path(data_dir).glob("esp32_*.json")):
+    """The flash blob the ESP32 really held, from its own artifacts.
+
+    Every device artifact states the same blob, so the answer cannot depend on
+    which filename sorts first; a disagreement is an error, not a coin toss.
+    """
+    blobs: set[int] = set()
+    for path in Path(data_dir).glob("esp32_*.json"):
         payload = json.loads(path.read_text())
         if "weight_blob_bytes" in payload:
-            return int(payload["weight_blob_bytes"])
-    return None
+            blobs.add(int(payload["weight_blob_bytes"]))
+    if len(blobs) > 1:
+        raise ValueError(f"ESP32 artifacts disagree on the flash blob size: {sorted(blobs)}")
+    return blobs.pop() if blobs else None
+
+
+def _read_device_json(path: Path, *, missing: str) -> dict:
+    """Read a device artifact, or fail the way ``_read_csv`` does.
+
+    The device artifacts are tracked, so this should never fire in a fresh
+    clone; when it does, it names the file and the command that writes it
+    instead of surfacing a bare ``No such file or directory``.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"missing {path}; run `{missing}`")
+    return json.loads(path.read_text())
 
 
 def device_budgets(data_dir: Path, perf_dir: Path) -> pd.DataFrame:
     """Per-device memory budgets, each with the artifact that states it."""
-    router = json.loads((Path(data_dir) / "edge_router_j3455.json").read_text())
+    router = _read_device_json(
+        Path(data_dir) / "edge_router_j3455.json", missing="sh run_bench.sh router"
+    )
     router_mb = int(router["device"]["ram_available_mb"])
     blob = _exported_blob(data_dir)
 
@@ -212,7 +260,8 @@ def device_budgets(data_dir: Path, perf_dir: Path) -> pd.DataFrame:
                 "budget_bytes": ESP32_RESIDENT_BYTES,
                 "source": (
                     "part spec 520 KB SRAM / no PSRAM; ~300 KB usable for weights "
-                    f"(results/quant JSONs measure {blob} B flash-mapped, heap free 193872 B)"
+                    f"(results/quant/esp32_*.json measure {blob} B flash-mapped, "
+                    "heap free 193872 B)"
                 ),
             },
             {
@@ -278,7 +327,7 @@ def load_latency(cfg: RunConfig) -> tuple[pd.DataFrame, set[tuple[str, str]]]:
         rows.append(
             {
                 "device": "esp32",
-                "runtime": f"esp32 no_std, flash-mapped ({_clock_mhz(path)})",
+                "runtime": f"esp32 no_std, flash-mapped ({_clock_label(payload)})",
                 "model": payload["model"],
                 "precision": payload["precision"],
                 "build": "deployed",
@@ -577,6 +626,21 @@ def fig_coverage(inputs: Inputs) -> Figure:
 
 
 # ── Figure 5: latency per device ──────────────────────────────────────────
+def _runtime_clock(runtime: str, artifact: str) -> str:
+    """The clock a latency row ran at, for the panel's y label.
+
+    The clock is already in ``runtime`` for a row loaded from a clocked
+    artifact; the filename is only consulted when that string predates the
+    field, and then only so two legacy bars do not share a label.
+    """
+    clock = re.search(r"\((\d+ MHz)\)", runtime)
+    if clock:
+        return clock.group(1)
+    # Fallback for a legacy runtime string, so a bar is still distinguishable.
+    legacy = re.fullmatch(r".*?_(\d+)mhz\.json", artifact)
+    return f"{legacy.group(1)} MHz" if legacy else "unknown clock"
+
+
 def fig_latency(inputs: Inputs) -> Figure:
     """Median latency per device on a log scale: router beside this machine."""
     latency = inputs.latency
@@ -650,12 +714,14 @@ def fig_latency(inputs: Inputs) -> Figure:
     ax = axes[1]
     edge = latency[(latency.model == "lejepa") & (latency.precision == "int8")]
     edge = edge.sort_values("median_ms", ascending=False)
-    device_label = {
-        "esp32": "ESP32-D0WD-V3\nflash-mapped",
-        "router": "wave-router",
-        "host": "this machine",
-    }
-    labels = [device_label[str(row.device)] for row in edge.itertuples()]
+    # One y label per row: the same part measured at two clocks must not plot as
+    # two bars with one label.
+    labels = [
+        f"ESP32-D0WD-V3\nflash-mapped ({_runtime_clock(str(row.runtime), str(row.artifact))})"
+        if row.device == "esp32"
+        else {"router": "wave-router", "host": "this machine"}[str(row.device)]
+        for row in edge.itertuples()
+    ]
     colors = [DEVICE_COLORS[str(row.device)] for row in edge.itertuples()]
     ax.barh(
         [f"{label}\n{build}" for label, build in zip(labels, edge.build, strict=True)],

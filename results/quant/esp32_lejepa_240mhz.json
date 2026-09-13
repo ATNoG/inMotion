@@ -1,0 +1,486 @@
+{
+  "device": "ESP32-D0WD-V3",
+  "model": "lejepa",
+  "precision": "int8",
+  "clock_mhz": 240,
+  "clock_hz": 240000000,
+  "clock_source": "I (426) cpu_start: cpu freq: 240000000 Hz",
+  "weight_blob_bytes": 617604,
+  "n_runs": 48,
+  "cases_per_pass": 16,
+  "repeats": 3,
+  "median_ms": 636.6805,
+  "p95_ms": 640.162,
+  "min_ms": 630.897,
+  "max_ms": 640.162,
+  "latency_ms": {
+    "min": 630.897,
+    "median": 636.6805,
+    "mean": 636.0642708333334,
+    "max": 640.162
+  },
+  "heap_free_bytes_after_run": {
+    "min": 193872,
+    "max": 193956
+  },
+  "heap_delta_bytes_during_run": {
+    "min": 0,
+    "max": 0
+  },
+  "flash_weight_bytes_per_forward": {
+    "min": 589460,
+    "max": 589460
+  },
+  "predictions": [
+    {
+      "class": 1,
+      "confidence": 0.869434
+    },
+    {
+      "class": 0,
+      "confidence": 0.695883
+    },
+    {
+      "class": 1,
+      "confidence": 0.803041
+    },
+    {
+      "class": 3,
+      "confidence": 0.350379
+    },
+    {
+      "class": 3,
+      "confidence": 0.804345
+    },
+    {
+      "class": 2,
+      "confidence": 0.844118
+    },
+    {
+      "class": 0,
+      "confidence": 0.709551
+    },
+    {
+      "class": 2,
+      "confidence": 0.871305
+    },
+    {
+      "class": 0,
+      "confidence": 0.893027
+    },
+    {
+      "class": 1,
+      "confidence": 0.835964
+    },
+    {
+      "class": 2,
+      "confidence": 0.841515
+    },
+    {
+      "class": 3,
+      "confidence": 0.418025
+    },
+    {
+      "class": 2,
+      "confidence": 0.842679
+    },
+    {
+      "class": 2,
+      "confidence": 0.854691
+    },
+    {
+      "class": 2,
+      "confidence": 0.840715
+    },
+    {
+      "class": 2,
+      "confidence": 0.842387
+    }
+  ],
+  "raw": [
+    {
+      "class": 1,
+      "confidence": 0.869434,
+      "latency_ms": 630.916,
+      "heap_delta": 0,
+      "heap_free": 193956,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.695883,
+      "latency_ms": 635.875,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.803041,
+      "latency_ms": 637.558,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.350379,
+      "latency_ms": 636.086,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.804345,
+      "latency_ms": 636.368,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.844118,
+      "latency_ms": 636.993,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.709551,
+      "latency_ms": 633.188,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.871305,
+      "latency_ms": 633.797,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.893027,
+      "latency_ms": 638.396,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.835964,
+      "latency_ms": 637.765,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.841515,
+      "latency_ms": 638.55,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.418025,
+      "latency_ms": 637.35,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842679,
+      "latency_ms": 640.159,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.854691,
+      "latency_ms": 637.706,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.840715,
+      "latency_ms": 631.176,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842387,
+      "latency_ms": 635.159,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.869434,
+      "latency_ms": 630.897,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.695883,
+      "latency_ms": 635.879,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.803041,
+      "latency_ms": 637.552,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.350379,
+      "latency_ms": 636.101,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.804345,
+      "latency_ms": 636.366,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.844118,
+      "latency_ms": 637.006,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.709551,
+      "latency_ms": 633.175,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.871305,
+      "latency_ms": 633.795,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.893027,
+      "latency_ms": 638.396,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.835964,
+      "latency_ms": 637.756,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.841515,
+      "latency_ms": 638.56,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.418025,
+      "latency_ms": 637.348,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842679,
+      "latency_ms": 640.159,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.854691,
+      "latency_ms": 637.682,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.840715,
+      "latency_ms": 631.175,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842387,
+      "latency_ms": 635.154,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.869434,
+      "latency_ms": 630.897,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.695883,
+      "latency_ms": 635.881,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.803041,
+      "latency_ms": 637.559,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.350379,
+      "latency_ms": 636.081,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.804345,
+      "latency_ms": 636.368,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.844118,
+      "latency_ms": 637.01,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.709551,
+      "latency_ms": 633.2,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.871305,
+      "latency_ms": 633.795,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 0,
+      "confidence": 0.893027,
+      "latency_ms": 638.384,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 1,
+      "confidence": 0.835964,
+      "latency_ms": 637.769,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.841515,
+      "latency_ms": 638.554,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 3,
+      "confidence": 0.418025,
+      "latency_ms": 637.344,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842679,
+      "latency_ms": 640.162,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.854691,
+      "latency_ms": 637.701,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.840715,
+      "latency_ms": 631.18,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    },
+    {
+      "class": 2,
+      "confidence": 0.842387,
+      "latency_ms": 635.157,
+      "heap_delta": 0,
+      "heap_free": 193872,
+      "flash_bytes": 589460
+    }
+  ]
+}
