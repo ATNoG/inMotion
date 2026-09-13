@@ -155,8 +155,8 @@ CURATED: list[DatasetVersion] = [
         validity_note=(
             "ICAISF variant (4 classes AA/AB/BA/BB), 8-device pool. This is the "
             "dataset the ISAC paper's ensemble was scored on, so its labels need "
-            "confirming: if this lineage is the older one, MASTER_RESULTS.md "
-            "numbers are affected."
+            "confirming: if this lineage is the older one, the published numbers "
+            "are affected."
         ),
         lineage={"description": "ICAISF paper variant", "devices": 8},
     ),

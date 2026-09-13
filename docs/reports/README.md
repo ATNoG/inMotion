@@ -17,10 +17,6 @@ history — for the current interface read [`../guides/`](../guides/) and
 | [`CODE_REVIEW_RUST_ROUND2.md`](CODE_REVIEW_RUST_ROUND2.md) | round-2 review of the repair of those fourteen findings. Verdict: **pass** |
 | [`CODE_REVIEW_RUST_ROUND3.md`](CODE_REVIEW_RUST_ROUND3.md) | round-3 final gate, with a per-item verdict table for every finding across the rounds. Verdict: **pass** |
 
-The single source of truth for numbers reported in a paper is
-[`../isac/results/MASTER_RESULTS.md`](../isac/results/MASTER_RESULTS.md); it stays
-under `docs/isac/results/` because the raw CSVs it cites are next to it.
-
 ## How to read these
 
 * **A verdict belongs to a revision.** Each review and verification document

@@ -50,7 +50,7 @@ class ModelSpec:
     path: Path
     params: int
     published_m: float | None = None
-    """Parameter count in millions as printed in MASTER_RESULTS.md."""
+    """Parameter count in millions as printed in the paper's table."""
     prefix: str | None = None
     rich: bool = False
     """True when the model consumes 18-channel rich features, False for 4."""
@@ -67,11 +67,11 @@ class ModelSpec:
 
 
 # ---------------------------------------------------------------------------
-# Curated specs — every model cited in docs/isac/results/MASTER_RESULTS.md.
+# Curated specs — every model cited in the paper.
 # Parameter counts are asserted by tests/test_checkpoint_contract.py.
 # ---------------------------------------------------------------------------
 CURATED: list[ModelSpec] = [
-    # -- MASTER_RESULTS.md §2.3 — ICAISF-evaluated ensemble members.
+    # -- ICAISF-evaluated ensemble members.
     # `params` is the *module* parameter count; `published_m` is the figure in
     # the paper table (which counted the checkpoint's tensors, buffers included).
     # Where the two disagree the artifact on disk is NOT the model the paper
@@ -159,7 +159,7 @@ CURATED: list[ModelSpec] = [
         prefix="m.",
         published_m=0.697,
         note="superseded by `sigreg` for dataset.csv work; this is the artifact "
-        "MASTER_RESULTS.md §2.3 cites (192-filter encoder, icaisf split)",
+        "the published table cites (192-filter encoder, icaisf split)",
     ),
     ModelSpec(
         "sigreg_seed3",
@@ -188,7 +188,7 @@ CURATED: list[ModelSpec] = [
         _BACKUP / "DeepStackEnsemble_seed42.pt",
         43_575_549,
         published_m=43.576,
-        note="10-base deep stack; MASTER_RESULTS cites this under the stale "
+        note="10-base deep stack; the published table cites this under the stale "
         "path models/dl/augmented/DeepStackEnsemble_seed42.pt",
     ),
     # -- Mamba-3 hybrids. Explored and loadable, but not part of the reported
@@ -232,7 +232,7 @@ CURATED: list[ModelSpec] = [
         1_193_349,
         note="experimental; not in the reported results",
     ),
-    # -- MASTER_RESULTS.md §2.1/2.2 — pre-HPO base runs, kept for provenance.
+    # -- Pre-HPO base runs, kept for provenance.
     # These need 18-channel input, which is why `rich` is True.
     ModelSpec(
         "lejepa_base",
@@ -306,7 +306,7 @@ CURATED: list[ModelSpec] = [
 # ---------------------------------------------------------------------------
 PROVENANCE_GAPS: dict[str, str] = {
     "deep_stack": (
-        "MASTER_RESULTS.md §2.3 points at models/dl/augmented/DeepStackEnsemble_seed42.pt, "
+        "The published table points at models/dl/augmented/DeepStackEnsemble_seed42.pt, "
         "which does not exist. The equivalent artifact used here is "
         "backup/DeepStackEnsemble_seed42.pt."
     ),

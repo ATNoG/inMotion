@@ -77,7 +77,7 @@ than reported, so no MCC or parameter count is claimed for them and none is
 checked against the paper table. They carry
 `note="experimental; not in the reported results"`.
 
-### 2. Result files cited by MASTER_RESULTS are absent
+### 2. Result files cited by the paper tables are absent
 
 `results/mega_ensemble_results.csv`, `results/ensemble_size_frontier.csv` and
 `models/dl/augmented/DeepStackEnsemble_seed42.pt` were already missing before

@@ -80,7 +80,7 @@ def model_info(name: Annotated[str, typer.Argument(help="Registered model name."
     if spec.published_m is not None:
         actual_m = spec.params / 1e6
         flag = "matches" if abs(actual_m - spec.published_m) < 0.002 else "DIFFERS from"
-        typer.echo(f"published : {spec.published_m}M ({flag} MASTER_RESULTS.md)")
+        typer.echo(f"published : {spec.published_m}M ({flag} the paper table)")
     if spec.name in reg.PROVENANCE_GAPS:
         typer.echo("")
         typer.secho("provenance gap:", fg=typer.colors.YELLOW)

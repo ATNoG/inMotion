@@ -223,7 +223,7 @@ def gen_models() -> str:
         "differences, window deviation, spectral and shape summaries).",
         "",
         "`params` is the exact module parameter count; `paper` is the figure printed",
-        "in `docs/isac/results/MASTER_RESULTS.md`. Where the two disagree the stored",
+        "in the paper's table. Where the two disagree the stored",
         "checkpoint is not the model that table describes, and the gap is recorded in",
         "`PROVENANCE_GAPS`.",
         "",

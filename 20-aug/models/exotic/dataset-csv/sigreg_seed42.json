@@ -59,6 +59,6 @@
     "Chosen on best validation MCC only; the test MCC above was not used for selection.",
     "The --d-model 192 --num-layers 3 flags matter: the entry point maps d_model to num_filters and num_layers to num_blocks for sigreg, and the CLI defaults (256/4) would build a different architecture.",
     "Same architecture as the superseded backup/sigreg_seed42.pt (registry name sigreg_icaisf): identical state_dict keys and shapes (62 tensors, 696,900 parameters), so the Rust port and its parity goldens stay valid in shape; only the weights differ.",
-    "The superseded checkpoint remains registered and on disk because MASTER_RESULTS.md section 2.3 cites it."
+    "The superseded checkpoint remains registered and on disk because the published table cites it."
   ]
 }

@@ -47,7 +47,7 @@ def _markdown_files() -> list[Path]:
 # Paths the documentation names *because they are missing*. The docs describe
 # these as absent, so requiring them to exist would contradict the documents.
 DOCUMENTED_MISSING = {
-    # Named because it is absent; MASTER_RESULTS cites a stale path.
+    # Named because it is absent; the paper table cites a stale path.
     "models/dl/augmented/DeepStackEnsemble_seed42.pt",
     # Output directories the CLI creates on first run.
     "models/exotic",

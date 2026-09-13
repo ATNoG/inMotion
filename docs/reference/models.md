@@ -8,7 +8,7 @@ values, `rich` is the 18-channel expansion (raw, first and second
 differences, window deviation, spectral and shape summaries).
 
 `params` is the exact module parameter count; `paper` is the figure printed
-in `docs/isac/results/MASTER_RESULTS.md`. Where the two disagree the stored
+in the paper's table. Where the two disagree the stored
 checkpoint is not the model that table describes, and the gap is recorded in
 `PROVENANCE_GAPS`.
 
@@ -59,8 +59,8 @@ Canonical model count: **18**
 - checkpoint: `backup/DeepStackEnsemble_seed42.pt`
 - state-dict prefix: `-`
 - architecture: (factory defaults)
-- note: 10-base deep stack; MASTER_RESULTS cites this under the stale path models/dl/augmented/DeepStackEnsemble_seed42.pt
-- **provenance gap:** MASTER_RESULTS.md §2.3 points at models/dl/augmented/DeepStackEnsemble_seed42.pt, which does not exist. The equivalent artifact used here is backup/DeepStackEnsemble_seed42.pt.
+- note: 10-base deep stack; the published table cites this under the stale path models/dl/augmented/DeepStackEnsemble_seed42.pt
+- **provenance gap:** The published table points at models/dl/augmented/DeepStackEnsemble_seed42.pt, which does not exist. The equivalent artifact used here is backup/DeepStackEnsemble_seed42.pt.
 
 ### `lejepa`
 
@@ -140,7 +140,7 @@ Canonical model count: **18**
 - checkpoint: `backup/sigreg_seed42.pt`
 - state-dict prefix: `m.`
 - architecture: `num_filters=192`
-- note: superseded by `sigreg` for dataset.csv work; this is the artifact MASTER_RESULTS.md §2.3 cites (192-filter encoder, icaisf split)
+- note: superseded by `sigreg` for dataset.csv work; this is the artifact the published table cites (192-filter encoder, icaisf split)
 
 ### `sigreg_seed3`
 
@@ -190,4 +190,4 @@ without restoring the matching artifact.
 
 **`deep_stack`**
 
-MASTER_RESULTS.md §2.3 points at models/dl/augmented/DeepStackEnsemble_seed42.pt, which does not exist. The equivalent artifact used here is backup/DeepStackEnsemble_seed42.pt.
+The published table points at models/dl/augmented/DeepStackEnsemble_seed42.pt, which does not exist. The equivalent artifact used here is backup/DeepStackEnsemble_seed42.pt.

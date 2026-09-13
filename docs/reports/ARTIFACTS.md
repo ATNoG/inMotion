@@ -39,7 +39,7 @@ inmotion run pipeline exotic -- --model lejepa --checkpoint 20-aug/models/exotic
 
 ## Provenance gap: the mamba3 checkpoints
 
-`docs/isac/results/MASTER_RESULTS.md` §2.3 publishes parameter counts for
+The paper's table publishes parameter counts for
 `mamba3_tcn` (0.843M), `mamba3_transformer` (0.842M) and `mamba3_multiview`
 (1.701M). The stored files are **smaller**: 695,812 / 561,796 / 1,193,349 module
 parameters respectively. The published figures match builds with one more block
@@ -65,9 +65,9 @@ Generated outputs are **not** tracked. They stay on disk and are regenerable:
 | `results/`           | per-seed ML/DL result CSVs                            | only `results/dl/dl_results_seed42.csv`, which the paper cites |
 | `combined/`          | multi-seed aggregate plots and statistics             | no                                                             |
 | `catboost_info/`     | CatBoost training telemetry                           | no                                                             |
-| `20-aug/logs/`       | HPO logs                                              | **yes** — cited as provenance by MASTER_RESULTS                |
-| `20-aug/results/`    | exotic-pipeline result CSVs                           | **yes** — cited by MASTER_RESULTS                              |
-| `docs/isac/results/` | curated paper numbers (`MASTER_RESULTS.md`, raw CSVs) | **yes**                                                        |
+| `20-aug/logs/`       | HPO logs                                              | **yes** — cited as provenance by the paper tables                |
+| `20-aug/results/`    | exotic-pipeline result CSVs                           | **yes** — cited by the paper tables                              |
+| `docs/isac/results/` | curated paper numbers and raw CSVs | **yes**                                                        |
 
 The rule: if a document cites it as provenance, it is tracked; if it is
 regenerable output, it is not.

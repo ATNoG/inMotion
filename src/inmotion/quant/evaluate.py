@@ -1,19 +1,18 @@
 """Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
 Every number this module produces is on **dataset.csv**. It is *not* on
-``dataset.icaisf.csv``, so it is **not** comparable with the MCC values in
-``docs/isac/results/MASTER_RESULTS.md`` section 2.3 (lejepa 0.8850, t_jepa
-0.8694, ts_jepa 0.8785, cf_jepa 0.8661, sigreg 0.8858), which were measured on
-the icaisf variant. The two splits differ in size and in score; MASTER_RESULTS
-is left untouched as the record of what was published on icaisf.
+``dataset.icaisf.csv``, so it is **not** comparable with the MCC values
+published for the icaisf variant (lejepa 0.8850, t_jepa 0.8694, ts_jepa 0.8785,
+cf_jepa 0.8661, sigreg 0.8858). The two splits differ in size and in score, so
+the numbers are not interchangeable.
 
 Otherwise the harness reuses the *same* splits and the same feature pipeline the
 models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
-- the 80/20 stratified split from ``inmotion.data.splits``, which is the
-  convention stated in MASTER_RESULTS.
+- the 80/20 stratified split from ``inmotion.data.splits``, the convention every
+  reported number uses.
 
 The first thing the sweep does is evaluate the unquantized model. If that does
 not reproduce the recorded MCC, the harness is wrong and every later number is
@@ -46,8 +45,8 @@ from inmotion.quant.spec import resolve as resolve_spec
 BASELINE_DATASET = "dataset.csv"
 
 #: fp32 test MCC measured on :data:`BASELINE_DATASET` by this harness.
-#: These are *measurements*, not paper numbers: MASTER_RESULTS.md section 2.3
-#: reports the same models on ``dataset.icaisf.csv``, which scores differently.
+#: These are *measurements*, not paper numbers: the published table reports
+#: the same models on ``dataset.icaisf.csv``, which scores differently.
 #: Regenerate with ``inmotion quantize eval`` and edit only on purpose.
 BASELINE_MCC: dict[str, float] = {
     "lejepa": 0.9142641066646362,

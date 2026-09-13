@@ -116,7 +116,7 @@ it was taken against.
 | [`supplementary/`](supplementary/) | Hyperparameter-optimisation material: `search_spaces.md`, `optimal_hyperparameters.md`, `optuna-summary.md` and a README that frames them.                                                                                                         |
 
 Two cautions. These directories are **frozen for submission**, so editing them
-changes what was submitted
+changes what was submitted.
 
 ## 7. Non-markdown assets
 

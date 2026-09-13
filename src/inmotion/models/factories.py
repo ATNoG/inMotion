@@ -7,8 +7,8 @@ reverse-engineered from tensor shapes.
 
 The configurations here were originally recovered by matching saved weight
 shapes; they are pinned by ``tests/test_checkpoint_contract.py``, which asserts
-every documented checkpoint still loads with ``strict=True`` and the parameter
-count published in ``docs/isac/results/MASTER_RESULTS.md``.
+every documented checkpoint still loads with ``strict=True`` and matches the
+parameter count published for it.
 """
 
 from __future__ import annotations

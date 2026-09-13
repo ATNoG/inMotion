@@ -161,7 +161,7 @@ def evaluate(
     The unquantized run must reproduce the baseline MCC recorded in
     ``inmotion.quant.evaluate.BASELINE_MCC`` for dataset.csv; if it does not,
     the harness is wrong and the command fails rather than publishing numbers
-    nobody can trace. MASTER_RESULTS.md is a different dataset and is not
+    nobody can trace. The published table is a different dataset and is not
     consulted.
     """
     from inmotion.quant.evaluate import check_baseline, sweep, write_csv

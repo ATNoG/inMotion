@@ -1,8 +1,8 @@
 """The train/validation/test split convention.
 
-One definition, because every reported number depends on it. `MASTER_RESULTS.md`
-states the convention: an 80/20 stratified train-test split, then 12.5% of the
-train portion held out for validation, both with a fixed seed.
+One definition, because every reported number depends on it. The convention is
+an 80/20 stratified train-test split, then 12.5% of the train portion held out
+for validation, both with a fixed seed.
 
 This lived in `pipelines/mega_ensemble.py` and was imported from there by three
 other modules, which meant a 1,000-line pipeline had to be imported to obtain a

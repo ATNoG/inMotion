@@ -85,8 +85,8 @@ that verifies it.
 
 ## Findings that need a decision
 
-1. **The `mamba3_*` checkpoints do not match the paper.** `MASTER_RESULTS.md`
-   §2.3 publishes 0.843M / 0.842M / 1.701M parameters; the stored files are
+1. **The `mamba3_*` checkpoints do not match the paper.** The paper's table
+   publishes 0.843M / 0.842M / 1.701M parameters; the stored files are
    695,812 / 561,796 / 1,193,349. The published figures match builds with one
    more block or layer, so those three MCCs cannot be reproduced from `backup/`.
    Recorded and asserted by tests; no artifact was touched.

@@ -1,13 +1,13 @@
 """Checkpoint contract — the definition of "the old models still work".
 
-Each case is a checkpoint documented in ``docs/isac/results/MASTER_RESULTS.md``.
+Each case is a checkpoint documented in the paper's table.
 Three things must hold for every one of them:
 
 1. the file exists;
 2. it loads with ``strict=True`` — no silently-random weights;
 3. the loaded parameter count is exactly the expected integer.
 
-The counts are exact on purpose. MASTER_RESULTS publishes them rounded to three
+The counts are exact on purpose. The paper table publishes them rounded to three
 decimals, and a rounded figure does not catch a drift that lands on the same
 rounded value.
 
@@ -30,7 +30,7 @@ pytestmark = requires_artifacts
 
 # model name -> (checkpoint exists, exact module parameter count)
 EXPECTED: dict[str, int] = {
-    # MASTER_RESULTS.md §2.3
+    # ICAISF-evaluated ensemble members
     "lejepa": 565_765,
     "t_jepa": 633_477,
     "ts_jepa": 2_153_349,
@@ -44,7 +44,7 @@ EXPECTED: dict[str, int] = {
     "mamba3_tcn": 695_812,
     "mamba3_transformer": 561_796,
     "mamba3_multiview": 1_193_349,
-    # MASTER_RESULTS.md §2.1/2.2 — pre-HPO and retrained variants
+    # pre-HPO and retrained variants
     "lejepa_base": 2_215_813,
     "t_jepa_base": 2_347_653,
     "cf_jepa_base": 2_153_349,
@@ -113,7 +113,7 @@ def test_published_counts_match_except_documented_mismatches() -> None:
         if name not in reg.PROVENANCE_GAPS:
             undocumented.append(name)
     assert not undocumented, (
-        "these models disagree with MASTER_RESULTS.md but are not documented in "
+        "these models disagree with the paper table but are not documented in "
         f"registry.PROVENANCE_GAPS: {undocumented}"
     )
 

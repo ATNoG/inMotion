@@ -228,9 +228,9 @@ Public API:
 
 The train/validation/test split convention.
 
-One definition, because every reported number depends on it. `MASTER_RESULTS.md`
-states the convention: an 80/20 stratified train-test split, then 12.5% of the
-train portion held out for validation, both with a fixed seed.
+One definition, because every reported number depends on it. The convention is
+an 80/20 stratified train-test split, then 12.5% of the train portion held out
+for validation, both with a fixed seed.
 
 This lived in `pipelines/mega_ensemble.py` and was imported from there by three
 other modules, which meant a 1,000-line pipeline had to be imported to obtain a
@@ -373,24 +373,23 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 253 lines
+`src/inmotion/quant/evaluate.py` - 252 lines
 
 Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
 Every number this module produces is on **dataset.csv**. It is *not* on
-``dataset.icaisf.csv``, so it is **not** comparable with the MCC values in
-``docs/isac/results/MASTER_RESULTS.md`` section 2.3 (lejepa 0.8850, t_jepa
-0.8694, ts_jepa 0.8785, cf_jepa 0.8661, sigreg 0.8858), which were measured on
-the icaisf variant. The two splits differ in size and in score; MASTER_RESULTS
-is left untouched as the record of what was published on icaisf.
+``dataset.icaisf.csv``, so it is **not** comparable with the MCC values
+published for the icaisf variant (lejepa 0.8850, t_jepa 0.8694, ts_jepa 0.8785,
+cf_jepa 0.8661, sigreg 0.8858). The two splits differ in size and in score, so
+the numbers are not interchangeable.
 
 Otherwise the harness reuses the *same* splits and the same feature pipeline the
 models were trained with:
 
 - features from ``DLDataLoader`` with the model's own ``rich`` flag, because the
   scaler is fitted inside it and using a different fit would change the inputs;
-- the 80/20 stratified split from ``inmotion.data.splits``, which is the
-  convention stated in MASTER_RESULTS.
+- the 80/20 stratified split from ``inmotion.data.splits``, the convention every
+  reported number uses.
 
 The first thing the sweep does is evaluate the unquantized model. If that does
 not reproduce the recorded MCC, the harness is wrong and every later number is
@@ -497,8 +496,8 @@ reverse-engineered from tensor shapes.
 
 The configurations here were originally recovered by matching saved weight
 shapes; they are pinned by ``tests/test_checkpoint_contract.py``, which asserts
-every documented checkpoint still loads with ``strict=True`` and the parameter
-count published in ``docs/isac/results/MASTER_RESULTS.md``.
+every documented checkpoint still loads with ``strict=True`` and matches the
+parameter count published for it.
 
 Public API:
 
