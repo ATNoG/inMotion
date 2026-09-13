@@ -50,7 +50,7 @@ those results apply unchanged to this pin.
 | criterion | result | evidence |
 |---|---|---|
 | README's three false clauses gone; outlier counts match a fresh recomputation | **passed** | greps for `ten columns`, `10 columns`, `router-only`, `merged nothing`, `not produced by one harness` all return 0; recomputed from `HEAD:summary.csv` vs the current table: **8/15** host cells exceed 3 % on the speedup ratio and **7/15** on the after-median, exactly as stated |
-| no regression in the previously passed items | **passed** | clippy `--all-targets -- -D warnings` exit 0 from an empty `CARGO_TARGET_DIR`; `cargo test --release` and `--target x86_64-unknown-linux-musl` both 50 passed / 0 failed / 0 ignored; **15/15 PARITY OK on gnu and 15/15 on musl**, every `max |diff|` equal to the committed digits; F1 clocks 160/240 MHz with medians 888.4805/636.6805, no escape bytes, `_clock_mhz` absent; F2 fresh clone of the tracked set runs `plots quantization` exit 0 with **14/14** outputs byte-identical; F5 four manifest md5s MATCH on re-hash with latency `md5: null` and 3 `latency_artifacts`; F6 `All 18 model(s) verified.`; N-1 checklist reads 18; N-3 `.vscode/` ignored with `CITATION.cff` present |
+| no regression in the previously passed items | **passed** | clippy `--all-targets -- -D warnings` exit 0 from an empty `CARGO_TARGET_DIR`; `cargo test --release` and `--target x86_64-unknown-linux-musl` both 50 passed / 0 failed / 0 ignored; **15/15 PARITY OK on gnu and 15/15 on musl**, every `max |diff|` equal to the committed digits; F1 clocks 160/240 MHz with medians 888.4805/636.6805, no escape bytes, `_clock_mhz` absent; F2 fresh clone of the tracked set runs `plots quantization` exit 0 with **14/14** outputs byte-identical; F5 four manifest md5s MATCH on re-hash with latency `md5: null` and 3 `latency_artifacts`; F6 `All 18 model(s) verified.`; N-1 checklist reads 18; N-3 `.vscode/` ignored with `CITATION.cff` present at this pin (removed later in `37e3983`) |
 | all ten Rust files other than `main.rs` byte-identical to the round-2 pin; `ops.rs` still `92963c1f` | **passed** | the eleven hashes above |
 | the guard refuses an in-repo write and still honours `--in-repo` | **passed** | the matrix below |
 
@@ -94,7 +94,7 @@ the same claim.
 | F11 — reproducible `before` build, packaging, Files table, **and the guard** | pass | re-run | baseline tracked and repo-relative; the guard matrix in §2.1 executed here — (c) refuses with exit 1 and (c-IN) permits — plus the `.git`-less copy writing by design as the documented scratch behaviour |
 | N-1 | pass | re-run | checklist reads 18 |
 | N-2 | pass | carried | declaration-only re-scope under t12 |
-| N-3 | pass | re-run | `.vscode/` ignored at `.gitignore:213`; `CITATION.cff` present |
+| N-3 | pass | re-run | `.vscode/` ignored at `.gitignore:213`; `CITATION.cff` present *at the revision judged* — it was removed from the repository afterwards, in `37e3983`, so this clause reads as history. The ignore half still holds. |
 | N-4, N-5, N-6 | pass | carried | round-2 verification; unchanged inputs |
 | R2-01 — input-width guard | pass | carried | round-2 open item closed under t1/t5: a 10×2 input exits 1 with "input has 20 values, expected 40"; `main.rs` is `e61d6b79`, byte-identical to the verified revision |
 | round-2 open item 1 (`tol` no longer defaults) | pass | carried | missing `tol` exits 1; a perturbed logit still reports the out-of-tolerance case; same byte-identical `main.rs` |

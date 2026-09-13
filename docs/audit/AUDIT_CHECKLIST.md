@@ -81,17 +81,16 @@ The reference documents are generated, so they cannot disagree with the code.
 | dataset | IEEE Dataport DOI `10.21227/55nm-0r91`; a copy is committed under `data/processed/` |
 | model weights | gitignored, present in `backup/` and `20-aug/models/`; `inmotion model inventory` recovers their architectures |
 | licence | not yet declared — **add one before submission** |
-| citation | `CITATION.cff` present; replace the placeholder reference with the camera-ready citation on acceptance |
+| citation | **no `CITATION.cff`** — the file added in `16f45fd` was removed in `37e3983`; write one carrying the camera-ready citation before submission |
 
 ## Open items
 
 These are known and not hidden:
 
-1. No `LICENSE` yet — add one before submission (the status table above records
-   the same; no `LICENSE`/`LICENCE`/`COPYING` file exists at the repository root).
-   `CITATION.cff` is present and tracked (added in `16f45fd`); only its
-   `references` block is still the placeholder, to be replaced with the
-   camera-ready citation on acceptance.
+1. Neither metadata file exists yet — add both before submission. No `LICENSE`:
+   no `LICENSE`/`LICENCE`/`COPYING` file exists at the repository root. And no
+   `CITATION.cff`: the one added in `16f45fd` was removed in `37e3983`, so both
+   have to be written rather than merely completed.
 3. `ds-icaisf` label provenance needs confirmation; if it belongs to the older
    lineage the reported ensemble numbers are affected.
 5. The classical `src/inmotion/classification/` package has not moved under
