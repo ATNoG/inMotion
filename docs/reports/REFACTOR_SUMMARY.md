@@ -28,9 +28,10 @@ on disk in `plots/` and `combined/`.
 A checkpoint's architecture is now data — a `ModelSpec` recording factory,
 keyword arguments, state-dict prefix and expected parameter count — instead of a
 `_build_*` function whose constants had been recovered by comparing tensor
-shapes. 17 curated specs plus shape-driven adoption cover every checkpoint in
-the store: the 12 paper models, 5 pre-HPO/retrained variants, and 23 `dl/`
-classifiers and ensembles.
+shapes. 18 curated specs — the 12 paper models, the 5 pre-HPO/retrained
+variants and the retained historical `sigreg_icaisf` — plus shape-driven adoption
+cover every checkpoint in the store, alongside the 23 `dl/` classifiers and
+ensembles. `uv run inmotion model verify` strict-loads all 18.
 
 `load_state_dict(..., strict=False)` is gone. It had been hiding real breakage:
 `mamba3_tcn` loaded while missing 13 keys, and two different builders each

@@ -210,7 +210,7 @@ __marimo__/
 
 
 AGENTS.md
-.vscode/mcp.json
+.vscode/
 
 **/paper/*.out
 **/paper/*.aux

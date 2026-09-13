@@ -73,7 +73,15 @@ sigreg-fp32  :: max |diff| : 0.00000123  PARITY OK     sigreg-int8  :: 0.0000019
 sigreg-q4    :: max |diff| : 0.00000143  PARITY OK     (tolerance 0.000200)
 ```
 
-No CPU feature the router lacks, checked on the binary that is deployed:
+These are the figures as measured in this round-1 review, against the artifacts
+that existed then. The `sigreg` row is a **pre-dataset.csv-retrain record**: after
+the retrain the current tree re-exports and reproduces `sigreg 8.3e-7 / 8.3e-7 /
+9.5e-7`, which `rust/README.md`'s parity table carries, and `cf_jepa` moved to
+`2.21e-6 / 2.95e-6 / 1.91e-6`. `rust/README.md` is the live record; this block is
+history (finding F4 in `docs/reports/VERIFICATION.md`).
+
+No CPU feature the router lacks in any `inmotion` code path. The check as
+originally run was narrower than the binary, so read it with the qualification:
 
 ```
 $ objdump -d rust/target/x86_64-unknown-linux-musl/release/inmotion-infer \
@@ -83,7 +91,15 @@ $ sha256sum rust/target/x86_64-unknown-linux-musl/release/inmotion-infer
 29cd6de5b482f3505bfdee2e3837ece5185db00b3e6dd86be58b96f42075faf3
 ```
 
-which matches `results/perf/README.md`'s recorded hash. There is no `.cargo/config.toml`
+The pattern above only matches a VEX instruction whose *first* operand is a
+`%v`-register, so its `0` does not mean the binary is AVX-free. Counting VEX
+mnemonics instead gives 282, all of them inside `memchr`'s three
+runtime-CPUID-dispatched `find_avx2` symbols, which this CPU never selects — no
+`inmotion` symbol contains one (F3; the corrected statement and the commands live
+in `results/perf/README.md`).
+
+The hash above identifies the deployed binary, which matches
+`results/perf/README.md`'s recorded hash. There is no `.cargo/config.toml`
 in `rust/` and no `RUSTFLAGS` in the environment, so the baseline feature level is
 the default rather than an accident of the host.
 
@@ -425,10 +441,14 @@ concentrate.
   `src0 = t0+k-pad`, and the `(ci,k)` reduction order is preserved (ci-major,
   k-minor) exactly as the replaced triple loop summed. Its one uncovered branch is
   R-11.
-- No ISA assumption anywhere: no `std::arch`, no `is_x86_feature_detected!`, no
-  `target_feature`, no `RUSTFLAGS`/`target-cpu`, and `objdump` confirms zero
-  VEX-encoded instructions in the deployed musl binary — so the J3455 (no
-  AVX/AVX2/FMA) can run it, and `results/perf/README.md`'s crate survey is
+- No ISA assumption in project code: no `std::arch`, no `is_x86_feature_detected!`, no
+  `target_feature`, no `RUSTFLAGS`/`target-cpu`, and no `inmotion` code path emits
+  AVX, AVX2 or FMA. The deployed musl binary is *not* free of AVX-encoded
+  instructions as a whole — it carries 282 VEX mnemonics, all in `memchr`'s three
+  runtime-CPUID-dispatched `find_avx2` symbols, which the J3455 (no AVX/AVX2/FMA)
+  never selects (see `results/perf/README.md`'s "router build" section, which
+  F3 corrected to say exactly this). So the binary runs there, and
+  `results/perf/README.md`'s crate survey is
   consistent with the hand kernel winning there and losing on the AVX2 host.
 
 ## Modules that are clean

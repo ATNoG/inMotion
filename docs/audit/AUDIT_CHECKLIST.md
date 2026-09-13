@@ -7,7 +7,7 @@ a file. Nothing here relies on trusting the authors.
 
 | check | command | expected |
 |---|---|---|
-| every registered model strict-loads | `uv run inmotion model verify` | `All 17 model(s) verified.` |
+| every registered model strict-loads | `uv run inmotion model verify` | `All 18 model(s) verified.` |
 | parameter counts match the registry | same command | per-model `OK` |
 | a model's output has not silently changed | `uv run pytest tests/test_model_outputs_golden.py` | pass |
 
@@ -87,7 +87,11 @@ The reference documents are generated, so they cannot disagree with the code.
 
 These are known and not hidden:
 
-1. No `LICENSE` and no `CITATION.cff` yet.
+1. No `LICENSE` yet — add one before submission (the status table above records
+   the same; no `LICENSE`/`LICENCE`/`COPYING` file exists at the repository root).
+   `CITATION.cff` is present and tracked (added in `16f45fd`); only its
+   `references` block is still the placeholder, to be replaced with the
+   camera-ready citation on acceptance.
 3. `ds-icaisf` label provenance needs confirmation; if it belongs to the older
    lineage the reported ensemble numbers are affected.
 5. The classical `src/inmotion/classification/` package has not moved under
