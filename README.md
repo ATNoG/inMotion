@@ -188,7 +188,6 @@ parameter counts do not match the published table — are documented in
 | [`docs/reference/`](docs/reference/) | generated: CLI, models, modules, datasets |
 | [`docs/audit/AUDIT_CHECKLIST.md`](docs/audit/AUDIT_CHECKLIST.md) | what a reviewer can verify independently |
 | [`docs/audit/MODEL_CARDS.md`](docs/audit/MODEL_CARDS.md) | per-family model cards and limitations |
-| [`docs/isac/results/MASTER_RESULTS.md`](docs/isac/results/MASTER_RESULTS.md) | canonical reported numbers, each mapped to its artifact |
 | [`docs/reports/`](docs/reports/) | artifact rules, migration notes, refactor history |
 
 ## Citing

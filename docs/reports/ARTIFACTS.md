@@ -4,11 +4,11 @@
 
 Checkpoint binaries are large and are **not** tracked. They live in two stores:
 
-| store | contents |
-|---|---|
-| `20-aug/models/` | the ISAC 2026 paper's models: base and after-HPO JEPA/SIGReg runs, plus the `src/inmotion/dl/` classifier store |
-| `backup/` | the members that only exist here: `sigreg_seed{3,5,42}`, the four `mamba3_*` variants, `DeepStackEnsemble_seed42` |
-| `models/` | classical-ML joblibs used by the demo (`GaussianProcess*.joblib`) |
+| store            | contents                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `20-aug/models/` | the FNWF 2026 paper's models: base and after-HPO JEPA/SIGReg runs, plus the `src/inmotion/dl/` classifier store   |
+| `backup/`        | the members that only exist here: `sigreg_seed{3,5,42}`, the four `mamba3_*` variants, `DeepStackEnsemble_seed42` |
+| `models/`        | classical-ML joblibs used by the demo (`GaussianProcess*.joblib`)                                                 |
 
 A fresh clone therefore has **no models**. The root suite skips the model tests
 with an explicit reason rather than reporting false failures.
@@ -59,15 +59,15 @@ This is recorded in `registry.PROVENANCE_GAPS` and asserted by
 
 Generated outputs are **not** tracked. They stay on disk and are regenerable:
 
-| path | contents | tracked? |
-|---|---|---|
-| `plots/` | 469 figure files from the ML/DL runs | no |
-| `results/` | per-seed ML/DL result CSVs | only `results/dl/dl_results_seed42.csv`, which the paper cites |
-| `combined/` | multi-seed aggregate plots and statistics | no |
-| `catboost_info/` | CatBoost training telemetry | no |
-| `20-aug/logs/` | HPO logs | **yes** — cited as provenance by MASTER_RESULTS |
-| `20-aug/results/` | exotic-pipeline result CSVs | **yes** — cited by MASTER_RESULTS |
-| `docs/isac/results/` | curated paper numbers (`MASTER_RESULTS.md`, raw CSVs) | **yes** |
+| path                 | contents                                              | tracked?                                                       |
+| -------------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
+| `plots/`             | 469 figure files from the ML/DL runs                  | no                                                             |
+| `results/`           | per-seed ML/DL result CSVs                            | only `results/dl/dl_results_seed42.csv`, which the paper cites |
+| `combined/`          | multi-seed aggregate plots and statistics             | no                                                             |
+| `catboost_info/`     | CatBoost training telemetry                           | no                                                             |
+| `20-aug/logs/`       | HPO logs                                              | **yes** — cited as provenance by MASTER_RESULTS                |
+| `20-aug/results/`    | exotic-pipeline result CSVs                           | **yes** — cited by MASTER_RESULTS                              |
+| `docs/isac/results/` | curated paper numbers (`MASTER_RESULTS.md`, raw CSVs) | **yes**                                                        |
 
 The rule: if a document cites it as provenance, it is tracked; if it is
 regenerable output, it is not.

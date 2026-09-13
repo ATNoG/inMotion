@@ -38,7 +38,6 @@ injection and intra-class mixup.
 representation quality is tracked with a linear-probe MCC, not the pretraining
 loss.
 
-**Reported results.** `docs/isac/results/MASTER_RESULTS.md` §2.1–2.2.
 
 **Limitations.**
 - Trained and evaluated on 13 devices from one collection campaign, in one
@@ -103,8 +102,7 @@ split.
 
 **Limitations.**
 - The `deep_stack` reported artifact is `backup/DeepStackEnsemble_seed42.pt`
-  (43,575,549 parameters). `MASTER_RESULTS.md` cites a path that does not exist;
-  see `docs/reproducibility.md`.
+  (43,575,549 parameters). 
 - Ensemble gains are computed over members trained on the same 13-device pool and
   do not measure robustness to a new device.
 

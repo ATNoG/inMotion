@@ -24,9 +24,6 @@ was missing 13 keys and therefore predicting partly from random weights.
 
 ## 3. Is the reported number reproducible?
 
-`docs/isac/results/MASTER_RESULTS.md` maps each reported value to the artifact
-that produced it. `docs/reproducibility.md` states the split, seed and metric and
-lists what is *not* reproducible, with reasons.
 
 The three `mamba3_*` parameter counts and the Mamba-3 HPO search space are known
 and documented discrepancies, not silent ones. A test fails if either is closed

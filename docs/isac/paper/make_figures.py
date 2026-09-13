@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate publication-quality, spacious, and uncluttered figures for the ISAC 2026 paper.
+"""Generate publication-quality, spacious, and uncluttered figures for the FNWF 2026 paper.
 
 Adheres strictly to scientific-visualization, matplotlib, and academic-plotting skills:
   - Clean seaborn-v0_8-whitegrid layout with generous margins and padding ("airosa")
@@ -14,12 +14,13 @@ Adheres strictly to scientific-visualization, matplotlib, and academic-plotting 
 import matplotlib
 
 matplotlib.use("Agg")
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 OUT = Path(__file__).resolve().parent / "images"
 OUT.mkdir(parents=True, exist_ok=True)

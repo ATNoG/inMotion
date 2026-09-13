@@ -79,7 +79,7 @@ Canonical training set: **`ds-augmented-v3`**
 - first commit: `0f5c0b1c4438` (2026-08-24)
 - role: variant; status: **current**
 - label audit: **unverified**
-- note: ICAISF variant (4 classes AA/AB/BA/BB), 8-device pool. This is the dataset the ISAC paper's ensemble was scored on, so its labels need confirming: if this lineage is the older one, MASTER_RESULTS.md numbers are affected.
+- note: ICAISF variant (4 classes AA/AB/BA/BB), 8-device pool. This is the dataset the ISAC paper's ensemble was scored on, so its labels need confirming: if this lineage is the older one.
 - lineage: `description`=ICAISF paper variant, `devices`=8
 
 ### `ds-base-v2`

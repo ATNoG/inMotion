@@ -37,7 +37,6 @@ kernel-level differences.
 
 ## The split convention
 
-`docs/isac/results/MASTER_RESULTS.md` states it, and
 `_stratified_indices(y, 42)` in `inmotion.pipelines.mega_ensemble` implements it:
 
 | item | value |
@@ -66,10 +65,6 @@ uv run inmotion datasets verify
 uv run inmotion evaluate mega-ensemble \
     --data data/processed/dataset.icaisf.csv --seed 42
 ```
-
-`docs/isac/results/MASTER_RESULTS.md` is the single source of truth for the
-reported values and gives, for each number, the artifact that produced it. Three
-of the entries cannot currently be reproduced — see the provenance gaps below.
 
 ## Provenance gaps
 
