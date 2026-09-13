@@ -26,11 +26,11 @@ if [ "$DEVICE" = host ]; then
   WARM=${WARM:-40}
   OUT=${OUT:-bench_host.csv}
   PIN="taskset -c 6"
-  line() { # json -> csv row
+  line() { # json -> csv row; $2=device $3=model $4=precision $5=build $6=run
     printf '%s\n' "$1" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
-print('host,$2,$3,$4,$5,%.4f,%.4f,%.4f,%.4f,%.4f,%.1f' % (d['min_ms'],d['median_ms'],d['mean_ms'],d['p95_ms'],d['max_ms'],d['throughput_per_s']))"
+print('%s,%s,%s,%s,%s,%.4f,%.4f,%.4f,%.4f,%.4f,%.1f' % (sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5],d['min_ms'],d['median_ms'],d['mean_ms'],d['p95_ms'],d['max_ms'],d['throughput_per_s']))" "$2" "$3" "$4" "$5" "$6"
   }
 else
   cd "${DEPLOY:-/mnt/extra/cargo/inmotion/perf}"
@@ -41,10 +41,14 @@ else
   WARM=${WARM:-30}
   OUT=${OUT:-bench_router.csv}
   PIN=""
-  # The router is busybox: no python3, so parse the JSON with sed.
+  # The router is busybox: no python3, so parse the JSON with sed. The JSON
+  # arrives on stdin (a nested helper taking it as "$1" would shadow the
+  # caller's own "$1"). Same call convention as the host branch:
+  # $2=device $3=model $4=precision $5=build $6=run, so both devices write the
+  # same 11 columns and summarise.py can merge the two CSVs.
   line() {
-    f() { printf '%s\n' "$1" | sed -n "s/.*\"$2\":\([-0-9.]*\).*/\1/p"; }
-    echo "router,$3,$4,$5,$6,$(f min_ms),$(f median_ms),$(f mean_ms),$(f p95_ms),$(f max_ms),$(f throughput_per_s)"
+    f() { sed -n "s/.*\"$1\":\([-0-9.]*\).*/\1/p"; }
+    echo "router,$3,$4,$5,$6,$(printf '%s\n' "$1" | f min_ms),$(printf '%s\n' "$1" | f median_ms),$(printf '%s\n' "$1" | f mean_ms),$(printf '%s\n' "$1" | f p95_ms),$(printf '%s\n' "$1" | f max_ms),$(printf '%s\n' "$1" | f throughput_per_s)"
   }
 fi
 
@@ -58,7 +62,7 @@ for model in $MODELS; do
         [ "$build" = after ] && bin=$AFTER
         json=$($PIN "$bin" bench --artifact "$ART/$model-$prec" \
                  --iterations "$ITER" --warmup "$WARM" --json)
-        line "$json" x "$model" "$prec" "$build" "$run" >> "$OUT"
+        line "$json" "$DEVICE" "$model" "$prec" "$build" "$run" >> "$OUT"
       done
       run=$((run + 1))
     done

@@ -21,6 +21,13 @@ PRECS = ("fp32", "int8", "q4")
 def best_by_cell(path: Path) -> dict[tuple[str, str, str, str], dict[str, str]]:
     cells: dict[tuple[str, str, str, str], list[dict[str, str]]] = defaultdict(list)
     for row in csv.DictReader(path.open()):
+        if row.get("device") is None or row.get("build") is None or row.get("median_ms") is None:
+            # A trailing status line (`DONE`, appended by a runner) lands here as
+            # a bare word in the device column. A row that has some columns but
+            # not all of them is runner schema drift, and must not be dropped.
+            if sum(v is not None for v in row.values()) > 1:
+                raise SystemExit(f"{path}: partial row, runner columns have drifted: {row!r}")
+            continue
         cells[(row["device"], row["model"], row["precision"], row["build"])].append(row)
     return {k: min(v, key=lambda r: float(r["median_ms"])) for k, v in cells.items()}
 
@@ -64,7 +71,9 @@ def main() -> int:
         print("no cells to summarise", file=sys.stderr)
         return 1
     with (HERE / "summary.csv").open("w", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(out[0].keys()))
+        # LF, matching the committed CSVs and the runners; the csv module's
+        # default dialect would write CRLF.
+        writer = csv.DictWriter(fh, fieldnames=list(out[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(out)
     for row in out:
