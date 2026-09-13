@@ -16,6 +16,7 @@ reference you need. `../README.md` is the project front page.
 |---|---|
 | [`guides/commands.md`](guides/commands.md) | every command, when to use it, and a realistic invocation |
 | [`guides/running-models.md`](guides/running-models.md) | how to use a checkpoint: list, inspect, verify, predict, adopt |
+| [`guides/rust-and-devices.md`](guides/rust-and-devices.md) | how to run inference without Python: export an artifact, build for another device, prove parity on it, and measure it there |
 | [`guides/training.md`](guides/training.md) | how to train each family, on a workstation or a cluster |
 
 ## Reference (generated from the code)
