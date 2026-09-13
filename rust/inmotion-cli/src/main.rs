@@ -31,12 +31,24 @@ fn arg_value(args: &[String], flag: &str) -> Option<String> {
 /// Read a `seq_len x in_channels` window: whitespace- or comma-separated floats.
 fn read_window(path: &Path, seq_len: usize, channels: usize) -> Result<Tensor, String> {
     let text = fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    let values: Vec<f32> = text
-        .split(|c: char| c.is_whitespace() || c == ',')
-        .filter(|s| !s.is_empty())
-        .map(str::parse::<f32>)
-        .collect::<Result<_, _>>()
-        .map_err(|e| format!("{}: not a float: {e}", path.display()))?;
+    let mut values = Vec::new();
+    for field in text.split(|c: char| c.is_whitespace() || c == ',') {
+        if field.is_empty() {
+            continue;
+        }
+        let value: f32 = field
+            .parse()
+            .map_err(|e| format!("{}: not a float: {e}", path.display()))?;
+        // `nan` and `inf` parse happily and would then poison every comparison
+        // downstream, so they are rejected at the trust boundary.
+        if !value.is_finite() {
+            return Err(format!(
+                "{}: {field:?} is not a finite number",
+                path.display()
+            ));
+        }
+        values.push(value);
+    }
     let expected = seq_len * channels;
     if values.len() != expected {
         return Err(format!(
@@ -75,14 +87,14 @@ fn predict(artifact_dir: &Path, input: &Path) -> Result<(), String> {
     let x = read_window(input, model.seq_len(), model.in_channels())?;
 
     let logits = model.forward(&x);
-    let probs =
-        inmotion_core::ops::softmax_last(&Tensor::new(logits.data.clone(), vec![1, logits.len()]));
+    let probs = inmotion_core::ops::softmax_last(&logits);
+    // `total_cmp` is a total order, so a NaN cannot make the comparison lie.
     let (best, &confidence) = probs
         .data
         .iter()
         .enumerate()
-        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-        .unwrap();
+        .max_by(|a, b| a.1.total_cmp(b.1))
+        .ok_or("model returned no logits")?;
 
     println!("logits     : {:?}", logits.data);
     println!("probabilities: {:?}", probs.data);
@@ -98,32 +110,77 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
     let golden: serde_json::Value =
         serde_json::from_str(&text).map_err(|e| format!("golden.json: {e}"))?;
 
-    let tol = golden["tol"].as_f64().unwrap_or(2e-4) as f32;
+    // A missing tolerance is an error, not a default: silently picking 2e-4
+    // would let a golden file with the field deleted still print PARITY OK.
+    let tol = golden["tol"]
+        .as_f64()
+        .ok_or("golden.json: no tol (the exporter writes one per artifact)")? as f32;
     let cases = golden["cases"].as_array().ok_or("golden.json: no cases")?;
     let mut worst = 0.0f32;
     let mut mismatches = 0usize;
 
     for (i, case) in cases.iter().enumerate() {
-        let input: Vec<f32> = case["input"]
+        let rows = case["input"]
             .as_array()
-            .ok_or("case has no input")?
-            .iter()
-            .flat_map(|row| {
-                row.as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|v| v.as_f64().unwrap() as f32)
-            })
-            .collect();
+            .ok_or_else(|| format!("case {i}: no input"))?;
+        let mut input = Vec::new();
+        for row in rows {
+            let row = row
+                .as_array()
+                .ok_or_else(|| format!("case {i}: input row is not an array"))?;
+            for value in row {
+                let value = value
+                    .as_f64()
+                    .ok_or_else(|| format!("case {i}: input is not a number"))?;
+                input.push(value as f32);
+            }
+        }
         let expected: Vec<f32> = case["logits"]
             .as_array()
-            .ok_or("case has no logits")?
+            .ok_or_else(|| format!("case {i}: no logits"))?
             .iter()
-            .map(|v| v.as_f64().unwrap() as f32)
-            .collect();
+            .map(|value| {
+                value
+                    .as_f64()
+                    .map(|v| v as f32)
+                    .ok_or_else(|| format!("case {i}: logit is not a number"))
+            })
+            .collect::<Result<_, _>>()?;
+
+        // The same trust boundary as the logit check below: a malformed golden
+        // fixture must name the case, not reach `Tensor::new`'s invariant assert.
+        let expected_input = model.seq_len() * model.in_channels();
+        if input.len() != expected_input {
+            return Err(format!(
+                "case {i}: input has {} values, expected {expected_input}",
+                input.len()
+            ));
+        }
+
+        if expected.len() != model.num_classes() {
+            return Err(format!(
+                "case {i}: golden has {} logits, but the model has {} classes",
+                expected.len(),
+                model.num_classes()
+            ));
+        }
 
         let x = Tensor::new(input, vec![model.seq_len(), model.in_channels()]);
         let got = model.forward(&x).data;
+        if got.len() != expected.len() {
+            return Err(format!(
+                "case {i}: expected {} logits, got {}",
+                expected.len(),
+                got.len()
+            ));
+        }
+        if got.len() != model.num_classes() {
+            return Err(format!(
+                "case {i}: model returned {} logits for {} classes",
+                got.len(),
+                model.num_classes()
+            ));
+        }
         let diff = got
             .iter()
             .zip(&expected)
@@ -154,6 +211,9 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
 /// actually judged on. `--json` emits the same numbers as one JSON object, so a
 /// benchmark taken on the router lands in `results/perf/` without a parser.
 fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> Result<(), String> {
+    if iterations == 0 {
+        return Err("--iterations must be > 0".into());
+    }
     let artifact = Artifact::load(artifact_dir)?;
     let model = Model::load(&artifact)?;
     let channels = model.in_channels();
@@ -174,7 +234,7 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
         let _ = model.forward(&x);
         samples.push(start.elapsed().as_secs_f64() * 1e3); // milliseconds
     }
-    samples.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    samples.sort_by(f64::total_cmp);
 
     let median = samples[samples.len() / 2];
     let p95 = samples[(samples.len() * 95) / 100];
@@ -191,10 +251,13 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
              \"quantization\":{},\"min_ms\":{min:.4},\"median_ms\":{median:.4},\
              \"mean_ms\":{mean:.4},\"p95_ms\":{p95:.4},\"max_ms\":{max:.4},\
              \"throughput_per_s\":{throughput:.1}}}",
-            serde_json::to_string(&artifact.meta.model).unwrap(),
-            serde_json::to_string(&artifact_dir.display().to_string()).unwrap(),
+            serde_json::to_string(&artifact.meta.model)
+                .map_err(|e| format!("model name is not serialisable: {e}"))?,
+            serde_json::to_string(&artifact_dir.display().to_string())
+                .map_err(|e| format!("artifact path is not serialisable: {e}"))?,
             match &artifact.meta.quant {
-                Some(q) => serde_json::to_string(q).unwrap(),
+                Some(q) => serde_json::to_string(q)
+                    .map_err(|e| format!("quantization spec is not serialisable: {e}"))?,
                 None => "null".to_string(),
             },
         );
@@ -238,7 +301,12 @@ fn main() -> ExitCode {
             let warmup = arg_value(&args, "--warmup")
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(20);
-            bench(&artifact_dir, iterations, warmup, args.iter().any(|a| a == "--json"))
+            bench(
+                &artifact_dir,
+                iterations,
+                warmup,
+                args.iter().any(|a| a == "--json"),
+            )
         }
         "check" => match arg_value(&args, "--golden") {
             Some(p) => check(&artifact_dir, &PathBuf::from(p)),

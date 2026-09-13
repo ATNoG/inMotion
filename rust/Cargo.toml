@@ -8,7 +8,8 @@ edition = "2021"
 license = "MIT"
 authors = ["André Ribeiro <andrepedro2004@hotmail.com>"]
 
-# Enforced in CI. The crate is small enough that these should stay at zero.
+# Enforced locally by `cargo clippy --all-targets -- -D warnings` and
+# `cargo test`; the crate is small enough that these should stay at zero.
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"

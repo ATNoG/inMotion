@@ -10,10 +10,11 @@ rust/
 
 ## Why not ONNX Runtime
 
-The graph is small and fixed-shape, and the target includes an ESP32-S3. A flat
-tensor bag plus a small JSON description is lighter and easier to audit than an
-ONNX runtime, and the safetensors reader is short enough to write here rather
-than depend on.
+The graphs are small and fixed-shape, and the deployable targets are two baseline
+x86-64 builds. A flat tensor bag plus a small JSON description is lighter and
+easier to audit than an ONNX runtime, and the safetensors reader is short enough
+to write here rather than depend on. (The ESP32 demo is separate C firmware under
+`firmware/`; it does not share this crate.)
 
 ## Verifying it
 
@@ -35,19 +36,40 @@ for fp32, int8 and q4.
 
 ## Measured parity
 
-| precision | max abs deviation on 16 real test windows | tolerance |
-|---|---:|---:|
-| fp32 | 2.9e-6 | 2e-4 |
-| int8 | 3.5e-6 | 2e-4 |
-| q4 | 3.2e-6 | 2e-4 |
+Max absolute deviation from PyTorch over 16 real test windows, tolerance 2e-4,
+measured with `inmotion-infer check` on freshly exported artifacts:
+
+| model | fp32 | int8 | q4 |
+|---|---:|---:|---:|
+| lejepa | 4.1e-6 | 4.2e-6 | 3.3e-6 |
+| t_jepa | 2.6e-6 | 4.1e-6 | 6.2e-6 |
+| ts_jepa | 2.7e-6 | 2.9e-6 | 5.0e-6 |
+| cf_jepa | 2.2e-6 | 3.0e-6 | 1.9e-6 |
+| sigreg | 8.3e-7 | 8.3e-7 | 9.5e-7 |
+
+Every case keeps more than 30x of headroom. `sigreg` was re-measured after the
+dataset.csv retrain (`results/perf/README.md` records the pre-retrain run used for
+the kernel before/after A/B, and `results/perf/parity_before_after.csv` has both).
 
 ## Scope
 
-Only `lejepa` is ported. The other three reported JEPA models have structurally
-different encoders — T-JEPA has a feature-index tokenizer, TS-JEPA and CF-JEPA are
-patch-based with a `context_encoder` — so each needs its own `forward`, sharing
-the ops in `ops.rs`. The artifact format and the parity harness already support
-them; only the model module is missing.
+All five reported families are served by one shared stack:
+
+* `lejepa`, `t_jepa`, `ts_jepa` and `cf_jepa` are the same pre-norm transformer
+  plus attention pool. They differ only in the tokenizer — a per-timestep linear,
+  a `Conv1d` patch projection, or T-JEPA's per-slot scale with a feature-index
+  embedding — and in the stage between the transformer and the pool (a final
+  `LayerNorm`, or LeJEPA's projection plus `BatchNorm1d`). T-JEPA additionally
+  prepends `[REG]` slots and projects before the transformer.
+* `sigreg` is a multi-scale CNN with a Gaussian latent bottleneck. It shares
+  `ops.rs` and nothing else, and is deliberately not routed through the
+  transformer path.
+
+`arch.family` in the artifact selects the graph, followed by the fields that
+graph validates against the tensor index (`tokenizer`, `tail`, `n_reg`,
+`input_proj`, `num_filters`, `num_blocks`, ...). The runtime never infers
+architecture, and an artifact whose declared architecture disagrees with its
+weights is rejected at load rather than at inference.
 
 ## Bugs the parity check caught
 
@@ -62,6 +84,12 @@ Both were silent in Rust and only visible against the reference:
 
 ## Platform notes
 
-`libm` supplies `erf`/`exp`/`sqrt` so the crate can build without `std` math for a
-microcontroller target. BatchNorm is folded into two fused multiply-adds per
-element at load time.
+Two targets are supported and measured: baseline `x86_64-unknown-linux-gnu` and
+baseline `x86_64-unknown-linux-musl` (no `target-cpu`, no AVX/AVX2/FMA), the
+latter being what the wave-router J3455 runs. The crate is `std`-linked; only the
+transcendentals come from elsewhere.
+
+`libm` supplies `erf`/`exp`/`sqrt` so the arithmetic is identical on every target
+and every libc instead of drifting with the platform's libm — that is what makes
+the parity numbers above reproducible rather than approximate. BatchNorm is folded
+into two fused multiply-adds per element at load time.

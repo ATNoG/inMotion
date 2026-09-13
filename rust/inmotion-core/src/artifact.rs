@@ -3,7 +3,7 @@
 //! The safetensors reader is written here rather than pulled in as a
 //! dependency. The format is a little-endian `u64` header length, a JSON header,
 //! then the raw buffers, which is short enough to audit and keeps the dependency
-//! set small enough for a microcontroller build.
+//! set to `serde_json` alone.
 
 use std::collections::HashMap;
 use std::fs;
@@ -74,13 +74,14 @@ impl Meta {
     /// an error rather than a default: guessing produced a model that ran and
     /// returned confident wrong answers.
     pub fn usize_field(&self, key: &str) -> Result<usize, String> {
-        self.arch
+        let value = self
+            .arch
             .get(key)
             .and_then(serde_json::Value::as_u64)
-            .map(|v| v as usize)
             .ok_or_else(|| {
                 format!("artifact does not record `{key}`; re-export it from the registry entry")
-            })
+            })?;
+        usize::try_from(value).map_err(|_| format!("`{key}` does not fit a usize"))
     }
 
     /// Read a boolean architecture field the exporter recorded.
@@ -105,9 +106,10 @@ impl Meta {
         items
             .iter()
             .map(|item| {
-                item.as_u64()
-                    .map(|v| v as usize)
-                    .ok_or_else(|| format!("`{key}` must be a list of integers, got {item}"))
+                let value = item
+                    .as_u64()
+                    .ok_or_else(|| format!("`{key}` must be a list of integers, got {item}"))?;
+                usize::try_from(value).map_err(|_| format!("`{key}` does not fit a usize"))
             })
             .collect()
     }
@@ -137,8 +139,8 @@ pub struct Eps {
 /// The weights blob is read **once** and kept in memory. An earlier version
 /// re-read the whole file inside each accessor, which meant one full file read
 /// per tensor: 79 reads of a 2.3 MB file to load one model, and far worse for
-/// the 8.6 MB variant. On a microcontroller served by slow PSRAM that is not a
-/// micro-optimisation, it is the difference between usable and not.
+/// the 8.6 MB variant. On a router whose storage is far slower than its RAM that
+/// is not a micro-optimisation, it is the difference between usable and not.
 #[derive(Debug)]
 pub struct Artifact {
     /// Parsed `meta.json`.
@@ -170,6 +172,44 @@ struct StEntry {
     data_offsets: [usize; 2],
 }
 
+/// How many scale/zero-point pairs the declared granularity needs.
+///
+/// The same arithmetic `quant::dequantize` performs, applied up front so a
+/// malformed artifact is rejected at load rather than indexing out of bounds in
+/// the inner loop.
+fn metadata_len(
+    name: &str,
+    shape: &[usize],
+    granularity: Granularity,
+    axis: usize,
+    group_size: usize,
+) -> Result<usize, String> {
+    match granularity {
+        Granularity::PerTensor => Ok(1),
+        Granularity::PerChannel => shape.get(axis).copied().ok_or_else(|| {
+            format!("{name}: per_channel axis {axis} is out of range for shape {shape:?}")
+        }),
+        Granularity::PerGroup => {
+            if group_size == 0 {
+                return Err(format!("{name}: per_group requires group_size > 0"));
+            }
+            let rows = shape
+                .first()
+                .copied()
+                .ok_or_else(|| format!("{name}: per_group needs a leading axis"))?;
+            if rows == 0 {
+                return Err(format!("{name}: per_group has a zero-length leading axis"));
+            }
+            // Groups run along the flattened trailing axes, exactly as the
+            // exporter's `_flatten_for_grouping` lays them out.
+            let count: usize = shape.iter().product();
+            let last = count / rows;
+            rows.checked_mul(last.div_ceil(group_size))
+                .ok_or_else(|| format!("{name}: per_group metadata count overflows"))
+        }
+    }
+}
+
 impl Artifact {
     /// Load an artifact directory.
     pub fn load(dir: impl AsRef<Path>) -> Result<Self, String> {
@@ -188,11 +228,12 @@ impl Artifact {
         if blob.len() < 8 {
             return Err("weights: file too short for a safetensors header".into());
         }
-        let header_len = u64::from_le_bytes(blob[..8].try_into().unwrap()) as usize;
-        let header_end = 8 + header_len;
-        if header_end > blob.len() {
-            return Err("weights: header length exceeds file size".into());
-        }
+        let header_len = usize::try_from(u64::from_le_bytes(blob[..8].try_into().unwrap()))
+            .map_err(|_| "weights: header length exceeds file size".to_string())?;
+        let header_end = header_len
+            .checked_add(8)
+            .filter(|end| *end <= blob.len())
+            .ok_or("weights: header length exceeds file size")?;
         let header: HashMap<String, serde_json::Value> =
             serde_json::from_slice(&blob[8..header_end])
                 .map_err(|e| format!("weights header: {e}"))?;
@@ -205,10 +246,13 @@ impl Artifact {
             let entry: StEntry =
                 serde_json::from_value(value).map_err(|e| format!("weights[{name}]: {e}"))?;
             let [start, end] = entry.data_offsets;
-            if end < start || header_end + end > blob.len() {
-                return Err(format!(
-                    "weights[{name}]: data_offsets {start}..{end} lie outside the buffer"
-                ));
+            let outside =
+                || format!("weights[{name}]: data_offsets {start}..{end} lie outside the buffer");
+            // `end` is attacker-controlled input; wrapping it would turn a bogus
+            // header into a small in-bounds slice instead of a rejection.
+            let buffer_end = header_end.checked_add(end).ok_or_else(outside)?;
+            if end < start || buffer_end > blob.len() {
+                return Err(outside());
             }
             let len = end - start;
             // Cheap integrity check: the declared shape must account for exactly
@@ -299,6 +343,24 @@ impl Artifact {
         let packed = self.raw_bytes(&format!("{name}.q"))?.to_vec();
         let scale = self.raw_f32(&format!("{name}.scale"))?;
         let zero_point = self.raw_i32(&format!("{name}.zp"))?;
+        if scale.len() != zero_point.len() {
+            return Err(format!(
+                "{name}: {} scales but {} zero points",
+                scale.len(),
+                zero_point.len()
+            ));
+        }
+        let group_size = info.group_size.unwrap_or(1);
+        let axis = info.axis.unwrap_or(0);
+        let expected_metadata = metadata_len(name, &info.shape, granularity, axis, group_size)?;
+        if scale.len() != expected_metadata {
+            return Err(format!(
+                "{name}: {} scale/zero-point pairs, but a {granularity:?} weight of shape {:?} \
+                 needs {expected_metadata}",
+                scale.len(),
+                info.shape
+            ));
+        }
 
         Ok(QuantizedWeight {
             packed,
@@ -307,8 +369,8 @@ impl Artifact {
             shape: info.shape.clone(),
             bits,
             granularity,
-            group_size: info.group_size.unwrap_or(1),
-            axis: info.axis.unwrap_or(0),
+            group_size,
+            axis,
         })
     }
 
@@ -337,6 +399,10 @@ impl Artifact {
     }
 
     fn raw_i32(&self, name: &str) -> Result<Vec<i32>, String> {
+        let buf = self.buffer(name)?;
+        if buf.dtype != "I32" {
+            return Err(format!("{name}: expected I32, got {}", buf.dtype));
+        }
         Ok(self
             .raw_bytes(name)?
             .chunks_exact(4)
@@ -348,5 +414,47 @@ impl Artifact {
     #[must_use]
     pub fn shape_of(&self, name: &str) -> Option<&Vec<usize>> {
         self.meta.tensors.get(name).map(|i| &i.shape)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn metadata_len_matches_the_granularity() {
+        // per_tensor: one pair for the whole weight.
+        assert_eq!(
+            metadata_len("w", &[4, 8], Granularity::PerTensor, 0, 1).unwrap(),
+            1
+        );
+        // per_channel: one pair per slice along the declared axis.
+        assert_eq!(
+            metadata_len("w", &[4, 8], Granularity::PerChannel, 1, 1).unwrap(),
+            8
+        );
+        assert_eq!(
+            metadata_len("w", &[4, 8], Granularity::PerChannel, 0, 1).unwrap(),
+            4
+        );
+        // per_group: rows x groups over the flattened trailing axes, which for a
+        // Conv1d (out, in, k) weight means grouping over in * k, not over k.
+        assert_eq!(
+            metadata_len("w", &[4, 8], Granularity::PerGroup, 0, 4).unwrap(),
+            8
+        );
+        assert_eq!(
+            metadata_len("w", &[256, 18, 2], Granularity::PerGroup, 0, 32).unwrap(),
+            512
+        );
+    }
+
+    #[test]
+    fn metadata_len_rejects_declarations_it_cannot_honour() {
+        // Axis out of range, zero group size, and no leading axis at all.
+        assert!(metadata_len("w", &[4, 8], Granularity::PerChannel, 2, 1).is_err());
+        assert!(metadata_len("w", &[4, 8], Granularity::PerGroup, 0, 0).is_err());
+        assert!(metadata_len("w", &[], Granularity::PerGroup, 0, 4).is_err());
+        assert!(metadata_len("w", &[0, 8], Granularity::PerGroup, 0, 4).is_err());
     }
 }

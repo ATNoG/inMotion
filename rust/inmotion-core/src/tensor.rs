@@ -1,8 +1,9 @@
 //! A minimal dense f32 tensor.
 //!
-//! Deliberately not `ndarray`: the shapes here are fixed and small, the target
-//! includes microcontrollers, and a 60-line type with no dependencies is easier
-//! to audit than a general-purpose array library.
+//! Deliberately not `ndarray`: the shapes here are fixed and small, the targets
+//! are baseline x86-64 (gnu and musl), and a 60-line type with no dependencies is
+//! easier to audit than a general-purpose array library. The ESP32 path is C
+//! firmware under `firmware/`, not this crate.
 
 use std::fmt;
 

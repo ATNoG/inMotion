@@ -20,7 +20,6 @@ pub enum Granularity {
 
 impl Granularity {
     /// Parse the name the exporter writes, or `None` if it is unknown.
-    /// Parse the name the exporter writes, or `None` if it is unknown.
     #[must_use]
     pub fn parse(text: &str) -> Option<Self> {
         match text {

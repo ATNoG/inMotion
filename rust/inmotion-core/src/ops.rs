@@ -567,6 +567,18 @@ mod tests {
     }
 
     #[test]
+    fn conv1d_same_skips_taps_that_fall_entirely_in_the_padding() {
+        // A signal shorter than the kernel: length 1, kernel 3, padding 1. Only
+        // the centre tap (k = 1) reads the signal; the taps at k = 0 and k = 2
+        // fall outside it and must contribute nothing.
+        let x = t(&[5.0], &[1, 1]);
+        let w = t(&[1.0, 2.0, 4.0], &[1, 1, 3]);
+        let y = conv1d_same(&x, &w, &t(&[0.0], &[1]));
+        assert_eq!(y.shape, vec![1, 1]);
+        assert_eq!(y.data, vec![10.0]);
+    }
+
+    #[test]
     fn concat_channels_joins_along_the_first_axis() {
         let a = t(&[1.0, 2.0, 3.0, 4.0], &[2, 2]);
         let b = t(&[5.0, 6.0], &[1, 2]);
@@ -619,7 +631,9 @@ mod tests {
             (1, 128, 4),
         ] {
             let x = t(
-                &(0..rows * k).map(|i| (i * 37 % 41) as f32 * 0.1 - 2.0).collect::<Vec<_>>(),
+                &(0..rows * k)
+                    .map(|i| (i * 37 % 41) as f32 * 0.1 - 2.0)
+                    .collect::<Vec<_>>(),
                 &[rows, k],
             );
             let w = t(
@@ -629,7 +643,9 @@ mod tests {
                 &[n, k],
             );
             let b = t(
-                &(0..n).map(|i| (i * 7 % 11) as f32 * 0.01).collect::<Vec<_>>(),
+                &(0..n)
+                    .map(|i| (i * 7 % 11) as f32 * 0.01)
+                    .collect::<Vec<_>>(),
                 &[n],
             );
             let expected = linear(&x, &w, &b);
@@ -656,11 +672,7 @@ mod tests {
 
     /// The plain triple loop `self_attention` used before it was rewritten, kept
     /// as the oracle for `attention_is_bit_exact_after_the_rewrite`.
-    fn scalar_attention(
-        x: &Tensor,
-        w: &[(&Tensor, &Tensor); 4],
-        n_heads: usize,
-    ) -> Tensor {
+    fn scalar_attention(x: &Tensor, w: &[(&Tensor, &Tensor); 4], n_heads: usize) -> Tensor {
         let (t, d_model) = x.as_2d();
         let head_dim = d_model / n_heads;
         let scale = 1.0 / (head_dim as f32).sqrt();
@@ -675,8 +687,7 @@ mod tests {
                 for j in 0..t {
                     let mut acc = 0.0f32;
                     for c in 0..head_dim {
-                        acc += q.data[i * d_model + offset + c]
-                            * k.data[j * d_model + offset + c];
+                        acc += q.data[i * d_model + offset + c] * k.data[j * d_model + offset + c];
                     }
                     scores[i * t + j] = acc * scale;
                 }
@@ -922,42 +933,6 @@ pub fn concat_channels(parts: &[Tensor]) -> Tensor {
     Tensor::new(data, vec![channels, length])
 }
 
-/// Move the channel axis in front of the time axis: `(B, T, C) -> (B, C, T)`.
-///
-/// The patch tokenizer convolves over `(channels, length)`, so it has to move
-/// the channel axis in front and back. This is a real permutation of the data,
-/// not a reinterpretation of the same memory.
-#[must_use]
-pub fn transpose_time_channel(x: &Tensor) -> Tensor {
-    assert_eq!(x.shape.len(), 3, "expected (batch, time, channels)");
-    let (batch, time, channels) = (x.shape[0], x.shape[1], x.shape[2]);
-    let mut out = vec![0.0f32; x.len()];
-    for b in 0..batch {
-        for t in 0..time {
-            for c in 0..channels {
-                out[(b * channels + c) * time + t] = x.data[(b * time + t) * channels + c];
-            }
-        }
-    }
-    Tensor::new(out, vec![batch, channels, time])
-}
-
-/// Inverse of :func:`transpose_time_channel`.
-#[must_use]
-pub fn transpose_channel_time(x: &Tensor) -> Tensor {
-    assert_eq!(x.shape.len(), 3, "expected (batch, channels, time)");
-    let (batch, channels, time) = (x.shape[0], x.shape[1], x.shape[2]);
-    let mut out = vec![0.0f32; x.len()];
-    for b in 0..batch {
-        for c in 0..channels {
-            for t in 0..time {
-                out[(b * time + t) * channels + c] = x.data[(b * channels + c) * time + t];
-            }
-        }
-    }
-    Tensor::new(out, vec![batch, time, channels])
-}
-
 #[cfg(test)]
 mod conv_tests {
     use super::*;
@@ -986,15 +961,6 @@ mod conv_tests {
         let w = Tensor::new(vec![0.0; 256 * 18 * 2], vec![256, 18, 2]);
         let b = Tensor::new(vec![0.0; 256], vec![256]);
         assert_eq!(conv1d(&x, &w, &b, 2).shape, vec![256, 5]);
-    }
-
-    #[test]
-    fn transpose_time_channel_round_trips() {
-        let x = t(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0], &[1, 2, 3]); // (batch 1, time 2, ch 3)
-        let a = transpose_time_channel(&x);
-        assert_eq!(a.shape, vec![1, 3, 2]);
-        assert_eq!(a.data, vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
-        assert_eq!(transpose_channel_time(&a).data, x.data);
     }
 
     #[test]
