@@ -4,7 +4,7 @@ Combines DL checkpoints, the JEPA family, classical ML (KNN/CatBoost/GP/LR) and
 TabPFN via OOF stacking, with temperature calibration and CE-based bagged
 Caruana selection.
 
-Research-backed combiner pipeline (see docs/ENSEMBLE_TECHNIQUES_REPORT.md):
+Research-backed combiner pipeline. The combiner choices and their rationale:
   A. Collect OOF + test probabilities for every member under the same 70/10/20 split
   B. Per-member temperature calibration on the validation fold
   C. CE-based bagged Caruana (ensemble selection with replacement)

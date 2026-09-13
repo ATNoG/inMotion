@@ -37,6 +37,9 @@ becomes a native typer command and the mapping above is dropped.
 | `job*.sh` (18 files) | `scripts/{slurm,local,archive}/` |
 | `AI_RESULT.md`, `IMPLEMENTATION_SUMMARY.md`, `ROADMAP_TO_90.md`, `research_sources.md`, `.research_plan.md` | `docs/reports/` |
 
+Of those, only `IMPLEMENTATION_SUMMARY.md` is still present: the rest were
+removed in a later refactor, so do not go looking for them under `docs/reports/`.
+
 ## What is still outstanding
 
 - The pipelines still use `argparse` internally (see above).

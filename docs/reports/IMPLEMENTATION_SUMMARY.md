@@ -66,4 +66,3 @@ dataset_augmented3.csv) transfer well to dataset.csv.
 - `src/inmotion/dl/models/{t_jepa,ts_jepa,cf_jepa,lejepa}.py` — use make_sigreg() factory
 - `src/inmotion/dl/models/mamba.py` — MAMBA_SSM_AVAILABLE guard
 - `job_cf_jepa.sh`, `job_lejepa_rdm.sh` (new) — training scripts
-- `../ENSEMBLE_TECHNIQUES_REPORT.md` — research reference (from agent)

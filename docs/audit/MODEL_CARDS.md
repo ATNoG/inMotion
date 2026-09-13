@@ -90,8 +90,9 @@ variants
 10-base stack with learned level-2 and meta models; `voting_ensemble` averages
 member probabilities with selection weights.
 
-**Combiner choices.** The rationale and the literature behind them are in
-`../ENSEMBLE_TECHNIQUES_REPORT.md`. Briefly: Caruana-style forward selection
+**Combiner choices.** The rationale and the literature behind them are in the
+module docstring of `src/inmotion/pipelines/mega_ensemble.py`. Briefly:
+Caruana-style forward selection
 with replacement over the member library, temperature calibration per member on
 the validation fold, and a regularised logistic-regression stacker as the
 alternative.
