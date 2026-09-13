@@ -70,6 +70,40 @@ every case and never touched.
 Both directions of the three-way rule are covered: a later change that removes the
 refusal fails (c), and one that makes it unconditional fails (c-IN).
 
+### 2.2 Per-item verdict
+
+One entry per item the gate is required to rule on. "Re-run" means this pass executed it
+at the pin in §1; "carried" means an earlier review in this round executed it and the
+inputs are unchanged since — every one of the eleven Rust §1 hashes still equals its
+round-2 pin, and `results/quant/` and the three perf CSVs are unchanged, so a carried
+verdict rests on byte-identical inputs rather than on trust. The distinction is stated
+rather than flattened because "verified earlier" and "verified at this revision" are not
+the same claim.
+
+| item | verdict | basis | evidence |
+|---|---|---|---|
+| F1 — clock recorded in the artifact, not the filename | pass | re-run | clocks 160/240 MHz, medians 888.4805 / 636.6805, no escape bytes, `def _clock_mhz` absent from the source |
+| F2 — fresh clone reproduces the figures | pass | re-run | tracked set cloned (527 files), `plots quantization` exit 0, **14/14** outputs byte-identical |
+| F3 — reference/disassembly claims | pass | carried | round-2 verification (282 VEX mnemonics, 3 `memchr` symbols, 0 `inmotion`); `REFERENCE`-side inputs unchanged |
+| F4 — F4 reconciliation | pass | carried | round-1/round-2 reconciliation; unchanged inputs |
+| F5 — stats tables reproducible | pass | re-run | size/accuracy/coverage/layers md5s MATCH on re-hash; latency `md5: null`; 3 `latency_artifacts` |
+| F6 — model registry | pass | re-run | `All 18 model(s) verified.` |
+| F7 — non-monotone claim | pass | carried | 0/9 non-monotone as re-scoped under t12; declaration-only, no artifact dependency |
+| F8 — false provenance clauses | pass | re-run | all five false-clause greps return 0; provenance re-derived from git history (HEAD `bench_router.csv` 11 cols × 90 rows, one commit `9f3e5fd`; shipping file byte-identical to the device's `bench_router2.csv`, `cab37a42…`; `summary.csv` 30 cells reproduced by `summarise.py`) |
+| F9 — outlier count | pass | re-run | recomputed 8/15 on the speedup ratio and 7/15 on the after-median, matching the README |
+| F11 — reproducible `before` build, packaging, Files table, **and the guard** | pass | re-run | baseline tracked and repo-relative; the guard matrix in §2.1 executed here — (c) refuses with exit 1 and (c-IN) permits — plus the `.git`-less copy writing by design as the documented scratch behaviour |
+| N-1 | pass | re-run | checklist reads 18 |
+| N-2 | pass | carried | declaration-only re-scope under t12 |
+| N-3 | pass | re-run | `.vscode/` ignored at `.gitignore:213`; `CITATION.cff` present |
+| N-4, N-5, N-6 | pass | carried | round-2 verification; unchanged inputs |
+| R2-01 — input-width guard | pass | carried | round-2 open item closed under t1/t5: a 10×2 input exits 1 with "input has 20 values, expected 40"; `main.rs` is `e61d6b79`, byte-identical to the verified revision |
+| round-2 open item 1 (`tol` no longer defaults) | pass | carried | missing `tol` exits 1; a perturbed logit still reports the out-of-tolerance case; same byte-identical `main.rs` |
+| round-2 open item 3 | pass | carried | closed by t4 and re-verified under t5; the three CSVs are md5-identical to that delivery |
+| R3-01 — digest window | pass | re-run | re-derived from the durable anchor with the 0-based `[s,e]` window: `44362bac…`/`d6b74024…`/`44f8cb58…`/`5413e90d…`, concatenation `489755f8…`; `grep -c 44362bac README.md` = 1 and the other three likewise; the concatenation appears in the README, the fixture header and the witness header; §3 records the cause and the fix |
+| R3-02 — fixture-hash citation | pass | re-run | `sha256sum results/perf/ops_before_optimisation.rs` = `9f6b8ab5c1510d05c4998fa966827dc95f93a4d508d7dc7b5725fc6322432c6a`, exactly what `README.md:514` quotes |
+| R3-03 — witness payload range | pass | re-run | header reads "lines 20-875 inclusive" in all four places; brute force returns exactly (20, 875) at 31043 B / `70c19066…` |
+
+
 ## 3. The two defects this pass found, and their resolution
 
 Both were real, both were corrected during the pass, and both are re-verified at the pin
