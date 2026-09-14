@@ -270,7 +270,7 @@ Public API:
 
 ### `inmotion.quant.reference`
 
-`src/inmotion/quant/reference.py` - 192 lines
+`src/inmotion/quant/reference.py` - 203 lines
 
 Normative quantization math, in numpy.
 

@@ -57,11 +57,15 @@ class QuantizedTensor:
     """Integer codes plus the metadata needed to reconstruct the float values."""
 
     q: np.ndarray
-    """int8 codes, same shape as the original tensor."""
+    """Integer codes, same shape as the original tensor.
+
+    ``int8`` for a symmetric scheme, ``uint8`` for an asymmetric one, whose
+    codes run ``0..2**bits - 1``.
+    """
     scale: np.ndarray
     """float32 scale, in the reduced shape documented above."""
     zero_point: np.ndarray
-    """int8 zero point, same reduced shape as ``scale``."""
+    """Zero point, same reduced shape as ``scale``, and the same dtype as ``q``."""
     shape: tuple[int, ...]
     """Shape of the original tensor."""
     spec: QuantSpec
@@ -132,6 +136,13 @@ def quantize(x: np.ndarray, spec: QuantSpec) -> QuantizedTensor:
             return np.min(values)
         return np.min(values, axis=reduce_axes, keepdims=keepdims)
 
+    # The dtype follows the scheme. Asymmetric codes are unsigned and reach
+    # `2**bits - 1`, which int8 cannot hold: at 8 bits, 255 wraps to -1 and the
+    # reconstruction becomes noise rather than a slightly lossy tensor. Symmetric
+    # codes are signed and fit int8. The shape is the same either way, so nothing
+    # downstream changes.
+    code_dtype = np.int8 if spec.symmetric else np.uint8
+
     if spec.symmetric:
         scale = np.maximum(reduce_max(np.abs(view)) / F32(qmax), F32(MIN_SCALE)).astype(F32)
         zero_point = np.zeros(np.shape(scale), dtype=np.int8)
@@ -141,10 +152,10 @@ def quantize(x: np.ndarray, spec: QuantSpec) -> QuantizedTensor:
         span = np.maximum(vmax - vmin, F32(MIN_SCALE)).astype(F32)
         scale = (span / F32(qmax - qmin)).astype(F32)
         zp_raw = _round(F32(qmin) - vmin / scale, spec.rounding)
-        zero_point = np.clip(zp_raw, qmin, qmax).astype(np.int8)
+        zero_point = np.clip(zp_raw, qmin, qmax).astype(code_dtype)
         codes = _round(view / scale + zero_point.astype(F32), spec.rounding)
 
-    codes = np.clip(codes, qmin, qmax).astype(np.int8)
+    codes = np.clip(codes, qmin, qmax).astype(code_dtype)
 
     if spec.granularity is Granularity.PER_GROUP:
         # The reduction kept the group axis as a singleton; the documented

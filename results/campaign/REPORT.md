@@ -79,6 +79,38 @@ where the JEPAs sit near 0.3 at the same setting.
 Figures: `fig_accuracy_vs_precision_hpo_models`, `fig_size_vs_accuracy_hpo_models`,
 `fig_mcc_heatmap_hpo_models`.
 
+### Is the quantizer itself correct?
+
+Two different questions with two different answers.
+
+**Self-consistency** is pinned by `tests/test_quant_reference.py`: dequantize is
+exactly `(q - zero_point) * scale`; re-quantizing a dequantized tensor is
+idempotent; rounding ties follow the declared mode; higher precision is never
+worse; per-group is never coarser than asked; packing round-trips; and the Rust
+kernels reproduce the Python golden vectors bit for bit. A *consistently wrong*
+quantizer passes every one of those, so this is necessary and not sufficient.
+
+**Agreement with a real library** was not checked until it was asked for, and is
+now pinned by `tests/test_quant_library_parity.py`, which compares against
+torch's own quantization path — `torch.ao.quantization` observers for the scale
+and zero point, and `quantize_per_tensor` / `quantize_per_channel` for the codes:
+
+* **Per-tensor and per-channel symmetric agree to one part in 254.** torch places
+  the scale at `max|w| / 127.5`, the midpoint of the signed int8 range; this code
+  uses `max|w| / 127`, the full positive span. Both are standard conventions and
+  the gap is at most one quantization step.
+* **Per-tensor asymmetric agrees exactly** once the code offset is accounted for:
+  torch emits signed codes `-128..127` with zero point `-1`, this code unsigned
+  `0..255` with `127` — the same quantizer shifted by 128.
+
+**And the comparison found a real bug.** An asymmetric scheme emits unsigned
+codes up to `2**bits - 1`, which `int8` cannot hold: at 8 bits, 255 wrapped to
+-1 and the reconstruction was noise — error 5.03 on a tensor spanning 5.0.
+It was latent: `q1` is the only asymmetric preset in use and one bit fits, so no
+number in this report is affected, which was checked rather than assumed
+(`lejepa`'s q1 MCC is -0.0013 before and after the fix). The code dtype now
+follows the scheme.
+
 ## 4. Compute
 
 | model | MFLOP/inference | FLOPs ÷ parameters |
