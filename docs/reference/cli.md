@@ -328,7 +328,7 @@ Arguments:
 Options:
 
 - `--out`, `-o` - Destination directory.
-- `--format`, `-f` (default: `fp32`) - Scheme, or fp32 for none.
+- `--format`, `-f` (default: `fp32`) - Scheme, or fp32 for none. fp16/bf16/fp8 are cast precisions and cannot be written as artifacts.
 - `--golden` (default: `True`) - Also write golden vectors.
 - `--tol` (default: `0.0002`) - Parity tolerance recorded in golden.json.
 

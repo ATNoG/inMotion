@@ -23,6 +23,38 @@ architecture from its weights, and reports what it cannot recover. Every
 checkpoint currently in the stores is recoverable except the pre-training
 bundles (below).
 
+## Quantized artifacts
+
+The Rust runtime's artifacts for the five after-HPO classifiers live **beside the
+checkpoints they came from**, one directory per (model, precision):
+
+```
+20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts/<model>-<precision>/
+```
+
+Five models x nine precisions: `fp32`, `int8` and `q1`..`q8`. Each directory
+holds `meta.json` (architecture and quantization spec), `model.safetensors` (the
+packed weights) and `golden.json` (the vectors the runtime's parity check
+replays).
+
+`fp16`, `bf16` and `fp8` are deliberately absent. They are cast precisions that
+`inmotion quantize eval` measures for accuracy, but an artifact is read by the
+Rust runtime, which accepts F32, I32 and U8 only — so no artifact can carry them.
+`inmotion quantize export --format fp16` refuses with that reason rather than
+writing something the runtime could not load.
+
+The name is `<model>-<precision>` deliberately: that is what the campaign's
+measurement tooling parses, so `results/campaign/measure_device.py` and
+`measure_scaling.py` read this layout directly and `measure_router.py` ships it
+to the router unchanged.
+
+They are **not tracked**, for the same reason the checkpoints are not: each is
+derived from a checkpoint plus a scheme.
+`results/campaign/export_artifacts.py` regenerates all sixty and parity-checks
+each one as it writes, so a stale directory cannot silently outlive its
+checkpoint. The manifest of what exists, with sizes and parity status, is
+`results/campaign/artifacts_manifest.csv`.
+
 ## Pre-training bundles
 
 `*_pretrain_best.pt` are **not** single-module state dicts. Each holds

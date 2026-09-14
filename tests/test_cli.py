@@ -225,3 +225,34 @@ def test_cli_help_sweep() -> None:
                 failures.append(f"{group} {name}")
 
     assert not failures, f"commands that cannot be invoked: {failures}"
+
+
+def test_export_refuses_cast_precisions(tmp_path) -> None:
+    """fp16/bf16/fp8 are accuracy-only: they cannot become artifacts.
+
+    The runtime reads F32, I32 and U8, so an artifact written at those widths
+    could not be loaded. The command has to say that, not raise a KeyError from
+    the resolver whose message listed the precision as "known" while refusing it.
+    """
+    out = tmp_path / "art"
+    result = _invoke("quantize", "export", "lejepa", "--out", str(out), "--format", "fp16")
+
+    assert result.exit_code == 2, result.output
+    assert "cast precision" in result.output
+    assert "F32, I32 and U8" in result.output
+    # It must refuse before touching the filesystem: an empty artifact
+    # directory is worse than none, because it looks present.
+    assert not out.exists() or not any(out.iterdir())
+
+
+def test_unknown_scheme_message_does_not_advertise_casts() -> None:
+    """The resolver's error must list only what it can actually return."""
+    from inmotion.quant.spec import resolve
+
+    with pytest.raises(KeyError) as excinfo:
+        resolve("definitely_not_a_scheme")
+
+    message = str(excinfo.value)
+    assert "int8" in message, "real schemes should still be listed"
+    for cast in ("fp16", "bf16", "fp8"):
+        assert cast not in message, f"{cast} is not a scheme this can return"

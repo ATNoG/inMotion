@@ -103,7 +103,13 @@ def export_cmd(
     model: Annotated[str, typer.Argument(help="Registered model name.")],
     out: Annotated[Path, typer.Option("--out", "-o", help="Destination directory.")],
     format: Annotated[
-        str, typer.Option("--format", "-f", help="Scheme, or fp32 for none.")
+        str,
+        typer.Option(
+            "--format",
+            "-f",
+            help="Scheme, or fp32 for none. fp16/bf16/fp8 are cast "
+            "precisions and cannot be written as artifacts.",
+        ),
     ] = "fp32",
     golden: Annotated[bool, typer.Option("--golden", help="Also write golden vectors.")] = True,
     tol: Annotated[
@@ -116,6 +122,22 @@ def export_cmd(
     if format not in ALL_FORMATS:
         typer.secho(
             f"unknown format {format!r}; choose from {', '.join(ALL_FORMATS)}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=2)
+
+    # fp16/bf16/fp8 are cast precisions, and the runtime reads F32, I32 and U8
+    # only: an artifact written at those widths could not be loaded. They are
+    # kept reachable for accuracy measurement, which writes no artifact, and
+    # refused here with the reason rather than a KeyError from the resolver.
+    unexpressible = [f for f in FLOAT_PRECISIONS if f != "fp32"]
+    if format in unexpressible:
+        typer.secho(
+            f"{format} is a cast precision, not an artifact format: the runtime "
+            f"reads F32, I32 and U8 only, so it could not load what this would "
+            f"write.\nUse fp32, int8 or q1..q8 for an artifact; measure "
+            f"{', '.join(unexpressible)} for accuracy with `quantize eval`.",
             fg=typer.colors.RED,
             err=True,
         )

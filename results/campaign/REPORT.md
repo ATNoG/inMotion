@@ -272,6 +272,40 @@ so the parity gates are unaffected.
   so the divisor is the process lifetime (`total_ms`), not the timed loop. An
   earlier version estimated the warmup and printed 103% for a single-threaded run.
 
+## 9a. Where the artifacts live
+
+Every model at every precision has an artifact directory in the model store,
+beside the checkpoints it came from:
+
+```
+20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts/<model>-<precision>/
+```
+
+Five models x **nine** precisions: `fp32`, `int8` and `q1`..`q8`. Each holds
+`meta.json`, `model.safetensors` and `golden.json`. The name is
+`<model>-<precision>` because that is what `measure_device.py` and
+`measure_scaling.py` parse, so the measurement tooling reads this layout
+directly.
+
+`fp16`, `bf16` and `fp8` are absent, and this is a real boundary rather than an
+omission. The accuracy sweep in §3 measures all twelve, but an artifact is read
+by the Rust runtime, which accepts F32, I32 and U8 only. The export previously
+failed on them with `KeyError: unknown quantization 'fp16'` while the same
+message listed `fp16` as *known* — it accepted the flag and could not honour it.
+It now refuses with the reason, and the resolver no longer advertises a precision
+it cannot return. Making those three deployable needs F16/BF16 support in the
+artifact reader, which is a format change and is not attempted here.
+
+They are not tracked, for the same reason the checkpoints are not: each is
+derived from a checkpoint plus a scheme.
+`results/campaign/export_artifacts.py` regenerates all sixty and parity-checks
+each as it writes, and `results/campaign/artifacts_manifest.csv` records what
+exists, how large it is, and whether it replayed its golden vectors.
+
+An earlier version of the device measurements read artifacts from `/tmp`, which
+is ephemeral — a reboot would have taken them, and the numbers in §5 and §7
+would have become unreproducible from the repository alone.
+
 ## 10. Reproducing
 
 ```bash
@@ -288,16 +322,16 @@ $D/cf_jepa_ft_seed42.pt,$D/sigreg_seed42.pt \
 uv run python results/campaign/measure_flops.py --models $D/*_ft_seed42.pt \
   $D/sigreg_seed42.pt --out results/campaign/flops_per_model.csv
 
-# artifacts, then both devices
-for m in lejepa t_jepa ts_jepa cf_jepa; do for q in fp32 int8 q4 q1; do
-  uv run inmotion quantize export $D/${m}_ft_seed42.pt --out /tmp/hpo-art/${m}_ft_seed42-$q --format $q
-done; done
+# artifacts for BOTH devices: 5 models x 12 precisions, exported into the model
+# store beside the checkpoints and parity-checked as they are written
+uv run python results/campaign/export_artifacts.py
+A=20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts
 
 cargo build --release --target x86_64-unknown-linux-musl -p inmotion-cli   # in rust/
 uv run python results/campaign/measure_device.py --binary rust/target/release/inmotion-infer \
-  --artifacts /tmp/hpo-art --device this-pc --out results/campaign/perf_device_this-pc.csv
+  --artifacts $A --device this-pc --out results/campaign/perf_device_this-pc.csv
 uv run python results/campaign/measure_scaling.py --binary rust/target/release/inmotion-infer \
-  --artifacts /tmp/hpo-art --device this-pc --out results/campaign/scaling_this-pc.csv
+  --artifacts $A --device this-pc --out results/campaign/scaling_this-pc.csv
 uv run python results/campaign/measure_router.py --out results/campaign
 
 # figures

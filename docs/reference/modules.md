@@ -244,7 +244,7 @@ Public API:
 
 ### `inmotion.quant.spec`
 
-`src/inmotion/quant/spec.py` - 141 lines
+`src/inmotion/quant/spec.py` - 150 lines
 
 Quantization schemes.
 
@@ -749,7 +749,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 311 lines
+`src/inmotion/cli/quantize.py` - 333 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 

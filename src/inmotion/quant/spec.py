@@ -131,11 +131,20 @@ PRESET_SPECS: dict[str, QuantSpec] = {
 FLOAT_PRECISIONS: tuple[str, ...] = ("fp32", "fp16", "bf16", "fp8")
 
 
+#: Precisions that are a dtype cast rather than a quantization scheme. `fp32` is
+#: the identity, so it is expressible as an artifact; the other three are not,
+#: because the runtime reads F32, I32 and U8 only. They remain measurable for
+#: accuracy through `quantize eval`, which writes no artifact.
+ARTIFACT_CASTS: tuple[str, ...] = ("fp32",)
+
+
 def resolve(label: str) -> QuantSpec:
     """Look up a preset by name, or parse ``q<N>`` shorthand."""
     if label in PRESET_SPECS:
         return PRESET_SPECS[label]
+    # The float precisions are deliberately absent: a cast is not a quantization
+    # scheme, and the artifact writer cannot express one. Listing them here as
+    # "known" would advertise something this function cannot return.
     raise KeyError(
-        f"unknown quantization {label!r}; "
-        f"known: {', '.join(sorted(PRESET_SPECS))} or {', '.join(FLOAT_PRECISIONS)}"
+        f"unknown quantization {label!r}; known schemes: {', '.join(sorted(PRESET_SPECS))}"
     )
