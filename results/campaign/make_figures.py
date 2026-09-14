@@ -211,6 +211,75 @@ def accuracy_figures(rows: list[dict[str, str]], stem: str) -> None:
     save(fig, f"fig_mcc_heatmap_{stem}")
 
 
+def device_figures(rows: list[dict[str, str]], stem: str) -> None:
+    """Latency and memory per precision, per model, on one device."""
+    models = sorted({r["model"] for r in rows})
+    precisions = [p for p in PRECISION_ORDER if any(r["precision"] == p for r in rows)]
+    x = np.arange(len(models))
+    width = 0.8 / max(len(precisions), 1)
+
+    for column, ylabel, title, name in (
+        ("median_ms", "Median latency (ms)", "Inference latency by precision", "latency"),
+        ("peak_rss_mb", "Peak RSS (MB)", "Resident memory by precision", "ram"),
+    ):
+        fig, ax = plt.subplots(figsize=FIG_FULL)
+        for i, precision in enumerate(precisions):
+            values = []
+            for model in models:
+                match = [r for r in rows if r["model"] == model and r["precision"] == precision]
+                values.append(float(match[0][column]) if match else np.nan)
+            offset = (i - len(precisions) / 2 + 0.5) * width
+            ax.bar(
+                x + offset,
+                values,
+                width * 0.9,
+                label=precision,
+                color=OKABE_ITO[i % len(OKABE_ITO)],
+                edgecolor="white",
+                linewidth=0.4,
+            )
+        ax.set_xticks(x)
+        ax.set_xticklabels([short_label(m) for m in models], rotation=20, ha="right")
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"{title} — {stem}")
+        ax.legend(ncol=min(len(precisions), 6), fontsize=7)
+        save(fig, f"fig_{name}_{stem}")
+
+
+def flops_figure(rows: list[dict[str, str]], stem: str) -> None:
+    """Achieved FLOPs/s — what the device actually delivers, not what it could."""
+    usable = [r for r in rows if r.get("flops_per_s")]
+    if not usable:
+        print("  skip flops figure: no flops_per_s column (run measure_flops.py first)")
+        return
+    models = sorted({r["model"] for r in usable})
+    precisions = [p for p in PRECISION_ORDER if any(r["precision"] == p for r in usable)]
+    x = np.arange(len(models))
+    width = 0.8 / max(len(precisions), 1)
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    for i, precision in enumerate(precisions):
+        values = []
+        for model in models:
+            match = [r for r in usable if r["model"] == model and r["precision"] == precision]
+            values.append(float(match[0]["flops_per_s"]) / 1e6 if match else np.nan)
+        offset = (i - len(precisions) / 2 + 0.5) * width
+        ax.bar(
+            x + offset,
+            values,
+            width * 0.9,
+            label=precision,
+            color=OKABE_ITO[i % len(OKABE_ITO)],
+            edgecolor="white",
+            linewidth=0.4,
+        )
+    ax.set_xticks(x)
+    ax.set_xticklabels([short_label(m) for m in models], rotation=20, ha="right")
+    ax.set_ylabel("Achieved MFLOP/s")
+    ax.set_title(f"Compute throughput — {stem}")
+    ax.legend(ncol=min(len(precisions), 6), fontsize=7)
+    save(fig, f"fig_flops_per_s_{stem}")
+
+
 def main() -> None:
     print("extended-quantization campaign figures")
 
@@ -224,8 +293,16 @@ def main() -> None:
         stem = name.removesuffix(".csv").removeprefix("sweep_")
         accuracy_figures(sweep, stem)
 
-    # Measured later by the device runs; skipped until the CSVs exist.
-    read_csv(HERE / "perf_device.csv")
+    # Device runs. Skipped until their CSVs exist, so a missing measurement
+    # cannot silently render empty panels.
+    for path in sorted(HERE.glob("perf_device*.csv")):
+        rows = read_csv(path)
+        if not rows:
+            continue
+        stem = path.stem.removeprefix("perf_device").lstrip("_") or "device"
+        device_figures(rows, stem)
+        flops_figure(rows, stem)
+
     read_csv(HERE / "scaling.csv")
 
     print("done")
