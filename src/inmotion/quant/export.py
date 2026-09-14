@@ -464,6 +464,19 @@ def export(
     weights_path = out_dir / WEIGHTS_NAME
     save_file(tensors, str(weights_path))
 
+    # Class names come from the dataset, and the runtime needs them to say "BA"
+    # rather than "class 2". Recorded here rather than left in golden.json,
+    # which is a parity artifact and not part of the runtime's interface.
+    classes: list[str] = []
+    try:
+        from inmotion.quant.evaluate import BASELINE_DATASET, load_split
+
+        _x, _y, _idx, classes = load_split(model_name, resolve_path(BASELINE_DATASET), seed)
+    except (FileNotFoundError, OSError):
+        # An artifact is still useful without labels; the runtime falls back to
+        # the index, so a missing dataset is not a reason to fail the export.
+        classes = []
+
     meta = {
         "artifact_version": ARTIFACT_VERSION,
         "model": spec_obj.name,
@@ -476,6 +489,7 @@ def export(
         "seq_len": 10,
         "in_channels": 18 if spec_obj.rich else 4,
         "num_classes": 4,
+        "classes": classes,
         "quant": quant_meta,
         "eps": {"layernorm": 1e-5, "batchnorm": 1e-5},
         "tensors": index,

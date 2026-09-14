@@ -55,6 +55,12 @@ pub struct Meta {
     pub in_channels: usize,
     /// Number of output classes.
     pub num_classes: usize,
+    /// Class names, in index order, when the exporter recorded them.
+    ///
+    /// Optional and defaulted, so artifacts written before this field existed
+    /// still load; a consumer falls back to the index when it is empty.
+    #[serde(default)]
+    pub classes: Vec<String>,
     /// Normalization epsilons, taken from the artifact rather than assumed.
     pub eps: Eps,
     /// Architecture hyperparameters as exported (`d_model`, nhead, `num_layers`, ...).

@@ -417,7 +417,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 568 lines
+`src/inmotion/quant/export.py` - 582 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 

@@ -157,6 +157,7 @@ numbers reproducible instead of approximate.
 ```
 inmotion-infer describe --artifact DIR
 inmotion-infer predict  --artifact DIR --input FILE
+inmotion-infer stream   --artifact DIR [--input FILE] [--json]
 inmotion-infer bench    --artifact DIR [--iterations N] [--warmup N] [--json]
 inmotion-infer check    --artifact DIR --golden DIR
 ```
@@ -205,6 +206,39 @@ logits     : [-0.6575064, 1.9401256, -0.93640953, -0.98155904]
 probabilities: [0.062846765, 0.844151, 0.047550686, 0.045451537]
 predicted  : class 1 (confidence 0.844151)
 ```
+
+**`stream`** — classify continuously, which is the mode a live demo wants:
+
+```bash
+inmotion-infer stream --artifact DIR < samples.txt     # stdin, or --input FILE
+inmotion-infer stream --artifact DIR --input stream.txt --json
+```
+
+One line is one **timestep** of `in_channels` values. The runtime keeps the last
+`seq_len` of them and emits a classification for every new one once the window is
+full, so `N` timesteps give `N - seq_len + 1` classifications. A line carrying a
+whole window (`seq_len * in_channels` values) is classified immediately and
+replaces the buffer instead, which is how a dataset is replayed through the same
+command — the two arities cannot collide, and both are checked.
+
+```
+t=10     AB           confidence=0.8574   [AA 0.0103  AB 0.8574  BA 0.1107  BB 0.0216]
+t=11     AB           confidence=0.8537   [AA 0.0109  AB 0.8537  BA 0.1150  BB 0.0204]
+```
+
+Blank lines and `#` comments are skipped; non-finite values are rejected. One
+classification per line goes to **stdout** and is flushed immediately, so whatever
+is downstream sees it as it happens; the summary goes to **stderr**, so a pipe
+carries only data. `--json` emits one object per classification for a consumer
+that would rather parse than scrape:
+
+```json
+{"sample":10,"class":1,"label":"AB","confidence":0.8904,
+ "probabilities":[0.0558,0.8904,0.0380,0.0158]}
+```
+
+Class names come from the artifact's `classes` field. Artifacts exported before
+that field existed load fine and fall back to the class index.
 
 **`bench`** — latency on this machine, default 200 iterations plus 20 warmup:
 
