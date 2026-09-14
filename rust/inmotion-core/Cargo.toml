@@ -6,10 +6,24 @@ license.workspace = true
 authors.workspace = true
 description = "Dependency-light inference for inMotion WiFi-RSSI models"
 
+[features]
+default = []
+#: Blocked-matrix-multiply backends, off by default and mutually usable. They
+#: are optional because the claim that they help is what this exists to test,
+#: not something to pay for in every build.
+gemm = ["dep:gemm"]
+matrixmultiply = ["dep:matrixmultiply"]
+#: Parallelise the packed kernel across output rows. Bit-exact: each row's
+#: reduction order is untouched, only the rows are independent.
+rayon = ["dep:rayon"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 libm = "0.2"
+gemm = { version = "0.18", optional = true, default-features = false, features = ["std"] }
+matrixmultiply = { version = "0.3", optional = true }
+rayon = { version = "1", optional = true }
 
 [dev-dependencies]
 

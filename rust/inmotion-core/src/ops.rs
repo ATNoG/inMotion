@@ -56,12 +56,22 @@ impl PackedWeight {
     #[must_use]
     pub fn pack(w: &Tensor) -> Self {
         let (out_features, in_features) = w.as_2d();
-        let mut data = vec![0.0f32; in_features * out_features];
-        for o in 0..out_features {
-            for i in 0..in_features {
-                data[i * out_features + o] = w.data[o * in_features + i];
+        // The hand kernel sweeps the weight by input row, so it wants the
+        // transposed (in, out) layout. The library kernels take the standard
+        // row-major (out, in) one, so under those features the copy is not made.
+        #[cfg(not(any(feature = "gemm", feature = "matrixmultiply")))]
+        let data = {
+            let mut packed = vec![0.0f32; in_features * out_features];
+            for o in 0..out_features {
+                for i in 0..in_features {
+                    packed[i * out_features + o] = w.data[o * in_features + i];
+                }
             }
-        }
+            packed
+        };
+        #[cfg(any(feature = "gemm", feature = "matrixmultiply"))]
+        let data = w.data[..in_features * out_features].to_vec();
+
         Self {
             data,
             in_features,
@@ -75,6 +85,10 @@ impl PackedWeight {
 /// Bit-for-bit the same numbers as `linear(x, w_T, b)` where `w_T` is
 /// `w` transposed back; see [`PackedWeight`].
 #[must_use]
+// `cast_possible_wrap`: these lengths are far below isize::MAX.
+// `needless_return`: exactly one of several cfg'd alternatives is compiled, so
+// the early ones must return rather than be the function's tail expression.
+#[allow(clippy::cast_possible_wrap, clippy::needless_return)]
 pub fn linear_packed(x: &Tensor, w: &PackedWeight, b: &Tensor) -> Tensor {
     let (rows, in_features) = x.as_2d();
     let out_features = w.out_features;
@@ -95,19 +109,80 @@ pub fn linear_packed(x: &Tensor, w: &PackedWeight, b: &Tensor) -> Tensor {
     for r in 0..rows {
         acc[r * out_features..(r + 1) * out_features].copy_from_slice(&b.data);
     }
-    // Rank-1 sweeps: one row of the weight feeds every output row, so the weight
-    // is read once per call and the whole accumulator set stays in L1.
-    for i in 0..in_features {
-        let wr = &w.data[i * out_features..(i + 1) * out_features];
-        for r in 0..rows {
-            let xi = x.data[r * in_features + i];
-            let ar = &mut acc[r * out_features..(r + 1) * out_features];
-            for o in 0..out_features {
-                ar[o] += xi * wr[o];
+    #[cfg(feature = "matrixmultiply")]
+    {
+        // SAFETY: every pointer is derived from a live slice, the strides walk
+        // exactly those slices, and `matrixmultiply` only reads A and B and
+        // writes C. A is (out, in) row-major; B is the input as (in, rows)
+        // column-major, which is the (rows, in) buffer read transposed, so no
+        // copy is made; C is (out, rows) column-major, i.e. `acc` read
+        // row-major. beta = 1.0 because the bias is already in the accumulator,
+        // matching the hand kernel's starting point.
+        #[allow(unsafe_code)]
+        unsafe {
+            matrixmultiply::sgemm(
+                out_features,
+                in_features,
+                rows,
+                1.0,
+                w.data.as_ptr(),
+                in_features as isize,
+                1,
+                x.data.as_ptr(),
+                1,
+                in_features as isize,
+                1.0,
+                acc.as_mut_ptr(),
+                1,
+                out_features as isize,
+            );
+        }
+        return Tensor::new(acc, vec![rows, out_features]);
+    }
+
+    #[cfg(feature = "rayon")]
+    {
+        // Parallel over output rows, which is bit-exact: each row still
+        // accumulates over the input axis in the same order, so only
+        // independent work is spread out. A batch-1 inference has few rows, so
+        // this is expected to help throughput rather than single-call latency.
+        use rayon::prelude::*;
+
+        let x_data = &x.data;
+        let w_data = &w.data;
+        acc.par_chunks_mut(out_features)
+            .enumerate()
+            .for_each(|(r, row)| {
+                for i in 0..in_features {
+                    let xi = x_data[r * in_features + i];
+                    let wr = &w_data[i * out_features..(i + 1) * out_features];
+                    for o in 0..out_features {
+                        row[o] += xi * wr[o];
+                    }
+                }
+            });
+        return Tensor::new(acc, vec![rows, out_features]);
+    }
+
+    // The default backend. The whole tail is inside the cfg so that, when one of
+    // the blocks above has already returned, there is no unreachable expression
+    // left for the compiler to warn about.
+    #[cfg(not(any(feature = "matrixmultiply", feature = "rayon")))]
+    {
+        // Rank-1 sweeps: one row of the weight feeds every output row, so the
+        // weight is read once per call and the whole accumulator set stays in L1.
+        for i in 0..in_features {
+            let wr = &w.data[i * out_features..(i + 1) * out_features];
+            for r in 0..rows {
+                let xi = x.data[r * in_features + i];
+                let ar = &mut acc[r * out_features..(r + 1) * out_features];
+                for o in 0..out_features {
+                    ar[o] += xi * wr[o];
+                }
             }
         }
+        Tensor::new(acc, vec![rows, out_features])
     }
-    Tensor::new(acc, vec![rows, out_features])
 }
 
 /// Exact GELU: `0.5 x (1 + erf(x / sqrt(2)))`.

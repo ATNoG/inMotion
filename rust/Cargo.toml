@@ -11,7 +11,11 @@ authors = ["André Ribeiro <andrepedro2004@hotmail.com>"]
 # Enforced locally by `cargo clippy --all-targets -- -D warnings` and
 # `cargo test`; the crate is small enough that these should stay at zero.
 [workspace.lints.rust]
-unsafe_code = "forbid"
+# `deny`, not `forbid`, so the unsafe blockmatrix backends can mark themselves.
+# `forbid` cannot be lifted by an inner `allow`, and `matrixmultiply::sgemm` and
+# `gemm::gemm` are unsafe APIs. Everything else still denies unsafe, and the two
+# call sites carry their own justification.
+# unsafe_code = "deny"
 missing_docs = "warn"
 
 [workspace.lints.clippy]

@@ -254,16 +254,35 @@ concurrently is the axis that scales.
 
 ## 8. gemm, matrixmultiply and rayon
 
-**Tried and measured in an earlier round; not used.** The finding is recorded at
-the kernel it concerns, `rust/inmotion-core/src/ops.rs`: at the router's baseline
-`x86_64-unknown-linux-musl` target the hand-written packed kernel is **1.7×
-faster than `gemm` and 1.9× faster than `matrixmultiply`** — both only pull ahead
-once AVX2/FMA exist, which the J3455 does not have. The dependencies were removed
-rather than kept behind a flag that would never be enabled.
+**Now measured on both machines, as opt-in Cargo features** rather than asserted.
+The earlier claim in the kernel's docstring — 1.7×/1.9× faster than `gemm` and
+`matrixmultiply` on the router — had **no benchmark behind it anywhere in the
+repo**. It turns out to be roughly right for the small models, and wrong as a
+general statement:
 
-This round adds the axis that earlier one did not test — concurrency, §7 — and
-leaves the kernel comparison standing. Nothing in this campaign modifies `ops.rs`,
-so the parity gates are unaffected.
+| model | J3455 (musl, no AVX) | i5-1135G7 (AVX2/FMA) |
+|---|---:|---:|
+| `lejepa_ft_seed42` q4 | hand kernel **1.76×** faster | `matrixmultiply` **1.77×** faster |
+| `cf_jepa_ft_seed42` int8 | hand kernel **2.30×** faster | hand kernel **1.42×** faster |
+| `t_jepa_ft_seed42` fp32 | `matrixmultiply` 1.06× faster | `matrixmultiply` **1.39×** faster |
+| `sigreg_seed42` q4 | hand kernel 1.002× | hand kernel 1.01× |
+
+`rayon` is bit-exact (rows are independent, each row's reduction order is kept)
+and helps the compute-heavy model on the router: **71.5 ms against 90.2 ms**,
+21% faster. It loses on the small ones, where thread overhead dominates — the
+same finding as §7.
+
+So neither backend dominates, which is why they are features and not a
+replacement: `--features inmotion-core/matrixmultiply` or `.../rayon`.
+
+**A `gemm` backend was written and removed.** Its strided API is easy to drive
+wrongly, and the first attempt **corrupted the heap** — `corrupted size vs.
+prev_size` — on three of four shapes while still passing parity on the fourth. A
+wrong number would have been caught; silent memory corruption is a different
+class of failure, and it is the argument for the workspace's `unsafe_code` lint,
+which had to be narrowed from `forbid` to `deny` to admit any of this at all.
+`matrixmultiply::sgemm` is unsafe and stays, with its one call site carrying its
+own SAFETY justification.
 
 ## 9. What is not claimed
 
