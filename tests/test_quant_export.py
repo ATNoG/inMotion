@@ -249,7 +249,7 @@ def _cargo() -> str:
 @pytest.mark.skipif(not _cargo(), reason="cargo not installed")
 @requires_artifacts
 @pytest.mark.parametrize("model", RUST_MODELS)
-@pytest.mark.parametrize("quant", [None, "int8", "q4"])
+@pytest.mark.parametrize("quant", [None, "int8", "q4", "q1"])
 def test_rust_port_reproduces_pytorch(model: str, quant: str | None, artifact_for) -> None:
     """The cross-language gate: export, then have Rust replay the golden vectors.
 

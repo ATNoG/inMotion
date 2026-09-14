@@ -205,6 +205,28 @@ def test_pack_round_trips(bits: int, count: int) -> None:
     assert np.array_equal(codes, unpack(pack(codes, bits), bits, count))
 
 
+@pytest.mark.parametrize("bits", [1, 2, 3, 4])
+@pytest.mark.parametrize("count", [1, 7, 64, 1000])
+def test_pack_round_trips_asymmetric(bits: int, count: int) -> None:
+    """Asymmetric codes are already unsigned, so their bias is zero.
+
+    Regression for ``q1``: biasing already-unsigned codes as if they were
+    signed pushed the top code out of range (1 + 1 = 2 for one bit), so
+    asymmetric quantization could not be exported at any width.
+    """
+    rng = np.random.default_rng(bits * 1000 + count)
+    codes = rng.integers(0, 1 << bits, count).astype(np.int8)
+    packed = pack(codes, bits, symmetric=False)
+    assert np.array_equal(codes, unpack(packed, bits, count, symmetric=False))
+
+
+def test_zero_point_bias_follows_the_scheme() -> None:
+    """The fold must leave an unsigned scheme's zero point where it was."""
+    zp = np.array([0, 1, 2], dtype=np.int8)
+    assert np.array_equal(fold_bias_into_zero_point(zp, 1, symmetric=False), zp.astype(np.int32))
+    assert np.array_equal(fold_bias_into_zero_point(zp, 1), zp.astype(np.int32) + 1)
+
+
 @pytest.mark.parametrize("bits", list(range(1, 9)))
 def test_packed_size_is_bits_per_value(bits: int) -> None:
     assert n_bytes_for(1024, bits) == 1024 * bits // 8

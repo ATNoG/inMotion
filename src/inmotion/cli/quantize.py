@@ -40,12 +40,12 @@ def _parse_formats(value: str | None) -> tuple[str, ...]:
 @app.command("formats", help="List the available quantization schemes.")
 def formats() -> None:
     """Show each scheme, its bit width and its storage granularity."""
-    from inmotion.quant.model import CAST_DTYPES
+    from inmotion.quant.model import CAST_BYTES, CAST_DTYPES
 
     typer.echo(f"{'format':8s} {'bits':>4s}  granularity / detail")
     for name in FLOAT_PRECISIONS:
         detail = "cast-only (dtype round-trip)"
-        typer.echo(f"{name:8s} {4 if name == 'fp32' else 2:>4d}  {detail}")
+        typer.echo(f"{name:8s} {CAST_BYTES[name] * 8:>4d}  {detail}")
     for name, spec in sorted(PRESET_SPECS.items(), key=lambda kv: -kv[1].bits):
         gran = spec.granularity.value
         if spec.granularity.value == "per_group":

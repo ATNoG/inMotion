@@ -244,7 +244,7 @@ Public API:
 
 ### `inmotion.quant.spec`
 
-`src/inmotion/quant/spec.py` - 130 lines
+`src/inmotion/quant/spec.py` - 141 lines
 
 Quantization schemes.
 
@@ -307,7 +307,7 @@ Public API:
 
 ### `inmotion.quant.packing`
 
-`src/inmotion/quant/packing.py` - 124 lines
+`src/inmotion/quant/packing.py` - 145 lines
 
 Bit-packing of integer codes.
 
@@ -317,12 +317,19 @@ cost half of Q8 and Q2 a quarter of it, or the exercise is pointless.
 
 Format
 ------
-Codes are biased to unsigned (``u = q + 2**(bits-1)``) and written LSB-first:
-element ``i`` occupies bits ``[i*bits, (i+1)*bits)`` of the byte stream, so for
-4-bit codes element 0 is the low nibble of byte 0 and element 1 the high nibble.
+Codes are biased to unsigned so the byte stream holds no negatives, and written
+LSB-first: element ``i`` occupies bits ``[i*bits, (i+1)*bits)`` of the byte
+stream, so for 4-bit codes element 0 is the low nibble of byte 0 and element 1
+the high nibble.
+
+The bias is ``2**(bits-1)`` for a **symmetric** scheme, whose codes are signed
+and run ``[-2**(bits-1), 2**(bits-1)-1]``. An **asymmetric** scheme emits codes
+that are already unsigned (``[0, 2**bits-1]``), so its bias is zero; applying
+the signed bias there would push the top code out of range, which is why
+``q1`` could not be exported until this parameter existed.
 
 Biasing means the on-device dequantization stays a single formula with no extra
-per-weight work: because ``q = u - 2**(bits-1)``,
+per-weight work: because ``q = u - bias``,
 
     (q - zero_point) * scale  ==  (u - (zero_point + 2**(bits-1))) * scale
 
@@ -333,12 +340,13 @@ Public API:
 
 - func `n_bytes_for` - Number of bytes needed to pack ``count`` codes of ``bits`` each.
 - func `fold_bias_into_zero_point` - Return the zero point that pairs with biased unsigned codes.
+- func `code_bias` - Offset added to a code to make it unsigned.
 - func `pack` - Pack int8 codes into a uint8 byte stream, LSB-first.
-- func `unpack` - Inverse of :func:`pack`. Returns signed int8 codes.
+- func `unpack` - Inverse of :func:`pack`. Returns int8 codes.
 
 ### `inmotion.quant.model`
 
-`src/inmotion/quant/model.py` - 267 lines
+`src/inmotion/quant/model.py` - 272 lines
 
 Weight-only quantization of a model, and honest size accounting.
 
@@ -408,7 +416,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 388 lines
+`src/inmotion/quant/export.py` - 392 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 

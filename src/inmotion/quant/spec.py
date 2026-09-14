@@ -114,6 +114,13 @@ PRESET_SPECS: dict[str, QuantSpec] = {
     "q4": QuantSpec(bits=4, granularity=Granularity.PER_GROUP, group_size=32, symmetric=True),
     "q3": QuantSpec(bits=3, granularity=Granularity.PER_GROUP, group_size=32, symmetric=True),
     "q2": QuantSpec(bits=2, granularity=Granularity.PER_GROUP, group_size=16, symmetric=True),
+    # One bit, and the only ASYMMETRIC scheme here — deliberately. A symmetric
+    # 1-bit pair cannot be expressed in this format: codes are stored biased as
+    # `u = q + 2**(bits-1)`, so the pair {-1, +1} needs u=2, which one bit
+    # cannot hold, and the `qmin = -qmax - 1` convention would give {-1, 0}, a
+    # one-sided scheme that throws away every sign. Asymmetric gives the two
+    # levels a 1-bit code can actually carry: the group's min and max.
+    "q1": QuantSpec(bits=1, granularity=Granularity.PER_GROUP, group_size=16, symmetric=False),
 }
 
 # Cast-only precisions, produced by the exporter.

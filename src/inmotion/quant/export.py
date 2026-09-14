@@ -256,10 +256,14 @@ def export(
         is_weight = _is_quantizable(name, torch.from_numpy(array))
         if quant_spec is not None and is_weight:
             qt, _ = quantize_tensor(torch.from_numpy(array), quant_spec)
-            tensors[f"{name}.q"] = pack(qt.q.ravel(), quant_spec.bits)
+            tensors[f"{name}.q"] = pack(
+                qt.q.ravel(), quant_spec.bits, symmetric=quant_spec.symmetric
+            )
             tensors[f"{name}.scale"] = qt.scale.astype(np.float32).ravel()
             tensors[f"{name}.zp"] = fold_bias_into_zero_point(
-                qt.zero_point.ravel(), quant_spec.bits
+                qt.zero_point.ravel(),
+                quant_spec.bits,
+                symmetric=quant_spec.symmetric,
             ).astype(np.int32)
             index[name] = {
                 "quantized": True,

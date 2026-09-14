@@ -6,12 +6,19 @@ cost half of Q8 and Q2 a quarter of it, or the exercise is pointless.
 
 Format
 ------
-Codes are biased to unsigned (``u = q + 2**(bits-1)``) and written LSB-first:
-element ``i`` occupies bits ``[i*bits, (i+1)*bits)`` of the byte stream, so for
-4-bit codes element 0 is the low nibble of byte 0 and element 1 the high nibble.
+Codes are biased to unsigned so the byte stream holds no negatives, and written
+LSB-first: element ``i`` occupies bits ``[i*bits, (i+1)*bits)`` of the byte
+stream, so for 4-bit codes element 0 is the low nibble of byte 0 and element 1
+the high nibble.
+
+The bias is ``2**(bits-1)`` for a **symmetric** scheme, whose codes are signed
+and run ``[-2**(bits-1), 2**(bits-1)-1]``. An **asymmetric** scheme emits codes
+that are already unsigned (``[0, 2**bits-1]``), so its bias is zero; applying
+the signed bias there would push the top code out of range, which is why
+``q1`` could not be exported until this parameter existed.
 
 Biasing means the on-device dequantization stays a single formula with no extra
-per-weight work: because ``q = u - 2**(bits-1)``,
+per-weight work: because ``q = u - bias``,
 
     (q - zero_point) * scale  ==  (u - (zero_point + 2**(bits-1))) * scale
 
@@ -32,18 +39,28 @@ def n_bytes_for(count: int, bits: int) -> int:
     return (count * bits + 7) // 8
 
 
-def fold_bias_into_zero_point(zero_point: np.ndarray, bits: int) -> np.ndarray:
+def fold_bias_into_zero_point(
+    zero_point: np.ndarray, bits: int, *, symmetric: bool = True
+) -> np.ndarray:
     """Return the zero point that pairs with biased unsigned codes."""
-    bias = 1 << (bits - 1)
+    bias = code_bias(bits, symmetric=symmetric)
     return (zero_point.astype(np.int32) + bias).astype(np.int32)
 
 
-def pack(codes: np.ndarray, bits: int) -> np.ndarray:
+def code_bias(bits: int, *, symmetric: bool = True) -> int:
+    """Offset added to a code to make it unsigned.
+
+    Zero for an asymmetric scheme, whose codes are already unsigned.
+    """
+    return (1 << (bits - 1)) if symmetric else 0
+
+
+def pack(codes: np.ndarray, bits: int, *, symmetric: bool = True) -> np.ndarray:
     """Pack int8 codes into a uint8 byte stream, LSB-first."""
     if not 1 <= bits <= 8:
         raise ValueError(f"bits must be in 1..8, got {bits}")
     flat = np.asarray(codes, dtype=np.int64).ravel()
-    biased = (flat + (1 << (bits - 1))).astype(np.int64)
+    biased = (flat + code_bias(bits, symmetric=symmetric)).astype(np.int64)
     if biased.min() < 0 or biased.max() >= (1 << bits):
         raise ValueError("code out of range for the given bit width")
 
@@ -81,12 +98,16 @@ def pack(codes: np.ndarray, bits: int) -> np.ndarray:
     return out
 
 
-def unpack(packed: np.ndarray, bits: int, count: int) -> np.ndarray:
-    """Inverse of :func:`pack`. Returns signed int8 codes."""
+def unpack(packed: np.ndarray, bits: int, count: int, *, symmetric: bool = True) -> np.ndarray:
+    """Inverse of :func:`pack`. Returns int8 codes.
+
+    ``symmetric`` must match the flag the stream was packed with, or the codes
+    come back offset by the bias.
+    """
     if not 1 <= bits <= 8:
         raise ValueError(f"bits must be in 1..8, got {bits}")
     data = np.asarray(packed, dtype=np.uint8).ravel()
-    bias = 1 << (bits - 1)
+    bias = code_bias(bits, symmetric=symmetric)
 
     if bits == 8:
         codes = data[:count].astype(np.int64)
