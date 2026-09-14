@@ -306,6 +306,39 @@ An earlier version of the device measurements read artifacts from `/tmp`, which
 is ephemeral — a reboot would have taken them, and the numbers in §5 and §7
 would have become unreproducible from the repository alone.
 
+**Three producers, named apart**, so the store says which quantizer made what:
+
+```
+<model>-fp32, <model>-int8, <model>-q1..q8    the in-house quantizer (45)
+<model>-torchao-int8                           torch.ao's per-channel int8 (5)
+<model>-bnb-nf4 | -bnb-fp4 | -bnb-int8         bitsandbytes (15)
+```
+
+`artifacts/MANIFEST.md` describes them; `approach_comparison.csv` puts them side
+by side on accuracy, size, weight-level fidelity and runnability.
+
+The torch.ao artifacts are written in the runtime's format carrying **torch's**
+codes and scales, so the Rust runtime executes torch.ao's quantization — and all
+five replay their golden vectors with `PARITY OK`. That golden is rebuilt from the
+artifact's own weights, because an artifact's golden must come from its own
+quantization; comparing a quantized artifact against an fp32 golden fails by
+exactly the quantization error and says nothing.
+
+The bitsandbytes artifacts are **not** runtime-loadable, and that is a property
+of the format rather than a shortfall. Every scheme in the runtime dequantizes as
+one affine map `(u - zp) * scale`. NF4's codebook is not affine by construction;
+bnb's 8-bit path looks like plain int8 and is not either — its 256 entries are
+non-uniformly spaced and leave a **62% residual** against the best straight line.
+That was measured, not assumed: this script first asserted int8 was loadable and
+the measurement overruled it.
+
+**What the comparison buys.** On `lejepa`, bitsandbytes NF4 reaches **0.9106**
+MCC at **0.325 MB** where the in-house `int8` reaches 0.9143 at 0.678 MB — half
+the size for 0.4% of MCC. FP4, being uniform, is consistently worse (0.8986 on
+the same model). That is a real deployment option the in-house quantizer does not
+currently offer, and it is the clearest thing this campaign has to say about where
+to go next.
+
 ## 10. Reproducing
 
 ```bash

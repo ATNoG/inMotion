@@ -32,6 +32,26 @@ checkpoints they came from**, one directory per (model, precision):
 20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts/<model>-<precision>/
 ```
 
+Three producers write here, and they are named apart:
+
+```
+<model>-fp32, <model>-int8, <model>-q1..q8    the in-house quantizer
+<model>-torchao-int8                           torch.ao's per-channel int8
+<model>-bnb-nf4 | -bnb-fp4 | -bnb-int8         bitsandbytes
+```
+
+The in-house quantizer writes 45 (five models x nine precisions), torch.ao 5 and
+bitsandbytes 15. `artifacts/MANIFEST.md` records what each producer gives, and
+`results/campaign/approach_comparison.csv` puts them side by side on accuracy,
+size, weight-level fidelity and whether the runtime can load them.
+
+Only the in-house and torch.ao artifacts are runtime-loadable. Every scheme in
+the runtime dequantizes as one affine map, `(u - zp) * scale`; bitsandbytes'
+codebooks are not affine — NF4 by construction, and its 8-bit path despite
+looking like plain int8 (its 256 entries are non-uniformly spaced, leaving a 62%
+residual against the best straight line). Teaching the reader a codebook is a
+format change and is not attempted here.
+
 Five models x nine precisions: `fp32`, `int8` and `q1`..`q8`. Each directory
 holds `meta.json` (architecture and quantization spec), `model.safetensors` (the
 packed weights) and `golden.json` (the vectors the runtime's parity check
