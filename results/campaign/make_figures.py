@@ -95,12 +95,20 @@ def short_label(model: str) -> str:
     return model.replace("_ft_seed42", " (HPO)").replace("_seed42", " (HPO)")
 
 
+#: Matplotlib stamps the PDF with the clock, so an unchanged figure produces
+#: different bytes on every run and shows up as a modification. Clearing the
+#: dates makes the committed figures reproducible: regenerating an unchanged
+#: figure rewrites identical bytes.
+DETERMINISTIC_METADATA = {"CreationDate": None, "ModDate": None}
+
+
 def save(fig, name: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     for suffix in ("pdf", "png"):
         path = FIGURES / f"{name}.{suffix}"
-        fig.savefig(path)
-        print(f"  wrote {path.relative_to(REPO)}")
+        metadata = DETERMINISTIC_METADATA if suffix == "pdf" else None
+        fig.savefig(path, metadata=metadata)
+        print(f"  wrote {path}")
     plt.close(fig)
 
 
@@ -280,6 +288,59 @@ def flops_figure(rows: list[dict[str, str]], stem: str) -> None:
     save(fig, f"fig_flops_per_s_{stem}")
 
 
+def scaling_figure(rows: list[dict[str, str]], stem: str) -> None:
+    """Throughput against concurrency, against the ideal linear reference.
+
+    The gap to the diagonal IS the answer to "where does it saturate": the
+    curves leave it early and flatten, so the saturation point is where the
+    marginal gain stops paying for the extra latency.
+    """
+    usable = [r for r in rows if r.get("speedup")]
+    if not usable:
+        return
+    levels = sorted({int(r["concurrency"]) for r in usable})
+    series = sorted({(r["model"], r["precision"]) for r in usable})
+
+    fig, ax = plt.subplots(figsize=FIG_FULL)
+    ax.plot(
+        levels,
+        levels,
+        color="#B0BEC5",
+        linestyle="--",
+        linewidth=1.2,
+        zorder=1,
+        label="ideal (linear)",
+    )
+    for i, (model, precision) in enumerate(series):
+        points = sorted(
+            (int(r["concurrency"]), float(r["speedup"]))
+            for r in usable
+            if r["model"] == model and r["precision"] == precision
+        )
+        style = "-" if precision == "fp32" else ":"
+        ax.plot(
+            [p[0] for p in points],
+            [p[1] for p in points],
+            label=f"{short_label(model)} {precision}",
+            color=OKABE_ITO[i % len(OKABE_ITO)],
+            marker=MARKERS[i % len(MARKERS)],
+            linestyle=style,
+            markersize=4,
+            zorder=3,
+        )
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log", base=2)
+    ax.set_xticks(levels)
+    ax.set_xticklabels([str(n) for n in levels])
+    ax.set_yticks(levels)
+    ax.set_yticklabels([str(n) for n in levels])
+    ax.set_xlabel("Concurrent inferences")
+    ax.set_ylabel("Speedup vs 1")
+    ax.set_title(f"Throughput scaling — {stem}")
+    ax.legend(fontsize=7, ncol=2, loc="upper left")
+    save(fig, f"fig_scaling_{stem}")
+
+
 def main() -> None:
     print("extended-quantization campaign figures")
 
@@ -303,7 +364,11 @@ def main() -> None:
         device_figures(rows, stem)
         flops_figure(rows, stem)
 
-    read_csv(HERE / "scaling.csv")
+    for path in sorted(HERE.glob("scaling*.csv")):
+        rows = read_csv(path)
+        if not rows:
+            continue
+        scaling_figure(rows, path.stem.removeprefix("scaling").lstrip("_") or "device")
 
     print("done")
 

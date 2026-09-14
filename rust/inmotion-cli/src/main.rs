@@ -19,7 +19,9 @@ fn usage() -> &'static str {
     "usage:\n  \
      inmotion-infer describe --artifact DIR\n  \
      inmotion-infer predict  --artifact DIR --input FILE\n  \
-     inmotion-infer check    --artifact DIR --golden DIR"
+     inmotion-infer check    --artifact DIR --golden DIR\n  \
+     inmotion-infer bench    --artifact DIR [--iterations N] [--warmup N] [--json]\n  \
+     inmotion-infer bench    --artifact DIR --concurrency N --seconds S [--json]"
 }
 
 fn arg_value(args: &[String], flag: &str) -> Option<String> {
@@ -210,6 +212,91 @@ fn check(artifact_dir: &Path, golden_dir: &Path) -> Result<(), String> {
 /// reports the median and the tail, which is what an embedded deployment is
 /// actually judged on. `--json` emits the same numbers as one JSON object, so a
 /// benchmark taken on the router lands in `results/perf/` without a parser.
+/// Throughput under N concurrent inferences.
+///
+/// This is the axis that scales on a batch-1 model. One inference here is 4-11
+/// MFLOP, small enough that splitting its own arithmetic costs more than it
+/// saves, but a device serving many requests can run several at once. Both
+/// numbers are reported because latency usually degrades before throughput
+/// saturates, and the saturation point is where the second stops rising while
+/// the first keeps falling.
+fn bench_concurrent(
+    artifact_dir: &Path,
+    concurrency: usize,
+    seconds: f64,
+    json: bool,
+) -> Result<(), String> {
+    if concurrency == 0 {
+        return Err("--concurrency must be > 0".into());
+    }
+    if seconds <= 0.0 {
+        return Err("--seconds must be > 0".into());
+    }
+
+    let artifact = Artifact::load(artifact_dir)?;
+    let model = Model::load(&artifact)?;
+    let channels = model.in_channels();
+    let seq_len = model.seq_len();
+    let x = Tensor::new(
+        (0..seq_len * channels)
+            .map(|i| ((i * 37) % 41) as f32 - 60.0)
+            .collect(),
+        vec![seq_len, channels],
+    );
+
+    let started = std::time::Instant::now();
+    let deadline = started + std::time::Duration::from_secs_f64(seconds);
+    let counts: Vec<u64> = std::thread::scope(|scope| {
+        let handles: Vec<_> = (0..concurrency)
+            .map(|_| {
+                scope.spawn(|| {
+                    // One warmup per thread, so a first-call page fault is not
+                    // counted as a slow inference.
+                    let _ = model.forward(&x);
+                    let mut done = 0u64;
+                    while std::time::Instant::now() < deadline {
+                        let _ = model.forward(&x);
+                        done += 1;
+                    }
+                    done
+                })
+            })
+            .collect();
+        handles.into_iter().map(|h| h.join().unwrap_or(0)).collect()
+    });
+
+    let wall = started.elapsed().as_secs_f64();
+    let total: u64 = counts.iter().sum();
+    if total == 0 {
+        return Err("no inference completed in the time budget".into());
+    }
+    let throughput = total as f64 / wall;
+    // Mean service time per inference seen by ONE thread while all of them run:
+    // the honest loaded latency, not the idle one.
+    let latency_ms = wall * concurrency as f64 / total as f64 * 1e3;
+
+    if json {
+        println!(
+            "{{\"model\":{},\"artifact\":{},\"concurrency\":{concurrency},\
+             \"seconds\":{seconds:.3},\"iterations\":{total},\
+             \"throughput_per_s\":{throughput:.1},\"latency_ms\":{latency_ms:.4}}}",
+            serde_json::to_string(&artifact.meta.model)
+                .map_err(|e| format!("model name is not serialisable: {e}"))?,
+            serde_json::to_string(&artifact_dir.display().to_string())
+                .map_err(|e| format!("artifact path is not serialisable: {e}"))?,
+        );
+    } else {
+        println!("model       : {}", artifact.meta.model);
+        println!("artifact    : {}", artifact_dir.display());
+        println!("concurrency : {concurrency}");
+        println!("wall        : {wall:.2} s");
+        println!("iterations  : {total}");
+        println!("throughput  : {throughput:.1} inferences/s");
+        println!("latency     : {latency_ms:.4} ms (loaded, per thread)");
+    }
+    Ok(())
+}
+
 fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> Result<(), String> {
     if iterations == 0 {
         return Err("--iterations must be > 0".into());
@@ -301,12 +388,21 @@ fn main() -> ExitCode {
             let warmup = arg_value(&args, "--warmup")
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(20);
-            bench(
-                &artifact_dir,
-                iterations,
-                warmup,
-                args.iter().any(|a| a == "--json"),
-            )
+            let json = args.iter().any(|a| a == "--json");
+            if args
+                .iter()
+                .any(|a| a == "--concurrency" || a == "--seconds")
+            {
+                let concurrency = arg_value(&args, "--concurrency")
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(1);
+                let seconds = arg_value(&args, "--seconds")
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(5.0);
+                bench_concurrent(&artifact_dir, concurrency, seconds, json)
+            } else {
+                bench(&artifact_dir, iterations, warmup, json)
+            }
         }
         "check" => match arg_value(&args, "--golden") {
             Some(p) => check(&artifact_dir, &PathBuf::from(p)),
