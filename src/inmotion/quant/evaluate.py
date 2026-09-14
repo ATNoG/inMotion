@@ -189,6 +189,13 @@ def check_baseline(rows: list[EvalRow]) -> list[str]:
     return problems
 
 
+#: The precisions the shipped sweep and the statistics tables cover.
+#:
+#: Deliberately NOT "every scheme that exists". This list also drives
+#: `quantize stats`, whose tables and figures are a reviewed artifact with
+#: recorded md5s, so adding a precision here silently invalidates them. The
+#: extended campaign sweeps more schemes and keeps its own CSV; extend this list
+#: only with a matching re-verification of the stats tables.
 DEFAULT_PRECISIONS: tuple[str, ...] = (
     "fp32",
     "bf16",

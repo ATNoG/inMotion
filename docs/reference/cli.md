@@ -311,7 +311,7 @@ Measure accuracy under quantization on dataset.csv.
 Options:
 
 - `--models` - Comma-separated; default: all five world models.
-- `--formats` - Comma-separated; default: all.
+- `--formats` - Comma-separated; default: DEFAULT_PRECISIONS.
 - `--data` - Dataset CSV; default: dataset.csv.
 - `--seed` (default: `42`) - Split seed.
 - `--out` (default: `results/quant/sweep_dataset.csv`) - Where to write the results CSV.
@@ -354,7 +354,7 @@ Write the quantization statistics tables the figures read.
 Options:
 
 - `--models` - Comma-separated; default: all five world models.
-- `--formats` - Comma-separated; default: all.
+- `--formats` - Comma-separated; default: DEFAULT_PRECISIONS.
 - `--data` - Dataset CSV; default: dataset.csv.
 - `--seed` (default: `42`) - Split seed.
 - `--sweep` (default: `results/quant/sweep_dataset.csv`) - Accuracy/size CSV from `quantize eval`.

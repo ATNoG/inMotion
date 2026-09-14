@@ -27,7 +27,11 @@ def _parse_models(value: str | None) -> list[str]:
 
 def _parse_formats(value: str | None) -> tuple[str, ...]:
     if not value:
-        return ("fp32", "bf16", "fp16", "int8", "q8", "q4", "q2")
+        # One definition, in the module that owns the baseline. Imported here
+        # rather than at module scope so `inmotion --help` stays fast.
+        from inmotion.quant.evaluate import DEFAULT_PRECISIONS
+
+        return tuple(DEFAULT_PRECISIONS)
     chosen = tuple(f.strip() for f in value.split(",") if f.strip())
     unknown = [f for f in chosen if f not in ALL_FORMATS]
     if unknown:
@@ -146,7 +150,7 @@ def evaluate(
         typer.Option("--models", help="Comma-separated; default: all five world models."),
     ] = None,
     formats: Annotated[
-        str | None, typer.Option("--formats", help="Comma-separated; default: all.")
+        str | None, typer.Option("--formats", help="Comma-separated; default: DEFAULT_PRECISIONS.")
     ] = None,
     data: Annotated[
         Path | None, typer.Option("--data", help="Dataset CSV; default: dataset.csv.")
@@ -201,7 +205,7 @@ def stats(
         typer.Option("--models", help="Comma-separated; default: all five world models."),
     ] = None,
     formats: Annotated[
-        str | None, typer.Option("--formats", help="Comma-separated; default: all.")
+        str | None, typer.Option("--formats", help="Comma-separated; default: DEFAULT_PRECISIONS.")
     ] = None,
     data: Annotated[
         Path | None, typer.Option("--data", help="Dataset CSV; default: dataset.csv.")

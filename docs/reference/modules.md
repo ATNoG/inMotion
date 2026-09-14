@@ -381,7 +381,7 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 252 lines
+`src/inmotion/quant/evaluate.py` - 259 lines
 
 Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
@@ -747,7 +747,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 280 lines
+`src/inmotion/cli/quantize.py` - 284 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 
