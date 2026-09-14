@@ -316,11 +316,15 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
     }
 
     let mut samples = Vec::with_capacity(iterations);
+    let timed_from = std::time::Instant::now();
     for _ in 0..iterations {
         let start = std::time::Instant::now();
         let _ = model.forward(&x);
         samples.push(start.elapsed().as_secs_f64() * 1e3); // milliseconds
     }
+    // Reported so a caller measuring CPU or energy has the window the samples
+    // came from without second-guessing it from the throughput.
+    let wall_ms = timed_from.elapsed().as_secs_f64() * 1e3;
     samples.sort_by(f64::total_cmp);
 
     let median = samples[samples.len() / 2];
@@ -337,7 +341,7 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
             "{{\"model\":{},\"artifact\":{},\"iterations\":{iterations},\"warmup\":{warmup},\
              \"quantization\":{},\"min_ms\":{min:.4},\"median_ms\":{median:.4},\
              \"mean_ms\":{mean:.4},\"p95_ms\":{p95:.4},\"max_ms\":{max:.4},\
-             \"throughput_per_s\":{throughput:.1}}}",
+             \"throughput_per_s\":{throughput:.1},\"wall_ms\":{wall_ms:.4}}}",
             serde_json::to_string(&artifact.meta.model)
                 .map_err(|e| format!("model name is not serialisable: {e}"))?,
             serde_json::to_string(&artifact_dir.display().to_string())
