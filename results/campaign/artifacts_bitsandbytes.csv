@@ -11,6 +11,6 @@ sigreg_seed42,int8,sigreg_seed42-bnb-int8,11,714437,0.006311,False,0.299028
 t_jepa_ft_seed42,nf4,t_jepa_ft_seed42-bnb-nf4,32,365142,0.088396,False,0.193097
 t_jepa_ft_seed42,fp4,t_jepa_ft_seed42-bnb-fp4,32,365145,0.119837,False,0.759375
 t_jepa_ft_seed42,int8,t_jepa_ft_seed42-bnb-int8,32,657154,0.009703,False,0.299028
-ts_jepa_ft_seed42,nf4,ts_jepa_ft_seed42-bnb-nf4,28,1214758,0.08981,False,0.193097
+ts_jepa_ft_seed42,nf4,ts_jepa_ft_seed42-bnb-nf4,28,1214759,0.089809,False,0.193097
 ts_jepa_ft_seed42,fp4,ts_jepa_ft_seed42-bnb-fp4,28,1214756,0.116171,False,0.759375
 ts_jepa_ft_seed42,int8,ts_jepa_ft_seed42-bnb-int8,28,2198590,0.009455,False,0.299028

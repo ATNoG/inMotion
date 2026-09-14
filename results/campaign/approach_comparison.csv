@@ -1,26 +1,26 @@
 approach,model,scheme,bytes,relative_error,mcc,fp32_mcc,runtime_loadable,parity
 in-house,cf_jepa_ft_seed42,int8,1411579,0.004806,0.9083210968710779,0.9083210968710779,True,ok
-torch.ao,cf_jepa_ft_seed42,per_channel_symmetric_int8,1411749,0.008006,0.90634571928855,0.9083210968710779,True,ok
+torch.ao,cf_jepa_ft_seed42,per_channel_symmetric_int8,1411597,0.008006,0.90634571928855,0.9083210968710779,True,ok
 bitsandbytes,cf_jepa_ft_seed42,nf4,696311,0.09247,0.9042293503245967,0.9083210968710779,False,n/a (not loadable)
 bitsandbytes,cf_jepa_ft_seed42,fp4,696310,0.120894,0.9005704255828535,0.9083210968710779,False,n/a (not loadable)
 bitsandbytes,cf_jepa_ft_seed42,int8,1268518,0.009653,0.9083210968710779,0.9083210968710779,False,n/a (not loadable)
 in-house,lejepa_ft_seed42,int8,677931,0.006341,0.9142641066646362,0.9142641066646362,True,ok
-torch.ao,lejepa_ft_seed42,per_channel_symmetric_int8,678103,0.010489,0.9160771823848137,0.9142641066646362,True,ok
+torch.ao,lejepa_ft_seed42,per_channel_symmetric_int8,677953,0.010489,0.9160771823848137,0.9142641066646362,True,ok
 bitsandbytes,lejepa_ft_seed42,nf4,325229,0.082976,0.9105531117076912,0.9142641066646362,False,n/a (not loadable)
 bitsandbytes,lejepa_ft_seed42,fp4,325228,0.112037,0.8986141476279862,0.9142641066646362,False,n/a (not loadable)
 bitsandbytes,lejepa_ft_seed42,int8,585346,0.009411,0.9142641066646362,0.9142641066646362,False,n/a (not loadable)
 in-house,sigreg_seed42,int8,384618,0.001153,0.9176964591943778,0.9176964591943778,True,ok
-torch.ao,sigreg_seed42,per_channel_symmetric_int8,384790,0.005475,0.9176964591943778,0.9176964591943778,True,ok
+torch.ao,sigreg_seed42,per_channel_symmetric_int8,384640,0.005475,0.9176964591943778,0.9176964591943778,True,ok
 bitsandbytes,sigreg_seed42,nf4,181043,0.090125,0.9045419556719467,0.9176964591943778,False,n/a (not loadable)
 bitsandbytes,sigreg_seed42,fp4,181038,0.113316,0.8938288411265293,0.9176964591943778,False,n/a (not loadable)
 bitsandbytes,sigreg_seed42,int8,714437,0.006311,0.9157156199283242,0.9176964591943778,False,n/a (not loadable)
 in-house,t_jepa_ft_seed42,int8,805319,0.013524,0.8982207226632052,0.8982207226632052,True,ok
-torch.ao,t_jepa_ft_seed42,per_channel_symmetric_int8,805502,0.006951,0.8982207226632052,0.8982207226632052,True,ok
+torch.ao,t_jepa_ft_seed42,per_channel_symmetric_int8,805345,0.006951,0.8982207226632052,0.8982207226632052,True,ok
 bitsandbytes,t_jepa_ft_seed42,nf4,365142,0.088396,0.8985531288810205,0.8982207226632052,False,n/a (not loadable)
 bitsandbytes,t_jepa_ft_seed42,fp4,365145,0.119837,0.8673206078125321,0.8982207226632052,False,n/a (not loadable)
 bitsandbytes,t_jepa_ft_seed42,int8,657154,0.009703,0.900067709573083,0.8982207226632052,False,n/a (not loadable)
 in-house,ts_jepa_ft_seed42,int8,2370376,0.002162,0.4908539523675643,0.4908539523675643,True,ok
-torch.ao,ts_jepa_ft_seed42,per_channel_symmetric_int8,2370549,0.006708,0.48890150292721507,0.4908539523675643,True,ok
-bitsandbytes,ts_jepa_ft_seed42,nf4,1214758,0.08981,0.4638479953611683,0.4908539523675643,False,n/a (not loadable)
+torch.ao,ts_jepa_ft_seed42,per_channel_symmetric_int8,2370405,0.006708,0.48890150292721507,0.4908539523675643,True,ok
+bitsandbytes,ts_jepa_ft_seed42,nf4,1214759,0.089809,0.4638479953611683,0.4908539523675643,False,n/a (not loadable)
 bitsandbytes,ts_jepa_ft_seed42,fp4,1214756,0.116171,0.47528921684888914,0.4908539523675643,False,n/a (not loadable)
 bitsandbytes,ts_jepa_ft_seed42,int8,2198590,0.009455,0.48897961770396814,0.4908539523675643,False,n/a (not loadable)

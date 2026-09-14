@@ -98,6 +98,31 @@ def show(
     typer.echo(f"tensors      : {len(report.records)} quantized, {len(report.skipped)} skipped")
 
 
+@app.command("producers", help="List the quantizers and what the runtime can read.")
+def producers_cmd() -> None:
+    """Which quantizer made a number matters, so they are named, not implied.
+
+    `runtime-readable` is the affine test: the Rust runtime dequantizes every
+    scheme as `(u - zero_point) * scale`, so a scheme whose codebook is not a
+    straight line cannot be stored as an artifact at all.
+    """
+    from inmotion.quant.producers import PRODUCERS
+
+    for name in sorted(PRODUCERS):
+        cls = PRODUCERS[name]
+        schemes = ", ".join(cls.schemes)
+        if name == "bitsandbytes":
+            try:
+                implementation = cls()
+                readable = [s for s in cls.schemes if implementation.expressible(s)]
+                verdict = ", ".join(readable) if readable else "none (codebook is not affine)"
+            except ImportError:
+                verdict = "unknown (bitsandbytes is not installed)"
+        else:
+            verdict = "all"
+        typer.echo(f"{name:14} {schemes:34} runtime-readable: {verdict}")
+
+
 @app.command("export", help="Write a portable artifact for a non-Python runtime.")
 def export_cmd(
     model: Annotated[str, typer.Argument(help="Registered model name.")],
@@ -111,6 +136,15 @@ def export_cmd(
             "precisions and cannot be written as artifacts.",
         ),
     ] = "fp32",
+    producer: Annotated[
+        str,
+        typer.Option(
+            "--producer",
+            help="Which quantizer: in-house, torch-ao or bitsandbytes. "
+            "`inmotion quantize producers` lists them; with a producer, fp32 "
+            "means that producer's own default scheme.",
+        ),
+    ] = "in-house",
     golden: Annotated[bool, typer.Option("--golden", help="Also write golden vectors.")] = True,
     tol: Annotated[
         float, typer.Option("--tol", help="Parity tolerance recorded in golden.json.")
@@ -118,21 +152,32 @@ def export_cmd(
 ) -> None:
     """Export an artifact plus the golden vectors a Rust runtime must reproduce."""
     from inmotion.quant.export import export, write_golden
+    from inmotion.quant.producers import PRODUCERS
 
-    if format not in ALL_FORMATS:
+    if producer == "in-house":
+        if format not in ALL_FORMATS:
+            typer.secho(
+                f"unknown format {format!r}; choose from {', '.join(ALL_FORMATS)}",
+                fg=typer.colors.RED,
+                err=True,
+            )
+            raise typer.Exit(code=2)
+    elif producer not in PRODUCERS:
         typer.secho(
-            f"unknown format {format!r}; choose from {', '.join(ALL_FORMATS)}",
+            f"unknown producer {producer!r}; choose from {', '.join(sorted(PRODUCERS))}",
             fg=typer.colors.RED,
             err=True,
         )
         raise typer.Exit(code=2)
+    # `format == "fp32"` needs no special case: `quant` already becomes None
+    # below, and a producer reads None as "my own default scheme".
 
     # fp16/bf16/fp8 are cast precisions, and the runtime reads F32, I32 and U8
     # only: an artifact written at those widths could not be loaded. They are
     # kept reachable for accuracy measurement, which writes no artifact, and
     # refused here with the reason rather than a KeyError from the resolver.
     unexpressible = [f for f in FLOAT_PRECISIONS if f != "fp32"]
-    if format in unexpressible:
+    if producer == "in-house" and format in unexpressible:
         typer.secho(
             f"{format} is a cast precision, not an artifact format: the runtime "
             f"reads F32, I32 and U8 only, so it could not load what this would "
@@ -144,13 +189,20 @@ def export_cmd(
         raise typer.Exit(code=2)
 
     quant = None if format == "fp32" else format
-    report = export(model, out, quant=quant)
+    try:
+        report = export(model, out, quant=quant, producer=producer)
+    except ValueError as exc:
+        # An inexpressible scheme is refused with its measured reason rather
+        # than written, because an artifact that loads and computes the wrong
+        # thing is worse than one that does not exist.
+        typer.secho(str(exc), fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2) from exc
     typer.secho(f"wrote {out}", fg=typer.colors.GREEN)
     for key, value in report.summary().items():
         typer.echo(f"  {key:18s} {value}")
 
     if golden:
-        path = write_golden(model, out, quant=quant, dataset=None)
+        path = write_golden(model, out, quant=quant, producer=producer, dataset=None)
         import json
 
         payload = json.loads(path.read_text())

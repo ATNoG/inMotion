@@ -62,34 +62,6 @@ def affine_residual(code: torch.Tensor) -> float:
     return float(np.abs(values - (slope * index + intercept)).max() / span)
 
 
-def quantize_scheme(weight: torch.Tensor, scheme: str) -> tuple[dict[str, np.ndarray], float]:
-    """Quantize one weight and return its stored arrays plus relative error."""
-    import bitsandbytes.functional as BF
-
-    if scheme in ("nf4", "fp4"):
-        packed, state = BF.quantize_4bit(weight, quant_type=scheme)
-        rebuilt = BF.dequantize_4bit(packed, state).float()
-        arrays = {
-            "packed": packed.cpu().numpy(),
-            "absmax": state[0].cpu().numpy().astype(np.float32),
-        }
-    else:
-        # One block per row, so the absmax pairs with the row it scales.
-        blocksize = int(weight.shape[-1])
-        packed, state = BF.quantize_blockwise(weight, blocksize=blocksize)
-        rebuilt = BF.dequantize_blockwise(packed, state).float()
-        arrays = {
-            "packed": packed.cpu().numpy(),
-            "absmax": state[0].cpu().numpy().astype(np.float32),
-        }
-
-    # Both paths carry an explicit codebook; that is what decides readability.
-    residual = affine_residual(state.code) if getattr(state, "code", None) is not None else 1.0
-    error = (rebuilt - weight).norm().item()
-    base = weight.norm().item()
-    return arrays, (error / base if base else 0.0), residual
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -105,6 +77,9 @@ def main() -> int:
         print(f"no in-house fp32 artifacts under {args.artifacts}", file=sys.stderr)
         return 1
 
+    from inmotion.quant.producers import PRODUCERS
+
+    producer = PRODUCERS["bitsandbytes"]()
     rows: list[dict[str, object]] = []
     for model in models:
         fp32 = load_file(str(args.artifacts / f"{model}-fp32" / "model.safetensors"))
@@ -121,18 +96,21 @@ def main() -> int:
             errors: list[float] = []
             residuals: list[float] = []
             for name in names:
-                weight = torch.from_numpy(fp32[name].astype(np.float32))
-                stored, relative, residual = quantize_scheme(weight, scheme)
-                residuals.append(residual)
+                weight = fp32[name].astype(np.float32)
+                stored, rebuilt = producer.store_arrays(weight, scheme)
                 for key, value in stored.items():
                     arrays[f"{name}.{key}"] = value
+                base = float(np.linalg.norm(weight)) or 1.0
+                relative = float(np.linalg.norm(rebuilt - weight)) / base
                 per_tensor[name] = {
                     "shape": list(weight.shape),
                     "relative_error": round(relative, 6),
                 }
                 errors.append(relative)
 
-            loadable = float(np.max(residuals)) <= AFFINE_TOLERANCE
+            # Measured by the producer, not decided here.
+            loadable = producer.expressible(scheme)
+            residuals.append(producer.residual(scheme))
             save_file(arrays, str(out / "bnb.safetensors"))
             (out / "meta.json").write_text(
                 json.dumps(

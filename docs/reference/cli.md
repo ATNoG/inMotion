@@ -329,12 +329,17 @@ Options:
 
 - `--out`, `-o` - Destination directory.
 - `--format`, `-f` (default: `fp32`) - Scheme, or fp32 for none. fp16/bf16/fp8 are cast precisions and cannot be written as artifacts.
+- `--producer` (default: `in-house`) - Which quantizer: in-house, torch-ao or bitsandbytes. `inmotion quantize producers` lists them; with a producer, fp32 means that producer's own default scheme.
 - `--golden` (default: `True`) - Also write golden vectors.
 - `--tol` (default: `0.0002`) - Parity tolerance recorded in golden.json.
 
 ### `quantize formats`
 
 List the available quantization schemes.
+
+### `quantize producers`
+
+List the quantizers and what the runtime can read.
 
 ### `quantize show`
 

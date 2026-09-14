@@ -416,7 +416,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 393 lines
+`src/inmotion/quant/export.py` - 566 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -456,6 +456,10 @@ parity holds by construction and is asserted by the golden-vector tests.
 Public API:
 
 - class `ExportReport` - What was written and how big it is.
+- func `dequantize_artifact` - The float weights an artifact stands for: `(u - zero_point) * scale`.
+- func `rebuild_state_dict` - The model's OWN state dict, from artifact-shaped tensors.
+- func `model_with_producer` - The model carrying a producer's quantization in its weights.
+- func `resolve_producer` - The per-weight quantizer and the `quant` metadata block for a producer.
 - func `export` - Write ``model_name`` as a portable artifact directory.
 - func `write_golden` - Write input/output pairs for a non-Python runtime to reproduce.
 
@@ -749,7 +753,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 333 lines
+`src/inmotion/cli/quantize.py` - 385 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 
@@ -757,6 +761,7 @@ Public API:
 
 - func `formats` - Show each scheme, its bit width and its storage granularity.
 - func `show` - Report the size, compression and weight error for one scheme.
+- func `producers_cmd` - Which quantizer made a number matters, so they are named, not implied.
 - func `export_cmd` - Export an artifact plus the golden vectors a Rust runtime must reproduce.
 - func `evaluate` - Sweep models x formats and write one row per measurement.
 - func `stats` - Produce size, accuracy, coverage, latency and per-layer tables.

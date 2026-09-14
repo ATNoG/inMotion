@@ -1,6 +1,6 @@
-model,producer,directory,quantized_tensors,bytes,parity
-cf_jepa_ft_seed42,torch.ao.quantization.per_channel_symmetric_int8,cf_jepa_ft_seed42-torchao-int8,22,1411749,ok
-lejepa_ft_seed42,torch.ao.quantization.per_channel_symmetric_int8,lejepa_ft_seed42-torchao-int8,29,678103,ok
-sigreg_seed42,torch.ao.quantization.per_channel_symmetric_int8,sigreg_seed42-torchao-int8,11,384790,ok
-t_jepa_ft_seed42,torch.ao.quantization.per_channel_symmetric_int8,t_jepa_ft_seed42-torchao-int8,32,805502,ok
-ts_jepa_ft_seed42,torch.ao.quantization.per_channel_symmetric_int8,ts_jepa_ft_seed42-torchao-int8,28,2370549,ok
+model,producer,scheme,directory,quantized_tensors,bytes,parity
+cf_jepa_ft_seed42,torch-ao,int8,cf_jepa_ft_seed42-torchao-int8,22,1411597,ok
+lejepa_ft_seed42,torch-ao,int8,lejepa_ft_seed42-torchao-int8,29,677953,ok
+t_jepa_ft_seed42,torch-ao,int8,t_jepa_ft_seed42-torchao-int8,32,805345,ok
+ts_jepa_ft_seed42,torch-ao,int8,ts_jepa_ft_seed42-torchao-int8,28,2370405,ok
+sigreg_seed42,torch-ao,int8,sigreg_seed42-torchao-int8,11,384640,ok

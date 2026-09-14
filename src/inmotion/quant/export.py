@@ -50,9 +50,9 @@ from inmotion.models import registry as reg
 from inmotion.models.adopt import resolve_model
 from inmotion.models.wrappers import strip_prefix
 from inmotion.quant.evaluate import BASELINE_DATASET, load_split
-from inmotion.quant.model import _is_quantizable, apply, apply_cast, quantize_tensor
+from inmotion.quant.model import _is_quantizable, apply, apply_cast
 from inmotion.quant.packing import fold_bias_into_zero_point, pack
-from inmotion.quant.spec import FLOAT_PRECISIONS, QuantSpec
+from inmotion.quant.spec import FLOAT_PRECISIONS
 from inmotion.quant.spec import resolve as resolve_spec
 
 ARTIFACT_VERSION = 1
@@ -225,11 +225,181 @@ def _is_transformer(model: torch.nn.Module) -> bool:
     return encoder is not None and hasattr(encoder, "transformer")
 
 
+def dequantize_artifact(meta: dict, arrays: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    """The float weights an artifact stands for: `(u - zero_point) * scale`.
+
+    The artifact's inverse, and the only place the stored bias is undone. The
+    codes are stored biased by `2**(bits-1)` and the zero point folded to match,
+    so the subtract cancels both.
+    """
+    out: dict[str, np.ndarray] = {}
+    for name, entry in meta["tensors"].items():
+        if not entry.get("quantized"):
+            out[name] = arrays[name]
+            continue
+        shape = tuple(entry["shape"])
+        scale_shape = tuple(entry["scale_shape"])
+        codes = arrays[f"{name}.q"].reshape(shape).astype(np.float32)
+        zero_point = arrays[f"{name}.zp"].reshape(scale_shape).astype(np.float32)
+        scale = arrays[f"{name}.scale"].reshape(scale_shape).astype(np.float32)
+        out[name] = ((codes - zero_point) * scale).reshape(shape)
+    return out
+
+
+def rebuild_state_dict(
+    model: torch.nn.Module,
+    weights: dict[str, np.ndarray],
+    prefix: str | None,
+) -> dict[str, torch.Tensor]:
+    """The model's OWN state dict, from artifact-shaped tensors.
+
+    Three of the exporter's transforms have to be undone, and each is exact:
+
+      - the name prefix (`TupleWrap` nests SIGReg under `m.`),
+      - `_split_qkv`, which sliced `in_proj_weight` into q/k/v rows,
+      - weight-norm folding, whose inverse is `g = ||w||`, `v = w / ||w||`,
+        because `g * v / ||v||` returns `w` exactly.
+
+    Buffers are included: BatchNorm's running statistics are not parameters, and
+    an artifact without them loads into nothing usable.
+    """
+    lookup = {f"{prefix}{k}" if prefix else k: v for k, v in weights.items()}
+    every = [(n, p) for n, p in model.named_parameters()] + [
+        (n, b) for n, b in model.named_buffers()
+    ]
+    # The exporter drops training bookkeeping rather than shipping it, so the
+    # rebuild drops it too or it looks like a missing tensor.
+    every = [(n, t) for n, t in every if not any(s in n for s in _SKIP_BUFFERS)]
+    known = {name for name, _ in every}
+
+    state: dict[str, torch.Tensor] = {}
+    for name, param in every:
+        if name.endswith("self_attn.in_proj_weight"):
+            head = name[: -len("in_proj_weight")]
+            state[name] = torch.from_numpy(
+                np.concatenate([lookup[f"{head}{t}.weight"] for t in ("q", "k", "v")], axis=0)
+            )
+        elif name.endswith("self_attn.in_proj_bias"):
+            head = name[: -len("in_proj_bias")]
+            state[name] = torch.from_numpy(
+                np.concatenate([lookup[f"{head}{t}.bias"] for t in ("q", "k", "v")], axis=0)
+            )
+        elif name.endswith((".weight_g", ".weight_v")):
+            continue  # rebuilt below, once the folded weight is known
+        elif name in lookup:
+            state[name] = torch.from_numpy(lookup[name])
+
+    for name, param in model.named_parameters():
+        if not name.endswith(".weight_g"):
+            continue
+        folded = lookup.get(name[: -len("weight_g")] + "weight")
+        if folded is None:
+            continue
+        tensor = torch.from_numpy(folded)
+        norm = tensor.norm(dim=0, keepdim=True).clamp(min=1e-12)
+        state[name] = norm.reshape(param.shape)
+        state[name[: -len("weight_g")] + "weight_v"] = tensor / norm
+
+    missing = known - set(state)
+    if missing:
+        raise ValueError(f"could not rebuild {len(missing)} tensors, e.g. {sorted(missing)[:3]}")
+    return state
+
+
+def model_with_producer(model_name: str, producer: str, quant: str | None):
+    """The model carrying a producer's quantization in its weights.
+
+    The golden vectors must come from the artifact's own weights, or the parity
+    check reports quantization error as a port bug. This lays the model out
+    exactly as the artifact does — folded weight-norm, split QKV, stripped
+    prefix — quantizes each weight with the producer, and puts the result back
+    through `rebuild_state_dict`.
+
+    `rebuild_state_dict` is needed despite per-channel quantization commuting
+    with the QKV split (verified: identical codes and scales): weight-norm
+    folding does NOT commute, and its inverse is what turns a folded weight back
+    into a `weight_g`/`weight_v` pair.
+    """
+    from inmotion.quant.producers import PRODUCERS
+
+    spec_obj = resolve_model(model_name)
+    model = reg.load(spec_obj, strict=True).eval()
+    implementation = PRODUCERS[producer]()
+    scheme = quant or implementation.schemes[0]
+
+    raw = _fold_weight_norm(model)
+    _split_qkv(raw, model)
+    if spec_obj.prefix:
+        raw = strip_prefix(raw, spec_obj.prefix)
+
+    for name, weight in list(raw.items()):
+        if not _is_quantizable(name, torch.from_numpy(weight)):
+            continue
+        produced = implementation.quantize(weight, scheme)
+        scale = produced.scale.astype(np.float32)
+        zero_point = produced.zero_point.astype(np.float32)
+        rebuilt = (produced.codes.astype(np.float32) - zero_point) * scale
+        raw[name] = rebuilt.reshape(weight.shape)
+
+    model.load_state_dict(rebuild_state_dict(model, raw, spec_obj.prefix), strict=True)
+    return model.eval()
+
+
+def resolve_producer(producer: str, quant: str | None):
+    """The per-weight quantizer and the `quant` metadata block for a producer.
+
+    One code path serves every producer: they differ in how a weight is
+    quantized, not in how an artifact is laid out. `in-house` goes through the
+    model-level spec, the others are applied weight by weight because their
+    module-level pipelines cannot run on these architectures.
+
+    A scheme the runtime cannot read is refused here rather than written, with
+    the measured reason, because an artifact that loads and computes the wrong
+    thing is worse than one that does not exist.
+    """
+    from inmotion.quant.producers import PRODUCERS, InHouseProducer
+    from inmotion.quant.spec import resolve as resolve_spec
+
+    if producer == "in-house":
+        spec = resolve_spec(quant) if quant else None
+        if spec is None:
+            return None, None, None
+        implementation = InHouseProducer(spec)
+        return (
+            (lambda weight: implementation.quantize(weight, quant)),
+            spec.to_dict(),
+            quant,
+        )
+
+    if producer not in PRODUCERS:
+        raise ValueError(f"unknown producer {producer!r}; known: {', '.join(sorted(PRODUCERS))}")
+    implementation = PRODUCERS[producer]()
+    scheme = quant or implementation.schemes[0]
+    if scheme not in implementation.schemes:
+        raise ValueError(
+            f"{producer} has no scheme {scheme!r}; known: {', '.join(implementation.schemes)}"
+        )
+    if not implementation.expressible(scheme):
+        raise ValueError(
+            f"{producer} {scheme} cannot be written as a runtime artifact: its "
+            f"codebook is not affine (residual "
+            f"{implementation.residual(scheme):.4f} against tolerance "
+            f"{implementation.scheme_meta(scheme)['affine_tolerance']}), and the "
+            f"runtime dequantizes every scheme as (u - zero_point) * scale."
+        )
+    return (
+        (lambda weight: implementation.quantize(weight, scheme)),
+        implementation.scheme_meta(scheme),
+        scheme,
+    )
+
+
 def export(
     model_name: str,
     out_dir: Path,
     *,
     quant: str | None = None,
+    producer: str = "in-house",
     seed: int = 42,
 ) -> ExportReport:
     """Write ``model_name`` as a portable artifact directory."""
@@ -247,7 +417,7 @@ def export(
         # prefix, so nothing is renamed by hand.
         raw = strip_prefix(raw, spec_obj.prefix)
 
-    quant_spec: QuantSpec | None = resolve_spec(quant) if quant else None
+    quantize_weight, quant_meta, resolved_scheme = resolve_producer(producer, quant)
     tensors: dict[str, np.ndarray] = {}
     index: dict[str, dict[str, object]] = {}
 
@@ -255,30 +425,30 @@ def export(
     for name in sorted(raw):
         array = raw[name]
         is_weight = _is_quantizable(name, torch.from_numpy(array))
-        if quant_spec is not None and is_weight:
-            qt, _ = quantize_tensor(torch.from_numpy(array), quant_spec)
+        if quantize_weight is not None and is_weight:
+            produced = quantize_weight(array)
             tensors[f"{name}.q"] = pack(
-                qt.q.ravel(), quant_spec.bits, symmetric=quant_spec.symmetric
+                produced.codes.ravel(), produced.bits, symmetric=produced.symmetric
             )
-            tensors[f"{name}.scale"] = qt.scale.astype(np.float32).ravel()
+            tensors[f"{name}.scale"] = produced.scale.astype(np.float32).ravel()
             tensors[f"{name}.zp"] = fold_bias_into_zero_point(
-                qt.zero_point.ravel(),
-                quant_spec.bits,
-                symmetric=quant_spec.symmetric,
+                produced.zero_point.ravel(),
+                produced.bits,
+                symmetric=produced.symmetric,
             ).astype(np.int32)
             index[name] = {
                 "quantized": True,
-                # The *original* shape, as `TensorInfo.shape` promises. `qt.shape`
-                # is the flattened quantization view (a Conv1d (out, in, k) becomes
-                # (out, in*k) under per-group), and recording that made a 3-D
-                # weight load as a matrix.
+                # The *original* shape, as `TensorInfo.shape` promises. The codes
+                # are the flattened quantization view (a Conv1d (out, in, k)
+                # becomes (out, in*k) under per-group), and recording that made a
+                # 3-D weight load as a matrix.
                 "shape": list(array.shape),
-                "bits": quant_spec.bits,
-                "granularity": quant_spec.granularity.value,
-                "group_size": quant_spec.group_size,
-                "axis": quant_spec.axis,
-                "n_values": int(qt.q.size),
-                "scale_shape": list(qt.scale.shape),
+                "bits": produced.bits,
+                "granularity": produced.granularity.value,
+                "group_size": (quant_meta or {}).get("group_size", 32),
+                "axis": produced.axis,
+                "n_values": int(produced.codes.size),
+                "scale_shape": list(produced.scale.shape),
             }
             quantized_count += 1
         else:
@@ -304,7 +474,7 @@ def export(
         "seq_len": 10,
         "in_channels": 18 if spec_obj.rich else 4,
         "num_classes": 4,
-        "quant": quant_spec.to_dict() if quant_spec else None,
+        "quant": quant_meta,
         "eps": {"layernorm": 1e-5, "batchnorm": 1e-5},
         "tensors": index,
         "export": {"seed": seed, "source_git": _git_sha()},
@@ -318,7 +488,7 @@ def export(
         quantized_tensors=quantized_count,
         total_bytes=total,
         weights_bytes=weights_path.stat().st_size,
-        mode=quant or "fp32",
+        mode=(f"{producer}/{resolved_scheme}" if producer != "in-house" else (quant or "fp32")),
     )
 
 
@@ -340,6 +510,7 @@ def write_golden(
     out_dir: Path,
     *,
     quant: str | None = None,
+    producer: str = "in-house",
     n_samples: int = 16,
     dataset: Path | None = None,
     seed: int = 42,
@@ -362,7 +533,9 @@ def write_golden(
     X, _y, test_idx, classes = load_split(model_name, path, seed)
 
     model = reg.load(spec_obj, strict=True).eval()
-    if quant is not None:
+    if producer != "in-house":
+        model = model_with_producer(model_name, producer, quant)
+    elif quant is not None:
         if quant in FLOAT_PRECISIONS:
             model, _ = apply_cast(model, quant)
         else:

@@ -40,6 +40,23 @@ Three producers write here, and they are named apart:
 <model>-bnb-nf4 | -bnb-fp4 | -bnb-int8         bitsandbytes
 ```
 
+The quantizers are package code, not scripts: `inmotion.quant.producers` holds
+all three behind one interface, and the CLI is the way in.
+
+```bash
+inmotion quantize producers                      # what exists, and what is readable
+inmotion quantize export MODEL --producer torch-ao --format int8 --out DIR
+inmotion quantize export MODEL --producer bitsandbytes --format nf4 --out DIR   # refused
+```
+
+A producer answers three questions per weight: the codes, the scale and zero
+point, and whether the runtime can read the result. The third is **measured** —
+`affine_residual` fits a line through the scheme's own codebook — because the
+runtime dequantizes everything as `(u - zero_point) * scale`. An inexpressible
+scheme is refused at export with that number rather than written, since an
+artifact that loads and computes the wrong thing is worse than one that does not
+exist.
+
 The in-house quantizer writes 45 (five models x nine precisions), torch.ao 5 and
 bitsandbytes 15. `artifacts/MANIFEST.md` records what each producer gives, and
 `results/campaign/approach_comparison.csv` puts them side by side on accuracy,

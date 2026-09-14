@@ -24,14 +24,12 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import torch
 from safetensors.numpy import load_file
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 
-sys.path.insert(0, str(HERE))
-from export_torch_ao import dequantize_artifact, rebuild_state_dict  # noqa: E402
+from inmotion.quant.export import dequantize_artifact, rebuild_state_dict  # noqa: E402
 
 
 def score(model, x: np.ndarray, y: np.ndarray, test_idx: np.ndarray) -> float:
@@ -133,12 +131,14 @@ def main() -> int:
                 }
             )
 
-        # bitsandbytes: recomputed from the fp32 weights rather than rebuilt
-        # from stored state. The quantization is deterministic, so re-running it
-        # gives the same tensors the artifact holds, and bnb's QuantState is not
-        # something to reassemble by hand from a manifest.
-        import bitsandbytes.functional as BF
+        # bitsandbytes: recomputed from the fp32 weights through the package's
+        # producer, rather than rebuilt from stored state. The quantization is
+        # deterministic, so this gives the same tensors the artifact holds, and
+        # bnb's QuantState is not something to reassemble by hand from a
+        # manifest.
+        from inmotion.quant.producers import BitsAndBytesProducer
 
+        bnb_producer = BitsAndBytesProducer()
         fp32_arrays = load_file(str(args.artifacts / f"{model}-fp32" / "model.safetensors"))
         for scheme in ("nf4", "fp4", "int8"):
             bnb_dir = args.artifacts / f"{model}-bnb-{scheme}"
@@ -149,15 +149,10 @@ def main() -> int:
             # of the model comes from the fp32 artifact.
             weights: dict[str, np.ndarray] = dict(fp32_arrays)
             for name in names:
-                weight = torch.from_numpy(fp32_arrays[name].astype(np.float32))
-                if scheme in ("nf4", "fp4"):
-                    packed, state = BF.quantize_4bit(weight, quant_type=scheme)
-                    rebuilt = BF.dequantize_4bit(packed, state).float()
-                else:
-                    blocksize = int(weight.shape[-1])
-                    packed, state = BF.quantize_blockwise(weight, blocksize=blocksize)
-                    rebuilt = BF.dequantize_blockwise(packed, state).float()
-                weights[name] = rebuilt.reshape(weight.shape).numpy()
+                _stored, rebuilt = bnb_producer.store_arrays(
+                    fp32_arrays[name].astype(np.float32), scheme
+                )
+                weights[name] = rebuilt
             rows.append(
                 {
                     "approach": "bitsandbytes",
