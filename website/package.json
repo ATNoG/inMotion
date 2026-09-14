@@ -3,11 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "sync-docs": "node scripts/sync-docs.mjs",
+    "dev": "bun run sync-docs && astro dev",
+    "build": "bun run sync-docs && astro build",
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "6.3.7"
+    "@astrojs/starlight": "^0.42.0",
+    "astro": "^7.3.2"
   }
 }

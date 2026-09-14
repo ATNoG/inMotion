@@ -88,6 +88,13 @@ const currentPath = Astro.url.pathname;
               { active: currentPath.startsWith("/inMotion/publications") },
             ]}>Publications</a
           >
+          <a
+            href="/inMotion/docs/"
+            class:list={[
+              "nav-link",
+              { active: currentPath.startsWith("/inMotion/docs") },
+            ]}>Docs</a
+          >
           <button
             class="theme-toggle"
             id="theme-toggle"
