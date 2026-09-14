@@ -9,6 +9,9 @@ number is reproducible rather than a one-off someone typed.
     uv run python results/campaign/measure_router.py --host wave-router \\
         --remote /mnt/extra/cargo/inmotion/campaign --out results/campaign
 
+SENTINELS. A value this device cannot supply is written as -1, never as an
+empty cell, so every column stays numeric. Energy is the one that applies here.
+
 CPU PERCENTAGE. /proc counts CPU over the whole process, so the divisor must be
 the whole process too — loading the artifact, the warmup and the timed loop. The
 binary reports that as `total_ms`; an earlier version estimated it from the
@@ -58,6 +61,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="wave-router")
     parser.add_argument("--remote", default="/mnt/extra/cargo/inmotion/campaign")
+    parser.add_argument(
+        "--remote-artifacts",
+        default="artifacts",
+        help="Artifact directory name on the router, inside --remote.",
+    )
     parser.add_argument("--out", type=Path, default=HERE)
     parser.add_argument("--iterations", type=int, default=200)
     parser.add_argument("--warmup", type=int, default=30)
@@ -68,12 +76,20 @@ def main() -> int:
     print(f"measuring on {args.host} ...")
     raw = ssh(
         args.host,
-        f"cd {args.remote} && sh router-measure.sh hpo-art {args.iterations} {args.warmup}",
+        f"cd {args.remote} && sh router-measure.sh {args.remote_artifacts} "
+        f"{args.iterations} {args.warmup}",
     )
     rows = parse_rows(raw)
 
+    sys.path.insert(0, str(HERE))
+    from measure_device import parse_artifact
+
     out_rows = []
     for row in rows:
+        # The sampler reports model and precision separately, which is lossy for
+        # a producer suffix; rebuilding the directory name and parsing it the
+        # same way the local harness does keeps the model column joinable.
+        row["model"], row["precision"] = parse_artifact(f"{row['model']}-{row['precision']}")
         cpu_seconds = float(row["cpu_ticks"]) / USER_HZ
         process_window_s = float(row["total_ms"]) / 1000.0
         out_rows.append(
@@ -92,8 +108,11 @@ def main() -> int:
                 "flops_per_s": "",
                 "peak_rss_mb": round(float(row["peak_rss_kb"]) / 1024.0, 2),
                 "cpu_percent": round(cpu_seconds / process_window_s * 100.0, 1),
-                "energy_j": "",
-                "energy_per_infer_mj": "",
+                # -1: the J3455 has no powercap domain and no RAPL of any kind,
+                # so this is not a permissions matter — the value does not exist
+                # on that hardware at any privilege level.
+                "energy_j": -1,
+                "energy_per_infer_mj": -1,
             }
         )
         print(
@@ -127,7 +146,8 @@ def main() -> int:
         for concurrency in (1, 2, 4):
             raw = ssh(
                 args.host,
-                f"cd {args.remote} && ./inmotion-infer bench --artifact hpo-art/{artifact} "
+                f"cd {args.remote} && ./inmotion-infer bench "
+                f"--artifact {args.remote_artifacts}/{artifact} "
                 f"--concurrency {concurrency} --seconds {args.seconds} --json",
                 timeout=300,
             )
@@ -143,8 +163,11 @@ def main() -> int:
             scaling.append(
                 {
                     "device": args.device,
-                    "model": artifact.rsplit("-", 1)[0],
-                    "precision": artifact.rsplit("-", 1)[1],
+                    # Same parse as everywhere else: a producer suffix belongs
+                    # to the precision, or the model column grows a phantom
+                    # model called `lejepa_ft_seed42-torchao`.
+                    "model": parse_artifact(artifact)[0],
+                    "precision": parse_artifact(artifact)[1],
                     "concurrency": concurrency,
                     "seconds": data["seconds"],
                     "iterations": data["iterations"],

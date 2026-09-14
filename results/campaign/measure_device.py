@@ -170,8 +170,23 @@ def load_flops() -> dict[str, float]:
         return {row["model"]: float(row["flops"]) for row in csv.DictReader(handle)}
 
 
+#: Producer-specific artifact suffixes that are not `<model>-<precision>`. The
+#: store holds several quantizers, and their directories have to stay
+#: distinguishable in the output without corrupting the model name, which is
+#: what the FLOPs table is joined on.
+PRODUCER_SUFFIXES = ("-torchao-int8",)
+
+
 def parse_artifact(name: str) -> tuple[str, str]:
-    """`lejepa_ft_seed42-q4` -> ("lejepa_ft_seed42", "q4")."""
+    """`lejepa_ft_seed42-q4` -> ("lejepa_ft_seed42", "q4").
+
+    A producer suffix becomes part of the PRECISION, not of the model:
+    `lejepa_ft_seed42-torchao-int8` -> ("lejepa_ft_seed42", "torchao-int8"),
+    so the row stays distinct from the in-house int8 and still joins to FLOPs.
+    """
+    for suffix in PRODUCER_SUFFIXES:
+        if name.endswith(suffix):
+            return name[: -len(suffix)], suffix[1:]
     model, _, precision = name.rpartition("-")
     return (model or name), (precision or "fp32")
 
@@ -187,7 +202,15 @@ def main() -> int:
     parser.add_argument("--rapl", type=Path, default=DEFAULT_RAPL)
     args = parser.parse_args()
 
-    artifacts = sorted(p for p in args.artifacts.iterdir() if (p / "meta.json").is_file())
+    # Only runtime artifacts: `model.safetensors` is what the loader reads.
+    # The store also holds bitsandbytes and torch.ao directories, and the bnb
+    # ones carry no runtime metadata at all — globbing on meta.json alone tried
+    # to benchmark them and aborted the whole run.
+    artifacts = sorted(
+        p
+        for p in args.artifacts.iterdir()
+        if (p / "meta.json").is_file() and (p / "model.safetensors").is_file()
+    )
     if not artifacts:
         print(f"no artifacts under {args.artifacts}", file=sys.stderr)
         return 1
@@ -227,13 +250,17 @@ def main() -> int:
                 ),
                 "peak_rss_mb": round(float(result["peak_rss_mb"]), 2),
                 "cpu_percent": round(float(result["cpu_percent"]), 1),
+                # -1 is the sentinel for "this device cannot supply it", so the
+                # column stays numeric. An empty cell makes a numeric column
+                # silently non-numeric and forces every reader to special-case
+                # it. This counter is root-only here; the router has none at all.
                 "energy_j": (
-                    round(float(result["energy_j"]), 4) if result["energy_j"] is not None else ""
+                    round(float(result["energy_j"]), 4) if result["energy_j"] is not None else -1
                 ),
                 "energy_per_infer_mj": (
                     round(float(result["energy_j"]) / bench["iterations"] * 1000.0, 4)
                     if result["energy_j"] is not None
-                    else ""
+                    else -1
                 ),
             }
         )
@@ -251,7 +278,7 @@ def main() -> int:
         writer.writerows(rows)
     print(f"\nwrote {args.out} ({len(rows)} rows)")
     if all(row["energy_j"] == "" for row in rows):
-        print("energy column is empty: RAPL is root-only. Re-run under sudo to fill it.")
+        print("energy is -1: the counter is root-only here. Re-run under sudo to fill it.")
     return 0
 
 

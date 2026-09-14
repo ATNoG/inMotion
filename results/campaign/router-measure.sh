@@ -19,8 +19,13 @@ echo "model,precision,min_ms,median_ms,p95_ms,max_ms,throughput_per_s,wall_ms,to
 
 for dir in "$ROOT"/*/; do
   name=$(basename "$dir")
-  model=${name%-*}
-  prec=${name##*-}
+  # Producer suffixes are part of the PRECISION, not the model: the model name
+  # is what the FLOPs table is joined on, and `${name%-*}` would turn
+  # `lejepa_ft_seed42-torchao-int8` into a model called `lejepa_ft_seed42-torchao`.
+  case "$name" in
+    *-torchao-int8) model=${name%-torchao-int8}; prec=torchao-int8 ;;
+    *) model=${name%-*}; prec=${name##*-} ;;
+  esac
   json=/tmp/bench.json
   $BIN bench --artifact "$dir" --iterations "$ITER" --warmup "$WARM" --json > "$json" 2>/dev/null &
   pid=$!

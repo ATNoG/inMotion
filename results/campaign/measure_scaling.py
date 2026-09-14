@@ -31,7 +31,23 @@ REPO = HERE.parent.parent
 LEVELS = (1, 2, 4, 8)
 
 
+#: Producer-specific artifact suffixes that are not `<model>-<precision>`. The
+#: store holds several quantizers, and their directories have to stay
+#: distinguishable in the output without corrupting the model name, which is
+#: what the FLOPs table is joined on.
+PRODUCER_SUFFIXES = ("-torchao-int8",)
+
+
 def parse_artifact(name: str) -> tuple[str, str]:
+    """`lejepa_ft_seed42-q4` -> ("lejepa_ft_seed42", "q4").
+
+    A producer suffix becomes part of the PRECISION, not of the model:
+    `lejepa_ft_seed42-torchao-int8` -> ("lejepa_ft_seed42", "torchao-int8"),
+    so the row stays distinct from the in-house int8 and still joins to FLOPs.
+    """
+    for suffix in PRODUCER_SUFFIXES:
+        if name.endswith(suffix):
+            return name[: -len(suffix)], suffix[1:]
     model, _, precision = name.rpartition("-")
     return (model or name), (precision or "fp32")
 
@@ -47,7 +63,11 @@ def main() -> int:
     args = parser.parse_args()
 
     levels = [int(x) for x in args.levels.split(",") if x.strip()]
-    artifacts = sorted(p for p in args.artifacts.iterdir() if (p / "meta.json").is_file())
+    artifacts = sorted(
+        p
+        for p in args.artifacts.iterdir()
+        if (p / "meta.json").is_file() and (p / "model.safetensors").is_file()
+    )
     if not artifacts:
         print(f"no artifacts under {args.artifacts}", file=sys.stderr)
         return 1

@@ -215,10 +215,15 @@ is a measurement result, not an omission:
           --device this-pc --out results/campaign/perf_device_this-pc.csv
 
 * **The router**: has **no `powercap` at all** — no RAPL, no energy counter of any
-  kind, on a busybox kernel 5.15. Its energy column cannot be filled in software
-  under any privilege; it needs external metering.
+  kind, on a busybox kernel 5.15. Its `-1` is not a permissions matter like the
+  PC's: the value does not exist on that hardware at any privilege level, and it
+  needs external metering.
 
-Reporting 0 would have been wrong in a way that survives into a paper.
+Reporting 0 would have been wrong in a way that survives into a paper, and a blank
+cell would have been wrong in a way that breaks a pipeline. Every other column in
+every CSV here is measured; no row carries a blank. The same convention covers the
+in-house weight error in `approach_comparison.csv`, except that one IS obtainable
+and is read from the campaign sweep rather than sentineled.
 
 ## 7. Scaling and saturation
 

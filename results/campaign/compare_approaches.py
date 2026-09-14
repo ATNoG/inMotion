@@ -66,6 +66,16 @@ def main() -> int:
         int8_meta = json.loads((args.artifacts / f"{model}-int8" / "meta.json").read_text())
         names = [n for n, e in int8_meta["tensors"].items() if e.get("quantized")]
 
+        # The in-house weight error is already recorded by the campaign sweep,
+        # so it is read rather than sentineled: it IS obtainable.
+        sweep_error = None
+        sweep = HERE / "sweep_hpo_models.csv"
+        if sweep.exists():
+            with sweep.open(newline="") as handle:
+                for row in csv.DictReader(handle):
+                    if row["model"] == model and row["precision"] == "int8":
+                        sweep_error = round(float(row["max_weight_error"]), 6)
+
         base_model = reg.load(spec_obj, strict=True).eval()
         checkpoint = str(models_dir / f"{model}.pt")
         x, y, test_idx, _ = load_split(checkpoint, resolve_path(BASELINE_DATASET), 42)
@@ -87,7 +97,7 @@ def main() -> int:
                     for p in (args.artifacts / f"{model}-int8").iterdir()
                     if p.is_file()
                 ),
-                "relative_error": "",
+                "relative_error": sweep_error if sweep_error is not None else -1,
                 "mcc": fp32_mcc,
                 "fp32_mcc": fp32_mcc,
                 "runtime_loadable": True,

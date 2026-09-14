@@ -367,3 +367,53 @@ def test_cli_eval_defaults_to_dataset_csv(tmp_path) -> None:
         rows = list(csv.DictReader(handle))
     assert [row["dataset"] for row in rows] == [EV.BASELINE_DATASET]
     assert float(rows[0]["mcc"]) == EV.BASELINE_MCC["lejepa"]
+
+
+def test_committed_campaign_csvs_have_no_empty_cells() -> None:
+    """A value a device cannot supply is `-1`, never a blank.
+
+    A blank cell makes a numeric column silently non-numeric and forces every
+    reader to special-case it; `-1` is unmistakably not a measurement, and `0`
+    would be a false claim that the run used nothing. This pins the convention so
+    a future harness cannot quietly reintroduce blanks.
+    """
+    from inmotion.data.paths import REPO_ROOT
+
+    campaign = REPO_ROOT / "results" / "campaign"
+    offenders: list[str] = []
+    for path in sorted(campaign.glob("*.csv")):
+        with path.open(newline="") as handle:
+            for lineno, row in enumerate(csv.DictReader(handle), start=2):
+                for column, value in row.items():
+                    if str(value).strip() == "":
+                        offenders.append(f"{path.name}:{lineno} {column}")
+    assert not offenders, f"blank values in committed CSVs: {offenders[:5]}"
+
+    energy = campaign / "perf_device_router.csv"
+    if energy.exists():
+        with energy.open(newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        # The J3455 has no RAPL: every row must say so with the sentinel.
+        assert {row["energy_j"] for row in rows} == {"-1"}
+
+
+def test_no_committed_csv_invents_a_model_name() -> None:
+    """A producer suffix belongs to the precision, not to the model.
+
+    The store holds several quantizers, and splitting a directory name as
+    `<model>-<precision>` on the LAST hyphen turns `lejepa_ft_seed42-torchao-int8`
+    into a model called `lejepa_ft_seed42-torchao`. That names a model that does
+    not exist and breaks the FLOPs join, which is keyed on the real name. Two
+    harnesses had that bug; this keeps it from coming back.
+    """
+    from inmotion.data.paths import REPO_ROOT
+
+    known_suffixes = ("-torchao", "-bnb")
+    offenders: list[str] = []
+    for path in sorted((REPO_ROOT / "results" / "campaign").glob("*.csv")):
+        with path.open(newline="") as handle:
+            for lineno, row in enumerate(csv.DictReader(handle), start=2):
+                model = str(row.get("model", ""))
+                if any(model.endswith(s) for s in known_suffixes):
+                    offenders.append(f"{path.name}:{lineno} {model}")
+    assert not offenders, f"model names carrying a producer suffix: {offenders[:5]}"
