@@ -33,10 +33,22 @@ def _parse_formats(value: str | None) -> tuple[str, ...]:
 
         return tuple(DEFAULT_PRECISIONS)
     chosen = tuple(f.strip() for f in value.split(",") if f.strip())
-    unknown = [f for f in chosen if f not in ALL_FORMATS]
+    # A preset, a cast precision, or the grammar q<bits>[_pt|_pc|_pg<N>][_asym],
+    # so the whole in-house space is reachable without enumerating names.
+    from inmotion.quant.producers import parse_in_house_scheme
+
+    unknown = []
+    for candidate in chosen:
+        if candidate in FLOAT_PRECISIONS:
+            continue
+        try:
+            parse_in_house_scheme(candidate)
+        except ValueError:
+            unknown.append(candidate)
     if unknown:
         raise typer.BadParameter(
-            f"unknown format(s) {unknown}; choose from {', '.join(ALL_FORMATS)}"
+            f"unknown format(s) {unknown}; choose from {', '.join(ALL_FORMATS)} "
+            f"or the grammar q<bits>[_pt|_pc|_pg<N>][_asym]"
         )
     return chosen
 
@@ -155,13 +167,14 @@ def export_cmd(
     from inmotion.quant.producers import PRODUCERS
 
     if producer == "in-house":
-        if format not in ALL_FORMATS:
-            typer.secho(
-                f"unknown format {format!r}; choose from {', '.join(ALL_FORMATS)}",
-                fg=typer.colors.RED,
-                err=True,
-            )
-            raise typer.Exit(code=2)
+        if format not in FLOAT_PRECISIONS:
+            from inmotion.quant.producers import parse_in_house_scheme
+
+            try:
+                parse_in_house_scheme(format)
+            except ValueError as exc:
+                typer.secho(str(exc), fg=typer.colors.RED, err=True)
+                raise typer.Exit(code=2) from exc
     elif producer not in PRODUCERS:
         typer.secho(
             f"unknown producer {producer!r}; choose from {', '.join(sorted(PRODUCERS))}",
@@ -233,6 +246,14 @@ def evaluate(
     out: Annotated[Path, typer.Option("--out", help="Where to write the results CSV.")] = Path(
         "results/quant/sweep_dataset.csv"
     ),
+    producer: Annotated[
+        str,
+        typer.Option(
+            "--producer",
+            help="Measure a producer's schemes instead of the in-house presets: "
+            "in-house, torch-ao or bitsandbytes. See `quantize producers`.",
+        ),
+    ] = "in-house",
     allow_unrecorded: Annotated[
         bool,
         typer.Option(
@@ -252,13 +273,36 @@ def evaluate(
     """
     from inmotion.quant.evaluate import check_baseline, sweep, write_csv
 
-    try:
-        chosen_formats = _parse_formats(formats)
-    except typer.BadParameter as exc:
-        typer.secho(str(exc), fg=typer.colors.RED, err=True)
-        raise typer.Exit(code=2) from exc
+    if producer == "in-house":
+        try:
+            chosen_formats = _parse_formats(formats)
+        except typer.BadParameter as exc:
+            typer.secho(str(exc), fg=typer.colors.RED, err=True)
+            raise typer.Exit(code=2) from exc
+    else:
+        from inmotion.quant.producers import PRODUCERS
 
-    rows = sweep(_parse_models(models), chosen_formats, dataset=data, seed=seed)
+        if producer not in PRODUCERS:
+            typer.secho(
+                f"unknown producer {producer!r}; choose from {', '.join(sorted(PRODUCERS))}",
+                fg=typer.colors.RED,
+                err=True,
+            )
+            raise typer.Exit(code=2)
+        # The producer knows its own schemes; the presets are not a valid list.
+        chosen_formats = (
+            list(PRODUCERS[producer].schemes)
+            if formats in (None, "all", "")
+            else [f.strip() for f in str(formats).split(",") if f.strip()]
+        )
+
+    rows = sweep(
+        _parse_models(models),
+        chosen_formats,
+        dataset=data,
+        seed=seed,
+        producer=producer,
+    )
     if not rows:
         typer.secho("no measurements produced", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)

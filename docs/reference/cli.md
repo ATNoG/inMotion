@@ -315,6 +315,7 @@ Options:
 - `--data` - Dataset CSV; default: dataset.csv.
 - `--seed` (default: `42`) - Split seed.
 - `--out` (default: `results/quant/sweep_dataset.csv`) - Where to write the results CSV.
+- `--producer` (default: `in-house`) - Measure a producer's schemes instead of the in-house presets: in-house, torch-ao or bitsandbytes. See `quantize producers`.
 - `--allow-unrecorded-baseline` (default: `False`) - Accept a model with no recorded fp32 baseline, such as a checkpoint from another training run. A recorded model that has MOVED still fails.
 
 ### `quantize export`

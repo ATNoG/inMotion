@@ -20,6 +20,7 @@ from inmotion.quant.producers import (
     InHouseProducer,
     TorchAOProducer,
     affine_residual,
+    parse_in_house_scheme,
 )
 from inmotion.quant.spec import resolve
 
@@ -48,9 +49,9 @@ def test_in_house_producer_is_the_model_level_quantizer() -> None:
 
 
 def test_torch_ao_producer_is_per_channel_symmetric_int8() -> None:
-    produced = TorchAOProducer().quantize(WEIGHT, "int8")
+    produced = TorchAOProducer().quantize(WEIGHT, "qint8_pc_sym")
     assert produced.bits == 8
-    assert produced.symmetric
+    assert produced.signed_codes
     assert produced.axis == 0
     assert produced.codes.shape == WEIGHT.shape
     assert produced.scale.shape == (WEIGHT.shape[0], 1)
@@ -65,7 +66,7 @@ def test_torch_ao_and_in_house_differ_only_by_the_scale_convention() -> None:
     standard, and the codes differ by at most one level of 255.
     """
     mine = InHouseProducer(resolve("int8")).quantize(WEIGHT, "int8")
-    theirs = TorchAOProducer().quantize(WEIGHT, "int8")
+    theirs = TorchAOProducer().quantize(WEIGHT, "qint8_pc_sym")
 
     ratio = np.ravel(mine.scale) / np.ravel(theirs.scale)
     assert np.allclose(ratio, 127.5 / 127.0, rtol=1e-5)
@@ -110,8 +111,8 @@ def test_per_channel_quantization_commutes_with_the_qkv_split() -> None:
     parts = [fused[i * 128 : (i + 1) * 128] for i in range(3)]
 
     producer = TorchAOProducer()
-    whole = producer.quantize(fused, "int8")
-    split = [producer.quantize(part, "int8") for part in parts]
+    whole = producer.quantize(fused, "qint8_pc_sym")
+    split = [producer.quantize(part, "qint8_pc_sym") for part in parts]
 
     assert np.array_equal(whole.codes, np.concatenate([s.codes for s in split], axis=0))
     assert np.allclose(whole.scale.ravel(), np.concatenate([s.scale.ravel() for s in split]))
@@ -131,3 +132,113 @@ def test_export_rejects_an_unknown_producer() -> None:
 
     with pytest.raises(ValueError, match="unknown producer"):
         resolve_producer("not-a-producer", None)
+
+
+@pytest.mark.parametrize(
+    ("label", "bits", "granularity", "group_size", "symmetric"),
+    [
+        ("int8", 8, "per_channel", 32, True),
+        ("q4", 4, "per_group", 32, True),
+        ("q4_pc", 4, "per_channel", 32, True),
+        ("q4_pt", 4, "per_tensor", 32, True),
+        ("q4_pg128", 4, "per_group", 128, True),
+        ("q4_asym", 4, "per_group", 32, False),
+        ("int8_pt", 8, "per_tensor", 32, True),
+        ("q2_pg16_asym", 2, "per_group", 16, False),
+    ],
+)
+def test_in_house_scheme_grammar(
+    label: str, bits: int, granularity: str, group_size: int, symmetric: bool
+) -> None:
+    """The presets are short forms of a grammar, so the space is not a list.
+
+    `q4` and `q4_pg32` are the same scheme; the whole cross product of bit
+    width, granularity, group size and symmetry is reachable without naming
+    every combination by hand.
+    """
+    spec = parse_in_house_scheme(label)
+    assert spec.bits == bits
+    assert spec.granularity.value == granularity
+    assert spec.group_size == group_size
+    assert spec.symmetric is symmetric
+
+
+def test_in_house_scheme_grammar_rejects_nonsense() -> None:
+    with pytest.raises(ValueError, match="sideways"):
+        parse_in_house_scheme("q4_sideways")
+    with pytest.raises(ValueError, match="unknown in-house scheme"):
+        parse_in_house_scheme("nonsense")
+
+
+def test_torch_ao_covers_the_grid_the_library_supports() -> None:
+    """Read from torch, not from memory: qint8/quint8 x pt/pc x sym/affine.
+
+    `qint32` is accepted by both quantize calls and is not a quantization — it
+    is int32 storage — so it is deliberately absent.
+    """
+    producer = TorchAOProducer()
+    assert set(producer.schemes) == {
+        "qint8_pt_sym",
+        "qint8_pt_affine",
+        "qint8_pc_sym",
+        "qint8_pc_affine",
+        "quint8_pt_affine",
+        "quint8_pc_affine",
+    }
+    for scheme in producer.schemes:
+        produced = producer.quantize(WEIGHT, scheme)
+        dtype, granularity, _qscheme = producer._parse(scheme)
+        assert produced.codes.shape == WEIGHT.shape
+        assert produced.signed_codes is (dtype == "qint8")
+        if granularity.value == "per_tensor":
+            assert produced.scale.shape == ()
+        else:
+            assert produced.scale.shape == (WEIGHT.shape[0], 1)
+
+
+@pytest.mark.parametrize(
+    ("scheme", "kind", "blocksize", "double"),
+    [
+        ("nf4", "nf4", None, False),
+        ("nf4_dq", "nf4", None, True),
+        ("nf4_b128", "nf4", 128, False),
+        ("fp4_b256", "fp4", 256, False),
+        ("int8", "int8", None, False),
+        ("int8_dq", "int8", None, True),
+        ("int8_b128", "int8", 128, False),
+    ],
+)
+def test_bitsandbytes_scheme_names_parse(
+    scheme: str, kind: str, blocksize: int | None, double: bool
+) -> None:
+    """`<kind>[_dq][_b<N>]`, from its own functional signatures.
+
+    An absent block size stays absent here and is resolved where it is used:
+    64 for 4-bit, one row for 8-bit, which only the tensor knows.
+    """
+    parsed_kind, parsed_block, parsed_double = BitsAndBytesProducer._parse(scheme)
+    assert parsed_kind == kind
+    assert parsed_block == blocksize
+    assert parsed_double is double
+
+
+def test_every_producer_can_say_what_it_reconstructs() -> None:
+    """`round_trip` is what the accuracy harness uses, for all three.
+
+    bitsandbytes has no artifact representation, so without this the accuracy
+    path could only measure the producers that can be exported.
+    """
+    cases = [
+        (InHouseProducer(resolve("q4")), "q4"),
+        (InHouseProducer(resolve("int8")), "int8"),
+        (TorchAOProducer(), "qint8_pc_sym"),
+        (TorchAOProducer(), "quint8_pt_affine"),
+    ]
+    pytest.importorskip("bitsandbytes")
+    cases += [(BitsAndBytesProducer(), "nf4"), (BitsAndBytesProducer(), "int8")]
+
+    for producer, scheme in cases:
+        rebuilt = producer.round_trip(WEIGHT, scheme)
+        assert rebuilt.shape == WEIGHT.shape, f"{producer.name} {scheme}"
+        relative = float(np.linalg.norm(rebuilt - WEIGHT) / np.linalg.norm(WEIGHT))
+        assert 0.0 < relative < 0.5, f"{producer.name} {scheme} relative error {relative}"

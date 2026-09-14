@@ -335,11 +335,10 @@ def model_with_producer(model_name: str, producer: str, quant: str | None):
     for name, weight in list(raw.items()):
         if not _is_quantizable(name, torch.from_numpy(weight)):
             continue
-        produced = implementation.quantize(weight, scheme)
-        scale = produced.scale.astype(np.float32)
-        zero_point = produced.zero_point.astype(np.float32)
-        rebuilt = (produced.codes.astype(np.float32) - zero_point) * scale
-        raw[name] = rebuilt.reshape(weight.shape)
+        # `round_trip` rather than `quantize`: every producer can say what its
+        # scheme reconstructs, including bitsandbytes, whose formats have no
+        # artifact representation at all.
+        raw[name] = implementation.round_trip(weight, scheme)
 
     model.load_state_dict(rebuild_state_dict(model, raw, spec_obj.prefix), strict=True)
     return model.eval()
@@ -357,11 +356,14 @@ def resolve_producer(producer: str, quant: str | None):
     the measured reason, because an artifact that loads and computes the wrong
     thing is worse than one that does not exist.
     """
-    from inmotion.quant.producers import PRODUCERS, InHouseProducer
-    from inmotion.quant.spec import resolve as resolve_spec
+    from inmotion.quant.producers import (
+        PRODUCERS,
+        InHouseProducer,
+        parse_in_house_scheme,
+    )
 
     if producer == "in-house":
-        spec = resolve_spec(quant) if quant else None
+        spec = parse_in_house_scheme(quant) if quant else None
         if spec is None:
             return None, None, None
         implementation = InHouseProducer(spec)
@@ -428,13 +430,13 @@ def export(
         if quantize_weight is not None and is_weight:
             produced = quantize_weight(array)
             tensors[f"{name}.q"] = pack(
-                produced.codes.ravel(), produced.bits, symmetric=produced.symmetric
+                produced.codes.ravel(), produced.bits, symmetric=produced.signed_codes
             )
             tensors[f"{name}.scale"] = produced.scale.astype(np.float32).ravel()
             tensors[f"{name}.zp"] = fold_bias_into_zero_point(
                 produced.zero_point.ravel(),
                 produced.bits,
-                symmetric=produced.symmetric,
+                symmetric=produced.signed_codes,
             ).astype(np.int32)
             index[name] = {
                 "quantized": True,

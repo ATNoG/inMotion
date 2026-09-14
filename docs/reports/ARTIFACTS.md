@@ -50,7 +50,47 @@ inmotion quantize export MODEL --producer bitsandbytes --format nf4 --out DIR   
 ```
 
 A producer answers three questions per weight: the codes, the scale and zero
-point, and whether the runtime can read the result. The third is **measured** —
+point, and whether the runtime can read the result.
+
+### Running every scheme
+
+```bash
+D=20-aug/models/exotic/normal-new-ds/full-after-hpo
+M=$D/sigreg_seed42.pt                      # or several, comma-separated
+
+# what exists
+uv run inmotion quantize producers
+uv run inmotion quantize formats
+
+# in-house: the presets AND the grammar q<bits>[_pt|_pc|_pg<N>][_asym]
+uv run inmotion quantize eval --models $M --formats \
+  int8,q1,q2,q3,q4,q5,q6,q8,q4_pc,q4_pt,q4_pg16,q4_pg128,q4_asym,int8_pt,int8_asym \
+  --allow-unrecorded-baseline --out results/quant/sweep_inhouse.csv
+
+# torch.ao: its whole grid (qint8/quint8 x per-tensor/per-channel x sym/affine).
+# With no --formats, a producer sweeps all of its own schemes.
+uv run inmotion quantize eval --models $M --producer torch-ao \
+  --allow-unrecorded-baseline --out results/quant/sweep_torchao.csv
+
+# bitsandbytes: nf4/fp4 with and without double quantization and at three block
+# sizes, plus blockwise int8
+uv run inmotion quantize eval --models $M --producer bitsandbytes \
+  --allow-unrecorded-baseline --out results/quant/sweep_bitsandbytes.csv
+
+# artifacts, for the schemes the runtime can read
+uv run inmotion quantize export $M --out /tmp/art --format q4_pg128
+uv run inmotion quantize export $M --out /tmp/art --producer torch-ao --format qint8_pc_sym
+uv run inmotion quantize export $M --out /tmp/art --producer bitsandbytes --format nf4  # refused
+```
+
+For the whole store at once, the drivers loop it and call the same code:
+
+```bash
+uv run python results/campaign/export_artifacts.py      # in-house, 45 artifacts
+uv run python results/campaign/export_torch_ao.py       # torch.ao, 5
+uv run python results/campaign/export_bitsandbytes.py   # bitsandbytes, 15
+uv run python results/campaign/compare_approaches.py    # the comparison table
+``` The third is **measured** —
 `affine_residual` fits a line through the scheme's own codebook — because the
 runtime dequantizes everything as `(u - zero_point) * scale`. An inexpressible
 scheme is refused at export with that number rather than written, since an

@@ -381,7 +381,7 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 266 lines
+`src/inmotion/quant/evaluate.py` - 344 lines
 
 Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
@@ -408,6 +408,7 @@ Public API:
 
 - class `EvalRow` - One (model, precision) measurement.
 - func `load_split` - Features, labels and test indices, using the training convention.
+- func `measure_producer` - (quantized model, bits, total bytes, quantized bytes, max weight error).
 - func `evaluate` - Measure one (model, precision) pair on the test split.
 - func `check_baseline` - Confirm fp32 reproduces the recorded MCC on the baseline dataset.
 - func `sweep` - Evaluate every (model, precision) pair and optionally write a CSV.
@@ -416,7 +417,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 566 lines
+`src/inmotion/quant/export.py` - 568 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -753,7 +754,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 385 lines
+`src/inmotion/cli/quantize.py` - 429 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 

@@ -40,7 +40,6 @@ from inmotion.models import registry as reg
 from inmotion.models.adopt import resolve_model
 from inmotion.quant.model import apply, apply_cast
 from inmotion.quant.spec import FLOAT_PRECISIONS
-from inmotion.quant.spec import resolve as resolve_spec
 
 #: The one dataset quantization is evaluated on.
 BASELINE_DATASET = "dataset.csv"
@@ -124,10 +123,63 @@ def _metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     }
 
 
+def measure_producer(
+    model_name: str, producer: str, precision: str, model: torch.nn.Module
+) -> tuple[torch.nn.Module, int, int, int, float]:
+    """(quantized model, bits, total bytes, quantized bytes, max weight error).
+
+    Sizes come from writing the artifact to a temporary directory rather than
+    being recomputed here, so a producer's reported footprint is the footprint
+    the store actually holds. Weight error is measured against the unquantized
+    model, whose state dict lines up because `model_with_producer` rebuilds into
+    the model's own structure.
+    """
+    import tempfile
+
+    from inmotion.quant.export import export, model_with_producer
+    from inmotion.quant.producers import PRODUCERS
+
+    implementation = PRODUCERS[producer]()
+    scheme = precision or implementation.schemes[0]
+    bits = int(implementation.scheme_meta(scheme)["bits"])
+    quantized = model_with_producer(model_name, producer, precision)
+
+    if implementation.expressible(scheme):
+        with tempfile.TemporaryDirectory() as tmp:
+            report = export(model_name, Path(tmp), quant=precision, producer=producer)
+        total_bytes, weights_bytes = report.total_bytes, report.weights_bytes
+    else:
+        # No artifact exists to weigh, so this is the producer's own footprint:
+        # its stored arrays plus the tensors it leaves alone, in fp32.
+        from inmotion.quant.export import _fold_weight_norm, _is_quantizable
+
+        raw = _fold_weight_norm(model)
+        stored = 0
+        untouched = 0
+        for name, weight in raw.items():
+            tensor = torch.from_numpy(weight)
+            if _is_quantizable(name, tensor):
+                stored += implementation.stored_bytes(weight, scheme)
+            else:
+                untouched += weight.size * 4
+        total_bytes = stored + untouched
+        weights_bytes = stored
+
+    before = dict(model.state_dict())
+    after = dict(quantized.state_dict())
+    common = [k for k in before if k in after and before[k].shape == after[k].shape]
+    error = max(
+        (float((before[k].float() - after[k].float()).abs().max()) for k in common),
+        default=0.0,
+    )
+    return quantized, bits, total_bytes, weights_bytes, error
+
+
 def evaluate(
     model_name: str,
     precision: str,
     *,
+    producer: str = "in-house",
     dataset: Path | None = None,
     seed: int = 42,
 ) -> EvalRow:
@@ -137,15 +189,40 @@ def evaluate(
     X, y, test_idx, _ = load_split(model_name, path, seed)
 
     model = reg.load(spec, strict=True)
-    if precision in FLOAT_PRECISIONS:
+    if producer != "in-house":
+        quantized, bits, total_bytes, weights_bytes, error = measure_producer(
+            model_name, producer, precision, model
+        )
+        fp32_bytes = sum(p.numel() * 4 for p in model.parameters())
+        report = None
+    elif precision in FLOAT_PRECISIONS:
         quantized, report = apply_cast(model, precision)
     else:
-        quantized, report = apply(model, resolve_spec(precision))
+        # The grammar, not just the presets: `q4_pc`, `q4_pg128`, `q4_asym`.
+        from inmotion.quant.producers import parse_in_house_scheme
+
+        quantized, report = apply(model, parse_in_house_scheme(precision))
 
     preds = _predict(quantized, X[test_idx])
     metrics = _metrics(y[test_idx], preds)
     n_params = sum(p.numel() for p in model.parameters())
 
+    if report is None:
+        return EvalRow(
+            model=spec.name,
+            precision=precision,
+            bits=bits,
+            dataset=path.name,
+            seed=seed,
+            n_test=int(len(test_idx)),
+            total_mb=round(total_bytes / 1e6, 6),
+            weights_mb=round(weights_bytes / 1e6, 6),
+            compression=round(fp32_bytes / total_bytes, 4) if total_bytes else 0.0,
+            max_weight_error=round(error, 6),
+            n_params=n_params,
+            extra={"producer": producer},
+            **metrics,
+        )
     return EvalRow(
         model=spec.name,
         precision=precision,
@@ -218,6 +295,7 @@ def sweep(
     model_names: list[str],
     precisions: tuple[str, ...] = DEFAULT_PRECISIONS,
     *,
+    producer: str = "in-house",
     dataset: Path | None = None,
     seed: int = 42,
     out_csv: Path | None = None,
@@ -227,16 +305,16 @@ def sweep(
     for model_name in model_names:
         for precision in precisions:
             try:
-                row = evaluate(model_name, precision, dataset=dataset, seed=seed)
+                row = evaluate(model_name, precision, producer=producer, dataset=dataset, seed=seed)
                 rows.append(row)
                 print(
-                    f"  {model_name:10s} {precision:5s} mcc={row.mcc:.4f} "
+                    f"  {model_name:34s} {precision:20s} mcc={row.mcc:.4f} "
                     f"acc={row.accuracy:.4f} total={row.total_mb:.3f}MB x{row.compression:.2f}"
                 )
             except FileNotFoundError as exc:
-                print(f"  {model_name:10s} {precision:5s} SKIP: {exc}")
+                print(f"  {model_name:34s} {precision:20s} SKIP: {exc}")
             except Exception as exc:  # noqa: BLE001 - reported, not swallowed
-                print(f"  {model_name:10s} {precision:5s} FAIL {type(exc).__name__}: {exc}")
+                print(f"  {model_name:34s} {precision:20s} FAIL {type(exc).__name__}: {exc}")
 
     if out_csv is not None and rows:
         write_csv(rows, out_csv)
