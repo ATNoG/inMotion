@@ -221,7 +221,12 @@ CAST_DTYPES: dict[str, torch.dtype] = {
     "fp32": torch.float32,
     "fp16": torch.float16,
     "bf16": torch.bfloat16,
+    "fp8": torch.float8_e4m3fn,
 }
+
+#: Storage width of each cast, in bytes. Kept beside the dtypes so a new cast
+#: cannot be added without stating what it costs on disk.
+CAST_BYTES: dict[str, int] = {"fp32": 4, "fp16": 2, "bf16": 2, "fp8": 1}
 
 
 def apply_cast(
@@ -236,7 +241,7 @@ def apply_cast(
     if precision not in CAST_DTYPES:
         raise KeyError(f"unknown precision {precision!r}; known: {sorted(CAST_DTYPES)}")
     dtype = CAST_DTYPES[precision]
-    width = 4 if precision == "fp32" else 2
+    width = CAST_BYTES[precision]
 
     target = model if in_place else copy.deepcopy(model)
     report = QuantReport(spec_label=precision, bits=width * 8)

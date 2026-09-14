@@ -117,7 +117,11 @@ PRESET_SPECS: dict[str, QuantSpec] = {
 }
 
 # Cast-only precisions, produced by the exporter.
-FLOAT_PRECISIONS: tuple[str, ...] = ("fp32", "fp16", "bf16")
+#
+# `fp8` is e4m3 here. It is a cast rather than a scaled scheme because the
+# weights of every model measured so far sit within +/-4.3, far below e4m3's
+# +/-448 range, so no scale factor is needed to stay in range.
+FLOAT_PRECISIONS: tuple[str, ...] = ("fp32", "fp16", "bf16", "fp8")
 
 
 def resolve(label: str) -> QuantSpec:
