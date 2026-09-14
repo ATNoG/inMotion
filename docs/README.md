@@ -106,6 +106,11 @@ it was taken against.
 | [`reports/ESP32_FEASIBILITY.md`](reports/ESP32_FEASIBILITY.md)           | Whether the world models fit and run on an ESP32-D0WD-V3, measured on the detected part rather than assumed. |
 | [`reports/IMPLEMENTATION_SUMMARY.md`](reports/IMPLEMENTATION_SUMMARY.md) | How the mega-ensemble harness was built (historical).                                                        |
 
+**Measured campaigns.** [`../results/campaign/REPORT.md`](../results/campaign/REPORT.md)
+records the extended quantization and device campaign — what each number means,
+the command that produced it, and what was deliberately not measured. Its figures
+and raw CSVs sit beside it.
+
 ## 6. The published research — papers and results
 
 | directory                          | what it means                                                                                                                                                                                                                                      |

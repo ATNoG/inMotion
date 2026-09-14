@@ -301,6 +301,7 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
     if iterations == 0 {
         return Err("--iterations must be > 0".into());
     }
+    let process_from = std::time::Instant::now();
     let artifact = Artifact::load(artifact_dir)?;
     let model = Model::load(&artifact)?;
     let channels = model.in_channels();
@@ -325,6 +326,10 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
     // Reported so a caller measuring CPU or energy has the window the samples
     // came from without second-guessing it from the throughput.
     let wall_ms = timed_from.elapsed().as_secs_f64() * 1e3;
+    // Whole process, not just the timed loop. A caller dividing CPU time by
+    // `wall_ms` alone would report more than 100% for a single-threaded run,
+    // because the warmup and the load happened inside the same process.
+    let total_ms = process_from.elapsed().as_secs_f64() * 1e3;
     samples.sort_by(f64::total_cmp);
 
     let median = samples[samples.len() / 2];
@@ -341,7 +346,8 @@ fn bench(artifact_dir: &Path, iterations: usize, warmup: usize, json: bool) -> R
             "{{\"model\":{},\"artifact\":{},\"iterations\":{iterations},\"warmup\":{warmup},\
              \"quantization\":{},\"min_ms\":{min:.4},\"median_ms\":{median:.4},\
              \"mean_ms\":{mean:.4},\"p95_ms\":{p95:.4},\"max_ms\":{max:.4},\
-             \"throughput_per_s\":{throughput:.1},\"wall_ms\":{wall_ms:.4}}}",
+             \"throughput_per_s\":{throughput:.1},\"wall_ms\":{wall_ms:.4},\
+             \"total_ms\":{total_ms:.4}}}",
             serde_json::to_string(&artifact.meta.model)
                 .map_err(|e| format!("model name is not serialisable: {e}"))?,
             serde_json::to_string(&artifact_dir.display().to_string())

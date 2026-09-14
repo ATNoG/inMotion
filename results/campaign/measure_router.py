@@ -9,11 +9,10 @@ number is reproducible rather than a one-off someone typed.
     uv run python results/campaign/measure_router.py --host wave-router \\
         --remote /mnt/extra/cargo/inmotion/campaign --out results/campaign
 
-CPU PERCENTAGE AND THE WARMUP. The binary reports the wall clock of its TIMED
-loop, but the process also runs a warmup before it, and /proc counts CPU over the
-whole process. Dividing one by the other overstates the load. cpu_percent here is
-cpu_seconds over the window the process actually ran: the timed wall plus the
-warmup's estimated cost at the measured median.
+CPU PERCENTAGE. /proc counts CPU over the whole process, so the divisor must be
+the whole process too — loading the artifact, the warmup and the timed loop. The
+binary reports that as `total_ms`; an earlier version estimated it from the
+warmup count, which produced 103% on a single-threaded run.
 """
 
 from __future__ import annotations
@@ -75,11 +74,8 @@ def main() -> int:
 
     out_rows = []
     for row in rows:
-        wall_ms = float(row["wall_ms"])
-        median_ms = float(row["median_ms"])
         cpu_seconds = float(row["cpu_ticks"]) / USER_HZ
-        # The process ran the timed loop plus a warmup before it.
-        process_window_s = (wall_ms + args.warmup * median_ms) / 1000.0
+        process_window_s = float(row["total_ms"]) / 1000.0
         out_rows.append(
             {
                 "device": args.device,
@@ -101,7 +97,7 @@ def main() -> int:
             }
         )
         print(
-            f"  {row['model']:22} {row['precision']:5} {median_ms:>8.3f} ms  "
+            f"  {row['model']:22} {row['precision']:5} {float(row['median_ms']):>8.3f} ms  "
             f"rss={float(row['peak_rss_kb']) / 1024:>7.2f} MB  "
             f"cpu={out_rows[-1]['cpu_percent']:>5.1f}%"
         )

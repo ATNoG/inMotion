@@ -15,7 +15,7 @@ HZ=100
 
 field() { sed -n "s/.*\"$1\":\([-0-9.]*\).*/\1/p" "$2"; }
 
-echo "model,precision,min_ms,median_ms,p95_ms,max_ms,throughput_per_s,wall_ms,peak_rss_kb,cpu_ticks"
+echo "model,precision,min_ms,median_ms,p95_ms,max_ms,throughput_per_s,wall_ms,total_ms,peak_rss_kb,cpu_ticks"
 
 for dir in "$ROOT"/*/; do
   name=$(basename "$dir")
@@ -34,5 +34,5 @@ for dir in "$ROOT"/*/; do
     usleep 50000
   done
   wait "$pid"
-  echo "$model,$prec,$(field min_ms "$json"),$(field median_ms "$json"),$(field p95_ms "$json"),$(field max_ms "$json"),$(field throughput_per_s "$json"),$(field wall_ms "$json"),$peak,$ticks"
+  echo "$model,$prec,$(field min_ms "$json"),$(field median_ms "$json"),$(field p95_ms "$json"),$(field max_ms "$json"),$(field throughput_per_s "$json"),$(field wall_ms "$json"),$(field total_ms "$json"),$peak,$ticks"
 done
