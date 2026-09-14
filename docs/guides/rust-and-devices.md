@@ -71,6 +71,26 @@ uv run inmotion quantize export lejepa --out /tmp/art-lejepa-int8 --format int8
 uv run inmotion quantize export lejepa --out /tmp/art-lejepa-q4 --format q4 --tol 1e-4
 ```
 
+**You usually do not have to build one.** The after-HPO models already have
+artifacts on disk, one directory per (model, scheme):
+
+```
+20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts/<model>-<scheme>/
+```
+
+Run `inmotion quantize formats` for the in-house presets, `inmotion quantize
+producers` for the three quantizers, and see `docs/reports/ARTIFACTS.md` for
+what is stored and which schemes are runnable. Any of them can be passed
+straight to the commands in section 4:
+
+```bash
+A=20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts
+rust/target/release/inmotion-infer describe --artifact $A/sigreg_seed42-q4
+```
+
+`--format` also takes a scheme the exporter can build on the spot, including the
+in-house grammar (`q4_pg128`, `int8_pt`) and `--producer torch-ao`.
+
 Resulting layout — three files, and nothing else:
 
 ```
@@ -141,9 +161,7 @@ inmotion-infer bench    --artifact DIR [--iterations N] [--warmup N] [--json]
 inmotion-infer check    --artifact DIR --golden DIR
 ```
 
-`--artifact` is required for all four. (The usage banner printed by a bare
-invocation lists only three; `bench` is real and is what the benchmark script
-calls.)
+`--artifact` is required for all four. A bare invocation prints this same list.
 
 **`describe`** — what the artifact declares, with no inference:
 
