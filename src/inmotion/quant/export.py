@@ -47,6 +47,7 @@ from safetensors.numpy import save_file
 
 from inmotion.data.paths import resolve as resolve_path
 from inmotion.models import registry as reg
+from inmotion.models.adopt import resolve_model
 from inmotion.models.wrappers import strip_prefix
 from inmotion.quant.evaluate import BASELINE_DATASET, load_split
 from inmotion.quant.model import _is_quantizable, apply, apply_cast, quantize_tensor
@@ -232,7 +233,7 @@ def export(
     seed: int = 42,
 ) -> ExportReport:
     """Write ``model_name`` as a portable artifact directory."""
-    spec_obj = reg.by_name(model_name)
+    spec_obj = resolve_model(model_name)
     model = reg.load(spec_obj, strict=True).eval()
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -293,7 +294,7 @@ def export(
 
     meta = {
         "artifact_version": ARTIFACT_VERSION,
-        "model": model_name,
+        "model": spec_obj.name,
         "factory": spec_obj.factory,
         # Registry args first, then what the module actually is: the two
         # describe different things and the module wins on conflict. Only one of
@@ -356,7 +357,7 @@ def write_golden(
     unquantized outputs would measure quantization error, not port correctness,
     and would be reported as a parity failure.
     """
-    spec_obj = reg.by_name(model_name)
+    spec_obj = resolve_model(model_name)
     path = dataset or resolve_path(BASELINE_DATASET)
     X, _y, test_idx, classes = load_split(model_name, path, seed)
 
@@ -372,7 +373,7 @@ def write_golden(
         logits = model(batch).numpy()
 
     payload = {
-        "model": model_name,
+        "model": spec_obj.name,
         "seq_len": int(X.shape[1]),
         "in_channels": int(X.shape[2]),
         "num_classes": int(logits.shape[1]),

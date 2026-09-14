@@ -26,6 +26,7 @@ recognised.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -33,7 +34,7 @@ import torch
 
 from .checkpoint import Sidecar
 from .factories import build
-from .registry import REGISTRY
+from .registry import REGISTRY, ModelSpec
 from .wrappers import normalise_state
 
 # Wrapper prefixes a factory might need; tried in order when not already known.
@@ -618,6 +619,49 @@ def describe_pretrain(state: dict) -> str:
 DETECTORS = DETECTORS + (_composite_grid,)
 
 
+@lru_cache(maxsize=32)
+def spec_for_checkpoint(path: Path | str, *, factory: str | None = None) -> ModelSpec:
+    """A :class:`ModelSpec` for any checkpoint, architecture inferred.
+
+    This is what lets a command take a checkpoint path where it takes a
+    registered name, so a model outside the paper's registry can still be
+    exported, quantized and evaluated.
+
+    Cached because inference searches architecture grids. Without it a 5 model
+    x 12 precision sweep re-adopts every checkpoint twelve times.
+    """
+    side = infer(path, factory=factory)
+    return ModelSpec(
+        name=side.name,
+        factory=side.factory,
+        arch=side.arch,
+        path=Path(path),
+        params=side.params,
+        prefix=side.prefix,
+        rich=side.rich,
+        note=f"adopted from {path}",
+        source="adopted",
+    )
+
+
+def resolve_model(name_or_path: str) -> ModelSpec:
+    """A registered name, or a path to any checkpoint.
+
+    Registering a model is a statement about the paper; evaluating a checkpoint
+    someone handed you is not. One function keeps both reachable, so the
+    commands do not have to care which they were given.
+    """
+    if name_or_path in REGISTRY:
+        return REGISTRY[name_or_path]
+    path = Path(name_or_path)
+    if path.exists():
+        return spec_for_checkpoint(path)
+    raise KeyError(
+        f"{name_or_path!r} is neither a registered model nor an existing "
+        f"checkpoint; known: {', '.join(sorted(REGISTRY))}"
+    )
+
+
 def infer(
     path: Path | str,
     *,
@@ -670,12 +714,19 @@ def infer(
         if others:
             provenance["ambiguous_with"] = others
             provenance["ambiguous_factories"] = other_factories
+        # `rich` decides whether the loader feeds 4 channels or 18, and it is
+        # not visible in the tensor shapes: t_jepa's tokenizer is (182, 128),
+        # which is 180 flattened features, and cf_jepa's is a Conv1d with
+        # in_channels=18. Getting it wrong loads a real model and feeds it the
+        # wrong features, so it is taken from the spec the shapes matched
+        # rather than left at the dataclass default.
         return Sidecar(
             name=model_name,
             factory=chosen[0],
             arch=chosen[1],
             params=sum(p.numel() for p in build(chosen[0], chosen[1]).parameters()),
             prefix=chosen[2],
+            rich=REGISTRY[chosen[3]].rich,
             source="adopted",
             provenance=provenance,
         )
@@ -693,7 +744,13 @@ def infer(
                 params=sum(p.numel() for p in build(fac, arch).parameters()),
                 prefix=prefix,
                 source="adopted",
-                provenance={"recovered_by": "shape_search", "checkpoint": str(path)},
+                provenance={
+                    "recovered_by": "shape_search",
+                    "checkpoint": str(path),
+                    # No registered spec matched, so nothing anchors the input
+                    # width. Stated rather than assumed.
+                    "rich_assumed": False,
+                },
             )
 
     tried: list[str] = []

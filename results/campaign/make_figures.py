@@ -11,6 +11,7 @@ Inputs, all optional except the first — a missing one is reported and skipped
 rather than silently producing an empty panel:
 
     results/campaign/sweep_all_formats.csv   accuracy per (model, precision)
+    results/campaign/sweep_hpo_models.csv    the same, for the HPO checkpoints
     results/campaign/perf_device.csv     FLOPS, energy, RAM, CPU% per device
     results/campaign/scaling.csv         threads -> latency, for saturation
 
@@ -89,6 +90,11 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def short_label(model: str) -> str:
+    """`lejepa_ft_seed42` is a training run, not a model name."""
+    return model.replace("_ft_seed42", " (HPO)").replace("_seed42", " (HPO)")
+
+
 def save(fig, name: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     for suffix in ("pdf", "png"):
@@ -98,7 +104,7 @@ def save(fig, name: str) -> None:
     plt.close(fig)
 
 
-def accuracy_figures(rows: list[dict[str, str]]) -> None:
+def accuracy_figures(rows: list[dict[str, str]], stem: str) -> None:
     """Accuracy against precision, and the memory it costs to get there."""
     models = sorted({r["model"] for r in rows})
     precisions = [p for p in PRECISION_ORDER if any(r["precision"] == p for r in rows)]
@@ -113,7 +119,7 @@ def accuracy_figures(rows: list[dict[str, str]]) -> None:
         ax.plot(
             xs,
             ys,
-            label=model,
+            label=short_label(model),
             color=OKABE_ITO[i % len(OKABE_ITO)],
             marker=MARKERS[i % len(MARKERS)],
             markersize=4,
@@ -135,7 +141,7 @@ def accuracy_figures(rows: list[dict[str, str]]) -> None:
     ax.set_ylabel("Test MCC on dataset.csv")
     ax.set_title("Quantization accuracy by model")
     ax.legend(ncol=2, loc="lower right")
-    save(fig, "fig_accuracy_vs_precision")
+    save(fig, f"fig_accuracy_vs_precision_{stem}")
 
     # --- MCC against the memory it buys ------------------------------------
     fig, ax = plt.subplots(figsize=FIG_FULL)
@@ -145,7 +151,7 @@ def accuracy_figures(rows: list[dict[str, str]]) -> None:
         ax.plot(
             [float(r["total_mb"]) for r in series],
             [float(r["mcc"]) for r in series],
-            label=model,
+            label=short_label(model),
             color=OKABE_ITO[i % len(OKABE_ITO)],
             marker=MARKERS[i % len(MARKERS)],
             markersize=4,
@@ -170,7 +176,7 @@ def accuracy_figures(rows: list[dict[str, str]]) -> None:
     ax.set_ylabel("Test MCC on dataset.csv")
     ax.set_title("Accuracy against artifact size")
     ax.legend(ncol=2, loc="lower right")
-    save(fig, "fig_size_vs_accuracy")
+    save(fig, f"fig_size_vs_accuracy_{stem}")
 
     # --- the whole matrix at a glance --------------------------------------
     matrix = np.full((len(models), len(precisions)), np.nan)
@@ -202,18 +208,21 @@ def accuracy_figures(rows: list[dict[str, str]]) -> None:
     ax.set_title("Test MCC by model and precision")
     ax.grid(False)
     fig.colorbar(im, ax=ax, shrink=0.8, aspect=20, label="MCC")
-    save(fig, "fig_mcc_heatmap")
+    save(fig, f"fig_mcc_heatmap_{stem}")
 
 
 def main() -> None:
     print("extended-quantization campaign figures")
 
-    # The campaign's own sweep, not results/quant/sweep_dataset.csv: that one is
+    # The campaign's own sweeps, not results/quant/sweep_dataset.csv: that one is
     # the shipped artifact for the paper figures and stays at its verified
     # precision set.
-    sweep = read_csv(HERE / "sweep_all_formats.csv")
-    if sweep:
-        accuracy_figures(sweep)
+    for name in ("sweep_hpo_models.csv", "sweep_all_formats.csv"):
+        sweep = read_csv(HERE / name)
+        if not sweep:
+            continue
+        stem = name.removesuffix(".csv").removeprefix("sweep_")
+        accuracy_figures(sweep, stem)
 
     # Measured later by the device runs; skipped until the CSVs exist.
     read_csv(HERE / "perf_device.csv")

@@ -37,6 +37,7 @@ from inmotion.data.splits import stratified_indices
 from inmotion.dl.config import DLConfig
 from inmotion.dl.data_loader import DLDataLoader
 from inmotion.models import registry as reg
+from inmotion.models.adopt import resolve_model
 from inmotion.quant.model import apply, apply_cast
 from inmotion.quant.spec import FLOAT_PRECISIONS
 from inmotion.quant.spec import resolve as resolve_spec
@@ -92,7 +93,7 @@ def load_split(model_name: str, dataset: Path, seed: int):
     Public because the exporter needs the same split to write golden vectors;
     reaching across modules for a private name would be a smell, not a boundary.
     """
-    spec = reg.by_name(model_name)
+    spec = resolve_model(model_name)
     cfg = DLConfig()
     cfg.data_path = dataset
     cfg.rich_features = spec.rich
@@ -131,7 +132,7 @@ def evaluate(
     seed: int = 42,
 ) -> EvalRow:
     """Measure one (model, precision) pair on the test split."""
-    spec = reg.by_name(model_name)
+    spec = resolve_model(model_name)
     path = dataset or resolve_path(BASELINE_DATASET)
     X, y, test_idx, _ = load_split(model_name, path, seed)
 
@@ -146,7 +147,7 @@ def evaluate(
     n_params = sum(p.numel() for p in model.parameters())
 
     return EvalRow(
-        model=model_name,
+        model=spec.name,
         precision=precision,
         bits=report.bits,
         dataset=path.name,
@@ -162,7 +163,7 @@ def evaluate(
     )
 
 
-def check_baseline(rows: list[EvalRow]) -> list[str]:
+def check_baseline(rows: list[EvalRow], *, allow_unrecorded: bool = False) -> list[str]:
     """Confirm fp32 reproduces the recorded MCC on the baseline dataset.
 
     The comparison is exact. The recorded values were measured by this harness
@@ -172,6 +173,11 @@ def check_baseline(rows: list[EvalRow]) -> list[str]:
     no recorded baseline is itself a problem, so a new model cannot slip in
     unchecked.
 
+    ``allow_unrecorded`` relaxes only that last case, for evaluating a checkpoint
+    that is deliberately outside the recorded set — a model from another
+    training run, say. A recorded model that has MOVED is still a problem: that
+    is the case the guard exists for.
+
     Returns human-readable problems; empty means the harness is trustworthy.
     """
     problems: list[str] = []
@@ -180,7 +186,8 @@ def check_baseline(rows: list[EvalRow]) -> list[str]:
             continue
         expected = BASELINE_MCC.get(row.model)
         if expected is None:
-            problems.append(f"{row.model}: no recorded fp32 baseline on {BASELINE_DATASET}")
+            if not allow_unrecorded:
+                problems.append(f"{row.model}: no recorded fp32 baseline on {BASELINE_DATASET}")
             continue
         if row.mcc != expected:
             problems.append(

@@ -13,7 +13,14 @@ from pathlib import Path
 import pytest
 from conftest import REPO_ROOT, requires_artifacts
 
-from inmotion.models.adopt import describe_pretrain, infer, looks_like_pretrain, read_state
+from inmotion.models.adopt import (
+    describe_pretrain,
+    infer,
+    looks_like_pretrain,
+    read_state,
+    resolve_model,
+    spec_for_checkpoint,
+)
 from inmotion.models.factories import build
 from inmotion.models.wrappers import normalise_state
 
@@ -111,3 +118,58 @@ def test_pretrain_bundles_are_recognised_not_speculatively_adopted() -> None:
 
     with pytest.raises(ValueError, match="pre-training checkpoint"):
         infer(path)
+
+
+# ---------------------------------------------------------------------------
+# The HPO checkpoints: they are not in the registry, and the input width they
+# need is not visible in the tensor shapes. `t_jepa`'s tokenizer is (182, 128),
+# which is 180 flattened features, 18 channels x 10 timesteps; `cf_jepa`'s is a
+# Conv1d with in_channels=18; `lejepa` and `sigreg` take 4.
+#
+# Getting this wrong is the bad kind of failure: the model loads, the features
+# are the wrong width, and the numbers come out plausible and wrong rather than
+# raising.
+# ---------------------------------------------------------------------------
+
+HPO_DIR = ISAC_DIR / "full-after-hpo"
+
+#: filename -> whether the model consumes rich (18-channel) features.
+HPO_CHANNELS = {
+    "lejepa_ft_seed42.pt": False,
+    "sigreg_seed42.pt": False,
+    "t_jepa_ft_seed42.pt": True,
+    "ts_jepa_ft_seed42.pt": True,
+    "cf_jepa_ft_seed42.pt": True,
+}
+
+
+@pytest.mark.parametrize(("filename", "rich"), sorted(HPO_CHANNELS.items()))
+def test_adopted_checkpoint_reports_its_channel_requirement(filename: str, rich: bool) -> None:
+    """`rich` must come from the matched spec, never from the default."""
+    path = HPO_DIR / filename
+    if not path.exists():
+        pytest.skip(f"{filename} not present")
+
+    spec = spec_for_checkpoint(str(path))
+    assert spec.rich is rich, f"{filename}: rich={spec.rich}, expected {rich}"
+    build(spec.factory, spec.arch)
+
+
+def test_resolve_model_accepts_a_name_or_a_checkpoint_path() -> None:
+    """One entry point, so a command does not have to know which it was given."""
+    from inmotion.models.registry import REGISTRY
+
+    by_name = resolve_model("lejepa")
+    assert by_name is REGISTRY["lejepa"], "a registered name must come back verbatim"
+
+    path = HPO_DIR / "sigreg_seed42.pt"
+    if not path.exists():
+        pytest.skip("sigreg_seed42.pt not present")
+    by_path = resolve_model(str(path))
+    assert by_path.name == "sigreg_seed42"
+    assert by_path.source == "adopted"
+
+
+def test_resolve_model_rejects_a_name_that_is_not_a_checkpoint() -> None:
+    with pytest.raises(KeyError, match="neither a registered model"):
+        resolve_model("not_a_model_and_not_a_file")

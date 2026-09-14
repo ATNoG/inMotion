@@ -381,7 +381,7 @@ Public API:
 
 ### `inmotion.quant.evaluate`
 
-`src/inmotion/quant/evaluate.py` - 259 lines
+`src/inmotion/quant/evaluate.py` - 266 lines
 
 Accuracy under quantization, measured on ``data/processed/dataset.csv``.
 
@@ -416,7 +416,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 392 lines
+`src/inmotion/quant/export.py` - 393 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -569,7 +569,7 @@ Public API:
 
 ### `inmotion.models.adopt`
 
-`src/inmotion/models/adopt.py` - 718 lines
+`src/inmotion/models/adopt.py` - 775 lines
 
 Infer a :class:`~inmotion.models.checkpoint.Sidecar` from an untagged checkpoint.
 
@@ -606,6 +606,8 @@ Public API:
 - func `resolve_plain` - Resolve a *plain* (prefix-stripped) state dict to (factory, arch, prefix).
 - func `looks_like_pretrain` - True when ``state`` is a pre-training bundle rather than a state dict.
 - func `describe_pretrain` - A one-line description of a pre-training bundle.
+- func `spec_for_checkpoint` - A :class:`ModelSpec` for any checkpoint, architecture inferred.
+- func `resolve_model` - A registered name, or a path to any checkpoint.
 - func `infer` - Recover a :class:`Sidecar` for an untagged checkpoint.
 - func `infer_many` - Adopt every checkpoint in ``paths``, recording failures instead of raising.
 
@@ -747,7 +749,7 @@ Public API:
 
 ### `inmotion.cli.quantize`
 
-`src/inmotion/cli/quantize.py` - 284 lines
+`src/inmotion/cli/quantize.py` - 311 lines
 
 `inmotion quantize` — quantize models and measure what it costs.
 

@@ -159,6 +159,14 @@ def evaluate(
     out: Annotated[Path, typer.Option("--out", help="Where to write the results CSV.")] = Path(
         "results/quant/sweep_dataset.csv"
     ),
+    allow_unrecorded: Annotated[
+        bool,
+        typer.Option(
+            "--allow-unrecorded-baseline",
+            help="Accept a model with no recorded fp32 baseline, such as a checkpoint "
+            "from another training run. A recorded model that has MOVED still fails.",
+        ),
+    ] = False,
 ) -> None:
     """Sweep models x formats and write one row per measurement.
 
@@ -182,7 +190,7 @@ def evaluate(
         raise typer.Exit(code=1)
 
     write_csv(rows, out)
-    problems = check_baseline(rows)
+    problems = check_baseline(rows, allow_unrecorded=allow_unrecorded)
     if problems:
         typer.secho(
             "\nBASELINE MISMATCH — these numbers are not trustworthy:",
@@ -192,10 +200,29 @@ def evaluate(
         for problem in problems:
             typer.secho(f"  {problem}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1)
-    typer.secho(
-        "\nbaseline reproduced: fp32 matches BASELINE_MCC on dataset.csv",
-        fg=typer.colors.GREEN,
-    )
+    if allow_unrecorded:
+        from inmotion.quant.evaluate import BASELINE_MCC
+
+        new_models = sorted({r.model for r in rows if r.model not in BASELINE_MCC})
+        if new_models:
+            typer.secho(
+                "accepted without a recorded fp32 baseline: " + ", ".join(new_models),
+                fg=typer.colors.YELLOW,
+            )
+    # Only claim the baseline was reproduced when a recorded model was actually
+    # measured. Sweeping only unrecorded checkpoints checks nothing.
+    from inmotion.quant.evaluate import BASELINE_MCC
+
+    if any(r.model in BASELINE_MCC and r.precision == "fp32" for r in rows):
+        typer.secho(
+            "\nbaseline reproduced: fp32 matches BASELINE_MCC on dataset.csv",
+            fg=typer.colors.GREEN,
+        )
+    else:
+        typer.secho(
+            "\nno recorded model was swept, so the baseline was not re-checked",
+            fg=typer.colors.YELLOW,
+        )
 
 
 @app.command("stats", help="Write the quantization statistics tables the figures read.")
