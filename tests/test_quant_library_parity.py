@@ -123,3 +123,64 @@ def test_asymmetric_reconstruction_is_within_one_step(bits: int) -> None:
         f"{bits}-bit asymmetric reconstruction error {error} exceeds one "
         f"quantization step {float(qt.scale)}"
     )
+
+
+def test_torch_ao_dynamic_linear_agrees_to_within_one_code_level() -> None:
+    """torch.ao's own dynamic int8 Linear, not just its observers.
+
+    Only the LAYER path is compared: `torch.ao.quantization.quantize_dynamic` on
+    a whole model raises inside `nn.TransformerEncoderLayer.forward` on these
+    architectures, so the module-level pipeline cannot be used as a reference
+    here at all. This is the same quantizer one layer down, and it must agree.
+    """
+    import torch.ao.nn.quantized.dynamic as nqd
+    from torch.ao.quantization import QConfig
+    from torch.ao.quantization.observer import PerChannelMinMaxObserver, PlaceholderObserver
+
+    torch.manual_seed(0)
+    layer = torch.nn.Linear(512, 256, bias=False)
+    with torch.no_grad():
+        layer.weight.copy_(torch.randn(256, 512) * 0.6)
+    layer.qconfig = QConfig(
+        activation=PlaceholderObserver.with_args(dtype=torch.float),
+        weight=PerChannelMinMaxObserver.with_args(
+            dtype=torch.qint8, qscheme=torch.per_channel_symmetric, ch_axis=0
+        ),
+    )
+
+    quantized = nqd.Linear.from_float(layer).eval()
+    reference = quantized.weight()
+    torch_codes = reference.int_repr().numpy().astype(int)
+
+    spec = QuantSpec(bits=8, granularity=Granularity.PER_CHANNEL, axis=0, symmetric=True)
+    qt = quantize(layer.weight.detach().numpy(), spec)
+
+    # Same scheme, same level count: the codes may differ by one step and no more.
+    assert torch_codes.shape == qt.q.shape
+    assert np.abs(torch_codes - qt.q.astype(int)).max() <= 1
+
+    scales = reference.q_per_channel_scales().numpy()
+    ratios = np.ravel(qt.scale) / scales
+    assert np.allclose(ratios, TORCH_SYMMETRIC_DIVISOR / MINE_DIVISOR, rtol=1e-5)
+
+
+def test_symmetric_schemes_pay_for_a_zero_point_that_is_always_zero() -> None:
+    """Records a known cost rather than asserting it is fine.
+
+    A symmetric scheme has zero_point == 0 for every group, yet the artifact
+    stores an int32 per group. At group 32 that is one bit per weight, so q4
+    costs 6.00 effective bits where 5.00 would do. bitsandbytes NF4 gets better
+    reconstruction at 4.50 effective bits because it stores no zero point at all.
+    This test fails if the overhead silently grows, and should be rewritten when
+    the format stops paying it.
+    """
+    spec = QuantSpec(bits=4, granularity=Granularity.PER_GROUP, group_size=32, symmetric=True)
+    assert spec.symmetric
+    weight = np.random.default_rng(0).normal(0, 0.6, (64, 128)).astype(np.float32)
+    qt = quantize(weight, spec)
+    assert np.all(qt.zero_point == 0), "a symmetric zero point is always zero"
+
+    code_bits = spec.bits
+    scale_bits = 32 / spec.group_size
+    zero_point_bits = 32 / spec.group_size
+    assert code_bits + scale_bits + zero_point_bits == 6.0

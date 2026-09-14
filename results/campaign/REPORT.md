@@ -111,6 +111,48 @@ number in this report is affected, which was checked rather than assumed
 (`lejepa`'s q1 MCC is -0.0013 before and after the fix). The code dtype now
 follows the scheme.
 
+### Two more libraries, including the one that was wrong to dismiss
+
+**torch.ao.quantization, at the layer level.** The module-level route does not
+work here at all: `torch.ao.quantization.quantize_dynamic` on a whole model
+raises inside `nn.TransformerEncoderLayer.forward`, and it is deprecated in
+favour of `torchao`. Its per-channel dynamic `Linear` does work, and on the same
+weights it agrees with this code **to within one code level of 255**, with the
+same 127.5/127 scale gap. Relative reconstruction error 0.007465 against
+0.007481. Pinned by a test.
+
+**bitsandbytes 0.50.2** — which was dismissed earlier in this campaign as "not
+comparable" *without being tested*, and is comparable. On a 256x512 N(0, 0.6)
+weight matrix, effective bits per weight include each scheme's own metadata:
+
+| scheme | eff. bits/weight | max err | mean err | relative err |
+|---|---:|---:|---:|---:|
+| this code q8, group 32 | 10.00 | 0.01073 | 0.00268 | 0.0053 |
+| this code q4, group 32 | 6.00 | 0.19412 | 0.04876 | 0.0971 |
+| bnb NF4, block 64 | 4.50 | 0.31732 | 0.04378 | **0.0920** |
+| bnb FP4, block 64 | 4.50 | 0.36656 | 0.05805 | 0.1220 |
+| bnb INT8 blockwise | 8.01 | 0.01925 | 0.00605 | 0.0130 |
+
+**NF4 reconstructs this matrix BETTER than q4 while costing 4.50 bits against
+6.00.** Its non-uniform codebook, placed at the quantiles of a normal
+distribution, beats a uniform 4-bit grid on normally-distributed weights. FP4 is
+worse than both. bnb's INT8 is less accurate than q8 but 2 bits/weight cheaper.
+
+### The 25% of q4 that is a zero point
+
+That last comparison exposes a cost this code pays and does not need to. A
+symmetric scheme has `zero_point == 0` for every group, and the artifact still
+writes an int32 per group. At group 32 that is **one wasted bit per weight**: q4
+costs 6.00 effective bits where 5.00 would do, and q8 costs 10.00 where 9.00
+would. Dropping it would shrink the q4 artifact by about 17% and q8 by about
+10%.
+
+It is **not** changed here. It is an artifact-format change that the Rust reader
+would have to follow, it invalidates the pinned parity vectors, and it deserves
+its own round rather than being smuggled into this one. A test records the
+current cost so it cannot grow unnoticed. NF4 pays no such overhead, which is
+part of why it wins the table above.
+
 ## 4. Compute
 
 | model | MFLOP/inference | FLOPs ÷ parameters |
