@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate publication-quality, spacious, and uncluttered figures for the FNWF 2026 paper.
+"""Generate publication-quality figures for the FNWF 2026 paper.
 
 Adheres strictly to scientific-visualization, matplotlib, and academic-plotting skills:
   - Clean seaborn-v0_8-whitegrid layout with generous margins and padding ("airosa")
@@ -72,7 +72,7 @@ plt.rcParams.update(
 # 1. Mean RSSI Trajectory per Mobility Class (+-1 Std Dev)
 # ═══════════════════════════════════════════════════════════════════════════
 def fig_rssi_trajectory():
-    data_path = Path(__file__).resolve().parents[2] / "dataset.csv"
+    data_path = Path(__file__).resolve().parents[3] / "data" / "processed" / "dataset.csv"
     if not data_path.exists():
         data_path = Path("dataset.csv")
     df = pd.read_csv(data_path)
@@ -117,10 +117,8 @@ def fig_rssi_trajectory():
     ax.set_ylim(-65, -31)
     ax.set_yticks([-60, -50, -40])
 
-    # Built-in legend title: Matplotlib places title strictly above legend items
+    # No in-figure title: the LaTeX caption supplies it.
     leg = ax.legend(
-        title=r"Mean RSSI Trajectory per Class ($\pm 1\,\sigma$)",
-        title_fontsize=9.0,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.02),
         ncol=2,
@@ -130,9 +128,8 @@ def fig_rssi_trajectory():
         columnspacing=0.8,
         alignment="center",
     )
-    plt.setp(leg.get_title(), fontweight="bold")
 
-    fig.subplots_adjust(top=0.74, bottom=0.15, left=0.15, right=0.96)
+    fig.subplots_adjust(top=0.78, bottom=0.15, left=0.15, right=0.96)
     fig.savefig(OUT / "rssi_trajectory.pdf")
     fig.savefig(OUT / "rssi_trajectory.png", dpi=300)
     plt.close(fig)
@@ -214,12 +211,10 @@ def fig_single_model():
     legend_elements = [
         Patch(facecolor=C_SSL, edgecolor="white", label="SSL World Model"),
         Patch(facecolor=C_SSM, edgecolor="white", label="Mamba-3 SSM"),
-        Patch(facecolor=C_SUP, edgecolor="white", label="Supervised Baseline"),
+        Patch(facecolor=C_SUP, edgecolor="white", label="Deep Supervised"),
     ]
     leg = ax.legend(
         handles=legend_elements,
-        title="Single-Model Performance (New 3,511 Samples)",
-        title_fontsize=9.0,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
@@ -229,9 +224,8 @@ def fig_single_model():
         columnspacing=0.6,
         alignment="center",
     )
-    plt.setp(leg.get_title(), fontweight="bold")
 
-    fig.subplots_adjust(top=0.80, bottom=0.13, left=0.22, right=0.96)
+    fig.subplots_adjust(top=0.83, bottom=0.13, left=0.22, right=0.96)
     fig.savefig(OUT / "single_model_mcc.pdf")
     fig.savefig(OUT / "single_model_mcc.png", dpi=300)
     plt.close(fig)
@@ -241,19 +235,30 @@ def fig_single_model():
 # 3. Cross-collection generalisation (SSL vs Supervised)
 # ═══════════════════════════════════════════════════════════════════════════
 def fig_transfer():
-    names = ["TS-JEPA", "LeJEPA", "CF-JEPA", "T-JEPA", "Mamba-3 TCN", "DeepStack", "SIGReg"]
-    prior = [0.8785, 0.8850, 0.8661, 0.8694, 0.8844, 0.8810, 0.8858]
-    extended = [0.9194, 0.9143, 0.9083, 0.8982, 0.7816, 0.7811, 0.4872]
+    names = [
+        "TS-JEPA",
+        "LeJEPA",
+        "CF-JEPA",
+        "T-JEPA",
+        "Mamba-3 TCN",
+        "DeepStack",
+        "SIGReg",
+        "HPO GRU",
+    ]
+    prior = [0.8785, 0.8850, 0.8661, 0.8694, 0.8844, 0.8810, 0.8858, 0.8524]
+    extended = [0.9194, 0.9143, 0.9083, 0.8982, 0.7816, 0.7811, 0.4872, 0.5746]
+    # 0 = world model (teal), 2 = deep supervised / SSM (terracotta)
+    kind = [0, 0, 0, 0, 2, 2, 2, 2]
 
     x = np.arange(len(names))
     width = 0.35
 
-    fig, ax = plt.subplots(figsize=(3.5, 2.5))
+    fig, ax = plt.subplots(figsize=(3.5, 2.6))
     ax.bar(
         x - width / 2,
         prior,
         width,
-        label="Prior (2,251 samples)",
+        label="Prior (2,251)",
         color=C_PRIOR,
         edgecolor="white",
         linewidth=0.6,
@@ -262,22 +267,25 @@ def fig_transfer():
         x + width / 2,
         extended,
         width,
-        label="New (3,511 samples)",
+        label="Expanded (3,511)",
         color=C_SSL,
         edgecolor="white",
         linewidth=0.6,
     )
 
-    for i in range(4, len(names)):
-        bars2[i].set_color(C_SUP)
+    # Recolor the expanded bar to encode model family, and hatch it so the
+    # distinction survives grayscale printing and colour-vision deficiency.
+    for i, k in enumerate(kind):
+        if k == 2:
+            bars2[i].set_color(C_SUP)
+            bars2[i].set_hatch("//")
 
     for i, (p, e) in enumerate(zip(prior, extended)):
         diff = e - p
-        delta_str = f"{diff:+.2f}"
         ax.text(
             i + width / 2,
             e + 0.02,
-            delta_str,
+            f"{diff:+.2f}",
             ha="center",
             va="bottom",
             fontsize=6.0,
@@ -286,27 +294,30 @@ def fig_transfer():
         )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(names, rotation=24, ha="right", fontsize=7.0)
+    ax.set_xticklabels(names, rotation=30, ha="right", fontsize=6.6)
     ax.set_ylabel("Test MCC", fontsize=8)
     ax.set_ylim(0.0, 1.22)
     ax.set_yticks([0.0, 0.25, 0.50, 0.75, 1.0])
 
-    leg = ax.legend(
-        title="Cross-Collection Generalization",
-        title_fontsize=9.0,
+    legend_elements = [
+        Patch(facecolor=C_PRIOR, edgecolor="white", label="Prior (2,251)"),
+        Patch(facecolor=C_SSL, edgecolor="white", label="Expanded: world model"),
+        Patch(facecolor=C_SUP, edgecolor="white", hatch="//", label="Expanded: deep supervised"),
+    ]
+    ax.legend(
+        handles=legend_elements,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.02),
         ncol=2,
         frameon=False,
-        fontsize=6.6,
-        handletextpad=0.3,
+        fontsize=6.2,
+        handletextpad=0.4,
         columnspacing=0.8,
         alignment="center",
     )
-    plt.setp(leg.get_title(), fontweight="bold")
     ax.grid(axis="x", visible=False)
 
-    fig.subplots_adjust(top=0.76, bottom=0.15, left=0.14, right=0.96)
+    fig.subplots_adjust(top=0.74, bottom=0.20, left=0.14, right=0.96)
     fig.savefig(OUT / "transfer_mcc.pdf")
     fig.savefig(OUT / "transfer_mcc.png", dpi=300)
     plt.close(fig)
@@ -382,7 +393,7 @@ def fig_param_efficiency():
     ax.set_xlabel("Parameters (M, log scale)", fontsize=8)
     ax.set_ylabel("Test MCC (Prior Collection)", fontsize=8)
 
-    ax.set_title("Parameter Efficiency & Model Scaling", fontsize=9.0, fontweight="bold", pad=8)
+    # No in-figure title: the LaTeX caption supplies it.
 
     # Legend placed in EMPTY LOWER-RIGHT
     legend_items = [
@@ -402,7 +413,7 @@ def fig_param_efficiency():
         handletextpad=0.3,
     )
 
-    fig.subplots_adjust(top=0.90, bottom=0.13, left=0.14, right=0.96)
+    fig.subplots_adjust(top=0.94, bottom=0.13, left=0.14, right=0.96)
     fig.savefig(OUT / "param_efficiency.pdf")
     fig.savefig(OUT / "param_efficiency.png", dpi=300)
     plt.close(fig)
@@ -479,12 +490,11 @@ def fig_feature_importance():
         Patch(facecolor=C_PRIOR, edgecolor="white", label="Rolling Stats"),
         Patch(facecolor=C_SUP, edgecolor="white", label="Shape Descriptors"),
     ]
+    # No in-figure title: the LaTeX caption supplies it.
     leg = fig.legend(
         handles=legend_items,
-        title=r"SHAP Feature Channel Attribution",
-        title_fontsize=9.0,
         loc="lower center",
-        bbox_to_anchor=(0.50, 0.855),
+        bbox_to_anchor=(0.50, 0.905),
         ncol=2,
         frameon=False,
         fontsize=6.0,
@@ -492,15 +502,15 @@ def fig_feature_importance():
         columnspacing=0.8,
         alignment="center",
     )
-    plt.setp(leg.get_title(), fontweight="bold")
-    fig.subplots_adjust(top=0.84, bottom=0.11, left=0.30, right=0.96)
+
+    fig.subplots_adjust(top=0.87, bottom=0.11, left=0.30, right=0.96)
     fig.savefig(OUT / "feature_importance_18ch.pdf")
     fig.savefig(OUT / "feature_importance_18ch.png", dpi=300)
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    print("Generating ISAC paper figures (built-in legend titles, zero overlap)...")
+    print("Generating ISAC paper figures...")
     fig_rssi_trajectory()
     fig_single_model()
     fig_transfer()

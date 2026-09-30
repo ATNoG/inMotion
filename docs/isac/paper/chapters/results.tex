@@ -3,46 +3,44 @@
 This section evaluates the self-supervised world models, supervised sequence baselines, and calibrated ensembles across both experimental datasets, followed by feature channel attribution, architectural trade-offs, and privacy considerations.
 
 \subsection{Single-Model Classification Performance}
-
 \begin{figure}[!t]
     \centering
     \includegraphics[width=\columnwidth]{images/transfer_mcc.pdf}
-    \caption{Cross-collection generalization and single-model test \ac{MCC}. Self-supervised JEPA world models demonstrate positive transfer on the new collection, whereas supervised classifiers and state-space architectures degrade.}
+    \caption{Collection-expansion comparison and single-model test \ac{MCC}. Self-supervised world models gain as the collection expands, whereas deep supervised and state-space architectures degrade. Hatching denotes model family.}
     \label{fig:transfer}
 \end{figure}
 
 Models were evaluated across both dataset collections. Table~\ref{tab:single} reports the test \ac{MCC} of each model family on the prior 2,251-sample dataset and on the new 3,511-sample dataset, along with the performance differential $\Delta$. On the new collection, the four self-supervised world models achieve the top results: TS-JEPA reaches an \ac{MCC} of 0.9194, LeJEPA obtains 0.9143, CF-JEPA achieves 0.9083, and T-JEPA attains 0.8982. Every evaluated \ac{JEPA} architecture substantially exceeds the 0.756 classical Gaussian Process baseline \cite{ribeiro2026eucnc}.
 
-By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised SIGReg classifier drops to 0.4872 despite leading the prior dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Figure~\ref{fig:transfer} illustrates this cross-collection transfer behavior.
-
-Multi-seed evaluations across three independent runs (seeds 3, 5, 42) confirm protocol stability, with standard deviations constrained within narrow bounds ($\sigma \approx 0.008$ for SIGReg). Full pretraining over 300 to 500 epochs is mandatory: fine-tuning from early checkpoints (below 100 epochs) collapses test \ac{MCC} to 0.49--0.60 across all seeds.
+By contrast, the selective state-space Mamba-3 TCN architecture scores 0.7816, and the DeepStack hierarchical ensemble reaches 0.7811. The supervised \ac{SIGReg} classifier drops to 0.4872 despite leading the prior dataset at 0.8858, and the hyperparameter-optimized GRU baseline attains 0.5746. Every deep supervised architecture degrades as the collection expands, whereas the self-supervised world models improve, echoing the earlier finding that classical and supervised approaches are limited in this non-stationary radio environment \cite{ribeiro2026eucnc} \cite{matos2026icaisf}. Figure~\ref{fig:transfer} illustrates this behavior. Multi-seed evaluations across three independent runs (seeds 3, 5, 42) confirm protocol stability, with standard deviations constrained within narrow bounds ($\sigma \approx 0.008$ for SIGReg). Full pretraining over 300 to 500 epochs is mandatory: fine-tuning from early checkpoints (below 100 epochs) collapses test \ac{MCC} to 0.49--0.60 across all seeds.
 
 \begin{table}[t]
-    \caption{Single-model test \ac{MCC} on prior \cite{matos2026icaisf} and new collections. $\Delta$ denotes the test \ac{MCC} difference.}
+    \caption{Single-model test \ac{MCC} on the prior and expanded collections. $\Delta$ is the expanded minus prior difference.}
     \label{tab:single}
     \centering
     \small
     \begin{tabular}{lccc}
         \toprule
-        Model Architecture & Prior  & New    & $\Delta$ \\
+        Model & Prior & Expanded & $\Delta$ \\
         \midrule
-        TS-JEPA            & 0.8785 & 0.9194 & +0.041   \\
-        LeJEPA             & 0.8850 & 0.9143 & +0.029   \\
-        CF-JEPA            & 0.8661 & 0.9083 & +0.042   \\
-        T-JEPA             & 0.8694 & 0.8982 & +0.029   \\
-        Mamba-3 TCN        & 0.8844 & 0.7816 & $-0.10$  \\
-        DeepStack          & 0.8810 & 0.7811 & $-0.10$  \\
-        SIGReg             & 0.8858 & 0.4872 & $-0.40$  \\
-        HPO GRU            & 0.8524 & 0.5746 & $-0.28$  \\
+        TS-JEPA        & 0.8785 & 0.9194 & +0.041 \\
+        LeJEPA         & 0.8850 & 0.9143 & +0.029 \\
+        CF-JEPA        & 0.8661 & 0.9083 & +0.042 \\
+        T-JEPA         & 0.8694 & 0.8982 & +0.029 \\
+        Mamba-3 TCN    & 0.8844 & 0.7816 & $-0.10$ \\
+        DeepStack      & 0.8810 & 0.7811 & $-0.10$ \\
+        SIGReg         & 0.8858 & 0.4872 & $-0.40$ \\
+        HPO GRU        & 0.8524 & 0.5746 & $-0.28$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\subsection{Cross-Collection Generalization and Transfer Invariance}
+\subsection{Stability Under Collection Expansion}
+\label{sec:expansion}
 
-The cross-collection results in Figure~\ref{fig:transfer} and Table~\ref{tab:single} highlight a key finding: while all self-supervised world models exhibit positive transfer from the prior to the new collection (gaining +0.029 to +0.042 in \ac{MCC}), supervised models and state-space architectures degrade.
+The results in Figure~\ref{fig:transfer} and Table~\ref{tab:single} compare the prior 2,251-sample and expanded 3,511-sample collections. As noted in \S\ref{sec:data}, the two collections share their device pool, so this comparison measures stability under collection expansion rather than generalization to an independent environment. All four self-supervised world models improve on the expanded collection, gaining +0.029 to +0.042 in \ac{MCC}, whereas the Mamba-3 TCN state-space model, the DeepStack ensemble, and the SIGReg classifier degrade.
 
-The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes the vulnerability of purely supervised regularizers to environmental radio shifts. In SIGReg, the Empirical Characteristic Function regularizer penalizes deviations from an isotropic Gaussian latent prior conditioned strictly on the class labels of the training split. Under the richer multi-device interference and channel fading of the new collection, this supervised constraint creates brittle decision boundaries tailored to training artifacts. Conversely, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly over radio sequence dynamics without label guidance, extracting latent motion invariants that generalize robustly across collection environments.
+The collapse of the supervised SIGReg classifier ($-0.40$ in \ac{MCC}) exposes the vulnerability of deep supervised regularizers to a richer interference regime. Its characteristic-function regularizer penalizes deviations from an isotropic Gaussian latent prior conditioned strictly on the training labels; under more varied multi-device interference, this constraint creates brittle decision boundaries tailored to training artifacts. Self-supervised \ac{JEPA} pretraining instead optimizes a predictive objective over radio sequence dynamics without label guidance, extracting latent motion invariants that are retained as the collection grows. This extends the earlier observation that supervised and classical learners plateau below 0.76 \ac{MCC} in this environment \cite{ribeiro2026eucnc}: the limitation is not annotation scarcity alone but the absence of a predictive objective over the radio signal itself.
 
 \subsection{Calibrated Ensemble Performance and Pareto Efficiency}
 
@@ -86,9 +84,7 @@ Figure~\ref{fig:params} plots test \ac{MCC} against parameter footprint across f
     \label{fig:feature_importance}
 \end{figure}
 
-To determine how each channel in the 18-channel hierarchy informs latent world-model predictions, we conduct additive feature attribution via \ac{SHAP} on the primary dataset. Figure~\ref{fig:feature_importance} reports the mean absolute Shapley value $|\phi_j|$ per channel evaluated on the leading \ac{TS-JEPA} model.
-
-The attribution hierarchy reveals that macroscopic signal shape and low-frequency spectral power dominate the decision space. Peak location index ($|\phi| = 6.04 \times 10^{-3}$) and low-frequency STFT Band~0 ($5.97 \times 10^{-3}$) contribute most strongly, capturing the exact timestamp of door transitions and the coarse Doppler shifts of physical motion. These are followed by rolling FFT DC power ($4.40 \times 10^{-3}$) and AC energy ($3.99 \times 10^{-3}$), which reflect baseline energy shifts between vehicle zones. In contrast, fine-grained statistical descriptors, such as rolling kurtosis ($1.22 \times 10^{-3}$), rolling standard deviation ($0.95 \times 10^{-3}$), and high-frequency STFT bands, exhibit negligible marginal value, primarily capturing non-semantic multipath scattering rather than transit kinematics.
+To determine how each channel in the 18-channel hierarchy informs latent world-model predictions, we conduct additive feature attribution via \ac{SHAP} on the primary dataset. Figure~\ref{fig:feature_importance} reports the mean absolute Shapley value $|\phi_j|$ per channel evaluated on the leading \ac{TS-JEPA} model. The attribution hierarchy reveals that macroscopic signal shape and low-frequency spectral power dominate the decision space. Peak location index ($|\phi| = 6.04 \times 10^{-3}$) and low-frequency STFT Band~0 ($5.97 \times 10^{-3}$) contribute most strongly, capturing the exact timestamp of door transitions and the coarse Doppler shifts of physical motion. These are followed by rolling FFT DC power ($4.40 \times 10^{-3}$) and AC energy ($3.99 \times 10^{-3}$), which reflect baseline energy shifts between vehicle zones. In contrast, fine-grained statistical descriptors, such as rolling kurtosis ($1.22 \times 10^{-3}$), rolling standard deviation ($0.95 \times 10^{-3}$), and high-frequency STFT bands, exhibit negligible marginal value, primarily capturing non-semantic multipath scattering rather than transit kinematics.
 
 \begin{table}[t]
     \caption{Architecture-controlled feature channel ablation across world models on the primary dataset (\ac{MCC}).}
@@ -110,23 +106,27 @@ The attribution hierarchy reveals that macroscopic signal shape and low-frequenc
     \end{tabular}
 \end{table}
 
-To validate these attribution findings under controlled conditions, Table~\ref{tab:pruning} presents an architecture-controlled feature ablation across \ac{TS-JEPA}, CF-JEPA, and T-JEPA. When input channels are restricted to individual functional domains or the 4-channel base kinematic subset under identical model architectures, performance drops significantly (e.g., from 0.9194 to 0.4486 \ac{MCC} for \ac{TS-JEPA} on 4 channels, and to 0.2431 on raw \ac{RSSI} alone). This confirms that self-supervised world models critically rely on cross-domain synergy across kinematic, spectral, and statistical features to construct noise-invariant latent representations under multi-device interference.
-
-By contrast, specialized lightweight architectures designed specifically for low-dimensional inputs, such as LeJEPA (0.566~M parameters with only 4 channels), achieve 0.9143 \ac{MCC}, demonstrating that edge access points can choose between rich multi-channel tokenization and ultra-compact dedicated models with virtually zero performance loss.
+To validate these attribution findings under controlled conditions, Table~\ref{tab:pruning} presents an architecture-controlled feature ablation across \ac{TS-JEPA}, CF-JEPA, and T-JEPA. When input channels are restricted to individual functional domains or the 4-channel base kinematic subset under identical model architectures, performance drops significantly (e.g., from 0.9194 to 0.4486 \ac{MCC} for \ac{TS-JEPA} on 4 channels, and to 0.2431 on raw \ac{RSSI} alone). This confirms that self-supervised world models critically rely on cross-domain synergy across kinematic, spectral, and statistical features to construct noise-invariant latent representations under multi-device interference. By contrast, specialized lightweight architectures designed specifically for low-dimensional inputs, such as LeJEPA (0.566~M parameters with only 4 channels), achieve 0.9143 \ac{MCC}, demonstrating that edge access points can choose between rich multi-channel tokenization and ultra-compact dedicated models with virtually zero performance loss.
 
 \subsection{Discussion: Architectural Insights and Sensing Trade-offs}
 
 The experimental findings offer three primary insights into passive ISAC for urban transit using self-supervised world models.
-First, the contrast between self-supervised world models and supervised sequence baselines across dataset collections reveals the fundamental mechanism of radio representation learning. In radio sensing, concurrent transmitting devices introduce non-stationary interference that alters local signal distributions. Supervised classifiers regularized with strict isotropic Gaussian priors, such as \ac{SIGReg}, constrain the latent space around training distributions; when unobserved multi-device interference patterns appear, these rigid decision boundaries deteriorate, causing a 0.40 drop in test \ac{MCC}. In contrast, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly across masked time-frequency patches without label supervision, learning smooth, invariant latent trajectories corresponding to physical passenger displacement.
+First, the contrast between self-supervised world models and deep supervised baselines across collection scales reveals the mechanism of radio representation learning. In radio sensing, concurrent transmitting devices introduce non-stationary interference that alters local signal distributions. Deep classifiers regularized with strict isotropic Gaussian priors, such as \ac{SIGReg}, constrain the latent space around training distributions; when unseen multi-device interference patterns appear, these rigid decision boundaries deteriorate, causing a 0.40 drop in test \ac{MCC}. In contrast, self-supervised \ac{JEPA} pretraining optimizes a predictive objective directly across masked time-frequency patches without label supervision, learning smooth, invariant latent trajectories corresponding to physical passenger displacement.
 
-Second, the channel-level \ac{SHAP} attribution and controlled ablation demonstrate that rich feature synergy is essential for general-purpose world models. Kinematic extrema, low-frequency Doppler power, and baseline energy shifts provide complementary physical constraints. While reducing input dimensions degrades fixed 18-channel patch tokenizers, compact architectures like LeJEPA deliver 0.9143 test \ac{MCC} directly over 4 base channels, confirming flexible edge deployment options.
+Second, the channel-level \ac{SHAP} attribution and controlled ablation demonstrate that rich feature synergy is essential for general-purpose world models, since kinematic extrema, low-frequency Doppler power, and baseline energy shifts provide complementary physical constraints. Reducing input dimensions degrades fixed 18-channel patch tokenizers, whereas compact architectures like LeJEPA retain near-peak accuracy over 4 base channels, confirming flexible edge deployment options.
 
-Third, the Pareto parameter efficiency analysis demonstrates that massive neural ensembles are unnecessary for robust passive sensing. While the 21-member ensemble requires 74.8~M parameters across multiple deep sequence backbones, a compact three-member world model ensemble achieves 0.9160 test \ac{MCC} at only 3.42~M parameters on the primary collection. This confirms that compact self-supervised ensembles deliver state-of-the-art opportunistic sensing with minimal memory footprint, establishing a practical dual-function sensing layer on existing wireless infrastructure.
+Third, the Pareto analysis demonstrates that massive neural ensembles are unnecessary for robust passive sensing. While the 21-member ensemble requires 74.8~M parameters, a compact three-member world model ensemble achieves 0.9160 test \ac{MCC} at only 3.42~M parameters. To assess deployment viability beyond parameter count, we exported LeJEPA to int8 and executed it on an ESP32-D0WD-V3 (240~MHz, 4~MB flash, no PSRAM). The model requires 0.609~MiB at int8 and does not fit the 281~KiB of usable heap at any precision, so weights are memory-mapped from flash and read through the cache; the measured forward pass is 636.7~ms median with a 0~byte heap delta. This is a feasibility result, not a real-time one, as discussed below.
 
 \subsection{Privacy, Security, and Profiling Considerations}
 
 Deploying opportunistic ISAC in public transit environments requires balancing sensing utility against passenger privacy and security. While passive Wi-Fi sensing avoids recording identifiable optical imagery or acoustic signals, the omnidirectional broadcast nature of 802.11 transmissions creates a non-trivial attack surface. Unauthorized sniffers or compromised access points can intercept raw \ac{RSSI} sequences and packet metadata without actively transmitting or alerting clients.
 
-A primary privacy threat stems from machine-learning profiling. As established in Section~II-D, machine-learning profiling algorithms can circumvent identifier anonymization and differential privacy by exploiting temporal dependencies and structural sequence correlations \cite{silva2025iknow,silva2025evaluatingdp}. In vehicular transit, this vulnerability is amplified by the regularity of daily passenger commutes. Repeated transitions through cabin doorways produce characteristic attenuation signatures; when combined with fixed route timetables, continuous \ac{RSSI} streams allow an adversary to construct longitudinal mobility profiles and link individual transit trajectories across days, even under MAC address randomization.
+A primary privacy threat stems from machine-learning profiling. As established in Section~II-D, profiling algorithms can circumvent identifier anonymization and differential privacy by exploiting temporal dependencies and structural sequence correlations \cite{silva2025iknow,silva2025evaluatingdp}. In vehicular transit this is amplified by the regularity of daily commutes: repeated transitions through cabin doorways produce characteristic attenuation signatures which, combined with fixed route timetables, let an adversary link individual transit trajectories across days even under MAC address randomization.
 
-Our architectural findings offer a practical, privacy-by-design mitigation through edge-confined inference. Because dedicated self-supervised architectures such as LeJEPA achieve near-peak performance (0.9143 \ac{MCC}) with only 0.566~M parameters directly over 4 base kinematic channels (Table~\ref{tab:pruning}), classification can execute locally entirely within the onboard Wi-Fi access point firmware. Under this edge-resident paradigm, raw \ac{RSSI} time series and intermediate latent representations are processed ephemerally in volatile memory and discarded immediately following state prediction. Only aggregated, anonymized passenger flow counts ($\Delta \text{boarding}$, $\Delta \text{alighting}$) are transmitted to the transit management backend. By precluding the transmission and storage of continuous radio sequences, edge-resident world models prevent centralized repository harvesting and drastically restrict the temporal window available for adversarial profiling.
+Our architectural findings offer a practical, privacy-by-design mitigation through edge-confined inference. Because dedicated self-supervised architectures such as LeJEPA achieve near-peak performance (0.9143 \ac{MCC}) with only 0.566~M parameters directly over 4 base kinematic channels (Table~\ref{tab:pruning}), classification can execute entirely within the onboard access point firmware. Under this paradigm, raw \ac{RSSI} time series and intermediate latent representations are processed ephemerally in volatile memory and discarded immediately after state prediction; only aggregated, anonymized passenger flow counts ($\Delta \text{boarding}$, $\Delta \text{alighting}$) reach the transit management backend. Precluding the transmission and storage of continuous radio sequences prevents centralized repository harvesting and drastically restricts the window available for adversarial profiling.
+
+\subsection{Limitations and Deployment Outlook}
+
+Several constraints bound the scope of these results. The collection protocol used two controlled indoor zones rather than an operational vehicle, the device pool comprises thirteen smartphone models, and no participant demographic attributes were recorded, so the reported accuracy carries no guarantee of equivalence across device populations or passenger groups. Class labels were assigned by supervised session protocol rather than independent annotation, and the 160 single-device calibration traces are too few to support a separate pure-scenario held-out evaluation. We also note that the training corpus overlaps the evaluation splits, so the absolute values in Table~\ref{tab:single} are optimistic; the comparisons across model families, drawn from identical splits under one protocol, are the claims the table supports.
+
+Deployment raises further questions this study does not resolve. Single-access-point inference cannot disambiguate passengers moving through spatially overlapping zones, and cooperative multi-AP fusion with spatial diversity remains unmeasured. The int8 LeJEPA measurement of 636.7~ms per 10-second window on an ESP32-D0WD-V3 establishes feasibility but not real time, and it covers one model rather than an ensemble. Energy consumption, thermal behavior under continuous operation, and behaviour across multiple vehicles, routes, and seasonal radio drift are likewise outside the present evaluation.

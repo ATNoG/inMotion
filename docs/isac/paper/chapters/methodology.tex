@@ -3,7 +3,7 @@
 We formulate passenger movement classification as a four-class time-series task over short Wi-Fi \ac{RSSI} windows. This section details the physical collection environment, the 18-channel feature pipeline, the self-supervised world models, the supervised baselines, and the calibrated ensemble stacking framework.
 
 \subsection{Physical Sensing Setup and Dataset Composition}
-
+\label{sec:data}
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{images/rssi_trajectory.pdf}
@@ -15,7 +15,7 @@ The physical sensing environment comprises two spatial zones emulating public tr
 
 Observations consist of 10-second \ac{RSSI} sequences sampled at 1~Hz ($T=10$, $t \in \{1, \dots, 10\}$ seconds). As depicted in Figure~\ref{fig:rssi_trajectory}, each class exhibits a characteristic radio attenuation profile: internal transit (AA) maintains a high, stable signal ($\approx -40\,\text{dBm}$), alighting (AB) exhibits a monotonic decline from $-42\,\text{dBm}$ to $-52\,\text{dBm}$, boarding (BA) rises from $-51\,\text{dBm}$ to $-43\,\text{dBm}$, and platform waiting (BB) remains attenuated at $-52\,\text{dBm}$. The shaded $\pm 1\,\sigma$ variance bands capture multi-device concurrent interference while confirming the physical separability of the mobility states.
 
-The dataset contains 3,511 labeled sequences, divided into 160 single-device calibration traces (pure scenario, 40 per class) and 3,351 multi-device concurrent interference traces (noise scenario, $\approx 840$ per class). Data collection follows the controlled indoor methodology of \cite{ribeiro2026eucnc}, scaling the hardware diversity from 4 smartphones in \cite{ribeiro2026eucnc} to 7 distinct smartphone models across multiple vendors and Android releases. This 3,511-sample benchmark is a strict superset of the 2,251-sample collection in \cite{matos2026icaisf} under identical sensing protocols.
+The dataset contains 3,511 labeled sequences, divided into 160 single-device calibration traces (pure scenario, 40 per class) and 3,351 multi-device concurrent interference traces (noise scenario, $\approx 840$ per class). Data collection follows the controlled indoor methodology of \cite{ribeiro2026eucnc}, scaling the hardware diversity from 4 smartphones in \cite{ribeiro2026eucnc} to 7 distinct smartphone models across multiple vendors and Android releases. The 3,511-sample benchmark is a strict superset of the 2,251-sample collection in \cite{matos2026icaisf} under identical sensing protocols: it retains all eight devices of the earlier campaign together with their traces, and adds five further devices. Consequently, 74\% of the expanded collection originates from devices already represented in the prior one, and comparisons between the two quantify stability under collection expansion rather than transfer to an independent environment.
 
 Data is partitioned with an 80/20 class-stratified split, holding out 12.5\% of training data for validation ($\approx 10\%$ of total data). Training folds are augmented within folds using class-conditioned Gaussian noise ($\sigma = 0.05$) and intra-class Mixup ($\alpha = 0.4$), yielding 35,839 training samples with zero split contamination. Model selection is based on validation \ac{MCC}, and the test split is evaluated once for final reporting.
 
@@ -56,14 +56,14 @@ All \ac{JEPA} models learn invariant latent dynamics by predicting representatio
 
 \textbf{T-JEPA} \cite{thimonier2024tjepa} applies per-timestep channel tokenization with learned feature embeddings and two learnable \texttt{[REG]} tokens (prepended to context and target to prevent representational collapse), applying contiguous 30\% temporal masks.
 \textbf{Time-Series JEPA (\ac{TS-JEPA})} \cite{tsjepa2024} utilizes a 1D convolutional patch tokenizer (patch size two) with patch masking annealed from 0.4 to 0.7 across training.
-\textbf{LeJEPA} \cite{balestriero2025lejepa} executes next-step latent prediction without an \ac{EMA} target, stabilized via Sliced Gaussian Regularization (SIGReg) on the empirical characteristic function of latents.
+\textbf{LeJEPA} \cite{balestriero2025lejepa} executes next-step latent prediction without an \ac{EMA} target, stabilized via \ac{SIGReg} on the empirical characteristic function of latents.
 \textbf{CF-JEPA} \cite{cfjepa2026} executes mask-free multi-horizon prediction across horizons $k \in \{1, 2, 3\}$ from context crops with an \ac{EMA} target.
 
 Pretraining runs for 500 epochs with AdamW, cosine annealing, gradient clipping at 1.0, and target momentum schedules shown in Table~\ref{tab:arch_specs}. Fine-tuning employs progressive unfreezing (frozen backbone for 25\% of epochs, then unfrozen at 0.1 learning rate with Mixup $\alpha = 0.4$ and label smoothing $\varepsilon = 0.1$). All fine-tuned models share a learned-attention pooling head mapping encoder latents through a two-layer MLP with dropout (0.3) to 4-class logits.
 
 \subsection{Supervised Classifiers and State-Space Baselines}
 
-\textbf{Sliced Gaussian Regularization (SIGReg) Classifier} \cite{balestriero2025lejepa} is a 3-block 1D convolutional network (192 filters) with global pooling and 128-unit projection, regularized by \ac{SIGReg} ($\lambda = 0.01$) over 256 random projections (0.697~M parameters, 4 channels).
+\textbf{\ac{SIGReg}} \cite{balestriero2025lejepa} is a 3-block 1D convolutional network (192 filters) with global pooling and 128-unit projection, regularized by \ac{SIGReg} ($\lambda = 0.01$) over 256 random projections (0.697~M parameters, 4 channels).
 \textbf{Mamba-3 Sequence Models} \cite{gu2026mamba3} employ selective state spaces \cite{gu2023mamba} (state dim 16, rank-4 MIMO) with four front-ends: \ac{CNN} (0.945~M), \ac{TCN} \cite{bai2018tcn} (0.843~M), Transformer (0.842~M), and multi-view fusion (1.701~M) over 4 channels.
 \textbf{DeepStack} is a two-stage stacked ensemble \cite{wolpert1992stacked} combining ten base models via Level-2 networks and a DeepMetaMLP (43.576~M parameters). Supervised sequence baselines are tuned via Optuna \cite{optuna2019} with \ac{TPE} over 50 trials per model.
 
