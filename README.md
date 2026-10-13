@@ -24,6 +24,27 @@ for the collection protocol.
 
 ![Schema](images/Esquema.png)
 
+## Bus networks and OD matrices
+
+`inmotion bus` scrapes the two operators that cover the Aveiro region — BusWay
+(CIRA) and AveiroBus — and derives origin-destination matrices from their
+timetables. Neither publishes GTFS; BusWay renders every timetable as an HTML
+table of stops against trips, and AveiroBus embeds each timetable in its PDF as
+a single bitmap.
+
+```bash
+uv run inmotion bus fetch     # data/bus/raw + the checksum manifest
+uv run inmotion bus build     # data/bus/{interim,processed} + build.json
+```
+
+`bus build` reads the AveiroBus timetables out of bitmaps, so it needs the
+`tesseract` binary with the Portuguese language pack (`tesseract-ocr-por`, or
+`por.traineddata` in the tessdata directory). Without it the build refuses and
+says so, rather than writing BusWay-only tables.
+
+See [`AI_RESULT.md`](AI_RESULT.md) for what came out, how it was verified
+against the live sites, and what is known to be wrong.
+
 ## Setup
 
 ```bash
@@ -150,6 +171,7 @@ store is absent.
 ```
 src/inmotion/          the package
   cli.py               the `inmotion` entry point
+  bus/                 Aveiro bus networks: scrape, parse into trips, build OD matrices
   models/              registry, factories, sidecars, adoption
   data/                tier paths, feature pipeline, export/merge/clean/augment
   pipelines/           training and evaluation pipelines + their registry
@@ -157,6 +179,7 @@ src/inmotion/          the package
   analysis/  viz/      multi-seed analysis, figure regeneration
 data/
   raw/ interim/ processed/   the three data tiers
+  bus/                 the bus-network scrape and its derived OD matrices
   DATASETS.json        checksums, lineage, label provenance
 docs/                  papers (frozen), reference (generated), guides, audit
 scripts/               slurm/ local/ archive/ oneoff/ docs/

@@ -5,6 +5,7 @@ One package, one module per command group:
 ``model``     inspect, verify, predict and adopt checkpoints
 ``datasets``  dataset versions, provenance and checksums
 ``data``      build and clean datasets (export, merge, clean, augment)
+``bus``       scrape the Aveiro bus networks and build the OD matrices
 ``train``     train models (classification, dl, exotic, hpo-paper)
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
@@ -25,6 +26,7 @@ import typer
 from inmotion import __version__
 from inmotion.cli import (
     analyze,
+    bus,
     data,
     datasets,
     doctor,
@@ -43,7 +45,7 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 
-for sub in (model, datasets, data, quantize, train, evaluate, analyze, plots):
+for sub in (model, datasets, data, bus, quantize, train, evaluate, analyze, plots):
     app.add_typer(sub.app, name=sub.NAME, help=sub.HELP)
 
 app.command("doctor", help="Report on the environment and the artifact store.")(doctor.doctor)

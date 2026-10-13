@@ -264,3 +264,17 @@ results/
 
 # AgentTeams working state (tooling, not source)
 .agent-teams/
+
+# Bus-network scrape cache. 100+ MB of operator HTML and PDFs, all regenerable
+# with `inmotion bus fetch`, which replays the manifest below. The manifest is
+# tracked; the cached responses are not. The derived tables under
+# data/bus/{interim,processed} and the CUA evidence in data/bus/cua are left
+# untracked-but-addable on purpose: which of them is worth committing is a size
+# decision (~72 MB), not a side effect of this rule.
+data/bus/raw/*
+!data/bus/raw/manifest.json
+
+# Optuna dashboard databases. Run state, not source: the studies they hold are
+# re-run by the HPO pipelines, and the file is written next to wherever the
+# dashboard was started.
+optuna*.db

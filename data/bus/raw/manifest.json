@@ -1,0 +1,1584 @@
+{
+  "https://busway-cira.pt/horarios/agueda/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-agueda.html",
+    "bytes": 158424,
+    "sha256": "4f422737041ddbae160c0118f2780f8703bcaf628b381bac5211b5ef62f7f2a5",
+    "fetched_at": "2026-09-28T10:28:21+00:00"
+  },
+  "https://busway-cira.pt/horarios/albergaria-a-velha/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-albergaria-a-velha.html",
+    "bytes": 156833,
+    "sha256": "8b0cb0eb4ec0ffdeaecbdf76c3204161943b4fd6d2b0be1ea208dd686bf28b40",
+    "fetched_at": "2026-09-28T10:28:23+00:00"
+  },
+  "https://busway-cira.pt/horarios/anadia/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-anadia.html",
+    "bytes": 156614,
+    "sha256": "770e5e0deb318b48d12398faa9caa320ab70342f9f09448dfd4d394d69d20121",
+    "fetched_at": "2026-09-28T10:28:24+00:00"
+  },
+  "https://busway-cira.pt/horarios/aveiro/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-aveiro.html",
+    "bytes": 150415,
+    "sha256": "39838bfaadb5853509bd4f3c6f03f98029f9a8cf11897a7807225e1dfe47d0ae",
+    "fetched_at": "2026-09-28T10:28:26+00:00"
+  },
+  "https://busway-cira.pt/horarios/estarreja/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-estarreja.html",
+    "bytes": 153057,
+    "sha256": "f4ccaba101450aa075190d7219d9e18c5f1446e803558903af89771268e721a1",
+    "fetched_at": "2026-09-28T10:28:27+00:00"
+  },
+  "https://busway-cira.pt/horarios/ilhavo/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-ilhavo.html",
+    "bytes": 153117,
+    "sha256": "ff1f56b49600b9c11aead375ec812cfb6777efc6c663703809a13ac3c9c29dde",
+    "fetched_at": "2026-09-28T10:28:29+00:00"
+  },
+  "https://busway-cira.pt/horarios/murtosa/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-murtosa.html",
+    "bytes": 143846,
+    "sha256": "705e9288498d536a175fe50b837b1eae0469c8a2cc063dcec413dfe573489003",
+    "fetched_at": "2026-09-28T10:28:30+00:00"
+  },
+  "https://busway-cira.pt/horarios/oliveira-do-bairro/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-oliveira-do-bairro.html",
+    "bytes": 154426,
+    "sha256": "e73a1a70d6251f8e9d9a793ccd31cb493bc104b67a74a9d8fb2aaedf371eae69",
+    "fetched_at": "2026-09-28T10:28:32+00:00"
+  },
+  "https://busway-cira.pt/horarios/ovar/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-ovar.html",
+    "bytes": 156601,
+    "sha256": "cf26e4c8e561f0ebaae446c8b55bcde48a26aad2e9e3105274c3d87000a4ad62",
+    "fetched_at": "2026-09-28T10:28:34+00:00"
+  },
+  "https://busway-cira.pt/horarios/sever-do-vouga/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-sever-do-vouga.html",
+    "bytes": 154213,
+    "sha256": "00da2c97c297e2e6fa14a0894db78adee134b4586827d6146b38be838f8bbf4c",
+    "fetched_at": "2026-09-28T10:28:35+00:00"
+  },
+  "https://busway-cira.pt/horarios/vagos/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/horarios-vagos.html",
+    "bytes": 154469,
+    "sha256": "924630ac8403955bfe0d0fc52064f88d41781c8555763c51eca2b1ad94243161",
+    "fetched_at": "2026-09-28T10:28:37+00:00"
+  },
+  "https://busway-cira.pt/linhas/12-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-12-ida.html",
+    "bytes": 138573,
+    "sha256": "52ed0e68d30264398035b66e1f76845dd378f3d257461ed8bcf2a6ceb2343212",
+    "fetched_at": "2026-09-28T10:28:38+00:00"
+  },
+  "https://busway-cira.pt/linhas/13-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-13-ida.html",
+    "bytes": 135192,
+    "sha256": "e92dc57bc2b606f90970c3d1f74a8b3ee9932c8289b908b834c915d1b677766f",
+    "fetched_at": "2026-09-28T10:28:40+00:00"
+  },
+  "https://busway-cira.pt/linhas/26-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-26-ida.html",
+    "bytes": 141345,
+    "sha256": "2dd88a1b85cc922d48ede6413aac5eccc8c4bd35cf2a6d45bcd7d5c7ba2962c2",
+    "fetched_at": "2026-09-28T10:28:41+00:00"
+  },
+  "https://busway-cira.pt/linhas/27-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-27-ida.html",
+    "bytes": 136237,
+    "sha256": "0b183f35d44b89bc04a4e748a18134666a7cbb04059ef01bfd0a02fb4603c11f",
+    "fetched_at": "2026-09-28T10:28:43+00:00"
+  },
+  "https://busway-cira.pt/linhas/28-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-28-ida.html",
+    "bytes": 137166,
+    "sha256": "8a12e1d5b0fe9312224266cda40556691be3ef49dea0cf316cd1a9da79d4bb3d",
+    "fetched_at": "2026-09-28T10:28:45+00:00"
+  },
+  "https://busway-cira.pt/linhas/29-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-29-ida.html",
+    "bytes": 138375,
+    "sha256": "eba174e2c94557b12a74b358a34f02f32518b30408542fee2b1a069aa5677a3e",
+    "fetched_at": "2026-09-28T10:28:46+00:00"
+  },
+  "https://busway-cira.pt/linhas/30-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-30-ida.html",
+    "bytes": 136603,
+    "sha256": "46a45a191a48466a9c02b358c948cd508502633397ea0bf35409faa7af58d580",
+    "fetched_at": "2026-09-28T10:28:48+00:00"
+  },
+  "https://busway-cira.pt/linhas/31-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-31-ida.html",
+    "bytes": 135957,
+    "sha256": "5c44b8597949148f5149541cad752b4a3f7d35700d54d1325f36a8d2e3c62d7c",
+    "fetched_at": "2026-09-28T10:28:49+00:00"
+  },
+  "https://busway-cira.pt/linhas/37-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-37-ida.html",
+    "bytes": 136731,
+    "sha256": "88e914ee15654ed4d4d145cfcba30715abfb5ffd08135eade08481d956797b46",
+    "fetched_at": "2026-09-28T10:28:51+00:00"
+  },
+  "https://busway-cira.pt/linhas/38-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-38-ida.html",
+    "bytes": 138382,
+    "sha256": "776239926ea397f51e5165b7eb507d1e970318b815b044e2fc59caa5a5796a0e",
+    "fetched_at": "2026-09-28T10:28:53+00:00"
+  },
+  "https://busway-cira.pt/linhas/39-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-39-ida.html",
+    "bytes": 141531,
+    "sha256": "7e2b0e089764db5d561f59fd74b53c20aa8213f07e63e0488e4be7ba9f5ed89d",
+    "fetched_at": "2026-09-28T10:28:54+00:00"
+  },
+  "https://busway-cira.pt/linhas/40-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-40-ida.html",
+    "bytes": 137123,
+    "sha256": "70726c00ff30fb7ee63535dbe106c6373e16b06abab8e10d63043b1cdc4803a3",
+    "fetched_at": "2026-09-28T10:28:56+00:00"
+  },
+  "https://busway-cira.pt/linhas/41-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-41-ida.html",
+    "bytes": 136644,
+    "sha256": "ad09831c41872edae2f5a04732c33f497e2f44b626be7760ddc9ee7516ca0b1c",
+    "fetched_at": "2026-09-28T10:28:57+00:00"
+  },
+  "https://busway-cira.pt/linhas/42-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-42-ida.html",
+    "bytes": 137286,
+    "sha256": "dc0acc6538e9d42671e6175e61d2343de2a6c40c2775346bfbf6ff493ea52863",
+    "fetched_at": "2026-09-28T10:28:59+00:00"
+  },
+  "https://busway-cira.pt/linhas/43-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-43-ida.html",
+    "bytes": 143549,
+    "sha256": "11f94793af36dffec9f2a941c03cc9eb41c91ab5ec6d3909d22f3d5e61360c6a",
+    "fetched_at": "2026-09-28T10:29:00+00:00"
+  },
+  "https://busway-cira.pt/linhas/44-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-44-ida.html",
+    "bytes": 138559,
+    "sha256": "e6d1163db0b91d2c56d834c168781e2a4d51c4b766d7e984a093c95a71cfa845",
+    "fetched_at": "2026-09-28T10:29:02+00:00"
+  },
+  "https://busway-cira.pt/linhas/45-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-45-ida.html",
+    "bytes": 136976,
+    "sha256": "b1b0dd8e42ac0addaa3b4e0334eb268e532b3a1ea103f176bc51ff4c246f78b1",
+    "fetched_at": "2026-09-28T10:29:04+00:00"
+  },
+  "https://busway-cira.pt/linhas/6-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-6-ida.html",
+    "bytes": 136818,
+    "sha256": "814b9e74aad35f8467175b331c62dd2253650620bf2f179d262146d62bd4d5bb",
+    "fetched_at": "2026-09-28T10:29:05+00:00"
+  },
+  "https://busway-cira.pt/linhas/16-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-16-ida.html",
+    "bytes": 145058,
+    "sha256": "8c7c3b482f68034d4b60a6c060973d0008552708bcf1b16af12e3eeecf2c340e",
+    "fetched_at": "2026-09-28T10:29:07+00:00"
+  },
+  "https://busway-cira.pt/linhas/17-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-17-ida.html",
+    "bytes": 138040,
+    "sha256": "2c852de07b3c39481cbde823e689ab743b9bddada4642c56b93caaf2295f4756",
+    "fetched_at": "2026-09-28T10:29:08+00:00"
+  },
+  "https://busway-cira.pt/linhas/23-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-23-ida.html",
+    "bytes": 134850,
+    "sha256": "114fd07bd5e367bce897800d036b681798ee845f2484b5234ac9446740332547",
+    "fetched_at": "2026-09-28T10:29:10+00:00"
+  },
+  "https://busway-cira.pt/linhas/24-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-24-ida.html",
+    "bytes": 135591,
+    "sha256": "fa1a0e443431bcf8d5968572d1332cce357b1f8521dc2c7e9dd375037e2026d8",
+    "fetched_at": "2026-09-28T10:29:12+00:00"
+  },
+  "https://busway-cira.pt/linhas/32-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-32-ida.html",
+    "bytes": 135416,
+    "sha256": "8592941e4677307e2820c4bbbfa191a7fbdd3a598aeabc3ce99c5c7b70526a4f",
+    "fetched_at": "2026-09-28T10:29:13+00:00"
+  },
+  "https://busway-cira.pt/linhas/33-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-33-ida.html",
+    "bytes": 141574,
+    "sha256": "589c851ca1f3d9d02464d763f3132fea0e8969d1b46baaeee99dc50d028dccfd",
+    "fetched_at": "2026-09-28T10:29:15+00:00"
+  },
+  "https://busway-cira.pt/linhas/46-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-46-ida.html",
+    "bytes": 137408,
+    "sha256": "7bda698841f01e8bd390f9c7ce1dd0a63b7cb8ed70273e599efa7e3d875cdad7",
+    "fetched_at": "2026-09-28T10:29:17+00:00"
+  },
+  "https://busway-cira.pt/linhas/47-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-47-ida.html",
+    "bytes": 148542,
+    "sha256": "b983f81dc7f023afe94d7e62d6be1750de706c4724e06c47b115ec40a294b193",
+    "fetched_at": "2026-09-28T10:29:18+00:00"
+  },
+  "https://busway-cira.pt/linhas/48-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-48-ida.html",
+    "bytes": 136977,
+    "sha256": "8554665cc7f8cc782c673819ff986db4728f3415ade380467c2584b2b33eba26",
+    "fetched_at": "2026-09-28T10:29:20+00:00"
+  },
+  "https://busway-cira.pt/linhas/51-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-51-ida.html",
+    "bytes": 137639,
+    "sha256": "8424892d57606606621d215d67343aa548214920777997066c3157fb739a6205",
+    "fetched_at": "2026-09-28T10:29:21+00:00"
+  },
+  "https://busway-cira.pt/linhas/52-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-52-ida.html",
+    "bytes": 136662,
+    "sha256": "063e0788bfbcb34e01886c716ed49906f7b57be694c7ed13561b7a122e72ad2e",
+    "fetched_at": "2026-09-28T10:29:24+00:00"
+  },
+  "https://busway-cira.pt/linhas/53-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-53-ida.html",
+    "bytes": 136062,
+    "sha256": "a4df34b70d25b5c8a5cff59c48b89b5a9f3ebeb8925b04dd47a9a682590f35fe",
+    "fetched_at": "2026-09-28T10:29:25+00:00"
+  },
+  "https://busway-cira.pt/linhas/11-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-11-ida.html",
+    "bytes": 137357,
+    "sha256": "9e117bd6e439b918651ec330f22d3f0afb6a9ad3af973e3b73366c1ea836926e",
+    "fetched_at": "2026-09-28T10:29:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/14-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-14-ida.html",
+    "bytes": 139424,
+    "sha256": "28d9297a121c69826ba894feda6b50d760cfa71e7ca475e972d47085a1933d26",
+    "fetched_at": "2026-09-28T10:29:29+00:00"
+  },
+  "https://busway-cira.pt/linhas/54-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-54-ida.html",
+    "bytes": 135196,
+    "sha256": "f334a435eefc9677a3413df534fe08b76b6f69b646c169e533e2d27d0a15a2d1",
+    "fetched_at": "2026-09-28T10:29:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/55-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-55-ida.html",
+    "bytes": 134722,
+    "sha256": "d7eb414f22101c5f697296b1b2890acd4b533c619aa175fa658abb186c9242e6",
+    "fetched_at": "2026-09-28T10:29:32+00:00"
+  },
+  "https://busway-cira.pt/linhas/56-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-56-ida.html",
+    "bytes": 137426,
+    "sha256": "282f2eddb3fe0e73ec27cbc1f6186cecd8184f23c9885c8e76ce0396fc3b5f1d",
+    "fetched_at": "2026-09-28T10:29:33+00:00"
+  },
+  "https://busway-cira.pt/linhas/57-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-57-ida.html",
+    "bytes": 136897,
+    "sha256": "7d1e49a699f6b9db5b3138199cf2a211077f5d268209173c4eb81fcda4925576",
+    "fetched_at": "2026-09-28T10:29:35+00:00"
+  },
+  "https://busway-cira.pt/linhas/58-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-58-ida.html",
+    "bytes": 135984,
+    "sha256": "21161440a4aed5fa1c2b271b73fa4a0f60f9605cdb2f018ddc6c2b60556ed1e7",
+    "fetched_at": "2026-09-28T10:29:36+00:00"
+  },
+  "https://busway-cira.pt/linhas/59-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-59-ida.html",
+    "bytes": 138194,
+    "sha256": "5f685bf8cfd3cf6c416a65273b0b074e24b2c875dcb9c11fef5ed6b397f6158f",
+    "fetched_at": "2026-09-28T10:29:38+00:00"
+  },
+  "https://busway-cira.pt/linhas/60-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-60-ida.html",
+    "bytes": 135622,
+    "sha256": "e64240e7fbbf538612088320c44cd8c1507087a5e56425834338200382fcab5b",
+    "fetched_at": "2026-09-28T10:29:39+00:00"
+  },
+  "https://busway-cira.pt/linhas/61-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-61-ida.html",
+    "bytes": 135236,
+    "sha256": "6c48ee5a9b5e09d97efcdf6ac842d29c7d51437b1afa9e1171ce0f0e7119ce36",
+    "fetched_at": "2026-09-28T10:29:41+00:00"
+  },
+  "https://busway-cira.pt/linhas/62-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-62-ida.html",
+    "bytes": 136147,
+    "sha256": "c8410761cd3581e2854e95bb89529148aff1bb303f40a63b530f2bfd9540ab37",
+    "fetched_at": "2026-09-28T10:29:42+00:00"
+  },
+  "https://busway-cira.pt/linhas/63-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-63-ida.html",
+    "bytes": 137137,
+    "sha256": "ab82c22878310e8deeb12906bfadbc82654f9bbf5f04d8cb0630073e5074c695",
+    "fetched_at": "2026-09-28T10:29:44+00:00"
+  },
+  "https://busway-cira.pt/linhas/18-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-18-ida.html",
+    "bytes": 146343,
+    "sha256": "036328a22ff5dfdbe324c653a8b770b780e8608e0ea0440da58eba43189e9ce0",
+    "fetched_at": "2026-09-28T10:29:46+00:00"
+  },
+  "https://busway-cira.pt/linhas/19-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-19-ida.html",
+    "bytes": 139689,
+    "sha256": "3a3a1a0e6ffa56f6124c584bcbab3d3a3e8124d6603f1231b90f855f5cec4528",
+    "fetched_at": "2026-09-28T10:29:47+00:00"
+  },
+  "https://busway-cira.pt/linhas/20-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-20-ida.html",
+    "bytes": 137418,
+    "sha256": "cc8273b1501ca86749242d426537afcb7ef99899a46c8849cbb08ad9b4cc19c3",
+    "fetched_at": "2026-09-28T10:29:49+00:00"
+  },
+  "https://busway-cira.pt/linhas/25-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-25-ida.html",
+    "bytes": 136347,
+    "sha256": "aa203ed4689809df6b7eb98903cb966965172d328663d1b167aec2224f94b460",
+    "fetched_at": "2026-09-28T10:29:50+00:00"
+  },
+  "https://busway-cira.pt/linhas/34-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-34-ida.html",
+    "bytes": 135487,
+    "sha256": "ce57360ad1750efd4a40a30a96588c7c9f3272a44d157afb298e74a0e5d939f1",
+    "fetched_at": "2026-09-28T10:29:52+00:00"
+  },
+  "https://busway-cira.pt/linhas/L35/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-L35.html",
+    "bytes": 137968,
+    "sha256": "d55898fa9c4e51506d23c4ffb24d4422d8dce0d34762714a4e205ee91f597e2b",
+    "fetched_at": "2026-09-28T10:29:54+00:00"
+  },
+  "https://busway-cira.pt/linhas/35-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-35-volta.html",
+    "bytes": 138295,
+    "sha256": "0cbc91247cbe43be29d996ef232f8fd2634167ab70da594c68fd1d2e8204c5bd",
+    "fetched_at": "2026-09-28T10:29:55+00:00"
+  },
+  "https://busway-cira.pt/linhas/36-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-36-ida.html",
+    "bytes": 148242,
+    "sha256": "5b007369e68215cd0be0799437766f2e987f1e9ef342cd923d0107bde6e758df",
+    "fetched_at": "2026-09-28T10:29:57+00:00"
+  },
+  "https://busway-cira.pt/linhas/3-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-3-ida.html",
+    "bytes": 136336,
+    "sha256": "62994168823bb1265f299e79e7bd775d8c0cb1d269074ccdcdb8c1ad445bd591",
+    "fetched_at": "2026-09-28T10:29:58+00:00"
+  },
+  "https://busway-cira.pt/linhas/21-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-21-ida.html",
+    "bytes": 139895,
+    "sha256": "823125a2ec44cfba68e35876d39bf766370b377ef162a5ae8da8074114f03e2d",
+    "fetched_at": "2026-09-28T10:30:00+00:00"
+  },
+  "https://busway-cira.pt/linhas/22-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-22-ida.html",
+    "bytes": 135542,
+    "sha256": "ed0a25cfafff341aa4bfa4e8a79b5e070283cf07c3e00dc0e990c1e92b672cd2",
+    "fetched_at": "2026-09-28T10:30:03+00:00"
+  },
+  "https://busway-cira.pt/linhas/64-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-64-ida.html",
+    "bytes": 135453,
+    "sha256": "7d12a94e67d699d44ca1f27f3da38e36ed8f07d9a69571aeb3c94963aa6f2416",
+    "fetched_at": "2026-09-28T10:30:05+00:00"
+  },
+  "https://busway-cira.pt/linhas/65-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-65-ida.html",
+    "bytes": 136033,
+    "sha256": "6dff995bfb714cda95c7ada3792c14b376ce4e801991a030bec7d65d447f005e",
+    "fetched_at": "2026-09-28T10:30:07+00:00"
+  },
+  "https://busway-cira.pt/linhas/66-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-66-ida.html",
+    "bytes": 138185,
+    "sha256": "8e11976b59e08d339e874005b7201117fa73cadde6d5d61f367e6de5a5515560",
+    "fetched_at": "2026-09-28T10:30:09+00:00"
+  },
+  "https://busway-cira.pt/linhas/67-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-67-ida.html",
+    "bytes": 137883,
+    "sha256": "ab6bee619e1f3adb7686ac6ad4979984694644be95696222524af22afb0af326",
+    "fetched_at": "2026-09-28T10:30:10+00:00"
+  },
+  "https://busway-cira.pt/linhas/68-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-68-ida.html",
+    "bytes": 136101,
+    "sha256": "9b4c16b069b7eaeccef468f4f0cef0999155b9a1bf51d9bbac32ff18aa78a91e",
+    "fetched_at": "2026-09-28T10:30:12+00:00"
+  },
+  "https://busway-cira.pt/linhas/69-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-69-ida.html",
+    "bytes": 140825,
+    "sha256": "1a740b467c63f3720c3b1c822ed0d6684843cace9db5f243137e4bf72bb94981",
+    "fetched_at": "2026-09-28T10:30:13+00:00"
+  },
+  "https://busway-cira.pt/linhas/70-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-70-ida.html",
+    "bytes": 142666,
+    "sha256": "94de2788ab9e6d2ea576e4512d1f48096a115e2c180584f4c17df9506e77cc4e",
+    "fetched_at": "2026-09-28T10:30:15+00:00"
+  },
+  "https://busway-cira.pt/linhas/71-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-71-ida.html",
+    "bytes": 136575,
+    "sha256": "5048d8e760be555a9e3aa16a8a4d9b19c197ece652719c1aafca4fc2311bf1e2",
+    "fetched_at": "2026-09-28T10:30:17+00:00"
+  },
+  "https://busway-cira.pt/linhas/72-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-72-ida.html",
+    "bytes": 136702,
+    "sha256": "02adc69515f5805117cf5f6eb6ab467ea25cf7f9bc36bc999965db2cdaa857d6",
+    "fetched_at": "2026-09-28T10:30:18+00:00"
+  },
+  "https://busway-cira.pt/linhas/73-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-73-ida.html",
+    "bytes": 136643,
+    "sha256": "b487d722fb4a7d3cf681cd9799d6f6ce432f0ff53e6002a20a7dbfea32b62610",
+    "fetched_at": "2026-09-28T10:30:20+00:00"
+  },
+  "https://busway-cira.pt/linhas/74-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-74-ida.html",
+    "bytes": 135360,
+    "sha256": "9554667cc6514b1ef3f0d4acb0ecb95550002f3655b6447a252596c95df223fa",
+    "fetched_at": "2026-09-28T10:30:22+00:00"
+  },
+  "https://busway-cira.pt/linhas/75-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-75-ida.html",
+    "bytes": 136447,
+    "sha256": "6a2c595865165bb7c9f829d5d0c65d6bb238e00c6bb053e7ebcf8d7aa5f1e230",
+    "fetched_at": "2026-09-28T10:30:23+00:00"
+  },
+  "https://busway-cira.pt/linhas/76-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-76-ida.html",
+    "bytes": 136916,
+    "sha256": "f09d176a7af2f90b57001c5f4bcf2c2ecc68e644c377bff0622659445e35fb2d",
+    "fetched_at": "2026-09-28T10:30:25+00:00"
+  },
+  "https://busway-cira.pt/linhas/77-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-77-ida.html",
+    "bytes": 138968,
+    "sha256": "533a90f91ac1e60ef2f3f08a641f6e8d454759ec71412666a1f02acbee117ca9",
+    "fetched_at": "2026-09-28T10:30:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/78-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-78-ida.html",
+    "bytes": 136570,
+    "sha256": "73bc7d2ee61395987f6d89cb9323c0c2195072afeedddc91b9e664c7140bb0af",
+    "fetched_at": "2026-09-28T10:30:28+00:00"
+  },
+  "https://busway-cira.pt/linhas/79-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-79-ida.html",
+    "bytes": 138192,
+    "sha256": "e1e1c358bcbc0afb860d27003fe3a69abc7fb54361550d4a3d5721eaa770c625",
+    "fetched_at": "2026-09-28T10:30:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/80-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-80-ida.html",
+    "bytes": 136717,
+    "sha256": "9d3641a8d7dc75606c7578603229fb4d3332edd1eed5eaebc40d2280ac89b5ce",
+    "fetched_at": "2026-09-28T10:30:31+00:00"
+  },
+  "https://busway-cira.pt/linhas/81-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-81-ida.html",
+    "bytes": 138050,
+    "sha256": "75c8b65e148db0febd6f0c6c437bd473ccd2f1244abdb4851d13c68350fa037e",
+    "fetched_at": "2026-09-28T10:30:33+00:00"
+  },
+  "https://busway-cira.pt/linhas/82-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-82-ida.html",
+    "bytes": 137481,
+    "sha256": "3d9931a9a96844e9fdb6be978e517260d12c21a50f95b42a57c061bee92f66ec",
+    "fetched_at": "2026-09-28T10:30:35+00:00"
+  },
+  "https://busway-cira.pt/linhas/83-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-83-ida.html",
+    "bytes": 141431,
+    "sha256": "2e464f271986cb13cf64b3d492b9638614df53620a8a85ed88d3b105547e401c",
+    "fetched_at": "2026-09-28T10:30:36+00:00"
+  },
+  "https://busway-cira.pt/linhas/84-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-84-ida.html",
+    "bytes": 136006,
+    "sha256": "f19e822022966925529ac52d055759610ca99527b181c5792fbbb5ee139949df",
+    "fetched_at": "2026-09-28T10:30:38+00:00"
+  },
+  "https://busway-cira.pt/linhas/85-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-85-ida.html",
+    "bytes": 140588,
+    "sha256": "cd8a5e89f32f177f922d69c3702651eb9cdbd37bc8abd03430d5a19e130e94b1",
+    "fetched_at": "2026-09-28T10:30:39+00:00"
+  },
+  "https://busway-cira.pt/linhas/1-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-1-volta.html",
+    "bytes": 134183,
+    "sha256": "e9949415f41999589890e932a9e14b3aeb0144481e1ad2b1963d85327ac2749a",
+    "fetched_at": "2026-09-28T10:30:41+00:00"
+  },
+  "https://busway-cira.pt/linhas/4-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-4-ida.html",
+    "bytes": 142086,
+    "sha256": "6d3954991586523e347235f18739ec836e9e20fb32c92a480e3c167acdb6fc50",
+    "fetched_at": "2026-09-28T10:30:43+00:00"
+  },
+  "https://busway-cira.pt/linhas/5-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-5-ida.html",
+    "bytes": 134555,
+    "sha256": "65941b52aec0e0bcddad4601c820d2df36461974af79936e6f6f31197c6df255",
+    "fetched_at": "2026-09-28T10:30:45+00:00"
+  },
+  "https://busway-cira.pt/linhas/7-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-7-ida.html",
+    "bytes": 136259,
+    "sha256": "1e574f7cc36be83e108797b835872421ecb149eb109d0e10ab6a141b8b7651de",
+    "fetched_at": "2026-09-28T10:30:46+00:00"
+  },
+  "https://busway-cira.pt/linhas/8-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-8-ida.html",
+    "bytes": 138926,
+    "sha256": "7e8b255ce9f8a745195934b38d386c436ef64b83662a424a0c81debe18dbf757",
+    "fetched_at": "2026-09-28T10:30:48+00:00"
+  },
+  "https://busway-cira.pt/linhas/9-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-9-ida.html",
+    "bytes": 134845,
+    "sha256": "117117eeecb8022e2719cb4821921816ad7afef9936e1df9411c21e0d76e271f",
+    "fetched_at": "2026-09-28T10:30:50+00:00"
+  },
+  "https://busway-cira.pt/linhas/15-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-15-ida.html",
+    "bytes": 141139,
+    "sha256": "ef07a185187a85f9ea97162c5ab312f46bc3978f20ffdae60cdfab6aa21af512",
+    "fetched_at": "2026-09-28T10:30:51+00:00"
+  },
+  "https://busway-cira.pt/linhas/86-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-86-ida.html",
+    "bytes": 141125,
+    "sha256": "011d74874d646b5b88b73b0d279bede71b8e4b6e136f2dbfa635245ce5f5ddd0",
+    "fetched_at": "2026-09-28T10:30:53+00:00"
+  },
+  "https://busway-cira.pt/linhas/87-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-87-ida.html",
+    "bytes": 135324,
+    "sha256": "1306dc18fa77fddb1d4d2ca3bc4215b0750bbce5e27a49291aa6ae3d017d441a",
+    "fetched_at": "2026-09-28T10:30:54+00:00"
+  },
+  "https://busway-cira.pt/linhas/88-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-88-ida.html",
+    "bytes": 135321,
+    "sha256": "2dab40daa4c096d9b935308f8f136198942e6432c9c69ecf40abf21112196061",
+    "fetched_at": "2026-09-28T10:30:56+00:00"
+  },
+  "https://busway-cira.pt/linhas/90-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-90-ida.html",
+    "bytes": 145650,
+    "sha256": "ccad84ebe321842b3d999ca84c4674d2c6c18c552cd00912f2ac025b71cd8075",
+    "fetched_at": "2026-09-28T10:30:57+00:00"
+  },
+  "https://busway-cira.pt/linhas/91-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-91-ida.html",
+    "bytes": 136562,
+    "sha256": "51ca6ec2797deb9ce6a11cc46dad4c8c4fadbd2f173cd0876885575aa1db1413",
+    "fetched_at": "2026-09-28T10:30:59+00:00"
+  },
+  "https://busway-cira.pt/linhas/92-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-92-ida.html",
+    "bytes": 137957,
+    "sha256": "0e0325b3dd266956a9fb2912602cfcbd9b9a02b49b56b887d73de83ab15baff1",
+    "fetched_at": "2026-09-28T10:31:00+00:00"
+  },
+  "https://busway-cira.pt/linhas/93-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-93-ida.html",
+    "bytes": 139889,
+    "sha256": "c4258a0512ed9d0d1742fad9d4e26839c256fa26aa2e85ee79e09d171e00c18d",
+    "fetched_at": "2026-09-28T10:31:03+00:00"
+  },
+  "https://busway-cira.pt/linhas/94-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-94-ida.html",
+    "bytes": 136449,
+    "sha256": "a78bf2c9e02743c94e03416c33244b6381c1b606d0943aa22d322b3c3a6fa0c3",
+    "fetched_at": "2026-09-28T10:31:04+00:00"
+  },
+  "https://busway-cira.pt/linhas/95-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-95-ida.html",
+    "bytes": 136124,
+    "sha256": "195af624423900c14cb2b7e9cf55690a73792a98790f5107127584da96476e01",
+    "fetched_at": "2026-09-28T10:31:06+00:00"
+  },
+  "https://busway-cira.pt/linhas/96-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-96-ida.html",
+    "bytes": 136725,
+    "sha256": "d13c260e09667da7ae6154edff4e8d486846343d36bb1e1e11ee10bcfeb35527",
+    "fetched_at": "2026-09-28T10:31:08+00:00"
+  },
+  "https://busway-cira.pt/linhas/97-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-97-ida.html",
+    "bytes": 138015,
+    "sha256": "ea2edcf6a16244ff4b394c21395b44eead1dbba6176cfdd944bc58b7ddc65b4d",
+    "fetched_at": "2026-09-28T10:31:09+00:00"
+  },
+  "https://busway-cira.pt/linhas/98-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-98-ida.html",
+    "bytes": 136311,
+    "sha256": "12b10bc9e37aec36461d633268a09f63229bdb3e665f593c809c54621cdf7fc9",
+    "fetched_at": "2026-09-28T10:31:11+00:00"
+  },
+  "https://busway-cira.pt/linhas/99-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-99-ida.html",
+    "bytes": 135724,
+    "sha256": "a765cd72c61c64ccb7bb76e0608461636342bcb79198f56287cea278c2568585",
+    "fetched_at": "2026-09-28T10:31:13+00:00"
+  },
+  "https://busway-cira.pt/linhas/100-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-100-ida.html",
+    "bytes": 138572,
+    "sha256": "cdfbae507f93758b5aa0892c7db2558719bfd563fae1f97074ee90eb91625d99",
+    "fetched_at": "2026-09-28T10:31:14+00:00"
+  },
+  "https://busway-cira.pt/linhas/101-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-101-ida.html",
+    "bytes": 137074,
+    "sha256": "fa16227f540cd22ffb60145a1ff12ff7573466d7f6deb90a0640f2de7889b1ca",
+    "fetched_at": "2026-09-28T10:31:16+00:00"
+  },
+  "https://busway-cira.pt/linhas/10-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-10-ida.html",
+    "bytes": 136943,
+    "sha256": "4f268ea4497cdb5baba45f85885a85398f40120e8e551810844e6a71b10c011f",
+    "fetched_at": "2026-09-28T10:31:17+00:00"
+  },
+  "https://busway-cira.pt/linhas/102-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-102-ida.html",
+    "bytes": 138115,
+    "sha256": "f06be0715ada4517d85e762517c197cbfbc6dae68438316fa9797bb4dbf2203c",
+    "fetched_at": "2026-09-28T10:31:19+00:00"
+  },
+  "https://busway-cira.pt/linhas/103-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-103-ida.html",
+    "bytes": 141343,
+    "sha256": "74df824cfb96bfa9c5b5c350d03fa573b15f0d85e8975eac3a8458acd5a9b780",
+    "fetched_at": "2026-09-28T10:31:21+00:00"
+  },
+  "https://busway-cira.pt/linhas/104-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-104-ida.html",
+    "bytes": 139206,
+    "sha256": "2d7485ab3ff837991075c43c0973fe9113cd174e2f27202be153ba8b1e104bd7",
+    "fetched_at": "2026-09-28T10:31:22+00:00"
+  },
+  "https://busway-cira.pt/linhas/105-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-105-ida.html",
+    "bytes": 136400,
+    "sha256": "2a7e5864b9ee48074c2f4abfe41a0c82c42a63b99b4ec877ee0052d7ce3c2825",
+    "fetched_at": "2026-09-28T10:31:24+00:00"
+  },
+  "https://busway-cira.pt/linhas/106-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-106-ida.html",
+    "bytes": 135711,
+    "sha256": "bdfa3a1893b724ad9aaadf7e427fcc5daaea6cf58c73b01679379903d475e221",
+    "fetched_at": "2026-09-28T10:31:25+00:00"
+  },
+  "https://busway-cira.pt/linhas/107-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-107-ida.html",
+    "bytes": 137396,
+    "sha256": "3f55a1912faaafcb536d83ac9d253daf8e8fa82e2af4235df10c6429c5ad7a64",
+    "fetched_at": "2026-09-28T10:31:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/108-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-108-ida.html",
+    "bytes": 135535,
+    "sha256": "209cb1fe6ff95e44f9b1dc4a96a2b5783c83ad69cd6b666b2ea1767915d60be2",
+    "fetched_at": "2026-09-28T10:31:29+00:00"
+  },
+  "https://busway-cira.pt/linhas/109-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-109-ida.html",
+    "bytes": 136268,
+    "sha256": "44aeb779066adeede933e8195b952a8f1f8dd90437f44dd4e28d3626f129f743",
+    "fetched_at": "2026-09-28T10:31:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/110-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-110-ida.html",
+    "bytes": 138201,
+    "sha256": "ab3ce100e5c7dff704bab4df85942d1a7fa2f9733b1da1f31b9c496e14922e14",
+    "fetched_at": "2026-09-28T10:31:32+00:00"
+  },
+  "https://busway-cira.pt/linhas/111-ida/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-111-ida.html",
+    "bytes": 135635,
+    "sha256": "97b41950d8c0d54a1de6dfdd6311a2b05ec2f3f5f876c1598b3436aca2c44fed",
+    "fetched_at": "2026-09-28T10:31:33+00:00"
+  },
+  "https://www.aveirobus.pt/circuito-urbano": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/circuito-urbano.html",
+    "bytes": 35857,
+    "sha256": "1685a3323c39a0d00f3e44cca9586eab3b76995d1724b7de296b1ab24a7987c1",
+    "fetched_at": "2026-09-28T10:40:24+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l1-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l1-202506.pdf",
+    "bytes": 8824174,
+    "sha256": "85b8ac5b4f95d27fa4be0ae9c03278e9df90fc010997854fc8274f099967de98",
+    "fetched_at": "2026-09-28T10:40:36+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro_bus_site_-_horario_linha_297x297_l2_202602.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro_bus_site_-_horario_linha_297x297_l2_202602.pdf",
+    "bytes": 7438922,
+    "sha256": "04eee53d4d98f9f2bfaced711dd1ee663a5f4131f8034b5ba3fafe6225838f82",
+    "fetched_at": "2026-09-28T10:40:48+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l3-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l3-202506.pdf",
+    "bytes": 7753132,
+    "sha256": "da5086d1150866ae8250b12047c5a157750b68fd8c2c820110959624966a2f01",
+    "fetched_at": "2026-09-28T10:41:00+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l4-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l4-202506.pdf",
+    "bytes": 9310902,
+    "sha256": "12884faaf6a79a31e03bf0e6d14641faf27314270e2fc33ae46555f014558586",
+    "fetched_at": "2026-09-28T10:41:12+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l5-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l5-202506.pdf",
+    "bytes": 6873794,
+    "sha256": "57200c0321e13ca672915b9f84e3a2e3d7c9780aa3ab1e04e29f80fd879bba8f",
+    "fetched_at": "2026-09-28T10:41:24+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro_bus_site_-_horario_linha_297x297_l6_202602.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro_bus_site_-_horario_linha_297x297_l6_202602.pdf",
+    "bytes": 6802719,
+    "sha256": "54ea4a40f8c45be354bcab1a6e87c5a2cb3aea974bd279ced6f16ec94889b439",
+    "fetched_at": "2026-09-28T10:41:37+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l7-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l7-202506.pdf",
+    "bytes": 5774983,
+    "sha256": "25ff8f8393a6fc6e15ab22284257eb98875c064b6f9edeff73eb0062c0e5e100",
+    "fetched_at": "2026-09-28T10:41:50+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro_bus_site_-_horario_linha_297x297_l8_202602.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro_bus_site_-_horario_linha_297x297_l8_202602.pdf",
+    "bytes": 7445029,
+    "sha256": "1b11a08ff6ca886361c30ece14de14c3a38caef6b2eace7bcc4f2ecef2c75748",
+    "fetched_at": "2026-09-28T10:42:01+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l10-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l10-202506.pdf",
+    "bytes": 6534706,
+    "sha256": "ed6f5a0d31bd6f4f3886f97947250121690dd09fe66217e1af3097be77c77aa7",
+    "fetched_at": "2026-09-28T10:42:15+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro_bus_site_-_horario_linha_297x297_l11_202609.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro_bus_site_-_horario_linha_297x297_l11_202609.pdf",
+    "bytes": 692014,
+    "sha256": "5b6e558f5c885284b2b2b32cb4d4e212ede09c6914e1ce7decce16faaec0f3db",
+    "fetched_at": "2026-09-28T10:42:26+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l12-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l12-202506.pdf",
+    "bytes": 4196541,
+    "sha256": "c51ef74f44e83154133712d08886f67db1dfcec635143898ca5d2edd4f38d4e6",
+    "fetched_at": "2026-09-28T10:42:37+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l-azul-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l-azul-202506.pdf",
+    "bytes": 5294496,
+    "sha256": "8f5316da47ca6cd33e5a27c5a4a52eb2cc8922a2b5f84a9e1fbfec0c00d6410c",
+    "fetched_at": "2026-09-28T10:42:51+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro-bus-site-horario-linha-297x297-l-verde-202506.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro-bus-site-horario-linha-297x297-l-verde-202506.pdf",
+    "bytes": 5277795,
+    "sha256": "600f39f1d770367f01a5c15fbec963abc0024069e927cd5d906fbcc29162497e",
+    "fetched_at": "2026-09-28T10:43:04+00:00"
+  },
+  "https://www.aveirobus.pt/sites/default/files/horarios/aveiro_bus_site_info_-_horario_linha_297x297_13_202605.pdf": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/aveiro_bus_site_info_-_horario_linha_297x297_13_202605.pdf",
+    "bytes": 1554497,
+    "sha256": "fb026a8299883764661ce55d9d56017581f47228e1d4bab5493ca75f8c741933",
+    "fetched_at": "2026-09-28T10:43:15+00:00"
+  },
+  "https://www.aveirobus.pt/longo-curso": {
+    "operator": "aveirobus",
+    "path": "data/bus/raw/aveirobus/longo-curso.html",
+    "bytes": 24251,
+    "sha256": "c9e2f3b549c861fb8e9d2af55db9fe7b30af4ed614d57bcd96f23406cff3159c",
+    "fetched_at": "2026-09-28T10:43:25+00:00"
+  },
+  "https://busway-cira.pt/page-sitemap.xml": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/page-sitemap.xml",
+    "bytes": 67107,
+    "sha256": "30023f9760579f32a7dc59c026ca236897d80ba9dbd03828c1fbe721e65e7f8b",
+    "fetched_at": "2026-09-28T10:44:06+00:00"
+  },
+  "https://busway-cira.pt/linhas/14-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-14-volta.html",
+    "bytes": 141176,
+    "sha256": "a0e4abff5eba1b87edb300bfc0efba886f46b345ade744e341b2f65fb50edddd",
+    "fetched_at": "2026-09-28T10:44:07+00:00"
+  },
+  "https://busway-cira.pt/linhas/12-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-12-volta.html",
+    "bytes": 138792,
+    "sha256": "5780b4cf9440a9af1b90e82b2b61651c5e41ad46171a1a4c579067dba99b202f",
+    "fetched_at": "2026-09-28T10:44:09+00:00"
+  },
+  "https://busway-cira.pt/linhas/13-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-13-volta.html",
+    "bytes": 135104,
+    "sha256": "e9b7e3273843edce84129608d83d2a5dd01fd5183784ad3d345484f5acb66463",
+    "fetched_at": "2026-09-28T10:44:10+00:00"
+  },
+  "https://busway-cira.pt/linhas/3-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-3-volta.html",
+    "bytes": 136123,
+    "sha256": "ca4efe320187d2406ca04b71891cf099ed16e3b4fff1c07dd7e8171a181c2c70",
+    "fetched_at": "2026-09-28T10:44:12+00:00"
+  },
+  "https://busway-cira.pt/linhas/6-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-6-volta.html",
+    "bytes": 136729,
+    "sha256": "29f7905b216102daf2ef299e320287be385cc7b8aa835c72ba4850d184762157",
+    "fetched_at": "2026-09-28T10:44:13+00:00"
+  },
+  "https://busway-cira.pt/linhas/7-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-7-volta.html",
+    "bytes": 136166,
+    "sha256": "d3abd9e0916a1ba3efb35d73cf24416823179c7d0abf89cf1d8d79961fac8a0e",
+    "fetched_at": "2026-09-28T10:44:15+00:00"
+  },
+  "https://busway-cira.pt/linhas/8-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-8-volta.html",
+    "bytes": 139883,
+    "sha256": "2d90fae27fb8d4b6f6127c221bb2780afc1c19d8b76342a9fd229363e6af5e57",
+    "fetched_at": "2026-09-28T10:44:17+00:00"
+  },
+  "https://busway-cira.pt/linhas/22-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-22-volta.html",
+    "bytes": 135869,
+    "sha256": "89869b010fb692e2df3a75bb1c77250b05e8299dddcefab9caa726cc258d4b16",
+    "fetched_at": "2026-09-28T10:44:18+00:00"
+  },
+  "https://busway-cira.pt/linhas/25-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-25-volta.html",
+    "bytes": 136185,
+    "sha256": "461f0a54cf8cf238ec385909059266b93b7d69832adfb5b6213ae3776c16c0e6",
+    "fetched_at": "2026-09-28T10:44:20+00:00"
+  },
+  "https://busway-cira.pt/linhas/32-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-32-volta.html",
+    "bytes": 135466,
+    "sha256": "0a46fbacf52c084f5db65737fa4f856a992adbbdf6f08e880a4cbd09f9c7c46e",
+    "fetched_at": "2026-09-28T10:44:21+00:00"
+  },
+  "https://busway-cira.pt/linhas/34-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-34-volta.html",
+    "bytes": 135653,
+    "sha256": "cd9185a049c96cf2da42b703ae7f032d301cc126d3706afdb9cab657faa7e16d",
+    "fetched_at": "2026-09-28T10:44:24+00:00"
+  },
+  "https://busway-cira.pt/linhas/36-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-36-volta.html",
+    "bytes": 148447,
+    "sha256": "b604d930c00e99089aa6063c8e577a111ce2cf1af433409a45373756e1d769cb",
+    "fetched_at": "2026-09-28T10:44:25+00:00"
+  },
+  "https://busway-cira.pt/linhas/37-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-37-volta.html",
+    "bytes": 137087,
+    "sha256": "0c5d3e8c607b7fbb9ad6f3263e2a1e847393fd1b55d5d0b4d37f71c0b9f8f53d",
+    "fetched_at": "2026-09-28T10:44:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/23-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-23-volta.html",
+    "bytes": 135128,
+    "sha256": "615800b6eac5c913ca37a7e931be4ad20dd9109ca823dd011d9972a9f4463e28",
+    "fetched_at": "2026-09-28T10:44:29+00:00"
+  },
+  "https://busway-cira.pt/linhas/24-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-24-volta.html",
+    "bytes": 135912,
+    "sha256": "7e733e338668f7c9300e418945330057b4c3430516ad20da76edc883bcd359c8",
+    "fetched_at": "2026-09-28T10:44:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/28-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-28-volta.html",
+    "bytes": 135961,
+    "sha256": "0c069dedb8985412802353a72c7f5ca711beb06a7ec56beb2993f119b578574d",
+    "fetched_at": "2026-09-28T10:44:32+00:00"
+  },
+  "https://busway-cira.pt/linhas/27-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-27-volta.html",
+    "bytes": 137049,
+    "sha256": "8104d72ac4778ef5491715269906fb687a9cc86c660d98186424bb724e739d1b",
+    "fetched_at": "2026-09-28T10:44:33+00:00"
+  },
+  "https://busway-cira.pt/linhas/29-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-29-volta.html",
+    "bytes": 138391,
+    "sha256": "a4d790b803ec8b0509ebd02699864dd9fe74c529ae48f9865e9fa9fb7d9c6e11",
+    "fetched_at": "2026-09-28T10:44:35+00:00"
+  },
+  "https://busway-cira.pt/linhas/30-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-30-volta.html",
+    "bytes": 136618,
+    "sha256": "29893109bd69818e004da5665b33487c7d27a2090fb4cbb18086efe930f94e0f",
+    "fetched_at": "2026-09-28T10:44:36+00:00"
+  },
+  "https://busway-cira.pt/linhas/31-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-31-volta.html",
+    "bytes": 136584,
+    "sha256": "9b3f6d48c7230cbb726766bfc25a01891f5a579bb4eb5d41d13073969d579a2d",
+    "fetched_at": "2026-09-28T10:44:38+00:00"
+  },
+  "https://busway-cira.pt/linhas/41-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-41-volta.html",
+    "bytes": 136664,
+    "sha256": "816b84ba7db18d02865c26e7769f78492ba7f934d573abe53e72c99332dbedd4",
+    "fetched_at": "2026-09-28T10:44:40+00:00"
+  },
+  "https://busway-cira.pt/linhas/42-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-42-volta.html",
+    "bytes": 137178,
+    "sha256": "895722713c60cfb7382288c6d2a988cafed55804dd09c3cb98c3690b13a310eb",
+    "fetched_at": "2026-09-28T10:44:41+00:00"
+  },
+  "https://busway-cira.pt/linhas/43-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-43-volta.html",
+    "bytes": 141368,
+    "sha256": "ce102153609d136e96727f347a50e396b01a1857b3bd93c9f99854194f83b796",
+    "fetched_at": "2026-09-28T10:44:43+00:00"
+  },
+  "https://busway-cira.pt/linhas/44-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-44-volta.html",
+    "bytes": 138196,
+    "sha256": "e75a6dedce54ab9cca142672fba986d780d9f2a40b3b5f2960eccca34ddf8e0e",
+    "fetched_at": "2026-09-28T10:44:45+00:00"
+  },
+  "https://busway-cira.pt/linhas/45-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-45-volta.html",
+    "bytes": 136435,
+    "sha256": "dc38486414ab12281f2c388137f80d7abed0565dbf787c764571def39906f652",
+    "fetched_at": "2026-09-28T10:44:46+00:00"
+  },
+  "https://busway-cira.pt/linhas/76-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-76-volta.html",
+    "bytes": 138794,
+    "sha256": "788338ca10ad19f7f08b36a47a79464bd14b72a55bf392c02888c449d411eca6",
+    "fetched_at": "2026-09-28T10:44:48+00:00"
+  },
+  "https://busway-cira.pt/linhas/51-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-51-volta.html",
+    "bytes": 138757,
+    "sha256": "7a3d50e1c79e78aaa0a59fcea52fed9fbe70d912b6f8258aca03a38b2d419c52",
+    "fetched_at": "2026-09-28T10:44:49+00:00"
+  },
+  "https://busway-cira.pt/linhas/52-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-52-volta.html",
+    "bytes": 136211,
+    "sha256": "f7862a5106cade121f8986bf61c68ebf28babd07655a43e383104fff3ff5d574",
+    "fetched_at": "2026-09-28T10:44:52+00:00"
+  },
+  "https://busway-cira.pt/linhas/53-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-53-volta.html",
+    "bytes": 135851,
+    "sha256": "6c1f5df3bb1858787fd317a547db963114d51c811c394d0d34d1697bd35c737e",
+    "fetched_at": "2026-09-28T10:44:53+00:00"
+  },
+  "https://busway-cira.pt/linhas/56-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-56-volta.html",
+    "bytes": 136760,
+    "sha256": "40e055259edd9ce47a6b29db45566e440821133a43d777c16b040d02bf926851",
+    "fetched_at": "2026-09-28T10:44:55+00:00"
+  },
+  "https://busway-cira.pt/linhas/11-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-11-volta.html",
+    "bytes": 136872,
+    "sha256": "a0c9f2720e9441c82eabfbacc6380832f855e38a6b94be2b4d86bcfab8023dc6",
+    "fetched_at": "2026-09-28T10:44:56+00:00"
+  },
+  "https://busway-cira.pt/linhas/19-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-19-volta.html",
+    "bytes": 139273,
+    "sha256": "8c5ee736d8b5ee42f577a540adeaa8f8b6af132580e264e4dba31b5504653e5d",
+    "fetched_at": "2026-09-28T10:44:58+00:00"
+  },
+  "https://busway-cira.pt/linhas/57-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-57-volta.html",
+    "bytes": 135789,
+    "sha256": "7f241b759122a7612a51337f219cbbf36043e88ed62e6effef754ea1d8bf5f0a",
+    "fetched_at": "2026-09-28T10:44:59+00:00"
+  },
+  "https://busway-cira.pt/linhas/58-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-58-volta.html",
+    "bytes": 135242,
+    "sha256": "e0a847960f705c8f32a5ce9ddcaf44f4ca188cda965a5512cd701951449abce9",
+    "fetched_at": "2026-09-28T10:45:01+00:00"
+  },
+  "https://busway-cira.pt/linhas/59-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-59-volta.html",
+    "bytes": 137982,
+    "sha256": "fc9b3570a37bb632fcc9cfc7c7e2232b65d7da1feeab279517d973cfec219adc",
+    "fetched_at": "2026-09-28T10:45:04+00:00"
+  },
+  "https://busway-cira.pt/linhas/60-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-60-volta.html",
+    "bytes": 138127,
+    "sha256": "39178809a6527d391362caa509375e6bd0807c459f061e9c0d7a981daf277c88",
+    "fetched_at": "2026-09-28T10:45:06+00:00"
+  },
+  "https://busway-cira.pt/linhas/62-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-62-volta.html",
+    "bytes": 137474,
+    "sha256": "613abd76c99f1d89547ff41372c4b84e0157493ab0c45e7bd411c3fcd6c8bf2b",
+    "fetched_at": "2026-09-28T10:45:07+00:00"
+  },
+  "https://busway-cira.pt/linhas/64-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-64-volta.html",
+    "bytes": 135480,
+    "sha256": "206b154f1524804adc766be4b96a7e5f6d72f385a7f737e6debb35f4136a50f2",
+    "fetched_at": "2026-09-28T10:45:09+00:00"
+  },
+  "https://busway-cira.pt/linhas/65-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-65-volta.html",
+    "bytes": 136654,
+    "sha256": "86dceaab2cf4e9fbfae2b85f79832d8026d1cd6e8bb4c234441b75ff14b03711",
+    "fetched_at": "2026-09-28T10:45:10+00:00"
+  },
+  "https://busway-cira.pt/linhas/66-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-66-volta.html",
+    "bytes": 137731,
+    "sha256": "2e4e6dec0738a6c79159ba15c6a88b0691bcd9cef29cf1fc9d3b4ce2ba263782",
+    "fetched_at": "2026-09-28T10:45:12+00:00"
+  },
+  "https://busway-cira.pt/linhas/67-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-67-volta.html",
+    "bytes": 136185,
+    "sha256": "6af0ca1445c75b5cc3870e57a63600f8f91206295adb394d3963be22af8968ea",
+    "fetched_at": "2026-09-28T10:45:14+00:00"
+  },
+  "https://busway-cira.pt/linhas/68-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-68-volta.html",
+    "bytes": 135947,
+    "sha256": "51c5f2d5ffae602a4b254fbf6edfe7da4827c4efb19f842b4cf114956ec5e8d9",
+    "fetched_at": "2026-09-28T10:45:15+00:00"
+  },
+  "https://busway-cira.pt/linhas/38-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-38-volta.html",
+    "bytes": 136140,
+    "sha256": "a48be48510fb0623661328aefcd9cae4b8ddfa502215530340d8a036ed301329",
+    "fetched_at": "2026-09-28T10:45:17+00:00"
+  },
+  "https://busway-cira.pt/linhas/70-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-70-volta.html",
+    "bytes": 143082,
+    "sha256": "e46b57c51ccf7d7583aa478d583ac4ac02bc2d378ec3ab017996850e086c01f1",
+    "fetched_at": "2026-09-28T10:45:19+00:00"
+  },
+  "https://busway-cira.pt/linhas/71-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-71-volta.html",
+    "bytes": 136573,
+    "sha256": "897d63fb6602c3b2b1df7fbf294c4121134d5aea11261ca04c9e7605384dbf20",
+    "fetched_at": "2026-09-28T10:45:20+00:00"
+  },
+  "https://busway-cira.pt/linhas/72-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-72-volta.html",
+    "bytes": 138731,
+    "sha256": "e1ba1a9060d211e3901343fede3128132c12a56555b57795c62b9061bd9ab2ad",
+    "fetched_at": "2026-09-28T10:45:22+00:00"
+  },
+  "https://busway-cira.pt/linhas/74-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-74-volta.html",
+    "bytes": 135902,
+    "sha256": "3c6e50cfe6f8e983b0e83406aefb4a102c8aa22780ee198fdfcea7eea2dcbb08",
+    "fetched_at": "2026-09-28T10:45:24+00:00"
+  },
+  "https://busway-cira.pt/linhas/73-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-73-volta.html",
+    "bytes": 135736,
+    "sha256": "7ac5200368ce35282532a37fe73877a49e7830f554d9ee8ed9c25c14b70abe3d",
+    "fetched_at": "2026-09-28T10:45:25+00:00"
+  },
+  "https://busway-cira.pt/linhas/75-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-75-volta.html",
+    "bytes": 137932,
+    "sha256": "6e1db4214fe69cb7128dd6e5cb8a365e6ac0aeba74665be1fa35800113d9d07a",
+    "fetched_at": "2026-09-28T10:45:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/78-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-78-volta.html",
+    "bytes": 137765,
+    "sha256": "c18fdef7518b11f19c7e923c3822edf8eb4f794a37eccbde3da5bb628bbb8b07",
+    "fetched_at": "2026-09-28T10:45:29+00:00"
+  },
+  "https://busway-cira.pt/linhas/79-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-79-volta.html",
+    "bytes": 139455,
+    "sha256": "83c75531897825d8733de2b829b8e958d75b6feafaffa2e3249f3a790c8ac3bf",
+    "fetched_at": "2026-09-28T10:45:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/80-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-80-volta.html",
+    "bytes": 137778,
+    "sha256": "2410bffd60bbeb88df21707e8c9ebd2b6adff2c9ab42a0b232cbba01a76584c6",
+    "fetched_at": "2026-09-28T10:45:32+00:00"
+  },
+  "https://busway-cira.pt/linhas/81-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-81-volta.html",
+    "bytes": 138999,
+    "sha256": "a2ec72ef78c3329d3dd52e9b11b35544eccb89360bf56b37c05505389256cb2a",
+    "fetched_at": "2026-09-28T10:45:33+00:00"
+  },
+  "https://busway-cira.pt/linhas/82-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-82-volta.html",
+    "bytes": 138671,
+    "sha256": "8b385167ba212ec96fa1ea7f77cee3190ff74993340b0abb53b5e486547feb6f",
+    "fetched_at": "2026-09-28T10:45:35+00:00"
+  },
+  "https://busway-cira.pt/linhas/83-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-83-volta.html",
+    "bytes": 141544,
+    "sha256": "7c1bc7afd4d180b706df66f415455c2171825df7dea4ef6792eaa751e876fb2c",
+    "fetched_at": "2026-09-28T10:45:36+00:00"
+  },
+  "https://busway-cira.pt/linhas/84-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-84-volta.html",
+    "bytes": 135979,
+    "sha256": "71f82938a12378824ab87726346e3afda503b08714b8651c43cc3e5cd35d1bae",
+    "fetched_at": "2026-09-28T10:45:38+00:00"
+  },
+  "https://busway-cira.pt/linhas/85-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-85-volta.html",
+    "bytes": 140575,
+    "sha256": "c1fa6604276b9ed3d57e5b82413a8fd9c5f574ae69a06e6b3772452ae50deb1d",
+    "fetched_at": "2026-09-28T10:45:40+00:00"
+  },
+  "https://busway-cira.pt/linhas/86-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-86-volta.html",
+    "bytes": 142045,
+    "sha256": "cdc9071037cdd3c783f3322b65312c5fccd0ad7f40d6719778ca0c7e70b28733",
+    "fetched_at": "2026-09-28T10:45:41+00:00"
+  },
+  "https://busway-cira.pt/linhas/90-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-90-volta.html",
+    "bytes": 146944,
+    "sha256": "65816ec5e0d770abca4799ddaed92ac810ac552d2de43d490ad1f0d9573240c6",
+    "fetched_at": "2026-09-28T10:45:43+00:00"
+  },
+  "https://busway-cira.pt/linhas/91-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-91-volta.html",
+    "bytes": 137205,
+    "sha256": "68da56f1fc6f4895be34742ded281a9f192c07b3c658bc496429857d8e52cb91",
+    "fetched_at": "2026-09-28T10:45:45+00:00"
+  },
+  "https://busway-cira.pt/linhas/92-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-92-volta.html",
+    "bytes": 137019,
+    "sha256": "bc83553684f64e7a7ef70aeff0570406443c4238ba268cf45628cb0ef4e60a74",
+    "fetched_at": "2026-09-28T10:45:46+00:00"
+  },
+  "https://busway-cira.pt/linhas/94-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-94-volta.html",
+    "bytes": 136585,
+    "sha256": "f0a63ca83f59f34559301528a8e0cf239c2321422d414a73d3b334ddf7bb1b03",
+    "fetched_at": "2026-09-28T10:45:48+00:00"
+  },
+  "https://busway-cira.pt/linhas/96-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-96-volta.html",
+    "bytes": 137168,
+    "sha256": "3bb3b32f2e1e842f73a8a8d182825c61aaf819cef3bddfcbf8f0bf06207ed4a1",
+    "fetched_at": "2026-09-28T10:45:50+00:00"
+  },
+  "https://busway-cira.pt/linhas/97-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-97-volta.html",
+    "bytes": 138995,
+    "sha256": "f307821cfc1b15dc8e93f5cb2908b2c78d9bee8d3ae87cc1c222b633dc9b0baf",
+    "fetched_at": "2026-09-28T10:45:51+00:00"
+  },
+  "https://busway-cira.pt/linhas/98-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-98-volta.html",
+    "bytes": 136581,
+    "sha256": "06f07af12bc61f2df280ab5ce6fa889a70e99ecea695038fe69f9f2b42999469",
+    "fetched_at": "2026-09-28T10:45:53+00:00"
+  },
+  "https://busway-cira.pt/linhas/100-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-100-volta.html",
+    "bytes": 140287,
+    "sha256": "942db4fd4e7349be049065577400f2dfa359fb7aabf48ecea8a88e5fe026aab8",
+    "fetched_at": "2026-09-28T10:45:55+00:00"
+  },
+  "https://busway-cira.pt/linhas/101-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-101-volta.html",
+    "bytes": 136586,
+    "sha256": "7d21054e93d1fa785250dfba0cbd3986ddb15f901f22918c0b3727bad814f97b",
+    "fetched_at": "2026-09-28T10:45:56+00:00"
+  },
+  "https://busway-cira.pt/linhas/102-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-102-volta.html",
+    "bytes": 138601,
+    "sha256": "aa2d31238bf2f6ae79cfc6d7cb4302eab29b4698555814cdbc6572791d1fd637",
+    "fetched_at": "2026-09-28T10:45:58+00:00"
+  },
+  "https://busway-cira.pt/linhas/103-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-103-volta.html",
+    "bytes": 141216,
+    "sha256": "9295bcff3a0a46c0b46bc2fa7abdc14b0efd17f30ad4ec00833ab6f7cb7a207b",
+    "fetched_at": "2026-09-28T10:46:00+00:00"
+  },
+  "https://busway-cira.pt/linhas/104-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-104-volta.html",
+    "bytes": 138733,
+    "sha256": "69b21866b2b7cf94bb0ff0924aa8c3a4d93ff26f4cf30ea050af7d7e7fcb86b3",
+    "fetched_at": "2026-09-28T10:46:01+00:00"
+  },
+  "https://busway-cira.pt/linhas/105-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-105-volta.html",
+    "bytes": 136237,
+    "sha256": "107d7138b993dd24ae0b5da2c202ecacd0f7d73c80fab5d848b677c3f8688c61",
+    "fetched_at": "2026-09-28T10:46:03+00:00"
+  },
+  "https://busway-cira.pt/linhas/106-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-106-volta.html",
+    "bytes": 135574,
+    "sha256": "5411f46cbd9f19e47f5bdf481abecfd8bfbc7898d39e0aaad80025ea8d1ae575",
+    "fetched_at": "2026-09-28T10:46:05+00:00"
+  },
+  "https://busway-cira.pt/linhas/107-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-107-volta.html",
+    "bytes": 138800,
+    "sha256": "67b29d53328a61d901a2351a422cadde7b0c1cebdc9fa1b449ce4401bd7769c3",
+    "fetched_at": "2026-09-28T10:46:06+00:00"
+  },
+  "https://busway-cira.pt/linhas/108-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-108-volta.html",
+    "bytes": 136197,
+    "sha256": "ddb95d6d1582468567ac8f735003e90526fe7c9c86623ee84958327111918649",
+    "fetched_at": "2026-09-28T10:46:08+00:00"
+  },
+  "https://busway-cira.pt/linhas/109-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-109-volta.html",
+    "bytes": 137132,
+    "sha256": "0f461a4d44d5543c39cedda982cdd4a5f871b5836726408f9c1df7c71d0fb399",
+    "fetched_at": "2026-09-28T10:46:10+00:00"
+  },
+  "https://busway-cira.pt/linhas/110-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-110-volta.html",
+    "bytes": 138658,
+    "sha256": "01c4279582f925451113cb526e8572e9778d03c844e9bedd64b71c24d1dca27b",
+    "fetched_at": "2026-09-28T10:46:11+00:00"
+  },
+  "https://busway-cira.pt/linhas/111-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-111-volta.html",
+    "bytes": 135805,
+    "sha256": "2e68ac72b14cbb423ef9a369f95310107d5fb0e12381ae27ff6afaec6b30e816",
+    "fetched_at": "2026-09-28T10:46:13+00:00"
+  },
+  "https://busway-cira.pt/linhas/15-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-15-volta.html",
+    "bytes": 140399,
+    "sha256": "52383a0a235681a1012ca712bd5f954e20b741b5ec95f45902a051aab1e89664",
+    "fetched_at": "2026-09-28T10:46:15+00:00"
+  },
+  "https://busway-cira.pt/linhas/46-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-46-volta.html",
+    "bytes": 137200,
+    "sha256": "47706cb8dfe2121208af69d6d32bd02006b87cbb8054c0080b48c3a9214230f4",
+    "fetched_at": "2026-09-28T10:46:16+00:00"
+  },
+  "https://busway-cira.pt/linhas/4-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-4-volta.html",
+    "bytes": 140406,
+    "sha256": "74ca058c32a57e463904bd700e4f9d1a15b44b5d570eced12aed42f853069751",
+    "fetched_at": "2026-09-28T10:46:18+00:00"
+  },
+  "https://busway-cira.pt/linhas/16-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-16-volta.html",
+    "bytes": 144066,
+    "sha256": "df084d9f8e86cd978e5e0411b5f327ef49261fa60673ac10c5f6e039beb0037a",
+    "fetched_at": "2026-09-28T10:46:19+00:00"
+  },
+  "https://busway-cira.pt/linhas/18-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-18-volta.html",
+    "bytes": 144676,
+    "sha256": "d26418a161f04a3e20845ceb668a2f2f102fb23d52b03f58a9e52fde65998c1f",
+    "fetched_at": "2026-09-28T10:46:21+00:00"
+  },
+  "https://busway-cira.pt/linhas/20-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-20-volta.html",
+    "bytes": 137145,
+    "sha256": "b8737090451fd7b9a7454115b526c9a2994cc8f7612c3b8d999b6e4c16e27fa3",
+    "fetched_at": "2026-09-28T10:46:22+00:00"
+  },
+  "https://busway-cira.pt/linhas/21-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-21-volta.html",
+    "bytes": 140158,
+    "sha256": "bf2d31724c08cd1f46be347077f0883bc7f7c403ae4431b72d908fa3705fffc1",
+    "fetched_at": "2026-09-28T10:46:24+00:00"
+  },
+  "https://busway-cira.pt/linhas/26-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-26-volta.html",
+    "bytes": 142687,
+    "sha256": "ceda21af885cce88e776526cf5eaf1856e8e258e3b5c4c51e8cb7b1c786d6066",
+    "fetched_at": "2026-09-28T10:46:26+00:00"
+  },
+  "https://busway-cira.pt/linhas/33-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-33-volta.html",
+    "bytes": 141443,
+    "sha256": "a21620d2ddaba43fbabf0635b3dfbaeac1062fee2ab154c49648d89ce63c2a9a",
+    "fetched_at": "2026-09-28T10:46:27+00:00"
+  },
+  "https://busway-cira.pt/linhas/10-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-10-volta.html",
+    "bytes": 136934,
+    "sha256": "5f89ceb4fcb2550eef18a0d71804c5ec23188659e9e7faef436fc02726318bb4",
+    "fetched_at": "2026-09-28T10:46:29+00:00"
+  },
+  "https://busway-cira.pt/linhas/l35/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-l35.html",
+    "bytes": 137968,
+    "sha256": "46afcc3745861cfcec7e26734d83349ab868db0982804b978c73666044d0992f",
+    "fetched_at": "2026-09-28T10:46:30+00:00"
+  },
+  "https://busway-cira.pt/linhas/47-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-47-volta.html",
+    "bytes": 145332,
+    "sha256": "47f45d19bbd619cd537e50d9fd6c158cc309f7caba707213087ecbba24760918",
+    "fetched_at": "2026-09-28T10:46:32+00:00"
+  },
+  "https://busway-cira.pt/linhas/17-volta/": {
+    "operator": "busway",
+    "path": "data/bus/raw/busway/linhas-17-volta.html",
+    "bytes": 138077,
+    "sha256": "0552d0708010d1a470640f822e9ea753b7c5f71b9ef50029042b80f7c831f03d",
+    "fetched_at": "2026-09-28T10:46:33+00:00"
+  }
+}

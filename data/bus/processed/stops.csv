@@ -1,0 +1,1871 @@
+stop_id,operator,stop,trips,lines
+aveirobus:109-deposito-de-cacia-a,aveirobus,109 Depósito de Cacia A,18,2
+aveirobus:109-deposito-de-cacia-b,aveirobus,109 Depósito de Cacia B,17,2
+aveirobus:arco-do-comercio,aveirobus,Arco do Comércio,34,azul
+aveirobus:av-25-de-abril-escola-jose-estevao-a,aveirobus,Av. 25 de Abril Escola José Estevão A,54,10 7 8
+aveirobus:av-25-de-abril-escola-jose-estevao-b,aveirobus,Av. 25 de Abril Escola José Estevão B,54,10 7 8
+aveirobus:av-25-de-abril-escola-mario-sacramento-a,aveirobus,Av. 25 de Abril Escola Mário Sacramento A,54,10 7 8
+aveirobus:av-25-de-abril-escola-mario-sacramento-b,aveirobus,Av. 25 de Abril Escola Mário Sacramento B,55,10 7 8
+aveirobus:av-adelino-amaro-da-costa-a,aveirobus,Av. Adelino Amaro da Costa A,48,6 azul
+aveirobus:av-adelino-amaro-da-costa-b,aveirobus,Av. Adelino Amaro da Costa B,48,6 verde
+aveirobus:av-dr-lourenco-peixinho-ctt-a,aveirobus,Av. Dr. Lourenço Peixinho CTT A,111,1 2 3 4 5 6
+aveirobus:av-dr-lourenco-peixinho-ctt-b,aveirobus,Av. Dr. Lourenço Peixinho CTT B,151,1 10 2 3 4 6 7 8
+aveirobus:av-dr-lourenco-peixinho-ctt-a,aveirobus,Av. Dr. Lourenço Peixinho CTT À,55,10 7 8
+aveirobus:av-dr-lourenco-peixinho-capitania-a,aveirobus,Av. Dr. Lourenço Peixinho Capitania A,160,1 10 2 5 6 7 8 verde
+aveirobus:av-dr-lourenco-peixinho-capitania-b,aveirobus,Av. Dr. Lourenço Peixinho Capitania B,149,1 10 2 4 5 6 7 8
+aveirobus:av-dr-lourenco-peixinho-capitaniab-4,aveirobus,Av. Dr. Lourenço Peixinho CapitaniaB 4,17,3
+aveirobus:av-dr-mario-sacramento-centro-saude-a,aveirobus,Av. Dr. Mário Sacramento Centro Saúde A,34,7 8
+aveirobus:av-dr-mario-sacramento-centro-saude-b,aveirobus,Av. Dr. Mário Sacramento Centro Saúde B,32,2 7
+aveirobus:av-da-forca-aerea-a,aveirobus,Av. da Força Aérea A,34,azul
+aveirobus:av-da-forca-aerea-b,aveirobus,Av. da Força Aérea B,34,verde
+aveirobus:av-de-araujo-e-silva-a,aveirobus,Av. de Araújo e Silva A,34,azul
+aveirobus:av-de-araujo-e-silva-b,aveirobus,Av. de Araújo e Silva B,34,verde
+aveirobus:azurva-pontao-a17-a,aveirobus,Azurva (Pontão A17) A,27,4
+aveirobus:azurva-pontao-a17-b,aveirobus,Azurva (Pontão A17) B,25,4
+aveirobus:barrocas-a,aveirobus,Barrocas A,34,azul
+aveirobus:barrocas-b,aveirobus,Barrocas B,34,verde
+aveirobus:bombeiros-novos,aveirobus,Bombeiros Novos,34,verde
+aveirobus:cais-da-fonte-nova-a,aveirobus,Cais da Fonte Nova A,34,azul
+aveirobus:cais-da-fonte-nova-b,aveirobus,Cais da Fonte Nova B,34,verde
+aveirobus:campo-do-monte,aveirobus,Campo do Monte,18,4
+aveirobus:capela-de-aradas-a,aveirobus,Capela de Aradas A,33,2
+aveirobus:capela-de-aradas-b,aveirobus,Capela de Aradas B,33,2
+aveirobus:carregal-areosa-a,aveirobus,Carregal Areosa A,9,4
+aveirobus:carregal-areosa-b,aveirobus,Carregal Areosa B,12,4
+aveirobus:cacadores-10-se,aveirobus,Caçadores 10 -Sé,17,5
+aveirobus:cacadores-10-misericordia,aveirobus,Caçadores 10 Misericórdia,166,1 10 2 3 4 5 6 7 8
+aveirobus:cacadores-10-se,aveirobus,Caçadores 10 Sé,128,1 10 2 3 4 6 7
+aveirobus:centro-de-saude-a,aveirobus,Centro de Saúde A,34,azul
+aveirobus:centro-de-saude-b,aveirobus,Centro de Saúde B,34,verde
+aveirobus:ciencia-viva,aveirobus,Ciência Viva,34,verde
+aveirobus:coimbrao-a,aveirobus,Coimbrão A,21,10
+aveirobus:coimbrao-b,aveirobus,Coimbrão B,20,10
+aveirobus:colegio-d-jose,aveirobus,Colégio D. José,57,5 7
+aveirobus:conservatorio-a,aveirobus,Conservatório A,34,azul
+aveirobus:conservatorio-b,aveirobus,Conservatório B,34,verde
+aveirobus:cruz-alta-b,aveirobus,Cruz Alta B,21,8
+aveirobus:cruz-alta-a,aveirobus,Cruz Alta À,21,8
+aveirobus:cruzeiro-da-feira,aveirobus,Cruzeiro da Feira,28,6
+aveirobus:eb1-de-eixo,aveirobus,EB1 de Eixo,53,4
+aveirobus:eb23-castro-matoso-a,aveirobus,EB23 Castro Matoso A,25,12 8
+aveirobus:eb23-castro-matoso-b,aveirobus,EB23 Castro Matoso B,22,12 8
+aveirobus:eb23-rio-novo-principe,aveirobus,EB23 Rio Novo Príncipe,50,1 3
+aveirobus:eb23-s-bernardo-a,aveirobus,EB23 S. Bernardo A,13,7
+aveirobus:eb23-de-eixo,aveirobus,EB23 de Eixo,45,4
+aveirobus:eb23s-bernardo-b,aveirobus,EB23S. Bernardo B,12,7
+aveirobus:eixo-praca-j-magalhaes-lima-a,aveirobus,Eixo Praça J. Magalhães Lima A,32,4
+aveirobus:escola-eb23-de-aradas,aveirobus,Escola EB23 de Aradas,1,10
+aveirobus:escola-jaime-magalhaes-lima-a,aveirobus,Escola Jaime Magalhães Lima A,130,1 2 3 4 5 7 8
+aveirobus:escola-jaime-magalhaes-lima-b,aveirobus,Escola Jaime Magalhães Lima B,131,1 2 3 4 5 7 8
+aveirobus:escola-da-vera-cruz,aveirobus,Escola da Vera Cruz,34,azul
+aveirobus:escola-das-leirinhas,aveirobus,Escola das Leirinhas,33,2
+aveirobus:escola-de-eirol-a,aveirobus,Escola de Eirol A,9,4
+aveirobus:escola-de-eirol-b,aveirobus,Escola de Eirol B,12,4
+aveirobus:escola-de-mataducos-a,aveirobus,Escola de Mataduços A,18,1
+aveirobus:escola-de-mataducos-b,aveirobus,Escola de Mataduços B,18,1
+aveirobus:escola-n-a,aveirobus,Escola nº A,34,azul
+aveirobus:escola-n-b,aveirobus,Escola nº B,34,verde
+aveirobus:escolas-solposto-a,aveirobus,Escolas Solposto A,26,6 7
+aveirobus:escolas-solposto-b,aveirobus,Escolas Solposto B,27,6 7
+aveirobus:escolas-velhas-oliveirinha-a,aveirobus,Escolas Velhas Oliveirinha A,25,6
+aveirobus:escolas-velhas-oliveirinha-b,aveirobus,Escolas Velhas Oliveirinha B,25,6
+aveirobus:escolas-de-nariz,aveirobus,Escolas de Nariz,22,10 12
+aveirobus:escolas-de-povoa-do-paco-a,aveirobus,Escolas de Póvoa do Paço A,18,1
+aveirobus:escolas-de-povoa-do-paco-b,aveirobus,Escolas de Póvoa do Paço B,18,1
+aveirobus:escolas-de-santiago,aveirobus,Escolas de Santiago,74,1 4 5 6
+aveirobus:estacao-quintas-a,aveirobus,Estação Quintãs A,1,12
+aveirobus:estacao-quintas-b,aveirobus,Estação Quintãs B,4,12
+aveirobus:estacao-de-aveiro,aveirobus,Estação de Aveiro,166,1 10 2 3 4 5 6 7 8
+aveirobus:estacao-de-aveiro-arlindo-vincente,aveirobus,Estação de Aveiro Arlindo Vincente,14,6
+aveirobus:f-forte-da-barra-ferry,aveirobus,F FORTE DA BARRA (FERRY),26,13
+aveirobus:f-s-jacinto,aveirobus,F S. JACINTO,26,13
+aveirobus:fonte-da-vessada,aveirobus,Fonte da Vessada,23,10 12
+aveirobus:fonte-de-esgueira,aveirobus,Fonte de Esgueira,135,10 4 7 8
+aveirobus:forca-hospital-a,aveirobus,Forca Hospital A,34,azul
+aveirobus:forca-hospital-b,aveirobus,Forca Hospital B,34,verde
+aveirobus:forca-tunel-a,aveirobus,Forca Túnel A,43,11 azul
+aveirobus:forca-tunel-a-08-22,aveirobus,Forca Túnel A ▼08:22,14,11
+aveirobus:forca-tunel-b,aveirobus,Forca Túnel B,43,11 verde
+aveirobus:forca-tunel-b-07-58,aveirobus,Forca Túnel B ▼07:58,14,11
+aveirobus:glicinias-a,aveirobus,Glicínias A,13,7
+aveirobus:glicinias-b,aveirobus,Glicínias B,12,7
+aveirobus:hospital-universidade-a,aveirobus,Hospital Universidade A,111,1 2 3 4 5 6
+aveirobus:hospital-universidade-b,aveirobus,Hospital Universidade B,111,1 2 3 4 5 6
+aveirobus:ir-cacadores-10-se,aveirobus,IR Caçadores 10 Sé,22,8
+aveirobus:is-r-calouste-gulbenkian-b,aveirobus,IS R. Calouste Gulbenkian B,34,verde
+aveirobus:iscaua-a,aveirobus,ISCAUA A,111,1 2 3 4 5 6
+aveirobus:iscaua-b,aveirobus,ISCAUA B,111,1 2 3 4 5 6
+aveirobus:igreja-povoa-do-valado,aveirobus,Igreja Póvoa do Valado,42,8
+aveirobus:igreja-quintas-b,aveirobus,Igreja Quintás B,20,10
+aveirobus:igreja-quintas-a,aveirobus,Igreja Quintãs A,28,10
+aveirobus:igreja-quintas-b,aveirobus,Igreja Quintãs B,11,10
+aveirobus:igreja-de-esgueira-a,aveirobus,Igreja de Esgueira A,14,5
+aveirobus:igreja-de-esgueira-b,aveirobus,Igreja de Esgueira B,17,5
+aveirobus:igreja-de-taboeira-a,aveirobus,Igreja de Taboeira A,17,3
+aveirobus:igreja-de-taboeira-b,aveirobus,Igreja de Taboeira B,16,3
+aveirobus:junta-de-freguesia-de-cacia,aveirobus,Junta de Freguesia de Cacia,23,2
+aveirobus:junta-de-freguesia-de-santa-joana,aveirobus,Junta de Freguesia de Santa Joana,14,6
+aveirobus:junta-de-freguesia-de-sao-bernardo-a,aveirobus,Junta de Freguesia de São Bernardo A,21,8
+aveirobus:junta-de-freguesia-de-sao-bernardo-b,aveirobus,Junta de Freguesia de São Bernardo B,21,8
+aveirobus:ki-av-dr-lourenco-peixinho-capitania-a-nm,aveirobus,Ki Av. Dr. Lourenço Peixinho Capitania A NM,16,3
+aveirobus:largo-manuel-mateus-ventura-a,aveirobus,Largo Manuel Mateus Ventura A,17,3
+aveirobus:largo-da-capela-de-verba,aveirobus,Largo da Capela de Verba,5,12
+aveirobus:lavadouros-de-sarrazola-b,aveirobus,Lavadouros de Sarrazola B,18,1
+aveirobus:loja-do-cidadao-a,aveirobus,Loja do Cidadão A,34,azul
+aveirobus:loja-do-cidadao-b,aveirobus,Loja do Cidadão B,34,verde
+aveirobus:mamodeiro-centro,aveirobus,Mamodeiro Centro,42,8
+aveirobus:monte-cacia,aveirobus,Monte Cacia,35,2
+aveirobus:olho-de-agua-a,aveirobus,Olho de Água A,38,1 2
+aveirobus:olho-de-agua-b,aveirobus,Olho de Água B,39,1 2
+aveirobus:parque-da-cidade-a,aveirobus,Parque da Cidade A,34,azul
+aveirobus:parque-da-cidade-b,aveirobus,Parque da Cidade B,34,verde
+aveirobus:qt-do-torto-nascente-a,aveirobus,Qt do Torto Nascente A,13,7
+aveirobus:qt-do-torto-nascente-b,aveirobus,Qt do Torto Nascente B,12,7
+aveirobus:qt-clementina,aveirobus,Qt? Clementina,36,1
+aveirobus:r-antonio-rocha-madaiil-b,aveirobus,R. António Rocha Madaiíl B,34,verde
+aveirobus:r-antonio-rocha-madail-a,aveirobus,R. António Rocha Madaíl A,34,azul
+aveirobus:r-calouste-gulbenkian-a,aveirobus,R. Calouste Gulbenkian A,34,azul
+aveirobus:r-clube-dos-galitos-a,aveirobus,R. Clube dos Galitos A,34,azul
+aveirobus:r-clube-dos-galitos-b,aveirobus,R. Clube dos Galitos B,34,verde
+aveirobus:r-direita-do-carregal-a,aveirobus,R. Direita do Carregal A,9,4
+aveirobus:r-direita-do-carregal-b,aveirobus,R. Direita do Carregal B,12,4
+aveirobus:r-dr-mario-sacramento-a,aveirobus,R. Dr. Mário Sacramento A,75,10 2 7 8
+aveirobus:r-dr-mario-sacramento-b,aveirobus,R. Dr. Mário Sacramento B,75,10 2 7 8
+aveirobus:r-luis-g-carvalho,aveirobus,R. Luís G. Carvalho,166,1 10 2 3 4 5 6 7 8
+aveirobus:r-neves-amado-a,aveirobus,R. Neves Amado A,34,azul
+aveirobus:r-neves-amado-b,aveirobus,R. Neves Amado B,34,verde
+aveirobus:r-solposto-a,aveirobus,R. Solposto A,15,5
+aveirobus:r-solposto-b,aveirobus,R. Solposto B,17,5
+aveirobus:r-da-liberdade-r-da-paz-b,aveirobus,R. da Liberdade R. da Paz B,16,3
+aveirobus:r-de-jose-rosas,aveirobus,R. de José Rosas,27,10
+aveirobus:r-de-ovar-urbanizacao-santiago,aveirobus,R. de Ovar Urbanização Santiago,90,1 3 4 5 6
+aveirobus:r-do-padrao-a,aveirobus,R. do Padrão A,17,3
+aveirobus:r-do-padrao-b,aveirobus,R. do Padrão B,16,3
+aveirobus:r-do-rossio,aveirobus,R. do Rossio,22,10 12
+aveirobus:r-do-viso-1-a,aveirobus,R. do Viso 1 A,15,5
+aveirobus:r-do-viso-1-b,aveirobus,R. do Viso 1 B,17,5
+aveirobus:rn-eixo-praca-j-magalhaes-lima-b,aveirobus,RN Eixo Praça J. Magalhães Lima B,11,4
+aveirobus:rn-verba-b,aveirobus,RN Verba B,10,10
+aveirobus:requeixo-a,aveirobus,Requeixo A,9,4
+aveirobus:requeixo-b,aveirobus,Requeixo B,12,4
+aveirobus:rotunda-sao-bernardo-a,aveirobus,Rotunda São Bernardo A,22,8
+aveirobus:rotunda-sao-bernardo-b,aveirobus,Rotunda São Bernardo B,23,8
+aveirobus:rotunda-da-pedra-moura,aveirobus,Rotunda da Pedra Moura,33,2
+aveirobus:sarrazola-largo-s-bartolomeu,aveirobus,Sarrazola Largo S. Bartolomeu,18,1
+aveirobus:seguranca-social,aveirobus,Segurança Social,34,verde
+aveirobus:sra-das-febres-a,aveirobus,Sra. das Febres A,34,azul
+aveirobus:sra-das-febres-b,aveirobus,Sra. das Febres B,34,verde
+aveirobus:sao-bento-povoa-do-valado-a,aveirobus,São Bento Póvoa do Valado A,42,8
+aveirobus:sao-bento-povoa-do-valado-b,aveirobus,São Bento Póvoa do Valado B,42,8
+aveirobus:taboeira-a,aveirobus,Taboeira A,17,3
+aveirobus:taboeira-b,aveirobus,Taboeira B,16,3
+aveirobus:tanques-de-esgueira-a,aveirobus,Tanques de Esgueira A,17,3
+aveirobus:tanques-de-esgueira-b,aveirobus,Tanques de Esgueira B,16,3
+aveirobus:terminal-rodoviario-de-aveiro-cais-1,aveirobus,Terminal Rodoviário de Aveiro (Cais 1),52,11 azul
+aveirobus:terminal-rodoviario-de-aveiro-cais-1-07-55,aveirobus,Terminal Rodoviário de Aveiro (Cais 1) ▼07:55,14,11
+aveirobus:terminal-rodoviario-de-aveiro-cais-1-08-25,aveirobus,Terminal Rodoviário de Aveiro (Cais 1) ▼08:25,14,11
+aveirobus:terminal-rodoviario-de-aveiro-cais-2,aveirobus,Terminal Rodoviário de Aveiro (Cais 2),34,verde
+aveirobus:travessa-eucalipto,aveirobus,Travessa Eucalipto,33,3
+aveirobus:universidade-crasto,aveirobus,Universidade Crasto,18,11
+aveirobus:universidade-crasto-08-10,aveirobus,Universidade Crasto ▼08:10,14,11
+aveirobus:universidade-crasto-08-11,aveirobus,Universidade Crasto ▼08:11,14,11
+aveirobus:universidade-santiago-a,aveirobus,Universidade Santiago A,9,11
+aveirobus:universidade-santiago-a-08-07,aveirobus,Universidade Santiago A ▼08:07,14,11
+aveirobus:universidade-santiago-b,aveirobus,Universidade Santiago B,9,11
+aveirobus:universidade-santiago-b-08-13,aveirobus,Universidade Santiago B ▼08:13,14,11
+aveirobus:vale-caseiro,aveirobus,Vale Caseiro,5,2
+aveirobus:verba-a,aveirobus,Verba A,22,10 12
+aveirobus:verba-b,aveirobus,Verba B,12,10 12
+aveirobus:vessada,aveirobus,Vessada,4,12
+aveirobus:viaduto-de-esgueira-a,aveirobus,Viaduto de Esgueira A,34,azul
+aveirobus:viaduto-de-esgueira-b,aveirobus,Viaduto de Esgueira B,34,verde
+aveirobus:z-forte-da-barra-ferry,aveirobus,Z FORTE DA BARRA (FERRY),26,13
+aveirobus:z-s-jacinto,aveirobus,Z S. JACINTO,26,13
+aveirobus:z1-conservatorio-a,aveirobus,Z1 Conservatório A,9,11
+aveirobus:z1-conservatorio-a-08-18,aveirobus,Z1 Conservatório A ▼08:18,14,11
+aveirobus:z1-conservatorio-b,aveirobus,Z1 Conservatório B,9,11
+aveirobus:z1-conservatorio-b-08-02,aveirobus,Z1 Conservatório B ▼08:02,14,11
+aveirobus:z1-universidade-reitoria-a,aveirobus,Z1 Universidade Reitoria A,9,11
+aveirobus:z1-universidade-reitoria-a-08-04,aveirobus,Z1 Universidade Reitoria A ▼08:04,14,11
+aveirobus:z1-universidade-reitoria-b,aveirobus,Z1 Universidade Reitoria B,9,11
+aveirobus:z1-universidade-reitoria-b-08-16,aveirobus,Z1 Universidade Reitoria B ▼08:16,14,11
+aveirobus:zona-industrial-4-a,aveirobus,Zona Industrial 4 A,17,3
+aveirobus:zona-industrial-4-b,aveirobus,Zona Industrial 4 B,16,3
+aveirobus:ay-dr-lourenco-peixinho-capitania-a,aveirobus,ay. Dr. Lourenço Peixinho Capitania A,25,4
+aveirobus:vaio-caseiro,aveirobus,vaio Caseiro,18,2
+aveirobus:q-granja-bica,aveirobus,«q Granja Bica,11,6
+aveirobus:q-sranja-bica,aveirobus,«q Sranja Bica,11,6
+aveirobus:av-dr-lourenco-peixinho-ctt-b,aveirobus,“av. Dr. Lourenço Peixinho CTT B,15,5
+busway:2-rodas-i,busway,2 Rodas I,4,40
+busway:2-rodas-ii,busway,2 Rodas II,4,40
+busway:25-de-abril,busway,25 de Abril,24,38 39 41 43
+busway:25-de-abril-i,busway,25 de Abril I,2,41
+busway:25-de-abril-ii,busway,25 de Abril II,2,41
+busway:5-de-outubro,busway,5 de Outubro,10,27 39
+busway:abobareira,busway,Abobareira,5,94 97
+busway:abobareira-2,busway,Abobareira (2),3,94 97
+busway:abobareira-cruz-rua-d-aldeia,busway,Abobareira – cruz. Rua D`Aldeia,5,94 97
+busway:abobareira-cruz-rua-d-aldeia-2,busway,Abobareira – cruz. Rua D’ Aldeia (2),3,94 97
+busway:ademia,busway,Adémia,16,12
+busway:agrupamento-de-escolas,busway,Agrupamento de Escolas,18,100 101 94 96 97 98 99
+busway:aguada-de-baixo-nascente,busway,Aguada de Baixo – Nascente,12,12 44
+busway:aguada-de-baixo-poente,busway,Aguada de Baixo – Poente,12,12 44
+busway:aguadalte,busway,Aguadalte,4,43
+busway:aguas-boas-capela,busway,Aguas Boas – Capela,2,83
+busway:aguas-boas-capela-b,busway,Aguas Boas – Capela B,2,83
+busway:aguas-boas-sta-margarida,busway,Aguas Boas – Sta Margarida,2,83
+busway:aguas-boas-sta-margarida-b,busway,Aguas Boas – Sta Margarida B,2,83
+busway:aguda-residencial,busway,Aguda – Residencial,3,3
+busway:albergaria-a-nova-a,busway,Albergaria-a-Nova A,25,16 46 47 48
+busway:albergaria-a-nova-b,busway,Albergaria-a-Nova B,19,16 46
+busway:albergaria-a-nova-rua-do-bairro-a,busway,Albergaria-a-Nova – Rua do Bairro A,6,47 48
+busway:albergue-padre-pedro-m-ferreira,busway,Albergue – Padre Pedro M Ferreira,3,79 83
+busway:albergue-padre-pedro-m-ferreira-b,busway,Albergue – Padre Pedro M Ferreira B,4,79 83
+busway:alfeolas-a,busway,Alféolas – A,3,56
+busway:alfeolas-b,busway,Alféolas – B,2,56
+busway:almas-da-areosa,busway,Almas da Areosa,5,44
+busway:alminhas-da-areia,busway,Alminhas da Areia,11,43
+busway:alminhas-a,busway,Alminhas – A,5,72 75
+busway:alminhas-b,busway,Alminhas – B,9,72 75
+busway:alquerubim-cemiterio-a,busway,Alquerubim – Cemitério A,3,51
+busway:alquerubim-cemiterio-b,busway,Alquerubim – Cemitério B,4,51
+busway:alquerubim-farmacia-a,busway,Alquerubim – Farmácia A,1,53
+busway:alquerubim-farmacia-b,busway,Alquerubim – Farmácia B,2,53
+busway:alta-tensao-norte-gafanha-da-vagueira,busway,Alta Tensão Norte (Gafanha da Vagueira),11,10 20
+busway:alta-tensao-carmo,busway,Alta Tensão – Carmo,5,10
+busway:alto-do-vale-do-grou,busway,Alto do Vale do Grou,4,40
+busway:alto-dos-barreiros-a,busway,Alto dos Barreiros A,3,47
+busway:alto-dos-barreiros-b,busway,Alto dos Barreiros B,6,47
+busway:ameal,busway,Ameal,3,45
+busway:ameal-a,busway,Ameal A,1,53
+busway:ameal-b,busway,Ameal B,2,53
+busway:amoniaco-portugues,busway,Amoníaco Português,21,3 33 65 66 69
+busway:amoreira-da-gandara-rua-dr-antonio-joaquim-rodrigues-a,busway,Amoreira da Gândara Rua Dr. António Joaquim Rodrigues – A,3,59
+busway:amoreira-da-gandara-cabeco-a,busway,Amoreira da Gândara – Cabeço – A,1,59
+busway:amoreira-da-gandara-cabeco-b,busway,Amoreira da Gândara – Cabeço – B,5,54 59 63
+busway:amoreira-da-gandara-largo-imaculado-coracao-de-maria,busway,Amoreira da Gândara – Largo Imaculado Coração de Maria,3,54 63
+busway:amoreira-da-gandara-rua-21-de-marco,busway,Amoreira da Gândara – Rua 21 de Março,3,54 63
+busway:amoreira-da-gandara-rua-dr-antonio-joaquim-rodrigues-b,busway,Amoreira da Gândara – Rua Dr. António Joaquim Rodrigues – B,3,54 63
+busway:amoreira-da-gandara-rua-do-tojal-a,busway,Amoreira da Gândara – Rua do Tojal – A,2,63
+busway:amoreira-da-gandara-rua-do-tojal-b,busway,Amoreira da Gândara – Rua do Tojal – B,1,54
+busway:anadia-avenida-engenheiro-tavares-da-silva-a,busway,Anadia – Avenida Engenheiro Tavares da Silva – A,7,56 57 58 59
+busway:anadia-avenida-engenheiro-tavares-da-silva-b,busway,Anadia – Avenida Engenheiro Tavares da Silva – B,10,56 57 58 59
+busway:anadia-avenida-das-laranjeiras-a,busway,Anadia – Avenida das Laranjeiras – A,38,11 12 14 28 31 56 57 58 59
+busway:anadia-avenida-das-laranjeiras-b,busway,Anadia – Avenida das Laranjeiras – B,24,12 14 28 31 56 59
+busway:ancas-a,busway,Ancas – A,3,59 62
+busway:ancas-b,busway,Ancas – B,3,54 59
+busway:ancas-rua-da-boica-a,busway,Ancas – Rua da Boiça – A,3,59 62
+busway:ancas-rua-da-boica-b,busway,Ancas – Rua da Boiça – B,3,54 59
+busway:andal,busway,Andal,12,104 109 110
+busway:antonio-louro-a,busway,António Louro – A,1,75
+busway:antonio-louro-b,busway,António Louro – B,5,72 75
+busway:antonio-pereira-vidal-xavier,busway,António Pereira Vidal Xavier,21,26
+busway:arada-cavadinha-1-2-a,busway,Arada (Cavadinha 1 / 2 ) – A,8,86
+busway:arada-cavadinha-2-1-b,busway,Arada (Cavadinha 2 / 1 ) – B,6,86
+busway:arada-cruz-a,busway,Arada (Cruz) – A,6,86
+busway:arada-cruz-b,busway,Arada (Cruz) – B,8,86
+busway:arada-cruzamento-fojo-a,busway,Arada (Cruzamento Fojo) – A,8,86
+busway:arada-cruzamento-fojo-b,busway,Arada (Cruzamento Fojo) – B,6,86
+busway:arada-estrada-nova-a,busway,Arada (Estrada Nova) – A,8,86
+busway:arada-estrada-nova-b,busway,Arada (Estrada Nova) – B,6,86
+busway:arada-extensao-de-saude-a,busway,Arada (Extensão de Saúde) – A,14,86
+busway:arada-igreja-a,busway,Arada (Igreja) – A,7,3 5
+busway:arada-igreja-b,busway,Arada (Igreja) – B,8,86
+busway:arada-jogal-a,busway,Arada (Jogal) – A,8,86
+busway:arada-jogal-b,busway,Arada (Jogal) – B,6,86
+busway:arada-mercado-b,busway,Arada (Mercado) – B,6,86
+busway:arada-olho-marinho-a,busway,Arada (Olho Marinho) – A,3,87 88
+busway:arada-olho-marinho-b,busway,Arada (Olho Marinho) – B,3,87 88
+busway:arada-pocos-a,busway,Arada (Poços) – A,8,86
+busway:arada-pocos-b,busway,Arada (Poços) – B,6,86
+busway:arada-senhor-do-calvario-a,busway,Arada (Senhor do Calvário) – A,8,86
+busway:arada-senhor-do-calvario-b,busway,Arada (Senhor do Calvário) – B,6,86
+busway:arada-senhora-do-desterro-a,busway,Arada (Senhora do Desterro) – A,6,86
+busway:arada-senhora-do-desterro-b,busway,Arada (Senhora do Desterro) – B,8,86
+busway:arcos-a,busway,Arcos – A,4,56 59
+busway:arcos-b,busway,Arcos – B,5,56 59
+busway:areal-angeja,busway,Areal (Angeja),50,16 17 33 51 52
+busway:areeiros-a,busway,Areeiros A,5,47 48
+busway:areeiros-b,busway,Areeiros B,4,47
+busway:areosa,busway,Areosa,6,27 68
+busway:areao-praia,busway,Areão – Praia,11,10 20
+busway:armazens-da-junta-de-freguesia,busway,Armazéns da Junta de Freguesia,4,71
+busway:arq-filomeno-rocha-carneiro,busway,Arq. Filomeno Rocha Carneiro,18,38 40 43
+busway:arq-filomeno-rocha-carneiro,busway,Arq.Filomeno Rocha Carneiro,1,38
+busway:arribacao,busway,Arribação,3,77
+busway:arrotinha,busway,Arrotinha,15,65 66 69
+busway:assembleia-theatro,busway,Assembleia Theatro,27,21
+busway:assentada,busway,Assentada,3,38
+busway:assilho-a,busway,Assilhó A,4,51
+busway:assilho-b,busway,Assilhó B,3,51
+busway:av-25-de-abril-aveiro,busway,Av. 25 de Abril (Aveiro),15,19
+busway:av-25-de-abril-escola-mario-sacramento-b,busway,Av. 25 de Abril – Escola Mário Sacramento B,17,19
+busway:av-25-de-abril,busway,Av. 25 de abril,22,70 72
+busway:av-dr-lourenco-peixinho-ctt-a,busway,Av. Dr. Lourenço Peixinho – CTT A,18,35
+busway:av-dr-lourenco-peixinho-ctt-b,busway,Av. Dr. Lourenço Peixinho – CTT B,16,35
+busway:av-dr-lourenco-peixinho-capitania-a,busway,Av. Dr. Lourenço Peixinho – Capitania A,18,35
+busway:av-dr-lourenco-peixinho-capitania-b,busway,Av. Dr. Lourenço Peixinho – Capitania B,16,35
+busway:av-dr-lourenco-peixinho-oita-a,busway,Av. Dr. Lourenço Peixinho – Oita A,18,35
+busway:av-dr-lourenco-peixinho-oita-b,busway,Av. Dr. Lourenço Peixinho – Oita B,16,35
+busway:av-da-universidade-a,busway,Av. da Universidade A,1,33
+busway:avanca-centro,busway,Avanca Centro,17,33 66 69
+busway:avanca-mercado,busway,Avanca – Mercado,9,3 66
+busway:avanca-valada,busway,Avanca – Valada,3,66
+busway:aveleiras,busway,Aveleiras,2,42
+busway:avelas-de-caminho-en1-ic2-a,busway,Avelãs de Caminho – EN1/IC2 – A,8,12
+busway:avelas-de-caminho-largo-da-igreja,busway,Avelãs de Caminho – Largo da Igreja,1,12
+busway:avelas-de-cima-a,busway,Avelãs de Cima – A,1,56
+busway:avelas-de-cima-b,busway,Avelãs de Cima – B,3,56
+busway:avelas-de-cima-c,busway,Avelãs de Cima – C,1,56
+busway:avenida-cidade-de-estarreja,busway,Avenida Cidade de Estarreja,5,65
+busway:avenida-visconde-de-salreu-1,busway,Avenida Visconde de Salreu 1,17,64 65 66 67 68 69
+busway:avenida-visconde-de-salreu-2,busway,Avenida Visconde de Salreu 2,19,33 64 65 66 67 68 69
+busway:avenida-do-emigrante,busway,Avenida do Emigrante,16,76 77
+busway:avenida-do-pacopar,busway,Avenida do PACOPAR,5,65
+busway:azenha-a,busway,Azenha – A,1,62
+busway:azenha-b,busway,Azenha – B,2,60
+busway:azenhas-a,busway,Azenhas A,2,53
+busway:azenhas-b,busway,Azenhas B,1,53
+busway:azenhas-ponte-a,busway,Azenhas Ponte A,3,37
+busway:azenhas-ponte-b,busway,Azenhas Ponte B,4,37
+busway:azurveira-emigrantes,busway,Azurveira – Emigrantes,4,79 83
+busway:azurveira-emigrantes-b,busway,Azurveira – Emigrantes B,3,79 83
+busway:bacelinhos,busway,Bacelinhos,4,26 42
+busway:bandeira,busway,Bandeira,10,66 69
+busway:banhos-a,busway,Banhos – A,1,62
+busway:banhos-b,busway,Banhos – B,2,60
+busway:barreiro-1,busway,Barreiro 1,3,68
+busway:barreiro1,busway,Barreiro1,1,24
+busway:batista-e-irmaos-a,busway,Batista e Irmãos – A,2,88
+busway:batista-e-irmaos-b,busway,Batista e Irmãos – B,1,87
+busway:beato-nuno,busway,Beato Nuno,3,103
+busway:beduido-a,busway,Beduído A,1,53
+busway:beduido-b,busway,Beduído B,2,53
+busway:beduido-cemiterio,busway,Beduído – Cemitério,3,68
+busway:bela-vista-esc-prof-artur-nunes-vidal,busway,Bela Vista (Esc. Prof. Artur Nunes Vidal),13,27 39 81
+busway:bemposta-a,busway,Bemposta – A,1,59
+busway:bemposta-b,busway,Bemposta – B,6,55 59 60 62
+busway:biarritz-a,busway,Biarritz – A,5,70 73
+busway:biarritz-b,busway,Biarritz – B,9,70 73
+busway:bica-a,busway,Bica A,2,46
+busway:bica-a-b,busway,Bica A/B,3,47
+busway:bica-b,busway,Bica B,7,46 47 48
+busway:boca-do-monte,busway,Boca do Monte,10,66 69
+busway:bodas-a,busway,Bodas – A,6,73 74 75
+busway:bodas-b,busway,Bodas – B,6,73 74 75
+busway:boialvo,busway,Boialvo,1,95
+busway:boialvo-a,busway,Boialvo – A,8,43 56
+busway:boialvo-b,busway,Boialvo – B,4,43 56
+busway:bolho-a,busway,Bolho – A,2,60
+busway:bolho-b,busway,Bolho – B,1,60
+busway:bombeiros-oliv-bairro,busway,Bombeiros (Oliv. Bairro),10,14 78 83
+busway:bombeiros-vagos,busway,Bombeiros (Vagos),105,10 102 103 104 18
+busway:bombeiros-b-oliv-bairro,busway,Bombeiros B (Oliv. Bairro),8,14 83
+busway:bosturenga-a,busway,Bosturenga A,3,47
+busway:bosturenga-b,busway,Bosturenga B,1,47
+busway:bosturenga-rua-do-corgo-a,busway,Bosturenga – Rua do Corgo A,3,47
+busway:bosturenga-rua-do-corgo-b,busway,Bosturenga – Rua do Corgo B,3,47
+busway:branca-a,busway,Branca A,5,47 48
+busway:branca-b,busway,Branca B,4,47
+busway:brasao,busway,Brasão,10,70
+busway:breja,busway,Breja,3,67
+busway:brejinha,busway,Brejinha,15,65 66 69
+busway:brejo,busway,Brejo,3,44
+busway:brito-posto-medico,busway,Brito – Posto Médico,3,3
+busway:bustelo,busway,Bustelo,9,43
+busway:bustos-18-de-fevereiro,busway,Bustos – 18 de Fevereiro,3,79 83
+busway:bustos-18-de-fevereiro-b,busway,Bustos – 18 de Fevereiro B,4,79 83
+busway:bustos-feira,busway,Bustos – Feira,1,85
+busway:bustos-feira-b,busway,Bustos – Feira B,3,85
+busway:bustos-gnr,busway,Bustos – GNR,7,79 80 82 84 85
+busway:bustos-gnr-b,busway,Bustos – GNR B,11,79 80 82 84 85
+busway:bustos-junta-de-freguesia,busway,Bustos – Junta de Freguesia,6,79 83 84 85
+busway:bustos-junta-de-freguesia-b,busway,Bustos – Junta de Freguesia B,9,79 83 84 85
+busway:bustos-sobreiro,busway,Bustos – Sobreiro,15,19
+busway:bustos-sobreiro-1,busway,Bustos – Sobreiro 1,1,80
+busway:bustos-sobreiro-1-b,busway,Bustos – Sobreiro 1 B,2,80
+busway:bustos-sobreiro-2,busway,Bustos – Sobreiro 2,19,19 82
+busway:bustos-sobreiro-2-b,busway,Bustos – Sobreiro 2 B,2,82 85
+busway:casci,busway,CASCI,10,70
+busway:comur-museu-municipal,busway,COMUR – Museu Municipal,50,21 22 76 77
+busway:cabana-a,busway,Cabana – A,2,63
+busway:cabana-b,busway,Cabana – B,1,54
+busway:cabecinhas,busway,Cabecinhas,2,107
+busway:cabeco-de-cao-i,busway,Cabeço de Cão I,2,42
+busway:cabeco-de-cao-ii,busway,Cabeço de Cão II,2,42
+busway:cabo-da-carreira,busway,Cabo da Carreira,6,69
+busway:cabedo-e-lencastre,busway,Cabêdo e Lencastre,12,40 44
+busway:cais-de-s-jacinto-ferry,busway,Cais de S. Jacinto (ferry),5,25
+busway:cale-da-vila-a-ilhavo,busway,Cale da Vila – A (Ílhavo),12,20 70
+busway:cale-da-vila-b-ilhavo,busway,Cale da Vila – B (Ílhavo),6,70
+busway:calouste-gulbenkian,busway,Calouste Gulbenkian,7,39
+busway:calouste-gulbenkian-cemiterio,busway,Calouste Gulbenkian – Cemitério,7,39
+busway:calvaes-a,busway,Calvães A,1,53
+busway:calvaes-b,busway,Calvães B,2,53
+busway:calvao,busway,Calvão,22,107 18
+busway:calvao-centro-1,busway,Calvão Centro 1,6,107 108 109 110
+busway:calvao-centro-2,busway,Calvão Centro 2,7,105 107 108 109 110
+busway:camarnal,busway,Camarnal,2,79 85
+busway:camarnal-b,busway,Camarnal B,5,79 85
+busway:camarnal-capela,busway,Camarnal – Capela,2,79 85
+busway:camarnal-capela-b,busway,Camarnal – Capela B,5,79 85
+busway:camarneira,busway,Camarneira,8,19
+busway:camarneira-a,busway,Camarneira – A,11,11 19
+busway:camarneira-b,busway,Camarneira – B,1,11
+busway:cambeia-eb1,busway,Cambeia – EB1,2,70
+busway:campinos,busway,Campinos,6,24 67
+busway:campo,busway,Campo,3,68
+busway:campo-da-cruz,busway,Campo da Cruz,2,67
+busway:candam,busway,Candam,4,43
+busway:candieira-a,busway,Candieira – A,2,56
+busway:candieira-b,busway,Candieira – B,1,56
+busway:caneira-c-saude,busway,Caneira – C. Saude,2,82
+busway:caneira-c-saude-b,busway,Caneira – C. Saude B,1,82
+busway:caneira-centro-saude,busway,Caneira – Centro Saude,3,85
+busway:caneira-centro-saude-b,busway,Caneira – Centro Saude B,2,85
+busway:canelas-a,busway,Canelas – A,4,57
+busway:canelas-b,busway,Canelas – B,1,57
+busway:canelas-jardim,busway,Canelas – Jardim,2,67
+busway:canico,busway,Caniço,10,15
+busway:canicos,busway,Caniços,33,16
+busway:cantanhede,busway,Cantanhede,18,19
+busway:canto-calvao,busway,Canto Calvão,4,105 106 110
+busway:canto-de-baixo,busway,Canto de Baixo,9,102 109 110
+busway:capela,busway,Capela,3,42 45
+busway:capela-n-a-sr-a-do-carmo,busway,Capela N.a Sr.a do Carmo,2,16
+busway:capela-sr-dos-aflito,busway,Capela Sr dos Aflito,10,64 69
+busway:capela-de-santo-estevao,busway,Capela de Santo Estevão,3,77
+busway:capela-do-boco,busway,Capela do Boco,10,104 111
+busway:caramulo,busway,Caramulo,2,13
+busway:cardielos,busway,Cardielos,3,91
+busway:cardielos-ponte,busway,Cardielos (Ponte),5,1 91
+busway:carmaleiras-de-cima,busway,Carmaleiras de Cima,7,39
+busway:carqueijo-i,busway,Carqueijo I,8,44
+busway:carqueijo-ii,busway,Carqueijo II,8,44
+busway:carrasqueira,busway,Carrasqueira,4,38
+busway:carrazedo,busway,Carrazedo,2,100
+busway:carrazedo-2,busway,Carrazedo (2),2,100
+busway:carrazedo-cruzeiro,busway,Carrazedo – Cruzeiro,2,100
+busway:carrazedo-cruzeiro-2,busway,Carrazedo – Cruzeiro (2),2,100
+busway:carregosa,busway,Carregosa,11,104 107
+busway:carril,busway,Carril,5,44
+busway:carris-capela,busway,Carris – Capela,3,78 83
+busway:carris-capela-b,busway,Carris – Capela B,4,78 83
+busway:carvalha,busway,Carvalha,4,38
+busway:carvalhais,busway,Carvalhais,13,106 107 108 110 47 48
+busway:carvalhal,busway,Carvalhal,9,47 95
+busway:carvalhal-largo-da-sra-das-dores-a,busway,Carvalhal (Largo da Sra das Dores) – A,2,92 93
+busway:carvoeiro-b,busway,Carvoeiro B,8,17 6
+busway:casa-branca,busway,Casa Branca,13,76
+busway:casa-do-povo-a,busway,Casa do Povo – A,2,70
+busway:casa-do-povo-b,busway,Casa do Povo – B,2,70
+busway:casais-a,busway,Casais A,4,52 53
+busway:casais-b,busway,Casais B,2,52 53
+busway:casal-do-bolho,busway,Casal do Bolho,3,60
+busway:casarao-i,busway,Casarão I,4,40
+busway:casarao-ii,busway,Casarão II,8,40 43
+busway:casainho-de-cima,busway,Casaínho de Cima,3,27
+busway:caselho,busway,Caselho,3,13
+busway:casta,busway,Casta,19,102 104 105 109 110
+busway:castelo,busway,Castelo,15,38 40 43
+busway:casteloes-do-vouga,busway,Castelões do Vouga,1,95
+busway:catives,busway,Catives,2,94
+busway:catives-2,busway,Catives (2),1,94
+busway:catives-capela,busway,Catives – Capela,3,94
+busway:catraia,busway,Catraia,15,38 40 43
+busway:catraia-de-assequins-i,busway,Catraia de Assequins I,3,45
+busway:catraia-de-assequins-ii,busway,Catraia de Assequins II,3,45
+busway:cavadas,busway,Cavadas,3,45
+busway:caves,busway,Caves,3,44
+busway:cacadores-10-misericordia,busway,Caçadores 10 – Misericórdia,4,36 37
+busway:cacadores-10-se,busway,Caçadores 10 – Sé,8,36 37
+busway:cacadores-a,busway,Caçadores – A,5,72 75
+busway:cacadores-b,busway,Caçadores – B,9,72 75
+busway:cedrim,busway,Cedrim,2,96
+busway:cedrim-2,busway,Cedrim (2),1,96
+busway:cedrim-n16,busway,Cedrim N16,2,96
+busway:cedrim-n16-2,busway,Cedrim N16 (2),1,96
+busway:cedrim-escola,busway,Cedrim – Escola,2,96
+busway:cedrim-escola-2,busway,Cedrim – Escola (2),1,96
+busway:cedrim-igreja,busway,Cedrim – Igreja,2,96
+busway:cedrim-igreja-2,busway,Cedrim – Igreja (2),1,96
+busway:cedrim-variante,busway,Cedrim – Variante,1,96
+busway:cedrim-variante-2,busway,Cedrim – Variante (2),1,96
+busway:cemiterio,busway,Cemitério,4,45
+busway:centro-coordenador-de-transportes-albergaria,busway,Centro Coordenador de Transportes (Albergaria),121,12 16 17 23 24 26 32 37 46 47 51 6
+busway:centro-de-formacao,busway,Centro de Formação,3,91
+busway:centro-de-saude,busway,Centro de Saúde,16,76 77
+busway:centro-de-saude-sever-do-vouga,busway,Centro de Saúde (Sever do Vouga),16,100 101 94 95 96 97 98 99
+busway:cercal-escola-primaria,busway,Cercal – Escola Primaria,2,83
+busway:cercal-escola-primaria-b,busway,Cercal – Escola Primaria B,2,83
+busway:cerciag-i,busway,Cerciag I,7,39
+busway:cerciag-ii,busway,Cerciag II,7,39
+busway:cerqueira,busway,Cerqueira,1,94
+busway:cerqueira-2,busway,Cerqueira (2),2,94
+busway:chaque-a,busway,Chaque A,5,47 48
+busway:chaque-b,busway,Chaque B,4,47
+busway:cheira,busway,Cheira,2,41
+busway:chipar-de-baixo,busway,Chipar de Baixo,3,55 60
+busway:chipar-de-cima-a,busway,Chipar de Cima – A,3,11
+busway:chipar-de-cima-b,busway,Chipar de Cima – B,4,11 55 60
+busway:choupal,busway,Choupal,2,41
+busway:choupal-ii,busway,Choupal II,2,41
+busway:chousa,busway,Chousa,12,104 109 110
+busway:chao-de-pedra,busway,Chão de Pedra,15,26
+busway:cine-teatro-da-murtosa,busway,Cine-Teatro da Murtosa,13,76
+busway:cires,busway,Cires,15,65 66 69
+busway:cmt-pinho-e-freitas,busway,Cmt. Pinho e Freitas,21,38 39 41 43 44 45
+busway:coche,busway,Coche,5,47 48
+busway:coimbra,busway,Coimbra,16,12
+busway:coimbrao,busway,Coimbrão,15,19
+busway:coimbrao-b,busway,Coimbrão B,17,19
+busway:colegio-de-albergaria-a-velha-a,busway,Colégio de Albergaria-a-Velha A,8,23 24 46 47
+busway:colegio-de-albergaria-a-velha-b,busway,Colégio de Albergaria-a-Velha B,5,23 24 46 47
+busway:colegio-calvao,busway,Colégio – Calvão,27,103 105 106 107 108 109 110 111 20
+busway:combatentes-a-ovar,busway,Combatentes – A (Ovar),26,25 3 7 8 9 90 92 93
+busway:combatentes-b-ovar,busway,Combatentes – B (Ovar),34,25 3 7 8 86 90 92 93
+busway:comerciantes,busway,Comerciantes,15,38 43
+busway:conde-caldeira-i,busway,Conde Caldeira I,19,38 40 43
+busway:conde-caldeira-ii,busway,Conde Caldeira II,3,38
+busway:conde-ferreira-1,busway,Conde Ferreira 1,6,66 68
+busway:conde-ferreira-2,busway,Conde Ferreira 2,1,68
+busway:conde-sucena,busway,Conde Sucena,4,38
+busway:condes,busway,Condes,5,108 109 110
+busway:corgo-de-baixo,busway,Corgo de Baixo,3,56
+busway:cortegaca-apeadeiro-a,busway,Cortegaça (Apeadeiro) – A,1,91
+busway:cortegaca-apeadeiro-b,busway,Cortegaça (Apeadeiro) – B,4,1 91
+busway:cortegaca-capela-sao-jose-a,busway,Cortegaça (Capela São José) – A,1,91
+busway:cortegaca-capela-sao-jose-b,busway,Cortegaça (Capela São José) – B,2,91
+busway:cortegaca-centro-a,busway,Cortegaça (Centro) – A,26,3 4 5 86
+busway:cortegaca-centro-b,busway,Cortegaça (Centro) – B,23,3 4 86
+busway:cortegaca-cruz-a,busway,Cortegaça (Cruz) – A,1,91
+busway:cortegaca-cruz-b,busway,Cortegaça (Cruz) – B,2,91
+busway:cortegaca-cruzamento-outeiro-a,busway,Cortegaça (Cruzamento Outeiro) – A,6,86
+busway:cortegaca-cruzamento-outeiro-b,busway,Cortegaça (Cruzamento Outeiro) – B,6,86
+busway:cortegaca-igreja-2-a,busway,Cortegaça (Igreja 2) – A,1,91
+busway:cortegaca-igreja-2-b,busway,Cortegaça (Igreja 2) – B,2,91
+busway:cortegaca-junta-de-freguesia-a,busway,Cortegaça (Junta de Freguesia) – A,6,86
+busway:cortegaca-junta-de-freguesia-b,busway,Cortegaça (Junta de Freguesia) – B,6,86
+busway:cortegaca-monte-a,busway,Cortegaça (Monte) – A,2,91
+busway:cortegaca-monte-b,busway,Cortegaça (Monte) – B,1,91
+busway:cortegaca-pombo-a,busway,Cortegaça (Pombo) – A,6,86
+busway:cortegaca-pombo-b,busway,Cortegaça (Pombo) – B,6,86
+busway:cortegaca-praia-a,busway,Cortegaça (Praia) – A,1,91
+busway:cortegaca-praia-b,busway,Cortegaça (Praia) – B,2,91
+busway:cortegaca-sicor-1-2-b,busway,Cortegaça (Sicor 1 / 2) – B,6,86
+busway:cortegaca-sicor-2-1-a,busway,Cortegaça (Sicor 2 / 1) – A,6,86
+busway:cortegaca-voltinha-a,busway,Cortegaça (Voltinha) – A,6,86
+busway:cortegaca-voltinha-b,busway,Cortegaça (Voltinha) – B,6,86
+busway:coutada-a,busway,Coutada – A,3,34
+busway:coutada-b,busway,Coutada – B,4,34
+busway:couto-de-esteves,busway,Couto de Esteves,3,97
+busway:couto-de-esteves-2,busway,Couto de Esteves (2),2,97
+busway:couto-de-esteves-igreja,busway,Couto de Esteves – Igreja,3,97
+busway:couvelha-rua-principal-a,busway,Couvelha – Rua Principal – A,2,54 59
+busway:couvelha-rua-principal-b,busway,Couvelha – Rua Principal – B,6,59 61 62 63
+busway:couvelha-rua-quinta-dos-matos-a,busway,Couvelha – Rua Quinta dos Matos – A,2,63
+busway:couvelha-rua-quinta-dos-matos-b,busway,Couvelha – Rua Quinta dos Matos – B,1,61
+busway:couvelha-rua-da-pena-negra-a,busway,Couvelha – Rua da Pena Negra – A,3,59 61
+busway:couvelha-rua-da-pena-negra-b,busway,Couvelha – Rua da Pena Negra – B,3,59 62
+busway:covao-sul,busway,Covão Sul,2,105
+busway:cristelo,busway,Cristelo,6,47 48
+busway:cristelo-rua-do-fontao,busway,Cristelo – Rua do Fontão,6,47 48
+busway:cruz,busway,Cruz,11,43
+busway:cruzamento-en109-a,busway,Cruzamento EN109 – A,2,92 93
+busway:cruzamento-en109-b,busway,Cruzamento EN109 – B,1,93
+busway:cruzamento-do-vale,busway,Cruzamento do Vale,5,108 109 110
+busway:cruzamento-restabelecimento-25-a,busway,Cruzamento restabelecimento 25 – A,6,86
+busway:cruzamento-restabelecimento-25-b,busway,Cruzamento restabelecimento 25 – B,6,86
+busway:cruzeiro-rio-tinto,busway,Cruzeiro Rio Tinto,11,104 107
+busway:cruzeiro-vergas-norte,busway,Cruzeiro Vergas Norte,9,103 111
+busway:cruzeiro-vergas-sul,busway,Cruzeiro Vergas Sul,4,107 111
+busway:cruzeiro-da-paz,busway,Cruzeiro da Paz,5,44
+busway:cruzeiro-da-pedricosa,busway,Cruzeiro da Pedricosa,6,103
+busway:cruzeiro-do-boco,busway,Cruzeiro do Boco,10,104 111
+busway:cruzeiro-a,busway,Cruzeiro – A,2,70
+busway:cruzeiro-b,busway,Cruzeiro – B,2,70
+busway:cubo-a,busway,Cubo A,2,51 52
+busway:cubo-b,busway,Cubo B,3,51 52
+busway:curia-estacao-cp-a,busway,Curia – Estação CP – A,21,11 12 14
+busway:curia-estacao-cp-b,busway,Curia – Estação CP – B,2,14
+busway:curia-largo-doutor-luis-navega-a,busway,Curia – Largo Doutor Luís Navega – A,1,60
+busway:curia-largo-doutor-luis-navega-b,busway,Curia – Largo Doutor Luís Navega – B,2,60
+busway:curia-tamengos,busway,Curia – Tamengos,3,60
+busway:custodio-prato,busway,Custódio Prato,3,77
+busway:camara-municipal-ilhavo,busway,Câmara Municipal (Ílhavo),96,18 34 70 71 72
+busway:desembargador-correia-teles,busway,Desembargador Correia Teles,26,21 64 65 67 68 69
+busway:desembargador-oliveira-pinto-1,busway,Desembargador Oliveira Pinto 1,5,65
+busway:desembargador-oliveira-pinto-2,busway,Desembargador Oliveira Pinto 2,5,65
+busway:dom-francisco-rendeiro,busway,Dom Francisco Rendeiro,16,76 77
+busway:doninhas,busway,Doninhas,2,100
+busway:doninhas-2,busway,Doninhas (2),3,100
+busway:doninhas-centro,busway,Doninhas – Centro,2,100
+busway:doninhas-centro-2,busway,Doninhas – Centro (2),3,100
+busway:doninhas-rotunda,busway,Doninhas – Rotunda,2,100
+busway:doninhas-rotunda-2,busway,Doninhas – Rotunda (2),3,100
+busway:dornelas,busway,Dornelas,5,17 95
+busway:dornelas-2,busway,Dornelas (2),6,17 95
+busway:dornelas-souto-miguel-2,busway,Dornelas – Souto Miguel (2),1,95
+busway:dornelas-cruz-r-do-casal,busway,Dornelas – cruz. R. do Casal,1,95
+busway:dr-antonio-breda,busway,Dr. António Breda,28,13 26 29 38 41 43 44 45
+busway:dr-antonio-breda-barro,busway,Dr. António Breda (Barrô),11,29
+busway:dr-eduardo-santiago,busway,Dr. Eduardo Santiago,2,41
+busway:dr-joao-elisio-ferreira-sucena-norte,busway,Dr. João Elisio Ferreira Sucena – Norte,1,27
+busway:dr-joao-elisio-ferreira-sucena-sul,busway,Dr. João Elisio Ferreira Sucena – Sul,9,27 39
+busway:dr-manfredo-nunes-roque,busway,Dr. Manfredo Nunes Roque,5,44
+busway:dr-mateus-barbas-dos-anjos-i,busway,Dr. Mateus Barbas dos Anjos I,9,39 41 42
+busway:dr-mateus-barbas-dos-anjos-ii-nascente,busway,Dr. Mateus Barbas dos Anjos II – Nascente,1,41
+busway:dr-mateus-barbas-dos-anjos-ii-poente,busway,Dr. Mateus Barbas dos Anjos II – Poente,1,41
+busway:eb-2-3-da-branca-a,busway,EB 2 3 da Branca A,2,46
+busway:eb-2-3-da-branca-b,busway,EB 2 3 da Branca B,23,23 24 46 47 48
+busway:eb23-vagos,busway,EB23 (Vagos),31,10 102 103 104
+busway:eb23-ilhavo,busway,EB23 (Ílhavo),20,18 70 71 72
+busway:epadrv,busway,EPADRV,3,10
+busway:eiras-velhas,busway,Eiras Velhas,7,39
+busway:emigrante-ii,busway,Emigrante II,2,45
+busway:engenho,busway,Engenho,8,43
+busway:engenho-aguada-de-cima,busway,Engenho (Aguada de Cima),8,44
+busway:esc-dias-simoes-a-ovar,busway,Esc. Dias Simões – A (Ovar),97,15 25 33 4 7 8 86 9 90 92 93
+busway:esc-julio-dinis-a-ovar,busway,Esc. Júlio Dinis – A (Ovar),12,8 86 92
+busway:esc-secundaria-macedo-fragateiro-a-ovar,busway,Esc. Secundária Macedo Fragateiro – A (Ovar),98,15 25 33 4 7 8 86 87 9 90 92 93
+busway:escola,busway,Escola,7,41 42 45
+busway:escola-espinhel,busway,Escola (Espinhel),10,27 29
+busway:escola-basica-albergaria,busway,Escola Básica (Albergaria),21,16 26 37 51 6
+busway:escola-basica-vilarinho-do-bairro,busway,Escola Básica (Vilarinho do Bairro),11,54 55 60 61 62 63
+busway:escola-basica-e-secundaria-anadia,busway,Escola Básica e Secundária (Anadia),45,11 12 14 31 56 57 58 59 61 62
+busway:escola-frei-gil,busway,Escola Frei Gil,12,79 80 81 82
+busway:escola-gandara,busway,Escola Gândara,5,105 109 110
+busway:escola-jaime-magalhaes-lima-a,busway,Escola Jaime Magalhães Lima A,3,33 37
+busway:escola-jaime-magalhaes-lima-b,busway,Escola Jaime Magalhães Lima B,4,33 37
+busway:escola-joao-afonso,busway,Escola João Afonso,7,36
+busway:escola-padre-donaciano,busway,Escola Padre Donaciano,5,21 24
+busway:escola-padre-donaciano-arrotinha,busway,Escola Padre Donaciano – Arrotinha,15,33 67 68 69
+busway:escola-secundaria,busway,Escola Secundária,31,10 102 103 104
+busway:escola-secundaria-estarreja,busway,Escola Secundária (Estarreja),37,21 23 24 33 66 67 68 69
+busway:escola-secundaria-ilhavo,busway,Escola Secundária (Ílhavo),19,70 71 72
+busway:escola-secundaria-a-albergaria,busway,Escola Secundária A (Albergaria),16,16 26 37 46 47 51 6
+busway:escola-secundaria-b-albergaria,busway,Escola Secundária B (Albergaria),16,16 26 37 46 51 6
+busway:escola-vagueira-norte,busway,Escola Vagueira Norte,12,20
+busway:escola-da-vagueira,busway,Escola da Vagueira,8,20
+busway:escola-das-laginhas,busway,Escola das Laginhas,1,47
+busway:escola-de-mouquim-a,busway,Escola de Mouquim A,2,6
+busway:escola-de-mouquim-b,busway,Escola de Mouquim B,2,6
+busway:escola-de-s-silveste,busway,Escola de S. Silveste,4,77
+busway:escola-do-chao-do-monte,busway,Escola do Chão do Monte,4,77
+busway:escola-avanca,busway,Escola – Avanca,9,66 69
+busway:escusa-a,busway,Escusa A,5,47 48
+busway:escusa-b,busway,Escusa B,4,47
+busway:esmoriz-avenida-da-praia-2-a,busway,Esmoriz (Avenida da Praia 2) – A,30,4
+busway:esmoriz-avenida-da-praia-2-b,busway,Esmoriz (Avenida da Praia 2) – B,2,91
+busway:esmoriz-avenida-da-praia-3-b,busway,Esmoriz (Avenida da Praia 3) – B,4,1 91
+busway:esmoriz-campo-grande-a,busway,Esmoriz (Campo Grande) – A,6,86
+busway:esmoriz-campo-grande-b,busway,Esmoriz (Campo Grande) – B,6,86
+busway:esmoriz-castanheiros-1-a,busway,Esmoriz (Castanheiros 1) – A,2,91
+busway:esmoriz-castanheiros-1-b,busway,Esmoriz (Castanheiros 1) – B,1,91
+busway:esmoriz-castanheiros-2-a,busway,Esmoriz (Castanheiros 2) – A,2,91
+busway:esmoriz-castanheiros-2-b,busway,Esmoriz (Castanheiros 2) – B,1,91
+busway:esmoriz-escola-secundaria-2-a,busway,Esmoriz (Escola Secundária 2) – A,7,4 91
+busway:esmoriz-escola-secundaria-b,busway,Esmoriz (Escola Secundária) – B,5,4 91
+busway:esmoriz-escola-b,busway,Esmoriz (Escola) – B,15,4
+busway:esmoriz-florbela-espanca-a,busway,Esmoriz (Florbela Espanca) – A,1,91
+busway:esmoriz-florbela-espanca-b,busway,Esmoriz (Florbela Espanca) – B,7,4 91
+busway:esmoriz-igreja-a,busway,Esmoriz (Igreja) – A,17,4 5
+busway:esmoriz-igreja-b,busway,Esmoriz (Igreja) – B,15,4
+busway:esmoriz-junta-de-freguesia-b,busway,Esmoriz (Junta de Freguesia) – B,21,4 86
+busway:esmoriz-matosinhos-de-cima-a,busway,Esmoriz (Matosinhos de Cima) – A,6,86
+busway:esmoriz-matosinhos-de-cima-b,busway,Esmoriz (Matosinhos de Cima) – B,6,86
+busway:esmoriz-posto-combustivel-a,busway,Esmoriz (Posto Combustivel) – A,12,4 5
+busway:esmoriz-junta-de-freguesia,busway,Esmoriz – Junta de Freguesia,6,86
+busway:espairo-rotunda-a,busway,Espairo – Rotunda – A,6,11 59 62
+busway:espairo-rotunda-b,busway,Espairo – Rotunda – B,3,11 61 62
+busway:espartidouras-a,busway,Espartidouras – A,1,93
+busway:espinheira-a,busway,Espinheira A,3,47
+busway:espinheira-b,busway,Espinheira B,5,47
+busway:estacao-aveiro,busway,Estação (Aveiro),23,16 17 33 37
+busway:estacao-agueda,busway,Estação (Águeda),110,12 13 26 27 28 29 30 31 38 39 40 41 42 43 44 45
+busway:estacao-cp-estarreja,busway,Estação CP (Estarreja),65,21 23 24 3 33 64 65 66 67 68 69
+busway:estacao-a-ovar,busway,Estação – A (Ovar),139,15 25 4 7 8 86 87 88 9 90 92 93
+busway:esteiro,busway,Esteiro,4,77
+busway:estrada-municipal-610,busway,Estrada Municipal 610,6,43
+busway:estrada-principal-carregosa,busway,Estrada Principal Carregosa,11,104 107
+busway:estrada-real-i,busway,Estrada Real I,4,38
+busway:estrada-real-ii,busway,Estrada Real II,4,38
+busway:estrada-dos-reis,busway,Estrada dos Reis,5,47 48
+busway:estradinha,busway,Estradinha,11,43
+busway:eucalipto-aveiro,busway,Eucalipto (Aveiro),15,19
+busway:eucalipto-b,busway,Eucalipto B,17,19
+busway:eurico-ferreira-sucena,busway,Eurico Ferreira Sucena,4,38
+busway:falcao,busway,Falcão,10,66 69
+busway:famalicao-a,busway,Famalicão – A,4,56 59
+busway:famalicao-b,busway,Famalicão – B,5,56 59
+busway:famel,busway,Famel,2,41
+busway:farol,busway,Farol,10,70
+busway:farol-forte-da-barra,busway,Farol – Forte da Barra,97,36
+busway:farol-praia-da-barra,busway,Farol – Praia da Barra,17,35
+busway:feira,busway,Feira,3,68
+busway:feira-nova-a,busway,Feira Nova A,4,46 47
+busway:feira-nova-b,busway,Feira Nova B,3,46 47
+busway:feiteira,busway,Feiteira,9,79 80 81 82 84 85
+busway:feiteira-b,busway,Feiteira B,12,79 80 81 82 84 85
+busway:felgueira,busway,Felgueira,4,43
+busway:fermela-centro,busway,Fermelã – Centro,21,24 33 67
+busway:fermela-sobreiro,busway,Fermelã – Sobreiro,2,67
+busway:ferragens,busway,Ferragens,4,40
+busway:ferreirinhos,busway,Ferreirinhos,4,57
+busway:ferreiros-centro-a,busway,Ferreiros Centro – A,3,57
+busway:ferreiros-centro-b,busway,Ferreiros Centro – B,1,57
+busway:ferreiros-a,busway,Ferreiros – A,1,57
+busway:ferreiros-b,busway,Ferreiros – B,3,57
+busway:fial-de-baixo-a,busway,Fial de Baixo A,6,51 52
+busway:fial-de-baixo-b,busway,Fial de Baixo B,4,51 52
+busway:fial-de-cima-a,busway,Fial de Cima A,4,51 52
+busway:fial-de-cima-b,busway,Fial de Cima B,6,51 52
+busway:fial-rua-da-escola-a,busway,Fial – Rua da Escola A,6,51 52
+busway:fial-rua-da-escola-b,busway,Fial – Rua da Escola B,4,51 52
+busway:figueira-i,busway,Figueira I,2,41
+busway:figueira-ii,busway,Figueira II,2,41
+busway:figueira-da-foz-estacao-cp,busway,Figueira da Foz (Estação CP),7,18
+busway:figueira-a,busway,Figueira – A,2,56
+busway:figueira-b,busway,Figueira – B,1,56
+busway:figuras-populares,busway,Figuras Populares,21,26 42
+busway:fogueira,busway,Fogueira,7,28
+busway:fontainhas,busway,Fontaínhas,7,102 107
+busway:fonte,busway,Fonte,2,42
+busway:fonte-sanchequias-1,busway,Fonte Sanchequias 1,1,102
+busway:fonte-sanchequias-2,busway,Fonte Sanchequias 2,8,102 107
+busway:fonte-de-angeao,busway,Fonte de Angeão,9,102 106 110
+busway:fonte-de-angeao-centro,busway,Fonte de Angeão Centro,10,102 105 106 110
+busway:fonte-do-grou,busway,Fonte do Grou,12,104 109 110
+busway:fonte-do-roque,busway,Fonte do Roque,16,14 29
+busway:fontela,busway,Fontela,6,69
+busway:fontelas,busway,Fontelas,3,96
+busway:fontelas-2,busway,Fontelas (2),1,6
+busway:fontenario,busway,Fontenário,3,103
+busway:fontes-a,busway,Fontes A,1,53
+busway:fontes-b,busway,Fontes B,2,53
+busway:fontao,busway,Fontão,12,103 107
+busway:fontao-2,busway,Fontão 2,12,103 107
+busway:forte-da-barra-ferry,busway,Forte da Barra – Ferry,85,36
+busway:foz,busway,Foz,4,43
+busway:foz-do-rio-mau,busway,Foz do Rio Mau,7,17 6
+busway:fradelos-a,busway,Fradelos A,4,46 47
+busway:fradelos-b,busway,Fradelos B,4,46 47
+busway:fradelos-rua-da-capelinha-a,busway,Fradelos – Rua da Capelinha A,4,46 47
+busway:fradelos-rua-da-capelinha-b,busway,Fradelos – Rua da Capelinha B,4,46 47
+busway:fradelos-rua-da-cinza-a,busway,Fradelos – Rua da Cinza A,4,46 47
+busway:fradelos-rua-da-cinza-b,busway,Fradelos – Rua da Cinza B,4,46 47
+busway:fradelos-rua-da-na-sra-dos-milagres-a,busway,Fradelos – Rua da Na Sra dos Milagres A,7,46 47
+busway:fradelos-rua-da-na-sra-dos-milagres-a-b,busway,Fradelos – Rua da Na Sra dos Milagres A/B,3,47
+busway:fradelos-rua-da-na-sra-dos-milagres-b,busway,Fradelos – Rua da Na Sra dos Milagres B,4,46 47
+busway:frias-a,busway,Frias A,4,51 52
+busway:frias-b,busway,Frias B,6,51 52
+busway:frias-de-cima-a,busway,Frias de Cima A,4,51
+busway:frias-de-cima-b,busway,Frias de Cima B,3,51
+busway:frias-en-16-2-a,busway,Frias – EN 16-2 A,4,51
+busway:frias-en-16-2-b,busway,Frias – EN 16-2 B,3,51
+busway:frossos-a,busway,Frossos A,4,51 52
+busway:frossos-b,busway,Frossos B,6,51 52
+busway:frossos-igreja-a,busway,Frossos – Igreja A,4,51 52
+busway:frossos-igreja-b,busway,Frossos – Igreja B,6,51 52
+busway:frossos-rua-do-barreiro-a,busway,Frossos – Rua do Barreiro A,4,51 52
+busway:frossos-rua-do-barreiro-b,busway,Frossos – Rua do Barreiro B,6,51 52
+busway:fragua,busway,Frágua,2,100
+busway:fragua-2,busway,Frágua (2),3,100
+busway:fraguas-1a,busway,Fráguas 1A,2,46
+busway:fraguas-1b,busway,Fráguas 1B,4,46 47
+busway:fraguas-a,busway,Fráguas A,2,46
+busway:fraguas-b,busway,Fráguas B,4,46 47
+busway:furadouro-mercado-a,busway,Furadouro (Mercado) – A,41,15
+busway:gafanha-da-encarnacao-centro-eb1-a,busway,Gafanha da Encarnação Centro EB1 – A,6,73 74 75
+busway:gafanha-da-encarnacao-centro-eb1-b,busway,Gafanha da Encarnação Centro EB1 – B,6,73 74 75
+busway:gafanha-da-encarnacao-eb23,busway,Gafanha da Encarnação EB23,13,72 73 74 75
+busway:gafanha-da-nazare-cruzamento-a,busway,Gafanha da Nazaré (Cruzamento) – A,2,70
+busway:gafanha-da-nazare-cruzamento-b,busway,Gafanha da Nazaré (Cruzamento) – B,2,70
+busway:gafanha-da-nazare-eb23-a,busway,Gafanha da Nazaré EB23 – A,6,20 70
+busway:gafanha-da-nazare-eb23-b,busway,Gafanha da Nazaré EB23 – B,7,20 70
+busway:gafanha-da-vagueira-a,busway,Gafanha da Vagueira – A,1,75
+busway:gafanha-da-vagueira-b,busway,Gafanha da Vagueira – B,10,20 72 75
+busway:gafanha-de-aquem,busway,Gafanha de Aquém,10,70 72
+busway:gafanha-de-aquem-eb1-a,busway,Gafanha de Aquém EB1 – A,4,72
+busway:gafanha-de-aquem-eb1-b,busway,Gafanha de Aquém EB1 – B,5,72
+busway:gafanha-de-aquem-i,busway,Gafanha de Aquém I,7,70
+busway:gafanha-de-aquem-ii,busway,Gafanha de Aquém II,5,72
+busway:gafapao-a,busway,Gafapão – A,3,70
+busway:gafapao-b,busway,Gafapão – B,4,70
+busway:gandarinha,busway,Gandarinha,5,26
+busway:garrido-i,busway,Garrido I,11,43
+busway:garrido-ii,busway,Garrido II,11,43
+busway:giesta-capela,busway,Giesta – Capela,4,27 81 83
+busway:giesta-capela-b,busway,Giesta – Capela B,6,27 81 83
+busway:giesta-largo-cristo-rei,busway,Giesta – Largo Cristo Rei,4,27 81 83
+busway:giesta-largo-cristo-rei-b,busway,Giesta – Largo Cristo Rei B,6,27 81 83
+busway:gondozende-cafe-beija-flor,busway,Gondozende (Café Beija Flor),3,91
+busway:grada-a,busway,Grada – A,3,14
+busway:gramata-a,busway,Gramata – A,4,72
+busway:gramata-b,busway,Gramata – B,5,72
+busway:granja-a,busway,Granja – A,1,90
+busway:granja-b,busway,Granja – B,3,90
+busway:grou,busway,Grou,4,108 110
+busway:grou-a,busway,Grou – A,2,63
+busway:grou-b,busway,Grou – B,1,54
+busway:guilhovai-1-a,busway,Guilhovai 1 – A,6,90
+busway:guilhovai-1-b,busway,Guilhovai 1 – B,6,90
+busway:guilhovai-2-a,busway,Guilhovai 2 – A,6,90
+busway:guilhovai-2-b,busway,Guilhovai 2 – B,6,90
+busway:guilhovai-3-a,busway,Guilhovai 3 – A,6,90
+busway:guilhovai-3-b,busway,Guilhovai 3 – B,6,90
+busway:guilhovai-4-a,busway,Guilhovai 4 – A,6,90
+busway:guilhovai-4-b,busway,Guilhovai 4 – B,6,90
+busway:guilhovai-5-a,busway,Guilhovai 5 – A,6,90
+busway:guilhovai-5-b,busway,Guilhovai 5 – B,6,90
+busway:guistola-i,busway,Guistola I,6,43
+busway:guistola-ii,busway,Guistola II,6,43
+busway:guistolinha,busway,Guistolinha,4,43
+busway:gandara,busway,Gândara,7,105 109 110 99
+busway:hernani-ferreira-silva,busway,Hernani Ferreira Silva,19,38 40 43
+busway:horta-velha,busway,Horta Velha,4,38
+busway:horta-a,busway,Horta – A,3,11 60
+busway:horta-b,busway,Horta – B,1,60
+busway:horta-c,busway,Horta – C,1,11
+busway:hospital-universidade-a-aveiro,busway,Hospital / Universidade A (Aveiro),64,16 17 18 32 34 37
+busway:hospital-universidade-b-aveiro,busway,Hospital / Universidade B (Aveiro),60,16 17 18 32 33 34 37
+busway:hospital-rovisco-pais,busway,Hospital Rovisco Pais,7,18
+busway:hospital-s-sebastiao,busway,Hospital S. Sebastião,10,15
+busway:hospital-de-espinho,busway,Hospital de Espinho,22,3 4 5
+busway:hospital-de-ovar-a,busway,Hospital de Ovar – A,1,8
+busway:hospital-de-ovar-b,busway,Hospital de Ovar – B,1,25
+busway:hospital-a,busway,Hospital – A,10,70 71 72
+busway:hospital-b,busway,Hospital – B,9,70 71 72
+busway:ipb,busway,IPB,12,28 31 83
+busway:igreja,busway,Igreja,4,38
+busway:igreja-a,busway,Igreja A,9,46 47
+busway:igreja-b,busway,Igreja B,5,46 47
+busway:igreja-covao-do-lobo,busway,Igreja Covão do Lobo,19,102 104 105 109 110
+busway:igreja-lavandeira,busway,Igreja Lavandeira,6,103
+busway:igreja-salgueiro,busway,Igreja Salgueiro,9,103 107
+busway:igreja-santo-antonio,busway,Igreja Santo António,7,103
+busway:igreja-velha,busway,Igreja Velha,12,104 109 110
+busway:igreja-da-branca-a,busway,Igreja da Branca A,3,47
+busway:igreja-da-branca-b,busway,Igreja da Branca B,5,47
+busway:igreja-de-veiros,busway,Igreja de Veiros,27,21
+busway:industria,busway,Indústria,9,39 42
+busway:inspector-armenio-gomes-dos-santos-arrancada,busway,Inspector Arménio Gomes dos Santos (Arrancada),10,26 42
+busway:insua,busway,Insua,2,41
+busway:irijo,busway,Irijó,3,97
+busway:irijo-2,busway,Irijó (2),2,97
+busway:irijo-escola,busway,Irijó – Escola,3,97
+busway:irijo-escola-2,busway,Irijó – Escola (2),2,97
+busway:irmaos-unidos,busway,Irmãos Unidos,9,43
+busway:jafafe-de-cima,busway,Jafafe de Cima,21,26
+busway:jardim-central-a,busway,Jardim Central – A,5,72 75
+busway:jardim-central-b,busway,Jardim Central – B,9,72 75
+busway:jardim-dos-campos-b,busway,Jardim dos Campos – B,1,92
+busway:joaquim-valente-almeida-i,busway,Joaquim Valente Almeida I,45,26 29 38 39 41 42 43 44 45
+busway:joaquim-valente-almeida-ii,busway,Joaquim Valente Almeida II,24,38 39 41 42 43 44 45
+busway:jose-luis-ferreira,busway,José Luís Ferreira,2,42
+busway:jose-soares-miranda,busway,José Soares Miranda,4,38
+busway:joao-baptista-i,busway,João Baptista I,7,39
+busway:joao-baptista-ii-poente,busway,João Baptista II – Poente,7,39
+busway:joao-baptista-iii,busway,João Baptista III,7,39
+busway:joao-baptista-vidal-arrancada-do-vouga,busway,João Baptista Vidal (Arrancada do Vouga),16,26 30 42
+busway:joao-lebre-seabra,busway,João Lebre Seabra,2,42
+busway:joao-maria-vilarinho-a,busway,João Maria Vilarinho – A,6,70
+busway:juncal,busway,Juncal,4,105 110
+busway:junta-santa-catarina,busway,Junta Santa Catarina,12,104 109 110
+busway:junta-santo-andre,busway,Junta Santo André,2,107 111
+busway:junta-de-freguesia-do-bunheiro,busway,Junta de Freguesia do Bunheiro,9,22 77
+busway:junta-de-freguesia-a,busway,Junta de Freguesia – A,54,36 70
+busway:junta-de-freguesia-b,busway,Junta de Freguesia – B,55,36 70
+busway:junta-de-soza,busway,Junta de Soza,19,103 104
+busway:junta-gafanha-da-boa-hora,busway,Junta – Gafanha da Boa Hora,9,10
+busway:kirchhoff-a,busway,Kirchhoff – A,2,88
+busway:kirchhoff-b,busway,Kirchhoff – B,1,87
+busway:ladeira,busway,Ladeira,22,33 67
+busway:lagoinha-1,busway,Lagoinha 1,3,82 85
+busway:lagoinha-1-b,busway,Lagoinha 1 B,5,82 85
+busway:laguinho-a,busway,Laguinho – A,6,73 74 75
+busway:laguinho-b,busway,Laguinho – B,6,73 74 75
+busway:lameiras,busway,Lameiras,5,97
+busway:lameirinhas-a,busway,Lameirinhas – A,1,61
+busway:lameirinhas-b,busway,Lameirinhas – B,2,63
+busway:lameiro-do-mar,busway,Lameiro do Mar,7,103
+busway:lar-de-ouca,busway,Lar de Ouca,2,111
+busway:largo-4-de-outubro,busway,Largo 4 de Outubro,2,108
+busway:largo-arrais-anca,busway,Largo Arrais Ançã,14,70 73
+busway:largo-arrais-anca-costa-nova,busway,Largo Arrais Ançã – Costa Nova,114,35 36
+busway:largo-parracho-branco,busway,Largo Parracho Branco,17,10 20
+busway:largo-saint-john-s-i,busway,Largo Saint John’s I,7,70
+busway:largo-st-john-s-a,busway,Largo St. John’s – A,57,36 70
+busway:largo-st-john-s-b,busway,Largo St. John’s – B,51,36
+busway:largo-da-barreira,busway,Largo da Barreira,3,79 83
+busway:largo-da-barreira-b,busway,Largo da Barreira B,4,79 83
+busway:largo-da-feliz,busway,Largo da Feliz,1,69
+busway:largo-da-festa,busway,Largo da Festa,3,107
+busway:largo-da-murta,busway,Largo da Murta,2,83
+busway:largo-da-murta-b,busway,Largo da – Murta B,2,83
+busway:largo-do-carro-quebrado,busway,Largo do Carro Quebrado,5,78 83
+busway:largo-do-carro-quebrado-b,busway,Largo do Carro Quebrado B,2,78
+busway:lavandeira-1-2-3,busway,Lavandeira 1 / 2 / 3,2,79 85
+busway:lavandeira-3-2-1-b,busway,Lavandeira 3 / 2 / 1 B,2,79
+busway:lavandeira-3-2-1b,busway,Lavandeira 3 /2 / 1B,3,85
+busway:lavandeira-a,busway,Lavandeira A,4,51
+busway:lavandeira-b,busway,Lavandeira B,3,51
+busway:lavandeira-sul,busway,Lavandeira Sul,6,103
+busway:levira-2-a,busway,Levira 2 – A,1,59
+busway:levira-2-b,busway,Levira 2 – B,5,59 62 63
+busway:levira-rua-principal-a,busway,Levira – Rua Principal – A,5,59 62 63
+busway:levira-rua-principal-b,busway,Levira – Rua Principal – B,1,59
+busway:levira-rua-torta-a,busway,Levira – Rua Torta – A,3,59 63
+busway:levira-rua-torta-b,busway,Levira – Rua Torta – B,3,59 62
+busway:liberdade-i,busway,Liberdade I,2,41
+busway:liberdade-ii,busway,Liberdade II,2,41
+busway:liceu-de-lamas,busway,Liceu de Lamas,2,1
+busway:lili-noivas-a,busway,Lili Noivas – A,4,70
+busway:lili-noivas-b,busway,Lili Noivas – B,3,70
+busway:lomba,busway,Lomba,6,43
+busway:lomba-norte,busway,Lomba Norte,7,103
+busway:lomba-sul,busway,Lomba Sul,7,103
+busway:loure-a,busway,Loure A,7,51 52
+busway:loure-b,busway,Loure B,5,51 52
+busway:loure-rua-das-fontainhas,busway,Loure – Rua das Fontainhas,1,52
+busway:loure-rua-do-loureiro-a,busway,Loure – Rua do Loureiro A,7,51 52
+busway:loure-rua-do-loureiro-b,busway,Loure – Rua do Loureiro B,3,51
+busway:loure-rua-do-outeiro,busway,Loure – Rua do Outeiro,1,52
+busway:lourizela,busway,Lourizela,3,97
+busway:lourizela-2,busway,Lourizela (2),2,97
+busway:lourizela-capela,busway,Lourizela – Capela,3,97
+busway:lourizela-capela-2,busway,Lourizela – Capela (2),2,97
+busway:lourizela-cruz-r-das-teixeiras,busway,Lourizela – cruz. R. das Teixeiras,3,97
+busway:lourizela-cruz-r-das-teixeiras-2,busway,Lourizela – cruz. R. das Teixeiras (2),2,97
+busway:lourical,busway,Louriçal,1,95
+busway:lucilias-a,busway,Lucílias – A,4,73 75
+busway:lucilias-b,busway,Lucílias – B,4,75
+busway:lugar,busway,Lugar,6,27 81
+busway:legua-capela-a,busway,Légua – Capela – A,4,71
+busway:legua-capela-b,busway,Légua – Capela – B,4,71
+busway:legua-santo-antonio,busway,Légua – Santo António,2,71
+busway:legua-santo-antonio-b,busway,Légua – Santo António – B,2,71
+busway:maceda-carvalheira-1-2-3-4-b,busway,Maceda (Carvalheira 1 / 2 / 3 / 4) – B,4,86
+busway:maceda-carvalheira-4-3-2-1-a,busway,Maceda (Carvalheira 4 / 3 / 2 / 1) – A,3,86
+busway:maceda-escola,busway,Maceda (Escola),3,86
+busway:maceda-escola-2,busway,Maceda (Escola) 2,4,86
+busway:maceda-junta-freguesia-a,busway,Maceda (Junta Freguesia) – A,6,86
+busway:maceda-junta-freguesia-b,busway,Maceda (Junta Freguesia) – B,6,86
+busway:maceda-ordem-a,busway,Maceda (Ordem) – A,6,86
+busway:maceda-ordem-b,busway,Maceda (Ordem) – B,6,86
+busway:macida,busway,Macida,3,100
+busway:macieira-de-alcoba,busway,Macieira de Alcôba,2,42
+busway:madail,busway,Madaíl,8,7 9
+busway:madria-2-a,busway,Madria 2 – A,1,90
+busway:madria-2-b,busway,Madria 2 – B,3,90
+busway:madria-a,busway,Madria – A,1,90
+busway:madria-b,busway,Madria – B,3,90
+busway:madureira-a,busway,Madureira – A,1,54
+busway:madureira-b,busway,Madureira – B,2,63
+busway:maestro-berardo-pinto-camelo,busway,Maestro Berardo Pinto Camelo,2,102
+busway:malaposta-a,busway,Malaposta – A,21,12 14 28 31 59
+busway:malaposta-b,busway,Malaposta – B,19,12 14 28 31
+busway:malhada-i,busway,Malhada I,22,70 72
+busway:malhapao-capela,busway,Malhapao – Capela,2,81 85
+busway:malhapao-capela-b,busway,Malhapao – Capela B,5,81 85
+busway:malhapao-capela,busway,Malhapão – Capela,1,78
+busway:malhapao-capela-b,busway,Malhapão – Capela B,2,78
+busway:mamarrosa-caneira,busway,Mamarrosa – Caneira,3,82 85
+busway:mamarrosa-caneira-b,busway,Mamarrosa – Caneira B,5,82 85
+busway:mamarrosa-iec,busway,Mamarrosa – IEC,3,82 85
+busway:mamarrosa-iec-b,busway,Mamarrosa – IEC B,5,82 85
+busway:mamarrosa-quintas,busway,Mamarrosa – Quintas,3,82 85
+busway:mamarrosa-quintas-b,busway,Mamarrosa – Quintas B,5,82 85
+busway:mamarrosa-vale,busway,Mamarrosa – Vale,3,82 85
+busway:mamarrosa-vale-b,busway,Mamarrosa – Vale B,5,82 85
+busway:mamua,busway,Mamua,3,95 99
+busway:manuel-alberto-a,busway,Manuel Alberto – A,1,75
+busway:manuel-alberto-b,busway,Manuel Alberto – B,5,72 75
+busway:manuel-luis-a,busway,Manuel Luís – A,10,72 73 74 75
+busway:manuel-luis-b,busway,Manuel Luís – B,11,72 73 74 75
+busway:marinha-velha-a,busway,Marinha Velha – A,8,20 73 75
+busway:marinha-velha-b,busway,Marinha Velha – B,9,20 75
+busway:mata-de-baixo-a,busway,Mata de Baixo – A,1,56
+busway:mata-de-baixo-b,busway,Mata de Baixo – B,2,56
+busway:mata-a,busway,Mata – A,2,60
+busway:mata-b,busway,Mata – B,1,60
+busway:matochao,busway,Matochão,12,104 109 110
+busway:mealhada,busway,Mealhada,20,12 14
+busway:melada-a,busway,Melada – A,3,11 62
+busway:melada-b,busway,Melada – B,4,11 60
+busway:mercado-de-ovar-a,busway,Mercado de Ovar – A,73,15 25 3 4 7 8 86 9 90 92 93
+busway:mesas,busway,Mesas,12,104 108 110
+busway:minas-do-palhal-a,busway,Minas do Palhal A,8,46 47
+busway:minas-do-palhal-b,busway,Minas do Palhal B,6,46 47
+busway:minigolfe-a,busway,Minigolfe – A,5,70 73
+busway:minigolfe-b,busway,Minigolfe – B,9,70 73
+busway:mira,busway,Mira,21,18
+busway:miragaia,busway,Miragaia,19,43 44
+busway:mogofores-a,busway,Mogofores – A,1,59
+busway:mogofores-b,busway,Mogofores – B,2,59
+busway:mogofores-extensao-de-saude,busway,Mogofores – Extensão de Saúde,6,59 62
+busway:mogofores-rotunda-b,busway,Mogofores – Rotunda – B,2,59
+busway:moinho-maio-a,busway,Moinho Maio – A,1,62
+busway:moinho-maio-b,busway,Moinho Maio – B,2,60
+busway:moita,busway,Moita,5,105 109 110
+busway:moita-largo-padre-alfredo-s-rei-a,busway,Moita – Largo Padre Alfredo S. Rei – A,3,57
+busway:moita-largo-padre-alfredo-s-rei-b,busway,Moita – Largo Padre Alfredo S. Rei – B,1,57
+busway:moita-rua-das-escolas-a,busway,Moita – Rua das Escolas – A,3,57
+busway:moita-rua-das-escolas-b,busway,Moita – Rua das Escolas – B,1,57
+busway:moitinhos-capela,busway,Moitinhos – Capela,4,71
+busway:moleiros,busway,Moleiros,7,39
+busway:monsarros-a,busway,Monsarros – A,2,58
+busway:monsarros-b,busway,Monsarros – B,3,58
+busway:monte-de-cima,busway,Monte de Cima,10,64 69
+busway:monte-guedes,busway,Monte – Guedes,32,21 22
+busway:monte-padre-rodrigo-tavares,busway,Monte – Padre Rodrigo Tavares,10,21 22
+busway:montelongo-areia-1-2-3-4,busway,Montelongo Areia 1 / 2 / 3 / 4,2,79 85
+busway:montelongo-areia-4-3-2-1-b,busway,Montelongo Areia 4 / 3 / 2 / 1 B,2,79
+busway:montelongo-areia-4-3-2-1b,busway,Montelongo Areia 4 / 3 / 2 / 1B,3,85
+busway:mosqueiro,busway,Mosqueiro,1,101
+busway:mosqueiro-2,busway,Mosqueiro (2),4,101 99
+busway:mosqueiro-tanque,busway,Mosqueiro – Tanque,1,101
+busway:mosqueiro-tanque-2,busway,Mosqueiro – Tanque (2),4,101 99
+busway:motaria,busway,Motaria,3,45
+busway:mouquim-a,busway,Mouquim A,4,17 6
+busway:mouquim-b,busway,Mouquim B,4,17 6
+busway:mouta,busway,Mouta,2,94
+busway:mouta-2,busway,Mouta (2),1,94
+busway:mouta-cruz-rua-da-escola,busway,Mouta – cruz. Rua da Escola,2,94
+busway:mouta-cruz-rua-da-escola-2,busway,Mouta – cruz. Rua da Escola (2),1,94
+busway:muro,busway,Muro,2,101
+busway:muro-2,busway,Muro (2),1,101
+busway:murta-1,busway,Murta 1,2,83
+busway:murta-1-b,busway,Murta 1 B,2,83
+busway:murta-2,busway,Murta 2,2,83
+busway:murta-2-b,busway,Murta 2 B,2,83
+busway:museu-maritimo-a,busway,Museu Marítimo – A,2,34
+busway:museu-maritimo-b,busway,Museu Marítimo – B,1,34
+busway:n328-carrazedo,busway,N328 – Carrazedo,1,100
+busway:n328-carrazedo-2,busway,N328 – Carrazedo (2),1,100
+busway:n328-feira-nova,busway,N328 – Feira Nova,8,100 101 96 97
+busway:n328-feira-nova-2,busway,N328 – Feira Nova (2),7,100 101 96 97
+busway:n328-paradela,busway,N328 – Paradela,4,100 6
+busway:n328-paradela-2,busway,N328 – Paradela (2),4,100 6
+busway:n328-paredes-de-baixo,busway,N328 – Paredes de Baixo,8,100 101 96 97
+busway:n328-paredes-de-baixo-2,busway,N328 – Paredes de Baixo (2),7,100 101 96 97
+busway:n328-paredes-de-cima,busway,N328 – Paredes de Cima,8,100 101 96 97
+busway:n328-paredes-de-cima-2,busway,N328 – Paredes de Cima (2),7,100 101 96 97
+busway:n328-sobral-de-baixo,busway,N328 – Sobral de Baixo,8,100 101 96 97
+busway:n328-sobral-de-baixo-2,busway,N328 – Sobral de Baixo (2),7,100 101 96 97
+busway:n333-fragua,busway,N333 – Frágua,3,100
+busway:n333-fragua-2,busway,N333 – Frágua (2),2,100
+busway:nacional-333,busway,Nacional 333,4,38
+busway:nacional-n-1,busway,Nacional n.º 1,7,40 44
+busway:nariz-rua-do-roque-a,busway,Nariz Rua do Roque A,6,80 83
+busway:nariz-rua-do-roque-b,busway,Nariz Rua do Roque B,1,80
+busway:nespereira-de-baixo,busway,Nespereira de Baixo,5,94 97
+busway:nespereira-de-baixo-2,busway,Nespereira de Baixo (2),3,94 97
+busway:nestle,busway,Nestlé,1,69
+busway:neves-do-pinheiro-a,busway,Neves do Pinheiro – A,3,56
+busway:neves-do-pinheiro-b,busway,Neves do Pinheiro – B,2,56
+busway:nobrijo-a,busway,Nobrijo A,3,47
+busway:nobrijo-b,busway,Nobrijo B,5,47
+busway:nobrijo-rua-da-varzea-a,busway,Nobrijo – Rua da Várzea A,3,47
+busway:nobrijo-rua-da-varzea-b,busway,Nobrijo – Rua da Várzea B,5,47
+busway:nogueira,busway,Nogueira,1,101
+busway:nogueira-2,busway,Nogueira (2),2,101
+busway:nogueira-i,busway,Nogueira I,2,41
+busway:nogueira-ii,busway,Nogueira II,2,41
+busway:nogueira-lg-do-pelourinho,busway,Nogueira – Lg do Pelourinho,1,101
+busway:nogueira-lg-do-pelourinho-2,busway,Nogueira – Lg do Pelourinho (2),4,101 99
+busway:nossa-senhora-piedade,busway,Nossa Senhora Piedade,5,26
+busway:nossa-senhora-da-conceicao,busway,Nossa Senhora da Conceição,3,45
+busway:nova,busway,Nova,5,13 42
+busway:oia-agras-1,busway,Oia – Agras 1,3,27 81
+busway:oia-agras-1-b,busway,Oia – Agras 1 B,3,27 81
+busway:oia-agras-2,busway,Oia – Agras 2,3,27 81
+busway:oia-agras-2-b,busway,Oia – Agras 2 B,3,27 81
+busway:oia-cruzeiro,busway,Oiã – Cruzeiro,11,14 27 78 81 83
+busway:oia-cruzeiro-b,busway,Oiã – Cruzeiro B,6,14 81 83
+busway:oia-dr-angelo-graca,busway,Oiã – Dr Angelo Graça,11,14 27 78 81 83
+busway:oia-dr-angelo-graca-b,busway,Oiã – Dr Angelo Graça B,11,14 27 78 81 83
+busway:oia-escola-dr-fernando-peixinho,busway,Oiã – Escola Dr Fernando Peixinho,18,14 27 29 78 81 83
+busway:oia-estacao-comboios,busway,Oiã – Estação Comboios,16,14 83
+busway:oia-stop,busway,Oiã – Stop,13,14 29 78 81 83
+busway:oia-stop-b,busway,Oiã – Stop B,13,14 29 78 81 83
+busway:olho-marinho-rua-das-cavadinhas-a,busway,Olho Marinho (Rua das Cavadinhas) – A,8,86
+busway:olho-marinho-rua-das-cavadinhas-b,busway,Olho Marinho (Rua das Cavadinhas) – B,6,86
+busway:olho-marinho-toyota-a,busway,Olho Marinho (Toyota) – A,3,87 88
+busway:olho-marinho-toyota-b,busway,Olho Marinho (Toyota) – B,3,87 88
+busway:olho-d-agua,busway,Olho d`agua,3,67
+busway:oliv-bairro-5-de-outubro,busway,Oliv. Bairro – 5 de Outubro,2,83
+busway:oliv-bairro-5-de-outubro-b,busway,Oliv. Bairro – 5 de Outubro B,2,83
+busway:oliv-bairro-camara-municipal,busway,Oliv. Bairro – Camara Municipal,6,83 84 85
+busway:oliv-bairro-camara-municipal-b,busway,Oliv. Bairro – Camara Municipal B,7,83 84 85
+busway:oliv-bairro-cemiterio-novo,busway,Oliv. Bairro – Cemiterio Novo,2,83
+busway:oliv-bairro-cemiterio-novo-b,busway,Oliv. Bairro – Cemiterio Novo B,10,80 82 83 85
+busway:oliv-bairro-cemiterio-novo-b,busway,Oliv. Bairro – Cemitério Novo B,4,78 79
+busway:oliv-bairro-centro-de-saude,busway,Oliv. Bairro – Centro de Saude,2,83
+busway:oliv-bairro-centro-de-saude-b,busway,Oliv. Bairro – Centro de Saude B,2,83
+busway:oliv-bairro-correia-da-coutinha,busway,Oliv. Bairro – Correia da Coutinha,2,83
+busway:oliv-bairro-correia-da-coutinha-b,busway,Oliv. Bairro – Correia da Coutinha B,2,83
+busway:oliv-bairro-esc-secundaria,busway,Oliv. Bairro – Esc. Secundária,23,78 79 80 81 82 83 85
+busway:oliv-bairro-escola-acacio-azevedo,busway,Oliv. Bairro – Escola Acacio Azevedo,17,14 28 31 80 81 82 83 85
+busway:oliv-bairro-escola-acacio-azevedo-b,busway,Oliv. Bairro – Escola Acacio Azevedo B,17,28 31 80 81 82 83 85
+busway:oliv-bairro-escola-acacio-azevedo,busway,Oliv. Bairro – Escola Acácio Azevedo,2,78 79
+busway:oliv-bairro-escola-acacio-azevedo-b,busway,Oliv. Bairro – Escola Acácio Azevedo B,4,78 79
+busway:oliv-bairro-escola-secundaria,busway,Oliv. Bairro – Escola Secundaria,6,28 31
+busway:oliv-bairro-escola-secundaria-b,busway,Oliv. Bairro – Escola Secundaria B,11,14 28 31
+busway:oliv-bairro-estacao-de-comboios,busway,Oliv. Bairro – Estacao de Comboios,1,85
+busway:oliv-bairro-estacao-de-comboios-b,busway,Oliv. Bairro – Estacao de Comboios B,3,85
+busway:oliv-bairro-foral,busway,Oliv. Bairro – Foral,18,14 28 31 78 79 80 81 82 83 85
+busway:oliv-bairro-foral-b,busway,Oliv. Bairro – Foral B,27,14 28 31 78 79 80 81 82 83 85
+busway:oliv-bairro-industrial,busway,Oliv. Bairro – Industrial,2,83
+busway:oliv-bairro-industrial-b,busway,Oliv. Bairro – Industrial B,2,83
+busway:oliv-bairro-murta,busway,Oliv. Bairro – Murta,2,83
+busway:oliv-bairro-murta-b,busway,Oliv. Bairro – Murta B,2,83
+busway:oliv-bairro-paraiso,busway,Oliv. Bairro – Paraiso,2,78
+busway:oliv-bairro-parque-desportivo,busway,Oliv. Bairro – Parque Desportivo,2,83
+busway:oliv-bairro-parque-desportivo-b,busway,Oliv. Bairro – Parque Desportivo B,14,78 79 80 82 83 85
+busway:oliv-bairro-sr-dos-aflitos,busway,Oliv. Bairro – Sr Dos Aflitos,2,83
+busway:oliv-bairro-sr-dos-aflitos-b,busway,Oliv. Bairro – Sr Dos Aflitos B,2,83
+busway:oliveira-de-azemeis-centro,busway,Oliveira de Azeméis (Centro),41,16 7 9
+busway:oronhe,busway,Oronhe,3,27
+busway:ouca-centro,busway,Ouca Centro,13,104 107 111
+busway:outeirinho,busway,Outeirinho,5,47 48
+busway:outeiro,busway,Outeiro,14,1 33 69 83
+busway:outeiro-1,busway,Outeiro 1,3,91
+busway:outeiro-2,busway,Outeiro 2,3,91
+busway:outeiro-2-adega-amelas,busway,Outeiro 2 Adega Amelas,3,91
+busway:outeiro-b,busway,Outeiro B,2,83
+busway:outeiro-de-baixo-a,busway,Outeiro de Baixo – A,1,11
+busway:outeiro-de-baixo-b,busway,Outeiro de Baixo – B,4,11 59
+busway:outeiro-de-cima-a,busway,Outeiro de Cima – A,2,62
+busway:outeiro-de-cima-b,busway,Outeiro de Cima – B,3,59 62
+busway:outeiro-a,busway,Outeiro – A,6,90
+busway:outeiro-b,busway,Outeiro – B,6,90
+busway:ovar-avenida-sa-carneiro-b,busway,Ovar (Avenida Sá Carneiro) – B,11,15 86
+busway:ovar-carregal-a,busway,Ovar (Carregal) – A,20,15
+busway:ovar-carregal-b,busway,Ovar (Carregal) – B,21,15
+busway:ovar-casal-a,busway,Ovar (Casal) – A,1,92
+busway:ovar-cinema-b,busway,Ovar (Cinema) – B,72,15 25 3 4 5 7 8 86 90 92 93
+busway:ovar-enxemil-a,busway,Ovar (Enxemil) – A,1,92
+busway:ovar-gnr-a,busway,Ovar (GNR) – A,10,25 7 90
+busway:ovar-tricanas-a,busway,Ovar (Tricanas) – A,8,90 92 93
+busway:ovar-tricanas-b,busway,Ovar (Tricanas) – B,7,90 93
+busway:ovar-yazaki-a,busway,Ovar (Yazaki) – A,12,3 4 5 8 87
+busway:ovar-yazaki-b,busway,Ovar (Yazaki) – B,1,92
+busway:pes-1,busway,PES 1,44,103 107 19
+busway:pes-2,busway,PES 2,12,103 107
+busway:pes-3,busway,PES 3,3,103
+busway:padre-acurcio-1-2-3-b,busway,Padre Acurcio 1 / 2 / 3 B,2,83
+busway:padre-acurcio-3-2-1,busway,Padre Acurcio 3 / 2 / 1,2,83
+busway:padre-acurcio-4,busway,Padre Acurcio 4,2,83
+busway:padre-acurcio-4-b,busway,Padre Acurcio 4 B,2,83
+busway:padre-jose-arlinho-oliveira,busway,Padre José Arlinho Oliveira,3,42 45
+busway:padre-le-a,busway,Padre Lé – A,4,72
+busway:padre-le-b,busway,Padre Lé – B,5,72
+busway:padre-manuel-de-paiva,busway,Padre Manuel de Paiva,5,44
+busway:padre-ruela-pombo,busway,Padre Ruela Pombo,4,77
+busway:padrao-a,busway,Padrão A,2,47
+busway:padrao-b,busway,Padrão B,2,46
+busway:palhaca-feira,busway,Palhaca – Feira,17,19
+busway:palhaca-manuel-oliveira,busway,Palhaca – Manuel Oliveira,7,29 80 83
+busway:palhaca-manuel-oliveira-b,busway,Palhaca – Manuel Oliveira B,6,80 83
+busway:palhaca-paraiso,busway,Palhaca – Paraiso,1,80
+busway:palhaca-paraiso-b,busway,Palhaca – Paraiso B,2,80
+busway:palhaca-ribeira-fontao,busway,Palhaca – Ribeira Fontão,1,80
+busway:palhaca-ribeira-fontao-b,busway,Palhaca – Ribeira Fontão B,2,80
+busway:palhal,busway,Palhal,8,102 106
+busway:palhal-a,busway,Palhal A,8,46 47
+busway:palhal-b,busway,Palhal B,6,46 47
+busway:palhal-rio-caima-a,busway,Palhal – Rio Caima A,8,46 47
+busway:palhal-rio-caima-b,busway,Palhal – Rio Caima B,6,46 47
+busway:palhaca,busway,Palhaça,15,19
+busway:palhaca-manuel-oliveira-b,busway,Palhaça – Manuel Oliveira B,2,29
+busway:palmeira-a,busway,Palmeira – A,4,70
+busway:palmeira-b,busway,Palmeira – B,6,70
+busway:pandeirinhos,busway,Pandeirinhos,2,107
+busway:parada,busway,Parada,5,97
+busway:parada-cafe,busway,Parada (Café),5,97
+busway:parada-de-cima,busway,Parada de Cima,5,105 106 110
+busway:parada-de-cima-centro,busway,Parada de Cima Centro,9,102 106 110
+busway:paradela,busway,Paradela,7,100 30 6
+busway:paradela-2,busway,Paradela (2),7,100 30 6
+busway:paradela-estacao,busway,Paradela – Estação,9,100 30 32 6
+busway:paradela-estacao-2,busway,Paradela – Estação (2),9,100 30 32 6
+busway:paradela-igreja,busway,Paradela – Igreja,4,100 6
+busway:paradela-igreja-2,busway,Paradela – Igreja (2),4,100 6
+busway:paradita,busway,Paradita,9,103 111
+busway:paragem-do-cruzeiro,busway,Paragem do Cruzeiro,5,77
+busway:paragem-do-limite,busway,Paragem do Limite,5,22
+busway:paramos,busway,Paramos,37,3 4 5
+busway:pardala-1-2-b,busway,Pardala 1 / 2 – B,6,86
+busway:pardala-1-a,busway,Pardala 1 – A,19,4 5 88
+busway:pardala-1-b,busway,Pardala 1 – B,16,4 87
+busway:pardala-2-1-a,busway,Pardala 2 / 1 – A,6,86
+busway:pardala-2-a,busway,Pardala 2 – A,2,88
+busway:pardala-2-b,busway,Pardala 2 – B,1,87
+busway:pardeiros,busway,Pardeiros,4,108 109 110
+busway:pardieiro,busway,Pardieiro,12,7 8 9 92 93
+busway:pardieiro-a,busway,Pardieiro – A,2,56
+busway:pardieiro-b,busway,Pardieiro – B,1,56
+busway:pardilho-centro,busway,Pardilhó – Centro,15,22 64 69
+busway:paredes-do-bairro-largo-santo-antonio-a,busway,Paredes do Bairro – Largo Santo António – A,2,59
+busway:paredes-do-bairro-largo-santo-antonio-b,busway,Paredes do Bairro – Largo Santo António – B,4,59 61 62
+busway:paredes-do-bairro-largo-sao-tome-a,busway,Paredes do Bairro – Largo São Tome – A,3,59 61
+busway:paredes-do-bairro-largo-sao-tome-b,busway,Paredes do Bairro – Largo São Tome – B,3,59 62
+busway:paredes-do-bairro-largo-da-gandarinha,busway,Paredes do Bairro – Largo da Gandarinha,6,59 61 62
+busway:paredes-do-bairro-rua-da-caniceira-a,busway,Paredes do Bairro – Rua da Caniceira – A,4,59 61 62
+busway:paredes-do-bairro-rua-da-caniceira-b,busway,Paredes do Bairro – Rua da Caniceira – B,2,59
+busway:parque-empresarial,busway,Parque Empresarial,4,40
+busway:parque-escolar,busway,Parque Escolar,15,21 22 76 77
+busway:parque-de-campismo,busway,Parque de Campismo,10,70
+busway:parque-de-ciencia-e-inovacao,busway,Parque de Ciência e Inovação,5,34
+busway:passadouro,busway,Passadouro,5,44
+busway:passadouro-capela,busway,Passadouro – Capela,6,79 81
+busway:pau-da-linha,busway,Pau da Linha,3,27
+busway:paus-n-a-sr-a-das-dores-a,busway,Paus – N.a Sr.a das Dores A,1,53
+busway:paus-n-a-sr-a-das-dores-b,busway,Paus – N.a Sr.a das Dores B,2,53
+busway:paus-tanques-a,busway,Paus – Tanques A,1,53
+busway:paus-tanques-b,busway,Paus – Tanques B,2,53
+busway:pavilhao-desportivo,busway,Pavilhão Desportivo,2,33
+busway:pacos-brandao-igreja,busway,Paços Brandão – Igreja,2,1
+busway:paco,busway,Paçô,7,17 95 99
+busway:paco-2,busway,Paçô (2),5,17
+busway:paco-n16,busway,Paçô N16,4,6 96
+busway:paco-n16-2,busway,Paçô N16 (2),3,6 96
+busway:paco-capela,busway,Paçô – Capela,4,6 96
+busway:paco-capela-2,busway,Paçô – Capela (2),3,6 96
+busway:paco-lg-dos-castanheiros,busway,Paçô – Lg. dos Castanheiros,3,96
+busway:paco-lg-dos-castanheiros-2,busway,Paçô – Lg. dos Castanheiros (2),2,96
+busway:pedacaes,busway,Pedaçães,2,41
+busway:pedralva-2-a,busway,Pedralva 2 – A,2,62
+busway:pedralva-2-b,busway,Pedralva 2 – B,1,54
+busway:pedralva-a,busway,Pedralva – A,2,62
+busway:pedralva-b,busway,Pedralva – B,1,54
+busway:pedreira-1,busway,Pedreira 1,3,78 83
+busway:pedreira-1-b,busway,Pedreira 1 B,4,78 83
+busway:pedreira-2,busway,Pedreira 2,2,78
+busway:pedreira-2-b,busway,Pedreira 2 B,1,78
+busway:pedreira-de-vilarinho-a,busway,Pedreira de Vilarinho – A,2,55 60
+busway:pedreira-de-vilarinho-b,busway,Pedreira de Vilarinho – B,5,11 60
+busway:pedreira-de-vilarinho-em-334,busway,Pedreira de Vilarinho – EM 334,3,55 60
+busway:pedricosa,busway,Pedricosa,6,103
+busway:penoucos,busway,Penouços,3,100
+busway:penoucos-2,busway,Penouços (2),3,100
+busway:pereiro-a,busway,Pereiro – A,3,56
+busway:pereiro-b,busway,Pereiro – B,2,56
+busway:perraes-capela,busway,Perraes – Capela,8,14 81 83
+busway:perraes-capela-b,busway,Perraes – Capela B,8,14 81 83
+busway:perraes-lugar,busway,Perraes – Lugar,9,14 27 81 83
+busway:perraes-lugar-b,busway,Perraes – Lugar B,17,14 27 29 81 83
+busway:perraes-lugar,busway,Perrães – Lugar,6,29
+busway:peso,busway,Peso,3,95 99
+busway:pessegueiro-do-vouga-av-joaquim-martins,busway,Pessegueiro do Vouga – Av. Joaquim Martins,4,17 6
+busway:pessegueiro-do-vouga-av-joaquim-martins-2,busway,Pessegueiro do Vouga – Av. Joaquim Martins (2),4,17 6
+busway:pessegueiro-do-vouga-escola,busway,Pessegueiro do Vouga – Escola,2,101
+busway:pessegueiro-do-vouga-escola-2,busway,Pessegueiro do Vouga – Escola (2),1,101
+busway:pica-boi,busway,Pica Boi,10,51 52
+busway:pinheiro-a,busway,Pinheiro A,1,53
+busway:pinheiro-b,busway,Pinheiro B,2,53
+busway:pinheiro-lavadouro-a,busway,Pinheiro – Lavadouro A,1,53
+busway:pinheiro-lavadouro-b,busway,Pinheiro – Lavadouro B,2,53
+busway:ponte-olho-marinho-b,busway,Ponte (Olho Marinho) – B,1,87
+busway:ponte-nova-a,busway,Ponte Nova – A,6,86
+busway:ponte-nova-b,busway,Ponte Nova – B,6,86
+busway:ponte-velha,busway,Ponte Velha,3,67
+busway:ponte-da-varela,busway,Ponte da Varela,29,21 25
+busway:ponte-de-telhadela-a,busway,Ponte de Telhadela A,5,46 47
+busway:ponte-de-telhadela-b,busway,Ponte de Telhadela B,5,46 47
+busway:ponte-de-vagos-centro-1,busway,Ponte de Vagos Centro 1,3,106 108
+busway:ponte-de-vagos-centro-2,busway,Ponte de Vagos Centro 2,5,102 107 110
+busway:ponte-de-vagos-norte,busway,Ponte de Vagos Norte,9,102 109 110
+busway:ponte-de-vagos-norte-1,busway,Ponte de Vagos Norte 1,3,109 110
+busway:ponte-de-vagos-sul,busway,Ponte de Vagos Sul,4,102
+busway:portas-vermelhas,busway,Portas Vermelhas,1,95
+busway:portela-do-sol-i,busway,Portela do Sol I,8,40 43
+busway:portelas-a,busway,Portelas A,9,46 47 48
+busway:portelas-b,busway,Portelas B,8,46 47 48
+busway:portinho,busway,Portinho,3,45
+busway:porto-clerigo,busway,Porto Clerigo,7,80 81 82 84 85
+busway:porto-clerigo-b,busway,Porto Clerigo B,13,79 80 81 82 84 85
+busway:porto-clerigo,busway,Porto Clérigo,1,79
+busway:porto-laboso-cruz-a,busway,Porto Laboso (Cruz) – A,2,92 93
+busway:porto-laboso-a,busway,Porto Laboso – A,2,92 93
+busway:porto-pequeno,busway,Porto Pequeno,4,77
+busway:porto-da-igreja-a,busway,Porto da Igreja – A,6,90
+busway:porto-da-igreja-b,busway,Porto da Igreja – B,6,90
+busway:porto-da-moita,busway,Porto da Moita,7,40 44
+busway:porto-de-baixo,busway,Porto de Baixo,3,67
+busway:porto-de-pesca-costeira-a,busway,Porto de Pesca Costeira – A,4,70
+busway:porto-de-pesca-costeira-b,busway,Porto de Pesca Costeira – B,6,70
+busway:portouro,busway,Portouro,3,54 63
+busway:pousadas,busway,Pousadas,2,42
+busway:poutena-em-334-b,busway,Poutena – EM 334 – B,3,55 60
+busway:poutena-largo-nossa-senhora-da-piedade,busway,Poutena – Largo Nossa Senhora da Piedade,3,55 60
+busway:povinha,busway,Povinha,4,43
+busway:povoa-de-baixo-1,busway,Povoa de Baixo 1,27,21
+busway:povoa-de-cima,busway,Povoa de Cima,10,64 69
+busway:povoa-do-carreiro,busway,Povoa do Carreiro,5,79 81
+busway:povoa-do-forno,busway,Povoa do Forno,9,80 81 82 84 85
+busway:povoa-do-forno-b,busway,Povoa do Forno B,11,79 80 82 84 85
+busway:povoa-do-forno-capela,busway,Povoa do Forno – Capela,6,80 82 84 85
+busway:povoa-do-forno-capela-b,busway,Povoa do Forno – Capela B,14,79 80 81 82 84 85
+busway:poco-s-tiago,busway,Poço S. Tiago,8,17 6
+busway:poco-da-cruz-mira,busway,Poço da Cruz (Mira),11,10 20
+busway:praia-da-vagueira,busway,Praia da Vagueira,19,10 20
+busway:praia-de-mira,busway,Praia de Mira,5,20
+busway:praca,busway,Praça,2,42
+busway:praca-antonio-marques-de-campos,busway,Praça António Marques de Campos,7,46 47
+busway:praca-egas-moniz,busway,Praça Egas Moniz,13,76
+busway:praca-jaime-afreixo,busway,Praça Jaime Afreixo,11,76 77
+busway:praca-da-corredoura,busway,Praça da Corredoura,5,103
+busway:praca-dos-combatentes,busway,Praça dos Combatentes,16,76 77
+busway:presa,busway,Presa,4,71
+busway:presas,busway,Presas,1,95
+busway:primavera,busway,Primavera,7,70
+busway:principal,busway,Principal,8,27 42 45
+busway:prior-joao-gomes-santos-iii-macinhata-do-vouga,busway,Prior João Gomes Santos III (Macinhata do Vouga),15,26
+busway:prior-joao-gomes-santos-nascente,busway,Prior João Gomes Santos – Nascente,10,26
+busway:prior-joao-gomes-santos-poente,busway,Prior João Gomes Santos – Poente,9,26
+busway:prof-alda-marques-castilho,busway,Prof. Alda Marques Castilho,21,26
+busway:professora-d-beatriz-moura,busway,Professora D. Beatriz Moura,2,42
+busway:provimi-a,busway,Provimi – A,2,88
+busway:provimi-b,busway,Provimi – B,1,87
+busway:prozinco,busway,Prozinco,15,65 66 69
+busway:povoa,busway,Póvoa,2,100
+busway:povoa-2,busway,Póvoa (2),2,100
+busway:povoa-da-marta,busway,Póvoa da Marta,13,29
+busway:povoa-da-preta-a,busway,Póvoa da Preta – A,3,59 61
+busway:povoa-da-preta-b,busway,Póvoa da Preta – B,3,59 62
+busway:povoa-de-mouquim-a,busway,Póvoa de Mouquim A,2,6
+busway:povoa-de-mouquim-b,busway,Póvoa de Mouquim B,2,6
+busway:povoa-do-carreiro,busway,Póvoa do Carreiro,1,79
+busway:povoa-do-forno,busway,Póvoa do Forno,1,79
+busway:povoa-do-forno-capela,busway,Póvoa do Forno – Capela,1,79
+busway:povoa-do-gago,busway,Póvoa do Gago,4,57
+busway:povoa-do-garcao-a,busway,Póvoa do Garção – A,2,60
+busway:povoa-do-garcao-b,busway,Póvoa do Garção – B,1,60
+busway:povoa-do-salgueiro-a,busway,Póvoa do Salgueiro – A,1,12
+busway:povoa-do-salgueiro-b,busway,Póvoa do Salgueiro – B,1,12
+busway:povoa-do-vale-do-trigo,busway,Póvoa do Vale do Trigo,9,43
+busway:quinta-nova-a,busway,Quinta Nova – A,6,90
+busway:quinta-nova-b,busway,Quinta Nova – B,6,90
+busway:quinta-da-barra,busway,Quinta da Barra,10,70
+busway:quinta-da-gala,busway,Quinta da Gala,3,82 85
+busway:quinta-da-gala-b,busway,Quinta da Gala B,5,82 85
+busway:quinta-da-gala-capela,busway,Quinta da Gala – Capela,8,82 85
+busway:quinta-do-alho,busway,Quinta do Alho,11,104 107
+busway:quinta-do-cavaleiro-1,busway,Quinta do Cavaleiro 1,1,82
+busway:quinta-do-cavaleiro-1-2-b,busway,Quinta do Cavaleiro 1 / 2 B,3,85
+busway:quinta-do-cavaleiro-1-b,busway,Quinta do Cavaleiro 1 B,2,82
+busway:quinta-do-cavaleiro-2,busway,Quinta do Cavaleiro 2,1,82
+busway:quinta-do-cavaleiro-2-1,busway,Quinta do Cavaleiro 2 / 1,2,85
+busway:quinta-do-cavaleiro-2-b,busway,Quinta do Cavaleiro 2 B,2,82
+busway:quinta-do-gordo,busway,Quinta do Gordo,3,82 85
+busway:quinta-do-gordo-b,busway,Quinta do Gordo B,5,82 85
+busway:quinta-do-navega-a,busway,Quinta do Navega – A,2,88
+busway:quinta-do-navega-b,busway,Quinta do Navega – B,1,87
+busway:quinta-do-perdigao,busway,Quinta do Perdigão,3,55 60
+busway:quintas-a,busway,Quintas A,3,52 53
+busway:quintas-b,busway,Quintas B,3,52 53
+busway:quintas-do-norte-a,busway,Quintas do Norte – A,2,25
+busway:quintas-do-norte-b,busway,Quintas do Norte – B,4,25
+busway:quintas-do-sul,busway,Quintas do Sul,5,25
+busway:quinta,busway,Quintâ,6,102
+busway:r-aveiro,busway,R. Aveiro,7,39
+busway:r-clube-dos-galitos-a,busway,R. Clube dos Galitos A,65,35 36
+busway:r-clube-dos-galitos-b,busway,R. Clube dos Galitos B,65,35 36
+busway:r-nova-de-santiago-a-aveiro,busway,R. Nova de Santiago A (Aveiro),19,16 17 33
+busway:r-nova-de-santiago-b-aveiro,busway,R. Nova de Santiago B (Aveiro),20,16 17 33
+busway:rainha-santa,busway,Rainha Santa,11,43
+busway:ramiro-soares-miranda-barro,busway,Ramiro Soares Miranda (Barrô),36,12 28 31 40 44
+busway:randam,busway,Randam,4,38
+busway:recamonde,busway,Recamonde,10,14 78 81 83
+busway:recamonde-b,busway,Recamonde B,12,14 78 81 83
+busway:recreio-desportivo-de-agueda-nascente,busway,Recreio Desportivo de Águeda – Nascente,4,44
+busway:recreio-desportivo-de-agueda-poente,busway,Recreio Desportivo de Águeda – Poente,8,40 44
+busway:rego-capela,busway,Rego – Capela,6,14 83
+busway:rego-capela-b,busway,Rego – Capela B,4,14 83
+busway:rego-capela-c,busway,Rego – Capela C,9,27 29
+busway:rego-capela-d,busway,Rego – Capela D,7,27 29
+busway:rego-capela-e,busway,Rego – Capela E,4,14 81
+busway:rego-capela-f,busway,Rego – Capela F,2,14 81
+busway:rego-lavadouro,busway,Rego – Lavadouro,2,83
+busway:rego-lavadouro-b,busway,Rego – Lavadouro B,2,83
+busway:regote,busway,Regote,3,45
+busway:reguengo,busway,Reguengo,1,95
+busway:relvado-a,busway,Relvado – A,5,70 73
+busway:relvado-b,busway,Relvado – B,9,70 73
+busway:remelha-a,busway,Remelha – A,7,70
+busway:remelha-b,busway,Remelha – B,6,70
+busway:remolha,busway,Remolha,2,98
+busway:remolha-2,busway,Remolha (2),1,98
+busway:repolao-capela,busway,Repolao – Capela,2,83
+busway:repolao-capela-b,busway,Repolao – Capela B,2,83
+busway:ribeiradio,busway,Ribeiradio,2,6
+busway:ribeiro,busway,Ribeiro,2,63
+busway:rines,busway,Rines,5,105 109 110
+busway:rio-bom,busway,Rio Bom,1,95
+busway:rio-tinto,busway,Rio Tinto,11,104 107
+busway:rio-tinto-sul,busway,Rio Tinto Sul,11,104 107
+busway:rio-de-alem,busway,Rio de Além,6,102
+busway:rocas-do-vouga,busway,Rocas do Vouga,5,94 97
+busway:rocas-do-vouga-2,busway,Rocas do Vouga (2),3,94 97
+busway:rocas-do-vouga-igreja,busway,Rocas do Vouga – Igreja,5,94 97
+busway:rocas-do-vouga-igreja-2,busway,Rocas do Vouga – Igreja (2),3,94 97
+busway:rocas-do-vouga-rotunda,busway,Rocas do Vouga – Rotunda,3,97
+busway:rocas-do-vouga-rotunda-2,busway,Rocas do Vouga – Rotunda (2),2,97
+busway:rochico,busway,Rochico,2,67
+busway:roda,busway,Roda,2,98
+busway:roda-2,busway,Roda (2),1,98
+busway:romezal-2,busway,Romezal (2),1,98
+busway:romezal-2-b,busway,Romezal (2) B,2,98
+busway:romezal-cruz-rua-do-cabeco,busway,Romezal – cruz. Rua do Cabeço,3,98
+busway:rosacova-a,busway,Rosacova – A,2,70
+busway:rosacova-b,busway,Rosacova – B,2,70
+busway:rosita-a,busway,Rosita – A,3,70
+busway:rosita-b,busway,Rosita – B,4,70
+busway:rotunda-arieiro,busway,Rotunda Arieiro,6,78 79 80 83
+busway:rotunda-arieiro-b,busway,Rotunda Arieiro B,7,78 79 80 83
+busway:rotunda-zi-palhaca,busway,Rotunda ZI Palhaça,4,83
+busway:rotunda-zio,busway,Rotunda ZIO,2,14
+busway:rotunda-zio-b,busway,Rotunda ZIO B,1,14
+busway:rotunda-de-carris,busway,Rotunda de Carris,3,78 83
+busway:rotunda-de-carris-b,busway,Rotunda de Carris B,4,78 83
+busway:rocadas-b,busway,Roçadas – B,1,93
+busway:rua-25-de-abril,busway,Rua 25 de Abril,3,77
+busway:rua-5,busway,Rua 5,10,70
+busway:rua-9-de-abril,busway,Rua 9 de Abril,13,76
+busway:rua-alipio-portugal,busway,Rua Alípio Portugal,13,76
+busway:rua-antonio-domingues-pinto-a,busway,Rua António Domingues Pinto A,5,46 47
+busway:rua-antonio-domingues-pinto-b,busway,Rua António Domingues Pinto B,5,46 47
+busway:rua-armando-santos-neto,busway,Rua Armando Santos Neto,7,102 108
+busway:rua-camilo-castelo-branco-esc-secundaria,busway,Rua Camilo Castelo Branco – Esc. Secundária,7,20 36 70 75
+busway:rua-central,busway,Rua Central,10,102 105 106 110
+busway:rua-d-dinis,busway,Rua D. Dinis,13,76
+busway:rua-das-barrentas,busway,Rua Das Barrentas,4,102 106
+busway:rua-das-gandaras,busway,Rua Das Gândaras,1,110
+busway:rua-guerra-junqueiro,busway,Rua Guerra Junqueiro,3,77
+busway:rua-nossa-sra-da-nazare-esc-secundaria,busway,Rua Nossa Sra. da Nazaré – Esc. Secundária,9,20 70 75
+busway:rua-nova-1-b,busway,Rua Nova 1 – B,1,93
+busway:rua-prior-valente,busway,Rua Prior Valente,4,71
+busway:rua-prior-valente-alminhas,busway,Rua Prior Valente – Alminhas,4,71
+busway:rua-santo-estevao,busway,Rua Santo Estevão,3,77
+busway:rua-sidonio-pais,busway,Rua Sidónio Pais,7,76
+busway:rua-sao-miguel,busway,Rua São Miguel,2,105
+busway:rua-da-azenha-a,busway,Rua da Azenha A,4,51 52
+busway:rua-da-azenha-b,busway,Rua da Azenha B,6,51 52
+busway:rua-da-cavada,busway,Rua da Cavada,2,47
+busway:rua-da-escola,busway,Rua da Escola,11,104 107
+busway:rua-da-escolas-calvao,busway,Rua da Escolas Calvão,2,105
+busway:rua-da-feira,busway,Rua da Feira,12,103 107
+busway:rua-da-palmeira,busway,Rua da Palmeira,1,72
+busway:rua-da-trapa-a,busway,Rua da Trapa A,7,51 52 53
+busway:rua-da-trapa-b,busway,Rua da Trapa B,5,51 53
+busway:rua-de-canelas-ecoparque,busway,Rua de Canelas – ECOPARQUE,7,22 65
+busway:rua-de-pardeiros,busway,Rua de Pardeiros,4,108 109 110
+busway:rua-de-salreu-ecoparque,busway,Rua de Salreu – ECOPARQUE,5,65
+busway:rua-de-veiros-ecoparque,busway,Rua de Veiros – ECOPARQUE,5,65
+busway:rua-do-andal,busway,Rua do Andal,12,104 109 110
+busway:rua-do-choupelo,busway,Rua do Choupelo,4,47
+busway:rua-do-lugar,busway,Rua do Lugar,2,110
+busway:rua-do-lugar-covao-do-lobo,busway,Rua do Lugar (Covão do Lobo),6,102
+busway:rua-do-norte,busway,Rua do Norte,8,102 107
+busway:rua-do-norte-a,busway,Rua do Norte – A,7,70
+busway:rua-do-norte-b,busway,Rua do Norte – B,6,70
+busway:rua-do-passadouro,busway,Rua do Passadouro,4,71
+busway:rua-do-poente,busway,Rua do Poente,8,102 105
+busway:rua-do-rato,busway,Rua do Rato,3,77
+busway:rua-do-sambal,busway,Rua do Sambal,6,108 109 110
+busway:rua-do-sul,busway,Rua do Sul,3,106 110
+busway:rua-do-vale-da-cana-a,busway,Rua do Vale da Cana A,2,51 52
+busway:rua-do-vale-da-cana-b,busway,Rua do Vale da Cana B,3,51 52
+busway:rua-dos-condes,busway,Rua dos Condes,7,76
+busway:rua-dos-moitinhos,busway,Rua dos Moitinhos,4,71
+busway:rua-dos-pescadores,busway,Rua dos Pescadores,3,77
+busway:rua-dos-tornados,busway,Rua dos Tornados,6,47 48
+busway:ruy-de-vouga,busway,Ruy de Vouga,4,77
+busway:s-v-pereira-castanheiro-b,busway,S V Pereira (Castanheiro) – B,6,90
+busway:s-v-pereira-castanheiro-a,busway,S V.Pereira (Castanheiro) – A,6,90
+busway:s-v-pereira-escola-a,busway,S V.Pereira (Escola) – A,12,90
+busway:s-v-pereira-igreja-a,busway,S V.Pereira (Igreja) – A,6,90
+busway:s-v-pereira-igreja-b,busway,S V.Pereira (Igreja) – B,6,90
+busway:s-goncalo,busway,S. Gonçalo,3,77
+busway:s-joao-lagoa-de-sao-miguel-a,busway,S. João (Lagoa de São Miguel) – A,8,90 92 93
+busway:s-joao-lagoa-de-sao-miguel-b,busway,S. João (Lagoa de São Miguel) – B,7,90 93
+busway:s-marcos-a,busway,S. Marcos A,7,16
+busway:s-marcos-b,busway,S. Marcos B,4,16 17
+busway:s-simao,busway,S. Simão,4,77
+busway:s-v-pereira-comunidade,busway,S. V. Pereira (Comunidade),12,90
+busway:s-v-pereira-capela-sao-geraldo-a,busway,S.V.Pereira (Capela (São Geraldo)) – A,6,90
+busway:s-v-pereira-capela-sao-geraldo-b,busway,S.V.Pereira (Capela (São Geraldo)) – B,6,90
+busway:sado,busway,Sado,7,39
+busway:salgueiral-de-baixo-2-b,busway,Salgueiral de Baixo 2 – B,4,90
+busway:salgueiral-de-baixo-b,busway,Salgueiral de Baixo – B,4,90
+busway:salgueiral-de-cima-b,busway,Salgueiral de Cima – B,4,90
+busway:salgueiro,busway,Salgueiro,12,103 107
+busway:salgueiro-i,busway,Salgueiro I,2,42
+busway:salgueiro-i-a,busway,Salgueiro I – A,4,72
+busway:salgueiro-i-b,busway,Salgueiro I – B,5,72
+busway:salgueiro-ii,busway,Salgueiro II,2,42
+busway:salgueiro-a,busway,Salgueiro – A,6,73 74 75
+busway:salgueiro-b,busway,Salgueiro – B,6,73 74 75
+busway:salreu-cemiterio,busway,Salreu (Cemitério),1,33
+busway:salreu-cemiterio,busway,Salreu – Cemitério,3,67
+busway:salreu-igreja,busway,Salreu – Igreja,7,23 24 67
+busway:samel,busway,Samel,8,19
+busway:samel-a,busway,Samel – A,1,59
+busway:samel-b,busway,Samel – B,5,55 59 60
+busway:samel-catita,busway,Samel – Catita,10,19
+busway:samuel-a,busway,Samuel A,3,47
+busway:samuel-b,busway,Samuel B,5,47
+busway:sanchequias,busway,Sanchequias,8,102 107
+busway:sande-alminhas-a,busway,Sande (Alminhas) – A,1,90
+busway:sande-alminhas-b,busway,Sande (Alminhas) – B,3,90
+busway:sanfins,busway,Sanfins,2,94
+busway:sanfins-2,busway,Sanfins (2),1,94
+busway:sanfins-capela,busway,Sanfins – Capela,2,94
+busway:sanfins-capela-2,busway,Sanfins – Capela (2),1,94
+busway:sangalhos-largo-da-igreja-a,busway,Sangalhos – Largo da Igreja – A,13,14 28 31 63
+busway:sangalhos-largo-da-igreja-b,busway,Sangalhos – Largo da Igreja – B,6,28 31
+busway:sangalhos-rua-do-comercio-a,busway,Sangalhos – Rua do Comércio – A,9,28 31 63
+busway:sangalhos-rua-do-comercio-b,busway,Sangalhos – Rua do Comércio – B,5,28 31
+busway:sangalhos-sa-a,busway,Sangalhos – Sá – A,2,63
+busway:santa-barbara-capela,busway,Santa Bárbara-Capela,3,68
+busway:santa-catarina,busway,Santa Catarina,13,104 108 109 110
+busway:santa-eulalia,busway,Santa Eulália,19,43 44
+busway:santa-luzia,busway,Santa Luzia,15,43 69
+busway:santa-luzia-cruzamento,busway,Santa Luzia (Cruzamento),16,12
+busway:santa-maria-madalena,busway,Santa Maria Madalena,8,102 107
+busway:santa-rosa,busway,Santa Rosa,7,37
+busway:santiais,busway,Santiais,4,24 68
+busway:santo-adriao,busway,Santo Adrião,2,100 96
+busway:santo-adriao-2,busway,Santo Adrião (2),2,100 96
+busway:santo-adriao-tanques,busway,Santo Adrião – Tanques,2,100 96
+busway:santo-adriao-tanques-2,busway,Santo Adrião – Tanques (2),1,96
+busway:santo-amaro,busway,Santo Amaro,3,68
+busway:santo-andre,busway,Santo André,41,102 111 18 66 69
+busway:santo-andre-norte,busway,Santo André Norte,6,102
+busway:santo-antonio,busway,Santo António,5,41 45
+busway:sardinha,busway,Sardinha,10,66 69
+busway:sargacal-escola-regedoura-b,busway,Sargaçal (Escola Regedoura) – B,1,92
+busway:sargacal-poder-local-b,busway,Sargaçal (Poder Local) – B,1,92
+busway:sargacal-1-a,busway,Sargaçal 1 – A,10,8
+busway:sargacal-1-b,busway,Sargaçal 1 – B,10,8 92
+busway:sebastiao-pedro-costa,busway,Sebastião Pedro Costa,10,70
+busway:seixal,busway,Seixal,2,67
+busway:seixo,busway,Seixo,3,100
+busway:seixo-2,busway,Seixo (2),2,100
+busway:seixo-2-1-b,busway,Seixo 2 / 1 – B,1,93
+busway:seixo-branco-a,busway,Seixo Branco – A,3,33 93
+busway:seixo-branco-b,busway,Seixo Branco – B,1,33
+busway:seixo-de-baixo-1-a,busway,Seixo de Baixo 1 – A,4,7
+busway:seixo-de-baixo-2-1-b,busway,Seixo de Baixo 2 / 1 – B,1,93
+busway:seixo-de-baixo-2-a-b,busway,Seixo de Baixo 2 – A/B,3,33
+busway:senhora-da-alumieira,busway,Senhora da Alumieira,16,28 31 44
+busway:senhora-dos-aflitos-a,busway,Senhora dos Aflitos A,5,47 48
+busway:senhora-dos-aflitos-b,busway,Senhora dos Aflitos B,5,47
+busway:senhora-dos-milagres,busway,Senhora dos Milagres,6,43
+busway:senhora-dos-navegantes,busway,Senhora dos Navegantes,13,76
+busway:senhorinha,busway,Senhorinha,3,95 99
+busway:senhorinha-s-macario,busway,Senhorinha – S. Macário,3,95 99
+busway:serena-capela,busway,Serena – Capela,4,63 79 85
+busway:serena-capela-b,busway,Serena – Capela B,5,79 85
+busway:serena-largo,busway,Serena – Largo,4,63 79 85
+busway:serena-largo-b,busway,Serena – Largo B,5,79 85
+busway:serem-de-cima-ii-nascente,busway,Serém de Cima II – Nascente,1,26
+busway:sever-do-vouga-bairro,busway,Sever do Vouga – Bairro,2,98
+busway:sever-do-vouga-bairro-2,busway,Sever do Vouga – Bairro (2),1,98
+busway:sever-do-vouga-belavista,busway,Sever do Vouga – Belavista,5,94 97
+busway:sever-do-vouga-belavista-2,busway,Sever do Vouga – Belavista (2),3,94 97
+busway:sever-do-vouga-central-de-camionagem,busway,Sever do Vouga – Central de Camionagem,49,100 101 17 30 32 37 94 95 96 97 98 99
+busway:sever-do-vouga-camara-municipal,busway,Sever do Vouga – Câmara Municipal,5,101 98 99
+busway:sever-do-vouga-camara-municipal-2,busway,Sever do Vouga – Câmara Municipal (2),6,101 95 98 99
+busway:sever-do-vouga-museu,busway,Sever do Vouga – Museu,5,101 98 99
+busway:sever-do-vouga-museu-2,busway,Sever do Vouga – Museu (2),6,101 95 98 99
+busway:silva-escura-largo-do-nicho,busway,Silva Escura – Largo do Nicho,2,98
+busway:silva-escura-largo-do-nicho-2,busway,Silva Escura – Largo do Nicho (2),1,98
+busway:silva-escura-tanques,busway,Silva Escura – Tanques,2,98
+busway:silva-escura-tanques-2,busway,Silva Escura – Tanques (2),1,98
+busway:silvares,busway,Silvares,33,16
+busway:silveira-capela,busway,Silveira – Capela,5,81 85
+busway:silveira-capela-b,busway,Silveira – Capela B,2,81
+busway:silveira-tanques,busway,Silveira – Tanques,2,100
+busway:silveira-tanques-2,busway,Silveira – Tanques (2),2,100
+busway:silveira-rotunda,busway,Silveira – rotunda,2,100
+busway:silveira-rotunda-2,busway,Silveira – rotunda (2),2,100
+busway:silveiro-angelo-graca,busway,Silveiro – Angelo Graça,2,14
+busway:silveiro-angelo-graca-b,busway,Silveiro – Angelo Graça B,1,14
+busway:silveiro-escola,busway,Silveiro – Escola,8,14 81 83
+busway:silveiro-escola-b,busway,Silveiro – Escola B,8,14 81 83
+busway:sobreira,busway,Sobreira,2,98
+busway:sobreira-2,busway,Sobreira (2),1,98
+busway:soca,busway,Soca,3,77
+busway:soraes,busway,Sorâes,10,104 110
+busway:soraes,busway,Sorães,2,109
+busway:soutelo,busway,Soutelo,1,100
+busway:soutelo-2,busway,Soutelo (2),1,100
+busway:soutelo-a,busway,Soutelo A,6,47 48
+busway:soutelo-ponte-a1-a,busway,Soutelo – Ponte A1 A,2,47
+busway:soutelo-rua-da-escola-a,busway,Soutelo – Rua da Escola A,6,47 48
+busway:soutelo-rua-do-canto-a,busway,Soutelo – Rua do Canto A,6,47 48
+busway:soutelo-rua-do-lagoeiro,busway,Soutelo – Rua do Lagoeiro,6,47 48
+busway:soutelo-travessa-da-escola,busway,Soutelo – Travessa da Escola,6,47 48
+busway:soza-centro,busway,Soza Centro,12,103 104 107 111
+busway:soza-nascente,busway,Soza Nascente,6,103 107
+busway:sra-da-memoria-a,busway,Sra da Memória A,5,46 47
+busway:sra-da-memoria-b,busway,Sra da Memória B,5,46 47
+busway:sra-do-monte,busway,Sra do Monte,3,67
+busway:sra-do-terco,busway,Sra do Terço,5,24 67
+busway:st-estevao-a,busway,St.º Estevão A,1,53
+busway:st-estevao-b,busway,St.º Estevão B,2,53
+busway:stelamaris-b,busway,Stelamaris – B,6,70
+busway:sao-donato-1-a,busway,São Donato 1 – A,6,90
+busway:sao-donato-1-b,busway,São Donato 1 – B,6,90
+busway:sao-donato-2-a,busway,São Donato 2 – A,6,90
+busway:sao-donato-2-b,busway,São Donato 2 – B,6,90
+busway:sao-frutuoso-espinhel,busway,São Frutuoso (Espinhel),7,27 29
+busway:sao-joao,busway,São João,20,102 103 104
+busway:sao-joao-cabanoes-escola-2-a,busway,São João (Cabanões (Escola) 2) – A,4,90
+busway:sao-joao-cabanoes-escola-a,busway,São João (Cabanões (Escola)) – A,4,90
+busway:sao-joao-cabanoes-a,busway,São João (Cabanões) – A,4,90
+busway:sao-joao-capela-sao-donato-a,busway,São João (Capela (São Donato)) – A,1,90
+busway:sao-joao-capela-sao-donato-b,busway,São João (Capela (São Donato)) – B,3,90
+busway:sao-joao-capela-a,busway,São João (Capela) – A,4,90
+busway:sao-joao-centro-de-saude-b,busway,São João (Centro de Saúde) – B,3,90
+busway:sao-joao-cimo-de-vila-2-a,busway,São João (Cimo de Vila 2) – A,4,90
+busway:sao-joao-cimo-de-vila-a,busway,São João (Cimo de Vila) – A,4,90
+busway:sao-joao-cruzeiro-a,busway,São João (Cruzeiro) – A,7,90
+busway:sao-joao-cruzeiro-b,busway,São João (Cruzeiro) – B,9,90
+busway:sao-joao-en-109-philips-a,busway,São João (EN 109 (Philips)) – A,8,86 88
+busway:sao-joao-en-109-philips-b,busway,São João (EN 109 (Philips)) – B,7,86 87
+busway:sao-joao-giestais-a,busway,São João (Giestais) – A,1,90
+busway:sao-joao-giestais-b,busway,São João (Giestais) – B,3,90
+busway:sao-joao-godinho-a,busway,São João (Godinho) – A,4,90
+busway:sao-joao-largo-a,busway,São João (Largo) – A,1,90
+busway:sao-joao-largo-b,busway,São João (Largo) – B,3,90
+busway:sao-joao-valega-1-rua-nova-a,busway,São João Válega 1 (Rua Nova) – A,2,33
+busway:sao-joao-valega-1-rua-nova-b,busway,São João Válega 1 (Rua Nova) – B,4,33 93
+busway:sao-joao-de-loure-a,busway,São João de Loure A,7,51 52 53
+busway:sao-joao-de-loure-b,busway,São João de Loure B,5,51 53
+busway:sao-joao-de-loure-clinica-a,busway,São João de Loure – Clínica A,6,37 51
+busway:sao-joao-de-loure-clinica-b,busway,São João de Loure – Clínica B,8,37 51
+busway:sao-joao-de-loure-escola,busway,São João de Loure – Escola,18,37 51 52 53
+busway:sao-joao-de-valega-capela-a,busway,São João de Válega (Capela) – A,4,33 93
+busway:sao-joao-de-valega-capela-b,busway,São João de Válega (Capela) – B,2,33
+busway:sao-joao-de-valega-escola-a,busway,São João de Válega (Escola) – A,1,93
+busway:sao-joao-de-valega-2-rua-nova-b,busway,São João de Válega 2 (Rua Nova) – B,1,93
+busway:sao-lourenco-a,busway,São Lourenço – A,5,11 62
+busway:sao-lourenco-b,busway,São Lourenço – B,4,11 62
+busway:sao-mamede-ii,busway,São Mamede II,3,13
+busway:sao-mateus-a,busway,São Mateus – A,4,59 62
+busway:sao-mateus-b,busway,São Mateus – B,3,59 61
+busway:sao-miguel-a,busway,São Miguel – A,8,90 92 93
+busway:sao-miguel-b,busway,São Miguel – B,7,90 93
+busway:sao-pedro-i,busway,São Pedro I,6,43
+busway:sao-pedro-ii,busway,São Pedro II,6,43
+busway:sao-pedro-largo-da-igreja-a,busway,São Pedro – Largo da Igreja – A,1,56
+busway:sao-pedro-largo-da-igreja-b,busway,São Pedro – Largo da Igreja – B,3,56
+busway:sao-pedro-rua-das-palmeiras-a,busway,São Pedro – Rua das Palmeiras – A,3,56
+busway:sao-pedro-rua-das-palmeiras-b,busway,São Pedro – Rua das Palmeiras – B,1,56
+busway:sao-romao,busway,São Romão,6,111 38
+busway:sao-sebastiao,busway,São Sebastião,11,43
+busway:sao-sebastiao-estarreja,busway,São Sebastião (Estarreja),14,33 66 69
+busway:sao-simao,busway,São Simão,3,45
+busway:sao-tiago,busway,São Tiago,15,40 43
+busway:sao-tome,busway,São Tomé,14,102 43
+busway:sao-tome-forcada,busway,São Tomé (Forcada),2,44
+busway:sao-vicente-pereira-cruz-a,busway,São Vicente Pereira (Cruz) – A,6,90
+busway:sao-vicente-pereira-cruz-b,busway,São Vicente Pereira (Cruz) – B,6,90
+busway:sao-joao-centro-de-saude-a,busway,São joão (Centro de Saúde) – A,1,90
+busway:soligo,busway,Sóligo,1,101
+busway:soligo-2,busway,Sóligo (2),2,101
+busway:tabuaco-capela,busway,Tabuaço – Capela,11,104 107
+busway:talhadas-r-sr-a-da-graca-2,busway,Talhadas – R. Sr.a da Graça (2),5,100 30
+busway:talhadas-r-sr-da-graca,busway,Talhadas – R. Srª da Graça,6,100 30
+busway:talhadas-r-vale-do-peso,busway,Talhadas – R. Vale do Peso,3,100
+busway:talhadas-r-vale-do-peso-2,busway,Talhadas – R. Vale do Peso (2),2,100
+busway:talho,busway,Talho,3,91
+busway:talabriga-nascente-lamas-do-vouga,busway,Talábriga – Nascente (Lamas do Vouga),10,12 26
+busway:talabriga-poente-lamas-do-vouga,busway,Talábriga – Poente (Lamas do Vouga),8,12
+busway:telhadela-a,busway,Telhadela A,5,46 47
+busway:telhadela-b,busway,Telhadela B,5,46 47
+busway:tem-tem-a,busway,Tem Tem – A,4,70
+busway:tem-tem-b,busway,Tem Tem – B,6,70
+busway:terminal-rodoviario-de-aveiro,busway,Terminal Rodoviário de Aveiro,261,17 18 19 20 32 34 35 36
+busway:tininha,busway,Tininha,10,70
+busway:tocha,busway,Tocha,7,18
+busway:tojal,busway,Tojal,2,98
+busway:tojal-2,busway,Tojal (2),1,98
+busway:torre-biblioteca-a,busway,Torre (Biblioteca) – A,6,90
+busway:torre-biblioteca-b,busway,Torre (Biblioteca) – B,6,90
+busway:torre-capela-a,busway,Torre (Capela) – A,6,90
+busway:torre-capela-b,busway,Torre (Capela) – B,6,90
+busway:torre-cassemes-a,busway,Torre (Cassemes) – A,6,90
+busway:torre-cassemes-b,busway,Torre (Cassemes) – B,6,90
+busway:torre-2-a,busway,Torre 2 – A,6,90
+busway:torre-2-b,busway,Torre 2 – B,6,90
+busway:torre-a,busway,Torre – A,6,90
+busway:torre-b,busway,Torre – B,6,90
+busway:torreira-assembleia-theatro,busway,Torreira – Assembleia Theatro,5,25
+busway:torres,busway,Torres,6,11 55 60
+busway:torres-em-334-a,busway,Torres – EM 334 – A,1,11
+busway:torres-em-334-b,busway,Torres – EM 334 – B,5,11 55 60
+busway:travanca,busway,Travanca,33,16
+busway:travessa-da-lavoura,busway,Travessa da Lavoura,13,76
+busway:travessa-do-celeiro,busway,Travessa do Celeiro,12,103 107
+busway:tribunal-de-espinho,busway,Tribunal de Espinho,32,4 5
+busway:troviscal-capt,busway,Troviscal – Capt,4,79 85
+busway:troviscal-capt-b,busway,Troviscal – Capt B,3,79 85
+busway:troviscal-carvalha,busway,Troviscal – Carvalha,3,85
+busway:troviscal-carvalha-b,busway,Troviscal – Carvalha B,1,85
+busway:troviscal-em596,busway,Troviscal – EM596,7,79 80 81 82 84
+busway:troviscal-em596-b,busway,Troviscal – EM596 B,9,79 80 81 82 84
+busway:troviscal-em596-c,busway,Troviscal – EM596 C,3,85
+busway:troviscal-em596,busway,Troviscal – Em596,1,85
+busway:troviscal-em596-c,busway,Troviscal – Em596 C,1,85
+busway:troviscal-igreja,busway,Troviscal – Igreja,3,79 81 85
+busway:troviscal-igreja-b,busway,Troviscal – Igreja B,7,79 81 85
+busway:troviscal-jaime-pato,busway,Troviscal – Jaime Pato,3,79 81 85
+busway:troviscal-jaime-pato-b,busway,Troviscal – Jaime Pato B,7,79 81 85
+busway:troviscal-padre-antonio-goncalves-pereira,busway,Troviscal – Padre Antonio Goncalves Pereira,1,85
+busway:troviscal-padre-antonio-goncalves-pereira-b,busway,Troviscal – Padre Antonio Goncalves Pereira B,3,85
+busway:troviscal-prof-jose-oliveira,busway,Troviscal – Prof Jose Oliveira,3,79 85
+busway:troviscal-prof-jose-oliveira-b,busway,Troviscal – Prof Jose Oliveira B,3,85
+busway:troviscal-prof-jose-oliveira-b,busway,Troviscal – Prof. José Oliveira B,1,79
+busway:troviscal-vale-marinha,busway,Troviscal – Vale Marinha,3,85
+busway:troviscal-vale-marinha-b,busway,Troviscal – Vale Marinha B,1,85
+busway:urgueira,busway,Urgueira,2,42
+busway:vida-ovar-centro-comercial,busway,VIDA Ovar – Centro Comercial,10,8
+busway:vida-ovar-centro-comercial-a,busway,VIDA Ovar – Centro Comercial – A,15,15 88
+busway:vida-ovar-centro-comercial-b,busway,VIDA Ovar – Centro Comercial – B,18,15 8
+busway:vagos-rotunda-norte,busway,Vagos Rotunda Norte,7,103
+busway:vale,busway,Vale,4,108 110
+busway:vale-a,busway,Vale A,5,46 47
+busway:vale-b,busway,Vale B,2,46
+busway:vale-domingos,busway,Vale Domingos,3,45
+busway:vale-grou,busway,Vale Grou,15,31 40 44
+busway:vale-da-anta,busway,Vale da Anta,2,98
+busway:vale-da-anta-2,busway,Vale da Anta (2),1,98
+busway:vale-da-mua,busway,Vale da Mua,3,42 45
+busway:vale-de-avim-2,busway,Vale de Avim 2,4,57
+busway:vale-de-avim-a,busway,Vale de Avim – A,3,57
+busway:vale-de-avim-b,busway,Vale de Avim – B,1,57
+busway:vale-de-boi-a,busway,Vale de Boi – A,1,57
+busway:vale-de-boi-b,busway,Vale de Boi – B,3,57
+busway:vale-de-cambra-escola-dairas,busway,Vale de Cambra (Escola Dairas),9,17
+busway:vale-de-cambra-gare,busway,Vale de Cambra (Gare),9,17
+busway:vale-de-ilhavo,busway,Vale de Ílhavo,4,71
+busway:vale-de-ilhavo-eb1,busway,Vale de Ílhavo EB1,4,71
+busway:vale-de-ilhavo-cafe,busway,Vale de Ílhavo – Café,4,71
+busway:vale-do-homem,busway,Vale do Homem,3,100
+busway:vale-do-homem-2,busway,Vale do Homem (2),2,100
+busway:vale-do-salgueiro-i,busway,Vale do Salgueiró I,7,39
+busway:vale-do-salgueiro-ii,busway,Vale do Salgueiró II,7,39
+busway:vale-dos-castanheiros,busway,Vale dos Castanheiros,3,67
+busway:vale-agua,busway,Vale Água,2,6
+busway:valmaior-a,busway,Valmaior A,5,17 37 6
+busway:valmaior-b,busway,Valmaior B,6,17 37 6
+busway:varzielas,busway,Varzielas,2,13
+busway:venda-nova-a,busway,Venda Nova – A,2,60
+busway:venda-nova-b,busway,Venda Nova – B,1,60
+busway:vendas-de-samel,busway,Vendas de Samel,3,55 60
+busway:vessadas,busway,Vessadas,3,77
+busway:via-da-ria-a,busway,Via da Ria – A,7,70
+busway:via-da-ria-b,busway,Via da Ria – B,6,70
+busway:vigia,busway,Vigia,7,103
+busway:vila-fria,busway,Vila Fria,2,98
+busway:vila-fria-b,busway,Vila Fria B,1,98
+busway:vila-mendo,busway,Vila Mendo,6,43
+busway:vila-nova-de-fusos,busway,Vila Nova de Fusos,3,6
+busway:vila-nova-de-monsarros-a,busway,Vila Nova de Monsarros – A,3,58
+busway:vila-nova-de-monsarros-b,busway,Vila Nova de Monsarros – B,3,57 58
+busway:vila-nova-de-monsarros-deposito-da-agua-a,busway,Vila Nova de Monsarros – Depósito da Água – A,3,58
+busway:vila-nova-de-monsarros-deposito-da-agua-b,busway,Vila Nova de Monsarros – Depósito da Água – B,2,58
+busway:vila-nova-de-monsarros-poco,busway,Vila Nova de Monsarros – Poço,5,58
+busway:vila-nova-igreja-s-pdro-b,busway,Vila Nova – Igreja S. Pdro B,2,83
+busway:vila-nova-igreja-s-pedro,busway,Vila Nova – Igreja S. Pedro,5,78 79 83
+busway:vila-nova-igreja-s-pedro-b,busway,Vila Nova – Igreja S. Pedro B,3,78 79
+busway:vila-seca,busway,Vila Seca,5,94 97
+busway:vila-seca-2,busway,Vila Seca (2),3,94 97
+busway:vila-seca-cruz-r-fonte-fria,busway,Vila Seca – cruz R. Fonte Fria,5,94 97
+busway:vila-seca-cruz-r-fonte-fria-2,busway,Vila Seca – cruz R. Fonte Fria (2),3,94 97
+busway:vila-verde-capela,busway,Vila Verde – Capela,1,82
+busway:vila-verde-capela-b,busway,Vila Verde – Capela B,2,82
+busway:vila-verde-espaco-inovacao,busway,Vila Verde – Espaco Inovacao,10,79 80 81 82 84 85
+busway:vila-verde-espaco-inovacao-b,busway,Vila Verde – Espaco Inovacao B,11,79 80 82 84 85
+busway:vila-verde-jardim,busway,Vila Verde – Jardim,7,79 80 82 84 85
+busway:vila-verde-jardim-b,busway,Vila Verde – Jardim B,11,79 80 82 84 85
+busway:vila-verde-polo-escolar,busway,Vila Verde – Polo Escolar,7,79 80 82 84 85
+busway:vila-verde-polo-escolar-b,busway,Vila Verde – Polo Escolar B,11,79 80 82 84 85
+busway:vilarinho-de-s-roque,busway,Vilarinho de S. Roque,7,47
+busway:vilarinho-do-bairro-a,busway,Vilarinho do Bairro – A,4,62 63
+busway:vilarinho-do-bairro-b,busway,Vilarinho do Bairro – B,2,54 61
+busway:vinha-donega,busway,Vinha Dónega,2,101
+busway:vinha-donega-2,busway,Vinha Dónega (2),1,101
+busway:visconde-ovar-1-a,busway,Visconde Ovar 1 – A,8,90 92 93
+busway:visconde-ovar-1-b,busway,Visconde Ovar 1 – B,7,90 93
+busway:vista-alegre-a,busway,Vista Alegre – A,2,34
+busway:vista-alegre-b,busway,Vista Alegre – B,1,34
+busway:vougapark,busway,Vougapark,12,100 17 30 32 6 97
+busway:vougapark-2,busway,Vougapark (2),11,100 30 32 6 97
+busway:vouguinha,busway,Vouguinha,9,39 42
+busway:valega-bustelo-a,busway,Válega (Bustelo) – A,3,9 92 93
+busway:valega-cabo-da-lavoura-1-b,busway,Válega (Cabo da Lavoura 1) – B,1,92
+busway:valega-cabo-da-lavoura-2-b,busway,Válega (Cabo da Lavoura 2) – B,1,92
+busway:valega-carvalho-de-baixo-escola-a,busway,Válega (Carvalho de Baixo (escola)) – A,2,92 93
+busway:valega-carvalho-de-baixo-a,busway,Válega (Carvalho de Baixo) – A,2,92 93
+busway:valega-carvalho-de-cima-a,busway,Válega (Carvalho de Cima) – A,2,92 93
+busway:valega-casal-a,busway,Válega (Casal) – A,1,92
+busway:valega-centro-a,busway,Válega (Centro) – A,11,33 8
+busway:valega-centro-b,busway,Válega (Centro) – B,13,33 8 9 92 93
+busway:valega-en-109-b,busway,Válega (EN 109) – B,1,93
+busway:valega-ervideira-a,busway,Válega (Ervideira) – A,1,93
+busway:valega-esc-monsenhor-miguel-oliveira-a,busway,Válega (Esc. Monsenhor Miguel Oliveira) – A,12,33 7 8 9 92 93
+busway:valega-esc-monsenhor-miguel-oliveira-a-b,busway,Válega (Esc. Monsenhor Miguel Oliveira) – A/B,2,33
+busway:valega-esc-monsenhor-miguel-oliveira-b,busway,Válega (Esc. Monsenhor Miguel Oliveira) – B,6,8
+busway:valega-mina-en-109-b,busway,Válega (Mina (EN 109)) – B,3,33 93
+busway:valega-passo-1-2-3-4-a,busway,Válega (Passô 1 / 2 / 3 / 4) – A,1,93
+busway:valega-passo-1-a,busway,Válega (Passô 1) – A,1,92
+busway:valega-passo-1-b,busway,Válega (Passô 1) – B,1,92
+busway:valega-passo-2-a,busway,Válega (Passô 2) – A,1,92
+busway:valega-passo-2-b,busway,Válega (Passô 2) – B,1,92
+busway:valega-passo-3-a,busway,Válega (Passô 3) – A,1,92
+busway:valega-passo-3-b,busway,Válega (Passô 3) – B,1,92
+busway:valega-passo-4-3-2-1-b,busway,Válega (Passô 4 / 3 / 2 / 1) – B,1,93
+busway:valega-passo-4-a,busway,Válega (Passô 4) – A,1,92
+busway:valega-passo-4-b,busway,Válega (Passô 4) – B,1,92
+busway:valega-pintim-de-cima-a,busway,Válega (Pintim de Cima) – A,2,92 93
+busway:valega-pintim-de-cima-b,busway,Válega (Pintim de Cima) – B,2,92 93
+busway:valega-rua-p-eloi-pinho-a,busway,Válega (Rua P. Eloi Pinho) – A,2,92 93
+busway:valega-rua-da-igreja-a,busway,Válega (Rua da Igreja) – A,15,33 7 8
+busway:valega-rua-da-igreja-b,busway,Válega (Rua da Igreja) – B,17,33 7 8 9 92
+busway:valega-seixo-branco-1-a,busway,Válega (Seixo Branco 1) – A,1,93
+busway:valega-valongueiro-cruz-b,busway,Válega (Valongueiro (Cruz)) – B,2,92 93
+busway:valega-valongueiro-1-b,busway,Válega (Valongueiro 1) – B,2,92 93
+busway:valega-valongueiro-a,busway,Válega (Valongueiro) – A,2,92 93
+busway:valega-valongueiro-b,busway,Válega (Valongueiro) – B,2,92 93
+busway:z-i-padroes,busway,Z.I. Padrões,6,32 37 95 98
+busway:z-i-padroes-2,busway,Z.I. Padrões (2),5,32 37 98
+busway:zi-nascente-poente,busway,ZI Nascente/Poente,5,44
+busway:zi-norte-sul-i,busway,ZI Norte / Sul I,4,40
+busway:zi-norte-sul-ii,busway,ZI Norte / Sul II,4,40
+busway:zi-norte-sul-iii,busway,ZI Norte / Sul III,4,40
+busway:zio-avenida-estacao,busway,ZIO – Avenida Estacao,2,83
+busway:zio-avenida-estacao-b,busway,ZIO – Avenida Estacao B,2,83
+busway:zibreiros,busway,Zibreiros,4,17 95
+busway:zona-industrial-3-a,busway,Zona Industrial 3 A,2,23
+busway:zona-industrial-3-b,busway,Zona Industrial 3 B,1,23
+busway:zona-industrial-i,busway,Zona Industrial I,3,77
+busway:zona-industrial-ii,busway,Zona Industrial II,3,77
+busway:zona-industrial-vagos-1,busway,Zona Industrial Vagos 1,10,10 104
+busway:zona-industrial-vagos-2,busway,Zona Industrial Vagos 2,5,10 104
+busway:zona-industrial-vagos-3-em593,busway,Zona Industrial Vagos 3 – EM593,11,10
+busway:zona-industrial-de-alfeloas-a,busway,Zona Industrial de Alféloas – A,3,56
+busway:zona-industrial-de-alfeloas-b,busway,Zona Industrial de Alféloas – B,2,56
+busway:ze-colete-a,busway,Zé Colete – A,5,72 75
+busway:ze-colete-b,busway,Zé Colete – B,9,72 75
+busway:agua-levada,busway,Água Levada,10,66 69
+busway:aguas-boas-capela,busway,Águas Boas – Capela,2,78
+busway:aguas-boas-capela-b,busway,Águas Boas – Capela B,1,78
+busway:aguas-boas-sta-margarida-b,busway,Águas Boas – Sta Margarida B,2,78
+busway:aguas-boas-sta-margarida,busway,Águas Boas – Sta. Margarida,1,78
+busway:ilhavo,busway,Ílhavo,9,70 71 72

@@ -23,7 +23,7 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 73 lines
+`src/inmotion/cli/__init__.py` - 75 lines
 
 The `inmotion` command-line interface.
 
@@ -32,6 +32,7 @@ One package, one module per command group:
 ``model``     inspect, verify, predict and adopt checkpoints
 ``datasets``  dataset versions, provenance and checksums
 ``data``      build and clean datasets (export, merge, clean, augment)
+``bus``       scrape the Aveiro bus networks and build the OD matrices
 ``train``     train models (classification, dl, exotic, hpo-paper)
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
@@ -239,6 +240,335 @@ fifteen-line function. It is a data concern, so it lives with the data.
 Public API:
 
 - func `stratified_indices` - Return ``(train, validation, test)`` index arrays.
+
+## Bus network
+
+### `inmotion.bus.sources`
+
+`src/inmotion/bus/sources.py` - 230 lines
+
+Polite, cached, checksummed fetching of the operator sites, plus inventory.
+
+Neither operator publishes GTFS, so the schedules only exist as web pages. This
+module is the one place that talks to the two sites:
+
+* it sleeps ``crawl_delay`` seconds between network requests, using the value
+  each site's ``robots.txt`` asks for (AveiroBus asks for 10s, BusWay for none);
+* it caches every response under ``data/bus/raw/<operator>/`` and serves repeat
+  runs from disk, so a re-parse never re-hits the site;
+* it records url, sha256 and size of every artifact in ``manifest.json``, which
+  makes the scrape replayable and detects a page that changed under our feet.
+
+Nothing here parses timetables; that is `inmotion.bus.busway` and
+`inmotion.bus.aveirobus`.
+
+Public API:
+
+- class `Operator` - One bus operator site.
+- class `LinePage` - One served timetable page: a line, in one direction.
+- class `Fetcher` - Fetch with a cache, a crawl delay, and a manifest of what was fetched.
+- func `local_name` - A readable, collision-free filename for a URL.
+- func `parse_line_id` - Split ``16-ida`` into ``("16", "ida")``; ``L35`` has no direction.
+- func `busway_inventory` - Every BusWay line page, from the operator's own sitemap.
+- func `aveirobus_inventory` - Every AveiroBus timetable PDF linked from its index pages.
+- func `load_manifest` - The recorded URL -> checksum map.
+
+### `inmotion.bus.busway`
+
+`src/inmotion/bus/busway.py` - 245 lines
+
+Parse BusWay line pages into trips and their stop-to-stop calls.
+
+Every BusWay line page carries one ``<table class="tabela-horaria">`` per
+service type (weekdays, Saturdays, Sundays and holidays). Inside such a table
+**each column is one trip** and each row is one stop, so a cell is a single
+departure time — or ``–`` when that trip does not call at that stop. The page
+therefore publishes the whole timetable, not just endpoint departures, which is
+what an OD matrix needs.
+
+Cell attributes carry the service detail:
+
+``ÉPOCA``
+    ``A`` = *Anual*, ``PE`` = *Período Escolar* (term time only).
+``fundoamarelo``
+    The cell is highlighted because it is the hand-over point of a connection;
+    the matching footnote in the table's ``observacao`` row says to which line.
+``*``
+    A marker pointing at that same footnote.
+
+The parser is deliberately ignorant of *which* lines exist; it turns one page
+into records and leaves the inventory to `inmotion.bus.sources`.
+
+Public API:
+
+- class `Cell` - One table cell: its text, its CSS classes and its column span.
+- func `parse_tables` - Every table on the page, with its class attribute.
+- func `page_identity` - Read the line, direction and route caption a page carries.
+- func `parse_line_page` - Every trip on one BusWay line page, for the direction it carries.
+
+### `inmotion.bus.aveirobus`
+
+`src/inmotion/bus/aveirobus.py` - 1014 lines
+
+Parse AveiroBus timetable PDFs into trips and their stop-to-stop calls.
+
+AveiroBus publishes one PDF per urban line, and the timetable inside it is a
+single embedded bitmap (about 3400x2200 px, some 430 dpi) rather than text:
+``pdftotext`` returns nothing but the page number. Text extraction therefore
+means OCR, and OCR over a whole page is exactly where timetable digits get
+silently lost.
+
+So the page is not read as prose:
+
+1. the bitmap is lifted out of the PDF at its native resolution, with no
+   resampling anywhere;
+2. the *grid* is recovered from the pixels — the red header bands give the
+   column groups and the service each column belongs to, the OCR word boxes
+   give the rows and the column pitch;
+3. each cell is then read from two independent OCR passes (different page
+   segmentation, scale and binarisation) and OCR'd from a tight crop of that
+   cell alone when they disagree, or when the value would break the invariant
+   that a trip's times never run backwards.
+
+Every cell that needed that third opinion is counted and reported, so the
+confidence of an extraction is visible rather than assumed.
+
+Public API:
+
+- func `unaccent` - Lowercase, unaccented, hyphen-free text, for matching captions.
+- class `Word` - One OCR word box, in image pixels.
+- class `Band` - One red column-group header: the x-range it labels and its caption.
+- class `Block` - One timetable on the page: a stop list running against a set of trips.
+- func `timetable_image` - The largest embedded bitmap of the document: the timetable itself.
+- func `ocr_words` - OCR one image, returning word boxes in the original pixel frame.
+- func `tesseract_languages` - The language packs the installed tesseract can load, by name.
+- func `read_cell` - Read a single time out of one cell, with a digits-and-colon whitelist.
+- func `read_caption` - OCR one caption crop, returning the text and its word boxes.
+- func `banner_text` - OCR the vector route caption printed above the timetable bitmap.
+- func `close_horizontal` - Fill horizontal holes up to ``radius`` wide, to bridge glyph gaps.
+- func `runs` - Maximal runs of True at least ``minimum`` long.
+- func `close_vertical` - Fill vertical holes up to ``radius`` tall, to bridge glyph gaps.
+- func `header_bands` - The coloured column-group headers, whatever colour the line uses.
+- func `keep_heading_bands` - Drop colour bars that head no timetable.
+- func `column_highlights` - The background colour of each trip column, and which ones are tinted.
+- func `cluster` - Group values into ``(centre, size)``, splitting where the gap is too big.
+- func `median`
+- func `column_pitch` - The spacing between adjacent trip columns, from the closest pair in any row.
+- func `build_block` - Recover the stop list, the trip columns and every time of one block.
+- func `cell_box` - The pixel rectangle of one (row, column) cell, with a little padding.
+- func `assign_matrix` - Map an independent OCR pass onto the grid the first pass established.
+- func `reconcile` - Settle each cell between two OCR passes, asking a third when they differ.
+- func `fill_missing` - Read every cell the page-level OCR left empty, one crop at a time.
+- func `enforce_monotonic` - A trip's times never run backwards; repair or flag any cell that does.
+- func `format_minutes` - Minutes past midnight as ``HH:MM``, for diagnostics.
+- func `roll_block` - Put a block's columns on a continuous scale across midnight.
+- func `to_minutes` - ``"07:45"`` to minutes past midnight; ``None`` when there is no time.
+- class `Extraction` - One parsed PDF, with how much work the OCR needed.
+- func `label_bands` - Split each coloured strip into one band per printed caption.
+- func `text_words` - Exact word boxes from a PDF text layer, in page points.
+- func `text_bands` - Service headers of a text-layer timetable, one band per header line.
+- func `text_caption` - The route description of a text-layer timetable.
+- func `parse_text_pdf` - Every trip of a line PDF whose timetable is a real text layer.
+- func `parse_pdf` - Every trip of one AveiroBus line PDF.
+
+### `inmotion.bus.paths`
+
+`src/inmotion/bus/paths.py` - 46 lines
+
+Canonical locations for the bus-network artifacts and derived tables.
+
+The three tiers mirror `inmotion.data.paths`, with the bus network kept apart
+from the WiFi captures so neither can be mistaken for the other:
+
+``raw/``
+    Whatever the operator sites served, byte for byte: BusWay line pages and
+    AveiroBus line PDFs, plus ``manifest.json``. A cache, not a deliverable.
+``interim/``
+    One CSV per operator, straight out of its parser, before the two networks
+    are reconciled.
+``processed/``
+    The merged stop/trip/stop-time tables and the OD matrices derived from them.
+
+Public API:
+
+- func `raw_dir` - Raw artifact directory of one operator, created on demand.
+- func `interim` - Path to an interim table, by bare filename.
+- func `processed` - Path to a processed table, by bare filename.
+
+### `inmotion.bus.records`
+
+`src/inmotion/bus/records.py` - 80 lines
+
+The record shapes both operator parsers produce.
+
+Keeping one definition for both networks is what lets `inmotion.bus.od` build
+the OD matrices without caring which site a trip came from.
+
+Public API:
+
+- class `Call` - One trip calling at one stop.
+- class `Trip` - One scheduled trip, with every stop it calls at in order.
+- func `roll_past_midnight` - Put a trip's times on one continuous scale across midnight.
+- func `timed` - Calls with a time, in stop order.
+
+### `inmotion.bus.od.bands`
+
+`src/inmotion/bus/od/bands.py` - 44 lines
+
+Departure bands and service labels, as the two operators write them.
+
+Every classification the OD tables depend on lives here, because a band applied
+at the wrong point silently rewrites the matrix: a (line, direction, service)
+group can span the whole service day, so banding such a group by its earliest
+departure files every one of its trips under that first band.
+
+Public API:
+
+- func `band` - The departure band a trip's first stop belongs to.
+- func `format_minutes` - Minutes past midnight back to ``HH:MM``, keeping hours past 24.
+- func `service_group` - Collapse the operators' own service labels to weekday or weekend.
+
+### `inmotion.bus.od.stops`
+
+`src/inmotion/bus/od/stops.py` - 39 lines
+
+Stop identity: one canonical key per stop per operator, and the stop dictionary.
+
+Public API:
+
+- func `canonical` - A stable stop key: lowercase, unaccented, alphanumerics only.
+- func `stop_id` - The canonical id of one stop of one operator.
+- func `stops_frame` - The stop dictionary: one row per operator-specific stop.
+
+### `inmotion.bus.od.tables`
+
+`src/inmotion/bus/od/tables.py` - 73 lines
+
+The tidy tables: one row per trip, and one row per trip and stop.
+
+These are the input every other module in this package reads, so they are kept
+free of aggregation: a value here is what a single trip did, never a sum over
+trips.
+
+Public API:
+
+- func `stop_times_frame` - The full tidy timetable: one row per trip and stop.
+- func `trips_frame` - One row per trip, with its endpoints and its span.
+
+### `inmotion.bus.od.pairs`
+
+`src/inmotion/bus/od/pairs.py` - 97 lines
+
+The OD relation: every ordered stop pair a rider can ride *directly*.
+
+Pairs are enumerated per trip, so a row is a direct ride rather than a
+connection, and the band is stamped on each trip before the group is aggregated.
+Banding afterwards, from the group's earliest departure, would file a whole day
+of service under one morning band.
+
+Public API:
+
+- func `od_pairs` - Every reachable ordered stop pair, aggregated over the trips serving it.
+
+### `inmotion.bus.od.matrix`
+
+`src/inmotion/bus/od/matrix.py` - 58 lines
+
+The matrices themselves: aggregated over lines, long or wide.
+
+``wide_matrix`` pivots with ``stop_id`` order, which is alphabetical and says
+nothing about the network. A route-ordered pivot belongs to the caller: it needs
+a stop order derived from the trips, not from the ids.
+
+Public API:
+
+- func `od_matrix` - The OD matrix: direct trips per stop pair, by operator, service and band.
+- func `wide_matrix` - Pivot a long OD matrix into origins by destinations.
+
+### `inmotion.bus.od.validate`
+
+`src/inmotion/bus/od/validate.py` - 41 lines
+
+Invariants the tables have to hold before an OD matrix is worth anything.
+
+Only checks that a wrong answer cannot hide behind: a time outside the service
+day, or a journey that arrives before it departs.
+
+Public API:
+
+- func `validate` - Invariants the tables have to satisfy to be worth an OD matrix.
+
+### `inmotion.bus.build`
+
+`src/inmotion/bus/build.py` - 189 lines
+
+Build the bus tables and the OD matrices from the two operator sites.
+
+One pass, three stages: fetch (cached, so it only hits the network once), parse
+each operator with its own parser, then merge into the tidy tables and the OD
+matrices. The two parsers are independent, so a failure on one network still
+leaves the other's tables written and reports what went wrong.
+
+Public API:
+
+- class `Report` - What a build produced, and what it had to work around.
+- func `parse_busway` - Every BusWay trip, one line page at a time.
+- func `parse_aveirobus` - Every AveiroBus trip, one PDF at a time.
+- func `collect` - Fetch both operators and parse everything into trips.
+- func `write_tables` - Write the tidy tables and the OD matrices, and return what was written.
+- func `write_summary` - Record the build's counts and warnings next to the tables.
+- func `run` - Collect, write and summarise. Returns a process exit code.
+
+### `inmotion.bus.viz`
+
+`src/inmotion/bus/viz.py` - 425 lines
+
+Figures that let the extracted routes be checked by eye.
+
+Two routes are drawn per operator, and each figure carries three views of the
+same two routes:
+
+* an **OD grid** per route — the matrix restricted to that route, origins down
+  the side and destinations across the top, coloured by how many direct trips
+  connect the pair. A route read correctly is upper-triangular: nothing runs
+  backwards and a stop is never its own destination.
+* a **route ladder** — the two routes' stops in travel order, one ladder each,
+  positioned at the elapsed time from their own first stop. Every stop the two
+  routes share is joined by a connector. Where the extraction is wrong, the
+  ladder is jagged and the connectors cross at random; where it is right, the
+  two of a line's directions mirror each other and the connectors are parallel.
+
+Which two routes get drawn is not a choice: :func:`similar_pairs` ranks every
+pair of routes of an operator by how much of their stop list they share, and the
+top pair is plotted. The figure therefore shows the most comparable pair the
+data contains, and the console reports the pair and its agreement so the
+comparison can be judged rather than trusted.
+
+Nothing is typed in by hand; every number comes from ``data/bus/processed``.
+
+Public API:
+
+- class `Route` - One route: a line, one direction, one service.
+- class `SimilarPair` - Two routes and how much they have in common.
+- func `load_processed` - The stop times and the per-line OD relation.
+- func `route_profile` - One route's stops in travel order, with their elapsed time.
+- func `similar_pairs` - Every pair of one operator's routes, ranked by shared stops.
+- func `od_grid` - One route's OD matrix, as origins by destinations in travel order.
+- func `plot_route_pair` - Render one comparison figure and return its path.
+- func `run` - Draw the most similar pair of routes of each operator. Returns an exit code.
+
+### `inmotion.bus.viz_config`
+
+`src/inmotion/bus/viz_config.py` - 32 lines
+
+Typed options for the bus-network figures.
+
+Kept beside the pipeline like every other ``*_config.py`` in this repository, so
+the CLI holds no figure logic and the pipeline holds no argument parsing.
+
+Public API:
+
+- class `PlotConfig` - Command-line options for the OD-matrix figures.
 
 ## Quantization
 
@@ -637,7 +967,7 @@ Public API:
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 73 lines
+`src/inmotion/cli/__init__.py` - 75 lines
 
 The `inmotion` command-line interface.
 
@@ -646,6 +976,7 @@ One package, one module per command group:
 ``model``     inspect, verify, predict and adopt checkpoints
 ``datasets``  dataset versions, provenance and checksums
 ``data``      build and clean datasets (export, merge, clean, augment)
+``bus``       scrape the Aveiro bus networks and build the OD matrices
 ``train``     train models (classification, dl, exotic, hpo-paper)
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
@@ -701,6 +1032,18 @@ Public API:
 - func `merge` - Concatenate the interim CSVs and label concurrent-noise rows.
 - func `clean` - Quantify which devices or samples carry inconsistent labels.
 - func `augment` - Add class-conditioned noise and mixup rows, flagged `synthetic`.
+
+### `inmotion.cli.bus`
+
+`src/inmotion/cli/bus.py` - 77 lines
+
+`inmotion bus` — scrape the Aveiro operators and build the OD matrices.
+
+Public API:
+
+- func `fetch` - Populate ``data/bus/raw`` and the checksum manifest.
+- func `plot` - Render one figure per operator: both routes' OD grids and route ladders.
+- func `build` - Fetch if needed, parse, then write `data/bus/{interim,processed}`.
 
 ### `inmotion.cli.train`
 

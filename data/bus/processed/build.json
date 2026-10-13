@@ -1,0 +1,22 @@
+{
+  "built_at": "2026-10-13T10:52:11+00:00",
+  "busway_pages": 197,
+  "aveirobus_pdfs": 14,
+  "trips": 1429,
+  "stop_times": 24437,
+  "od_pairs": 97284,
+  "od_cells": 86836,
+  "ocr_repairs": 103,
+  "midnight_rolls": 3,
+  "warnings": [
+    "aveirobus 10: block 1: r17 c1: 08:07 follows 08:27 at Fonte de Esgueira",
+    "aveirobus 10: block 1: r10 c8: 04:52 follows 14:45 at R. Dr. Mário Sacramento A",
+    "aveirobus 10: block 2: r2 c3: 00:21 follows 10:20 at Av. Dr. Lourenço Peixinho CTT B",
+    "aveirobus 10: block 2: r10 c3: 34:48 follows 40:41 at Igreja Quintás B",
+    "aveirobus 11: block 5: no grid found",
+    "aveirobus 5: block 1: r11 c10: 20:59 follows 21:37 at Escolas de Santiago",
+    "aveirobus 8: block 1: r14 c9: 07:15 follows 17:06 at IR Caçadores 10 Sé",
+    "17 od pairs run backwards (Av. Dr. Lourenço Peixinho Capitania A->Fonte de Esgueira, Coimbrão A->R. Dr. Mário Sacramento A, Escolas de Nariz->R. Dr. Mário Sacramento A)",
+    "6 trips have times that run backwards"
+  ]
+}

@@ -9,11 +9,11 @@
 //! exporter wrote and reports the maximum deviation, so the port can be verified
 //! on the machine that will run it.
 
-use std::fs;
-use std::path::{Path, PathBuf};
 use std::collections::VecDeque;
+use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use inmotion_core::{Artifact, Model, Tensor};
@@ -598,7 +598,10 @@ mod tests {
             slide(&mut buffer, &[step as f32], 10);
             assert!(buffer.len() <= 10);
         }
-        assert_eq!(buffer, VecDeque::from((40..50).map(|v| v as f32).collect::<Vec<_>>()));
+        assert_eq!(
+            buffer,
+            VecDeque::from((40..50).map(|v| v as f32).collect::<Vec<_>>())
+        );
     }
 
     #[test]

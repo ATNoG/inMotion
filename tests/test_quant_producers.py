@@ -120,6 +120,9 @@ def test_per_channel_quantization_commutes_with_the_qkv_split() -> None:
 
 def test_export_refuses_a_scheme_the_runtime_cannot_read() -> None:
     """Refused with the measured reason, not written and hoped for."""
+    # bitsandbytes is installed on demand, so a machine without it can only be
+    # told that the backend is missing — the refusal needs it to measure.
+    pytest.importorskip("bitsandbytes")
     from inmotion.quant.export import resolve_producer
 
     with pytest.raises(ValueError, match="not affine") as excinfo:

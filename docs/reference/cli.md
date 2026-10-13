@@ -30,6 +30,37 @@ Options:
 - `--output-dir` (default: `combined`) - Where to write the combined analysis.
 - `--seeds` (default: `3,5,42`) - Comma-separated seeds to combine.
 
+## `bus`
+
+Scrape Aveiro bus networks and build OD matrices.
+
+### `bus build`
+
+Parse both networks and write the tables and OD matrices.
+
+Options:
+
+- `--refresh` (default: `False`) - Re-download before parsing.
+- `--quiet`, `-q` (default: `False`) - Only report the summary.
+
+### `bus fetch`
+
+Download the raw BusWay pages and AveiroBus PDFs.
+
+Options:
+
+- `--refresh` (default: `False`) - Re-download even when cached.
+
+### `bus plot`
+
+Draw the two most similar routes of each operator.
+
+Options:
+
+- `--service` (default: `weekday`) - Which service to compare: weekday or weekend.
+- `--out` (default: `plots/bus`) - Figure output directory.
+- `--no-labels` (default: `False`) - Leave out the stop names on the ladders.
+
 ## `data`
 
 Build and clean datasets.

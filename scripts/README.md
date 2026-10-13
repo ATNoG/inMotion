@@ -35,6 +35,26 @@ No `#SBATCH`; launched with `nohup bash scripts/local/<name>.sh & disown`.
 | `job_master_train.sh` | `slurm/job_master_train_v2.sh` (v2 header documents the v1 bugs) |
 | `job_aug_2.sh` | `slurm/job_aug.sh` (re-runs a single seed already covered) |
 
+## `oneoff/` — one analysis, kept so its figures can be re-derived
+
+Not part of any pipeline: each reads what a build already wrote and writes
+figures, diagnostics or its own derived tables. Nothing here is imported by the
+package, and no script here writes a filename the package also writes.
+
+| script | what it does |
+|---|---|
+| `cleanData.py`, `main.py`, `predictions.py` | early dataset cleaning and prediction dumps, from before the CLI |
+| `check_triangularity_2trips.py` | the two-trip case that settles whether an OD matrix is triangular |
+| `diagnose_triangularity.py` | classifies why a built matrix is not triangular, line-direction by line-direction |
+| `make_route_sorted_matrices.py` | re-orders the wide OD matrices by travel order instead of by stop id, and the stop-order tables that go with them |
+| `make_tier_a.py`, `make_tier_b.py` | the tier-A and tier-B bus figures (departure bands, headway, reachability, next-hop) |
+| `make_plots.py` | the two overview bus figures |
+
+The bus tables these read come from `uv run inmotion bus build`. The figures go
+to `plots/bus/`; the route-ordered matrices and stop-order tables land beside
+that build in `data/bus/processed/` under their own `_sorted` / `od_stop_order`
+names, so a rebuild neither produces nor overwrites them.
+
 ## Credentials
 
 Training scripts read `WANDB_API_KEY` from the environment and fail fast when it
