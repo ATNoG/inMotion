@@ -1,0 +1,45 @@
+<mxfile host="drawio-desktop" type="device">
+  <diagram id="fig_setup" name="fig_setup">
+    <mxGraphModel dx="900" dy="600" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="460" pageHeight="200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Zone A: vehicle cabin -->
+        <mxCell id="c2" value="Zone A &amp;mdash; Cabin" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#F8F9FA;strokeColor=#B0BEC5;strokeWidth=1.5;fontColor=#37474F;fontSize=12;fontStyle=1;align=center;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="6" y="20" width="140" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Zone B: platform -->
+        <mxCell id="c3" value="Zone B &amp;mdash; Platform" style="rounded=1;arcSize=4;whiteSpace=wrap;html=1;fillColor=#F8F9FA;strokeColor=#B0BEC5;strokeWidth=1.5;fontColor=#37474F;fontSize=12;fontStyle=1;align=center;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="314" y="20" width="140" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Access point straddling the doorway -->
+        <mxCell id="c4" value="Wi-Fi AP&#10;+ sniffer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#263238;strokeWidth=1.5;fontColor=#263238;fontSize=11;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="208" y="44" width="84" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- Static class AA inside the cabin -->
+        <mxCell id="c6" value="&lt;b&gt;AA&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9.5px&quot;&gt;cabin transit&lt;/font&gt;" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B9E77;strokeWidth=1.4;dashed=1;fontColor=#1B9E77;fontSize=11;align=center;verticalAlign=middle;spacingLeft=2;spacingRight=2;" vertex="1" parent="1">
+          <mxGeometry x="10" y="68" width="132" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Static class BB at the platform -->
+        <mxCell id="c7" value="&lt;b&gt;BB&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9.5px&quot;&gt;platform waiting&lt;/font&gt;" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E6AB02;strokeWidth=1.4;dashed=1;fontColor=#B07D00;fontSize=11;align=center;verticalAlign=middle;spacingLeft=2;spacingRight=2;" vertex="1" parent="1">
+          <mxGeometry x="318" y="68" width="132" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Alighting: A -> B, label above the arrow -->
+        <mxCell id="c8" value="AB  alighting" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D95F02;strokeWidth=1.8;endArrow=block;endFill=1;fontColor=#D95F02;fontSize=11;fontStyle=1;labelBackgroundColor=none;verticalLabelPosition=top;verticalAlign=bottom;exitX=1;exitY=0.70;exitDx=0;exitDy=0;entryX=0;entryY=0.70;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2" target="c3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Boarding: B -> A, label below the arrow -->
+        <mxCell id="c9" value="BA  boarding" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7570B3;strokeWidth=1.8;endArrow=block;endFill=1;fontColor=#7570B3;fontSize=11;fontStyle=1;labelBackgroundColor=none;verticalLabelPosition=bottom;verticalAlign=top;exitX=0;exitY=0.92;exitDx=0;exitDy=0;entryX=1;entryY=0.92;entryDx=0;entryDy=0;" edge="1" parent="1" source="c3" target="c2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
