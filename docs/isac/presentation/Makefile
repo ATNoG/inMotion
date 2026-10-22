@@ -14,11 +14,30 @@ ASSETS := \
     images/real_env.jpg \
     images/smart_bus.png
 
+
+# Install
+# If you do not have the ATNoG theme, you need to clone the theme repo here under assets
+# Licensing...
+TEXMFHOME  := $(shell kpsewhich -var-value=TEXMFHOME)
+DESTDIR    := $(TEXMFHOME)/tex/latex/beamerATNoG
+THEME_FOLDER := ./assets/templates/presentation/latex
+BRAND := $(THEME_FOLDER)/../../../brand
+THEME_FILES := $(THEME_FOLDER)/* \
+               $(BRAND)/logos/pdf/* \
+               $(BRAND)/partners/* \
+
 TARGETS := p.pdf p-notes.pdf
 
-.PHONY: all figures clean
+.PHONY: all install figures clean
 
 all: $(TARGETS)
+
+install: $(THEME_FILES)
+	@mkdir -p "$(DESTDIR)"
+	cp $(THEME_FILES) "$(DESTDIR)/"
+	texhash "$(TEXMFHOME)" >/dev/null
+	@echo "Installed ATNoG beamer theme to $(DESTDIR)"
+	@echo "\\usetheme{ATNoG} now works from any .tex file on this system."
 
 figures: $(GEN_FIGURES)
 

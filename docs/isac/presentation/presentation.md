@@ -9,10 +9,9 @@ section-titles: false
 # toc: true
 # toc-title: "Table of Contents"
 header-includes:
-  - \usetheme[sectionpage=none,numbering=fraction,progressbar=frametitle]{moloch}
+  - \usetheme{ATNoG}
   - \setbeamertemplate{navigation symbols}{}
-  - \usepackage[semibold,light]{FiraSans}
-  - \usepackage{FiraMono}
+  - \usepackage{tikz}
   - \usepackage{longtable,booktabs}
   - \usepackage[table]{xcolor}
   - \usepackage{etoolbox}
@@ -84,8 +83,8 @@ A previous paper answered that with hand-crafted RSSI features and supervised cl
 
 - Accurate passenger counting is the input to every operational decision an operator makes.
 - Traditional systems, infrared beams, pressure mats, cameras, work reasonably in the lab. In the field, with crowds, occlusion and dirt, claimed 98 percent becomes 53 percent. Pronello and Ruiz documented that gap.
-- But the financial case is what convinces operators. UPS saved 30 million liters of fuel per year by optimizing routes with ORION. Industry route planning cuts delivery costs 30 to 40 percent.
-- The same logic applies to public transport. If you know exactly where people board and alight, you can right-size vehicles and cut empty runs. The numbers on the right are the prize.
+- But the financial case is what convinces operators. UPS reports that ORION cuts about 100 million miles and 10 million gallons of fuel per year. In public transport the same exercise is documented: a linear-programming redesign of the Queretaro bus network removed 24 of its 148 routes and saved almost 14,000 litres of diesel, 37 tonnes of CO2 and 17,000 dollars per day.
+- These are measured outcomes, not projections. If you know exactly where people board and alight, you can right-size vehicles and cut empty runs. The numbers on the right are the prize, and both are in the footnote.
 - Wi-Fi is already installed on many buses. The infrastructure exists. This work is about extracting the signal from it.
 
 :::
@@ -93,10 +92,10 @@ A previous paper answered that with hand-crafted RSSI features and supervised cl
 ## Four Movements to Classify
 
 \centering
-\includegraphics[width=0.96\linewidth]{./images/fig_setup.pdf}
+\includegraphics[width=0.88\linewidth]{./images/fig_setup.pdf}
 
 \vspace{0.1em}
-\begin{minipage}{0.94\linewidth}
+\begin{minipage}{0.88\linewidth}
 \footnotesize
 \textbf{Four states:} \textbf{AA} cabin transit · \textbf{AB} alighting · \textbf{BA} boarding · \textbf{BB} platform waiting.
 
@@ -119,7 +118,7 @@ A previous paper answered that with hand-crafted RSSI features and supervised cl
 :::: {.column width="54%"}
 
 \centering
-\includegraphics[width=\linewidth]{./images/rssi_trajectory.pdf}
+\includegraphics[width=0.88\linewidth]{./images/rssi_trajectory.pdf}
 \small\color{gray}Mean RSSI per class on the 3,511-sample collection ($\pm 1\sigma$)
 
 ::::
@@ -285,7 +284,7 @@ ard/.style={draw=wmslate, line width=0.6pt, ->, dashed}
 :::: {.column width="40%"}
 
 \centering
-\includegraphics[width=0.82\linewidth]{./images/real_env.jpg}
+\includegraphics[width=0.70\linewidth]{./images/real_env.jpg}
 
 \small\color{gray}Controlled indoor environment, IT Aveiro
 
@@ -376,7 +375,7 @@ Parameters & 2.153 M & \textbf{0.566 M} & 1.232 M & 0.633 M \\
 \vspace{0.5em}
 \begin{minipage}{0.95\linewidth}
 \footnotesize
-\textbf{Baselines:} Mamba-3 selective state spaces (CNN, TCN, Transformer, multi-view; 0.84–1.70 M) · SIGReg regularized CNN (0.697 M) · DeepStack two-stage stack (43.6 M) · Optuna-tuned GRU.
+\textbf{Baselines:} Mamba-3 state spaces, four front-ends (0.84–1.70 M) · \textbf{SIGReg}: directly supervised CNN with the SIGReg regulariser, \emph{no pretraining} (0.697 M) · DeepStack (43.6 M) · Optuna-tuned GRU.
 
 \textbf{Interpretability:} SHAP attributions over the 18 channels, plus architecture-controlled ablation.
 \end{minipage}
@@ -399,7 +398,7 @@ Parameters & 2.153 M & \textbf{0.566 M} & 1.232 M & 0.633 M \\
 
 \centering
 \includegraphics[width=\linewidth]{./images/transfer_mcc.pdf}
-\small\color{gray}Prior (2,251) vs expanded (3,511) collection; labels are the difference
+\small\color{gray}Prior (2,251) vs expanded (3,511); the number above each pair is $\Delta$ MCC
 
 ::::
 :::: {.column width="44%"}
@@ -461,7 +460,7 @@ HPO GRU & 0.8524 & 0.5746 & $-0.28$ \\
 - Every deep supervised model: **degrades**, up to $-0.40$
 
 \vspace{0.3em}
-SIGReg's isotropic Gaussian prior is fitted to the training labels. A richer interference regime breaks it.
+SIGReg has no pretraining phase --- it is fitted directly on labels. A richer interference regime falls outside what it learned.
 
 \vspace{0.3em}
 \footnotesize Same device pool, so this measures **stability under collection expansion**, not transfer to a new environment.
@@ -473,7 +472,8 @@ SIGReg's isotropic Gaussian prior is fitted to the training labels. A richer int
 
 - This table is the scientific core of the paper, more than the headline number.
 - Look at the direction of the arrows. All four self-supervised models _improve_ when the collection grows, by three to four hundredths of MCC. Every deep supervised and state-space model _degrades_, and SIGReg collapses from 0.8858 to 0.4872.
-- Why? SIGReg's regulariser constrains the latent space around the training distribution, conditioned on the labels. When the interference regime becomes richer, those boundaries were fitted to artefacts of the old training set, and they break.
+- Note first what SIGReg is: a directly supervised CNN with the SIGReg latent regulariser and no pretraining phase. It is in our model registry because it shares the regulariser, not because it is self-supervised.
+- Why does it break? Its regulariser constrains the latent space around the training distribution, and the boundaries are fitted to artefacts of the old training set. When the interference regime becomes richer, they break.
 - The world models never optimise a label-conditioned boundary. They optimise prediction of the signal's own dynamics, so more data gives them more of the physics.
 - One honest caveat, stated in the paper: the two collections share their device pool, so this is stability under collection expansion, not generalisation to an independent environment. The claim the table supports is the contrast between families, under one protocol.
 
@@ -512,7 +512,7 @@ Three-member Pareto & 3 & \textbf{1.26 M} & \textbf{0.8904} & 0.5753 & 0.9396 / 
 - Every member is temperature-calibrated first: one scalar temperature per model, fitted on validation negative log-likelihood. This matters because uncalibrated softmax outputs are overconfident exactly under the interference we care about.
 - The 21-member stack reaches 0.9232 on the expanded collection. On the multi-device subset alone it reaches 0.9563, and on pure single-device traces 0.9596.
 - The 16-member non-redundant subset matches the full stack exactly: 0.9232. So the weak recurrent backbones contribute nothing.
-- Now look at the last row. The Pareto-minimal ensemble from the _prior_ collection had 1.26 million parameters and 0.8904 MCC. On the expanded collection it collapses to 0.5753. Why? Because it contains SIGReg. The pruning was optimal for the old regime and wrong for the new one.
+- Now the catch in the small print. The size-optimal frontier from the earlier collection was logreg plus LeJEPA plus SIGReg: 1.26 million parameters, 0.8904 there. Carried to the expanded collection it gives 0.5753. That is the same lesson as the previous slide --- an optimum found on one regime does not transfer. What does transfer is keeping the strongest world model in the mix, TS-JEPA.
 - That is the practical lesson: prune for stability, not only for size.
 
 :::
@@ -533,7 +533,7 @@ Three-member Pareto & 3 & \textbf{1.26 M} & \textbf{0.8904} & 0.5753 & 0.9396 / 
 \begin{minipage}{0.31\linewidth}
 \centering
 {\huge\bfseries 3.42\,M}\\[0.2em]
-\footnotesize 3 world models\\[0.1em]
+\footnotesize 3-member subset\\[0.1em]
 \textbf{\large 0.9160} MCC\\[0.1em]
 \scriptsize $-0.007$ for $22\times$ fewer
 \end{minipage}\hfill
@@ -551,14 +551,14 @@ Three-member Pareto & 3 & \textbf{1.26 M} & \textbf{0.8904} & 0.5753 & 0.9396 / 
 \footnotesize
 \textbf{Two deployment paths.} Rich 18-channel tokenisation needs the full hierarchy; a compact model designed for four kinematic channels nearly matches it, which is what makes an access-point implementation plausible.
 
-\textbf{The trap:} the 1.26 M three-member Pareto subset collapses to 0.5753 on the expanded collection, because it contains the supervised SIGReg.
+\textbf{The catch:} the 1.26 M frontier was picked for size on the \emph{earlier} collection (logreg, LeJEPA, SIGReg) and does not carry over --- 0.8904 there, 0.5753 here. Keeping TS-JEPA in the mix instead (3.42 M) holds at 0.9160.
 \end{minipage}
 
 ::: notes
 
 - Let me put the parameter question in perspective.
 - The full stack needs 74.8 million parameters and gives 0.9232.
-- A three-member subset made only of world models needs 3.42 million and gives 0.9160. That is seven thousandths of MCC for twenty-two times fewer parameters.
+- A three-member subset --- SIGReg, LeJEPA and TS-JEPA --- needs 3.42 million and gives 0.9160. That is seven thousandths of MCC for twenty-two times fewer parameters.
 - And LeJEPA alone, with 0.566 million parameters over only four channels, gives 0.9143. Essentially the same accuracy as the ensemble, at a hundred and thirty times fewer parameters than the stack.
 - That is not a small engineering detail: it is the difference between a datacentre model and something that runs on the access point you already have on the bus.
 - The trap on the bottom is worth remembering: optimising for size on one collection does not survive a change in regime, because the Pareto frontier inherited a model that collapses.
@@ -571,7 +571,7 @@ Three-member Pareto & 3 & \textbf{1.26 M} & \textbf{0.8904} & 0.5753 & 0.9396 / 
 :::: {.column width="55%"}
 
 \centering
-\includegraphics[width=0.86\linewidth]{./images/feature_importance_18ch.pdf}
+\includegraphics[width=0.82\linewidth]{./images/feature_importance_18ch.pdf}
 
 \small\color{gray}Mean absolute SHAP value per channel, TS-JEPA, 3,511-sample test split
 
@@ -589,11 +589,11 @@ Three-member Pareto & 3 & \textbf{1.26 M} & \textbf{0.8904} & 0.5753 & 0.9396 / 
 
 \vspace{0.4em}
 
-\textbf{What a bar means.} A Shapley value is a channel's average marginal contribution over every coalition of the other seventeen; the bars are the mean $|\phi_j|$ over the test split (Lundberg \& Lee, NeurIPS 2017).
+\textbf{What a bar means.} A Shapley value is a channel's average marginal contribution over every coalition of the others; bars are mean $|\phi_j|$ on the test split (Lundberg \& Lee, NeurIPS 2017).
 
 \vspace{0.2em}
 \color{gray}
-Next slide: the same question, under controlled architectures.
+Next slide: the same test, controlled architectures.
 
 ::::
 :::
@@ -661,12 +661,13 @@ Restricting a fixed architecture to any single functional domain destroys it: TS
 
 **What the architecture buys:**
 
-- 0.9143 MCC at **0.566 M** parameters runs _inside_ the AP firmware
+- 0.9143 MCC at **0.566 M** parameters: small enough for AP firmware
+- Design target: infer _inside_ the AP (deployment is future work)
 - Raw RSSI and latents live in RAM and are discarded
 - Only aggregated counts leave: $\Delta$boarding, $\Delta$alighting
 
 \vspace{0.3em}
-\footnotesize The accuracy that makes the sensing useful is the same property that makes edge confinement possible.
+\footnotesize The accuracy that makes the sensing useful is the same property that makes edge confinement plausible.
 
 ::::
 :::
@@ -675,7 +676,8 @@ Restricting a fixed architecture to any single functional domain destroys it: TS
 
 - Passive sensing avoids cameras and microphones, but it is not automatically private. Any receiver in range can capture the same frames we do, and it can do so without the operator knowing.
 - The literature is clear that anonymisation is not enough. Silva and colleagues showed that profiling models recover behavioural patterns from interaction data, and that differential privacy can be defeated when a classifier exploits temporal correlations. In transit, the regular commute is exactly such a correlation: the same person, the same door, the same time of day.
-- Our mitigation is architectural rather than legal. Because LeJEPA reaches 0.9143 with 0.566 million parameters, inference can run inside the access point. The raw sequence never leaves the vehicle, the latents never leave the process, and only boarding and alighting counts go to the backend.
+- Our mitigation is architectural rather than legal. LeJEPA reaches 0.9143 with 0.566 million parameters, which is small enough to sit inside the access point; we have not deployed it there. Edge-confined inference is the design target, not a measured deployment --- but it is why we kept pushing on parameter count.
+- In that design the raw sequence never leaves the vehicle, the latents never leave the process, and only boarding and alighting counts go to the backend.
 - That does not make the system unharmful, but it removes the centralised corpus that makes longitudinal profiling cheap.
 - The future work in the paper goes further: elastic privacy, throttling sensing resolution by the vehicle's motion state.
 
@@ -700,9 +702,9 @@ Restricting a fixed architecture to any single functional domain destroys it: TS
 **What we must be careful about:**
 
 - Two **controlled indoor zones**, not a vehicle in service
-- Seven phone models, no demographic attributes recorded
+- Seven phone models here, thirteen across campaigns; no demographics recorded
 - Labels from the **session protocol**, not independent annotation
-- Training corpus **overlaps the evaluation splits**, so absolute values are optimistic
+- The collections **share their device pool**: gains measure stability, not transfer
 - 160 single-device traces are too few for a separate held-out pure evaluation
 
 ::::
