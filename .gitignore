@@ -274,7 +274,17 @@ results/
 data/bus/raw/*
 !data/bus/raw/manifest.json
 
+# Generated passenger-flow scenarios: 40+ MB per scenario and reproducible from
+# its own scenario.json, so they are output, not source. The coordinate tables in
+# data/bus/processed are small enough to commit and are what makes a clone able to
+# generate offline.
+data/bus/scenarios/*
+
 # Optuna dashboard databases. Run state, not source: the studies they hold are
 # re-run by the HPO pipelines, and the file is written next to wherever the
 # dashboard was started.
 optuna*.db
+
+docs/isac/presentation/assets
+
+wavecom-devices.md

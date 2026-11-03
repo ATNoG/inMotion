@@ -39,3 +39,30 @@ def validate(stop_times: pd.DataFrame, pairs: pd.DataFrame) -> list[str]:
     if len(empty):
         problems.append(f"{len(empty)} od pairs with no trips")
     return problems
+
+
+def validate_timeline(matrix: pd.DataFrame, timeline: pd.DataFrame) -> list[str]:
+    """The slices of a day have to hold the flows of the day they were cut from.
+
+    Summed over the slices, every cell must equal the same cell in the static
+    matrix. It is the only check that catches a trip dropped or counted twice by
+    the slicing, and it is what tells a partition from overlapping windows.
+
+    Only meaningful for a partitioning scheme (``step == window``): overlapping
+    slices are meant to count a trip in each of them.
+    """
+    if matrix.empty or timeline.empty:
+        return []
+    keys = ["operator", "service_group", "origin_id", "destination_id"]
+    day = matrix.groupby(keys, as_index=False)["trips"].sum()
+    sliced = timeline.groupby(keys, as_index=False)["trips"].sum()
+    merged = day.merge(sliced, on=keys, how="outer", suffixes=("_day", "_slices")).fillna(0)
+    drift = merged[merged["trips_day"] != merged["trips_slices"]]
+    if drift.empty:
+        return []
+    examples = ", ".join(
+        f"{row.origin_id}->{row.destination_id} ({row.trips_day:g} over the day, "
+        f"{row.trips_slices:g} over the slices)"
+        for row in drift.head(3).itertuples(index=False)
+    )
+    return [f"{len(drift)} od cells do not add up over the intervals ({examples})"]

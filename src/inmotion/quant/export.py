@@ -51,7 +51,12 @@ from inmotion.models.adopt import resolve_model
 from inmotion.models.wrappers import strip_prefix
 from inmotion.quant.evaluate import BASELINE_DATASET, load_split
 from inmotion.quant.model import _is_quantizable, apply, apply_cast
-from inmotion.quant.packing import fold_bias_into_zero_point, pack
+from inmotion.quant.packing import (
+    code_bias,
+    fold_bias_into_zero_point,
+    pack,
+    unpack,
+)
 from inmotion.quant.spec import FLOAT_PRECISIONS
 from inmotion.quant.spec import resolve as resolve_spec
 
@@ -226,23 +231,68 @@ def _is_transformer(model: torch.nn.Module) -> bool:
 
 
 def dequantize_artifact(meta: dict, arrays: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
-    """The float weights an artifact stands for: `(u - zero_point) * scale`.
+    """The float weights an artifact stands for: `(code - zero_point) * scale`.
 
-    The artifact's inverse, and the only place the stored bias is undone. The
-    codes are stored biased by `2**(bits-1)` and the zero point folded to match,
-    so the subtract cancels both.
+    The artifact's inverse, and the only place its three storage transforms are
+    undone. All three matter below 8 bits:
+
+    * codes are **bit-packed** LSB-first, so ``.q`` is a byte stream, not one
+      code per byte;
+    * codes are stored **biased** by ``2**(bits-1)`` for a symmetric scheme, and
+      the exporter folds the same bias into the zero point, so the subtract only
+      cancels when both are on the same scale;
+    * per-group scales and zero points have one entry per group, while the
+      weight has one value per element, so the metadata must be repeated across
+      the group before the multiply.
+
+    An earlier version read one code per byte and multiplied the unexpanded
+    metadata, which was correct only for per-channel 8-bit artifacts and
+    silently wrong for q1..q4. It is fixed here rather than at each caller, so
+    every consumer of an artifact (this module's own tooling included) gets the
+    same weights.
     """
     out: dict[str, np.ndarray] = {}
+    symmetric = bool((meta.get("quant") or {}).get("symmetric", True))
     for name, entry in meta["tensors"].items():
         if not entry.get("quantized"):
             out[name] = arrays[name]
             continue
-        shape = tuple(entry["shape"])
-        scale_shape = tuple(entry["scale_shape"])
-        codes = arrays[f"{name}.q"].reshape(shape).astype(np.float32)
-        zero_point = arrays[f"{name}.zp"].reshape(scale_shape).astype(np.float32)
+        shape = tuple(int(dim) for dim in entry["shape"])
+        scale_shape = tuple(int(dim) for dim in entry["scale_shape"])
+        bits = int(entry["bits"])
+        bias = code_bias(bits, symmetric=symmetric)
+        codes = (
+            unpack(
+                arrays[f"{name}.q"],
+                bits,
+                int(entry["n_values"]),
+                symmetric=symmetric,
+            )
+            .reshape(shape)
+            .astype(np.float32)
+        )
         scale = arrays[f"{name}.scale"].reshape(scale_shape).astype(np.float32)
-        out[name] = ((codes - zero_point) * scale).reshape(shape)
+        zero_point = (
+            arrays[f"{name}.zp"].reshape(scale_shape).astype(np.int64) - bias
+        ).astype(np.float32)
+
+        granularity = entry.get("granularity")
+        if granularity == "per_group":
+            # Groups span the flattened trailing axes: expand each group's
+            # metadata over `prod(shape[1:])`, then reshape back.
+            group = int(entry["group_size"])
+            rows = shape[0]
+            cols = int(np.prod(shape[1:], dtype=np.int64))
+            scale = np.repeat(scale.reshape(rows, -1), group, axis=1)[:, :cols].reshape(shape)
+            zero_point = (
+                np.repeat(zero_point.reshape(rows, -1), group, axis=1)[:, :cols]
+                .reshape(shape)
+                .astype(np.float32)
+            )
+        elif granularity == "per_channel":
+            scale = np.broadcast_to(scale, shape).copy()
+            zero_point = np.broadcast_to(zero_point, shape).copy()
+        out[name] = (codes - zero_point) * scale
     return out
 
 

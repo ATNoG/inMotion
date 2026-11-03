@@ -1580,5 +1580,12 @@
     "bytes": 138077,
     "sha256": "0552d0708010d1a470640f822e9ea753b7c5f71b9ef50029042b80f7c831f03d",
     "fetched_at": "2026-09-28T10:46:33+00:00"
+  },
+  "POST https://overpass-api.de/api/interpreter d7dcc2b41068859a": {
+    "operator": "osm",
+    "path": "data/bus/raw/osm/api-interpreter-d7dcc2b41068859a.json",
+    "bytes": 1986252,
+    "sha256": "9affa0828376aa138b41b19b90c0fc98d0734577b14c738612c3f973ed3a340c",
+    "fetched_at": "2026-10-17T04:26:32+00:00"
   }
 }

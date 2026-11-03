@@ -5,7 +5,7 @@ Inference outside Python, verified against PyTorch rather than assumed correct.
 ```
 rust/
   inmotion-core/    kernels, artifact reader, the model
-  inmotion-cli/     `inmotion-infer` — describe / predict / check
+  inmotion-cli/     `inmotion-infer` — describe / predict / check / load / loadgen / bench / stress
 ```
 
 ## Why not ONNX Runtime
@@ -33,6 +33,48 @@ cargo run --release -p inmotion-cli -- check --artifact /tmp/art --golden /tmp/a
 
 `tests/test_quant_export.py::test_rust_port_reproduces_pytorch` runs exactly that
 for fp32, int8 and q4.
+
+## Measuring it
+
+`load`, `loadgen`, `bench` and `stress` exist for the edge campaign: they report
+what a run cost, not only how fast it was, and `--json` emits schema 2, a strict
+superset of the previous fields.
+
+```bash
+ART=20-aug/models/exotic/normal-new-ds/full-after-hpo/artifacts/lejepa_ft_seed42-q4
+./target/release/inmotion-infer load    --artifact "$ART" --cold --json
+./target/release/inmotion-infer loadgen --artifact "$ART" --seconds 60 \
+    --interval-ms 2000 --cpus 0-2 --json
+./target/release/inmotion-infer bench   --artifact "$ART" --iterations 200 --cpus 0-2 --json
+./target/release/inmotion-infer bench   --artifact "$ART" --concurrency 2 --seconds 60 --json
+./target/release/inmotion-infer stress  --mode mixed --seconds 60 --workers 3 \
+    --mem-mb 32 --target 192.168.93.13 --pps 1000 --json
+```
+
+`--cpus` (`0`, `0-2`, `0,2-3`) pins the process with `sched_setaffinity` before
+anything is loaded; malformed grammar exits 2, and a rejected syscall exits 1 with
+its errno instead of continuing unpinned. `--cold` evicts every file in the
+artifact directory from the page cache (`posix_fadvise`/`DONTNEED`) before the
+load, and `load_cold_ms` then carries that cold load time (`-1` on a warm run).
+
+`bench --json` reports `p50`, `p95`, `p99` and `max`; the concurrency branch
+reports the loaded per-thread `latency_ms` instead. `loadgen --interval-ms N`
+sleeps N ms after each inference (default `0`, saturate the core). Latency samples
+and CPU time exclude that sleep while the wall window includes it, so `cpu_pct`
+reports the duty cycle: `--interval-ms 2000` is one inference every two seconds,
+which is what the interference phase needs. An interval that is not a
+non-negative integer exits 2, and the sleep never extends the `--seconds` window.
+
+Self-statistics: CPU time from `clock_gettime(CLOCK_PROCESS_CPUTIME_ID)`, RSS and
+peak RSS from `/proc/self/status` (`/proc/self/stat` fallback), `governor` and
+`freq_mhz` from `/sys/devices/system/cpu/cpu0/cpufreq/` (`-1` when the device does
+not expose it). CPU time is process-wide, so `bench --concurrency` reports the
+real total and `cpu_pct_bench` can exceed 100 %. A source that cannot be read is
+an error or `-1`, never a zero that looks like a measurement.
+
+`stress` is bounded on purpose: workers ≤ 2 × cores, seconds ≤ 600, memory
+≤ 512 MiB, and `--dry-run` validates the plan and generates nothing. `mixed`
+needs at least three workers so each load type has one.
 
 ## Measured parity
 

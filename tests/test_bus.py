@@ -13,6 +13,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+import pandas as pd
 import pytest
 from PIL import Image
 
@@ -319,6 +320,137 @@ def test_od_matrix_aggregates_by_service_and_band() -> None:
         )
     )
     assert wide.loc[wide["origin"] == "A", "busway:b"].iloc[0] == 1
+
+
+def _hourly_trips() -> list[Trip]:
+    """Three trips on one line: two leave in the 08:00 hour, one in the 09:00.
+
+    The 09:00 trip skips ``A``, so the later slice has a cell that is a genuine
+    zero rather than a pair the line never serves at all.
+    """
+    return [
+        _route_trip("t1", [("Z", 8 * 60 + 5), ("A", 8 * 60 + 15), ("M", 8 * 60 + 25)]),
+        _route_trip("t2", [("Z", 8 * 60 + 55), ("A", 8 * 60 + 65), ("M", 8 * 60 + 75)]),
+        _route_trip("t3", [("Z", 9 * 60 + 5), ("M", 9 * 60 + 25)]),
+    ]
+
+
+def test_window_starts_align_to_the_service_day() -> None:
+    # A partition offers exactly one slice per instant; a step shorter than the
+    # window offers every slice that contains it, latest first.
+    assert od.window_starts(8 * 60 + 5) == [8 * 60]
+    assert od.window_starts(10, window=60, step=30) == [0]
+    assert od.window_starts(8 * 60 + 10, window=60, step=30) == [8 * 60, 7 * 60 + 30]
+    # A reading before midnight is the data's problem, not a licence to drop the
+    # row: it clamps to the start of the day and `validate` reports the time.
+    assert od.window_starts(-5) == [0]
+    with pytest.raises(ValueError, match="minutes"):
+        od.window_starts(10, window=0)
+
+
+def test_timeline_slices_the_day_and_conserves_the_flows() -> None:
+    stop_times = od.stop_times_frame(_hourly_trips())
+    timeline = od.od_timeline(stop_times)
+    matrix = od.od_matrix(od.od_pairs(stop_times))
+
+    morning = timeline[timeline["interval"] == "08:00-09:00"]
+    assert set(morning["interval_start"]) == {8 * 60}
+    z_to_m = morning[(morning["origin"] == "Z") & (morning["destination"] == "M")]
+    assert z_to_m["trips"].tolist() == [2]
+
+    # Summed over a partition of the day, every cell must be the static matrix.
+    assert od.validate_timeline(matrix, timeline) == []
+
+
+def test_a_pair_a_trip_serves_twice_counts_twice() -> None:
+    """A loop really does offer that ride twice, so both passes count.
+
+    Counting distinct trips instead would say one, and the slices — an hour wide,
+    where a departure band is not — would stop adding up to the day.
+    """
+    loop = _route_trip(
+        "t1",
+        [("Z", 8 * 60 + 10), ("A", 8 * 60 + 20), ("Z", 9 * 60 + 5), ("A", 9 * 60 + 15)],
+    )
+    stop_times = od.stop_times_frame([loop])
+    timeline = od.od_timeline(stop_times)
+    matrix = od.od_matrix(od.od_pairs(stop_times))
+
+    # Z -> A three times over: the first Z reaches both later A's, the second Z
+    # reaches the last one. Two of those leave in the 08:00 hour, one in the 09:00.
+    z_to_a = timeline[(timeline["origin"] == "Z") & (timeline["destination"] == "A")]
+    assert z_to_a["trips"].tolist() == [2, 1]
+
+    # All three leave inside one band, so the static matrix holds them in one row
+    # — and still counts three departures.
+    static = matrix[(matrix["origin"] == "Z") & (matrix["destination"] == "A")]
+    assert int(static["trips"].sum()) == 3
+    assert od.validate_timeline(matrix, timeline) == []
+
+
+def test_a_call_the_page_lists_twice_is_one_call() -> None:
+    """A stop printed twice at the same minute is one call, not two.
+
+    The tidy table keeps both rows, because it records what the page says; the
+    relation must not, or every pair through that stop is counted twice.
+    """
+    trip = _route_trip(
+        "t1", [("Z", 8 * 60), ("A", 8 * 60 + 10), ("A", 8 * 60 + 10), ("M", 8 * 60 + 20)]
+    )
+    stop_times = od.stop_times_frame([trip])
+    pairs = od.od_pairs(stop_times)
+
+    assert int((stop_times["stop"] == "A").sum()) == 2
+    z_to_a = pairs[(pairs["origin"] == "Z") & (pairs["destination"] == "A")]
+    assert z_to_a["trips"].sum() == 1
+    assert int(pairs["trips"].sum()) == len(od.per_trip_pairs(stop_times))
+
+
+def test_timeline_keeps_printing_past_midnight() -> None:
+    night = _route_trip("t1", [("Z", 24 * 60 + 30), ("A", 24 * 60 + 40)])
+    timeline = od.od_timeline(od.stop_times_frame([night]))
+
+    assert timeline["interval"].unique().tolist() == ["24:00-25:00"]
+    assert timeline["first_departure"].tolist() == ["24:30"]
+
+
+def test_overlapping_slices_count_a_trip_once_each() -> None:
+    trip = _route_trip("t1", [("Z", 8 * 60 + 10), ("A", 8 * 60 + 20)])
+    timeline = od.od_timeline(od.stop_times_frame([trip]), window=60, step=30)
+
+    assert sorted(timeline["interval_start"].unique().tolist()) == [7 * 60 + 30, 8 * 60]
+    assert timeline["trips"].tolist() == [1, 1]
+
+
+def test_an_interval_matrix_keeps_the_axis_of_the_day() -> None:
+    timeline = od.od_timeline(od.stop_times_frame(_hourly_trips()))
+    grids = dict(od.interval_matrices(timeline, operator="busway", service_group="weekday"))
+
+    morning, later = grids[8 * 60], grids[9 * 60]
+    # One axis for the whole series, so a quiet interval is zeros, not a
+    # smaller grid: the two slices have to be subtractable.
+    assert morning.columns.tolist() == later.columns.tolist()
+    assert morning["origin_id"].tolist() == later["origin_id"].tolist()
+
+    def cell(grid: pd.DataFrame, origin: str, destination: str) -> int:
+        row = grid[grid["origin_id"] == f"busway:{origin.lower()}"]
+        return int(row[f"busway:{destination.lower()}"].iloc[0])
+
+    assert cell(morning, "Z", "M") == 2
+    assert cell(morning, "Z", "A") == 2
+    assert cell(later, "Z", "M") == 1
+    assert cell(later, "Z", "A") == 0
+
+
+def test_write_timeline_names_each_grid_after_its_slice(tmp_path: Path) -> None:
+    timeline = od.od_timeline(od.stop_times_frame(_hourly_trips()))
+    names = sorted(path.name for path in od.write_timeline(timeline, tmp_path, wide=True))
+
+    assert names == [
+        "od_timeline.csv",
+        "od_timeline_wide_busway_weekday_0800.csv",
+        "od_timeline_wide_busway_weekday_0900.csv",
+    ]
 
 
 def test_aveirobus_geometry_and_time_helpers() -> None:

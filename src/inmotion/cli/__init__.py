@@ -10,6 +10,7 @@ One package, one module per command group:
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
 ``plots``     regenerate figures from saved results
+``edge``      the edge-quantization campaign on the wavecom routers
 ``doctor``    report on the environment and the artifact store
 
 Each command builds a typed ``RunConfig`` and calls the pipeline's ``run()``.
@@ -30,6 +31,7 @@ from inmotion.cli import (
     data,
     datasets,
     doctor,
+    edge,
     evaluate,
     model,
     plots,
@@ -45,7 +47,7 @@ app = typer.Typer(
     rich_markup_mode="rich",
 )
 
-for sub in (model, datasets, data, bus, quantize, train, evaluate, analyze, plots):
+for sub in (model, datasets, data, bus, quantize, train, evaluate, analyze, plots, edge):
     app.add_typer(sub.app, name=sub.NAME, help=sub.HELP)
 
 app.command("doctor", help="Report on the environment and the artifact store.")(doctor.doctor)

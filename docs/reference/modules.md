@@ -23,7 +23,7 @@ No public classes or functions; this module provides data or constants consumed 
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 75 lines
+`src/inmotion/cli/__init__.py` - 77 lines
 
 The `inmotion` command-line interface.
 
@@ -37,6 +37,7 @@ One package, one module per command group:
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
 ``plots``     regenerate figures from saved results
+``edge``      the edge-quantization campaign on the wavecom routers
 ``doctor``    report on the environment and the artifact store
 
 Each command builds a typed ``RunConfig`` and calls the pipeline's ``run()``.
@@ -245,7 +246,7 @@ Public API:
 
 ### `inmotion.bus.sources`
 
-`src/inmotion/bus/sources.py` - 230 lines
+`src/inmotion/bus/sources.py` - 284 lines
 
 Polite, cached, checksummed fetching of the operator sites, plus inventory.
 
@@ -373,7 +374,7 @@ Public API:
 
 ### `inmotion.bus.paths`
 
-`src/inmotion/bus/paths.py` - 46 lines
+`src/inmotion/bus/paths.py` - 70 lines
 
 Canonical locations for the bus-network artifacts and derived tables.
 
@@ -387,11 +388,17 @@ from the WiFi captures so neither can be mistaken for the other:
     One CSV per operator, straight out of its parser, before the two networks
     are reconciled.
 ``processed/``
-    The merged stop/trip/stop-time tables and the OD matrices derived from them.
+    The merged stop/trip/stop-time tables and the OD matrices derived from them,
+    plus the stop coordinates resolved from OpenStreetMap.
+``scenarios/``
+    One directory per synthetic passenger-flow scenario, named after its
+    configuration. Regenerable output, not a deliverable.
 
 Public API:
 
 - func `raw_dir` - Raw artifact directory of one operator, created on demand.
+- func `osm_cache` - Where the cached OpenStreetMap responses live, created on demand.
+- func `scenario` - Directory of one generated scenario, created on demand.
 - func `interim` - Path to an interim table, by bare filename.
 - func `processed` - Path to a processed table, by bare filename.
 
@@ -457,7 +464,7 @@ Public API:
 
 ### `inmotion.bus.od.pairs`
 
-`src/inmotion/bus/od/pairs.py` - 97 lines
+`src/inmotion/bus/od/pairs.py` - 121 lines
 
 The OD relation: every ordered stop pair a rider can ride *directly*.
 
@@ -466,8 +473,13 @@ connection, and the band is stamped on each trip before the group is aggregated.
 Banding afterwards, from the group's earliest departure, would file a whole day
 of service under one morning band.
 
+`per_trip_pairs` is that enumeration; `od_pairs` is one projection of it, and
+`inmotion.bus.od.timeline` is the other. Both stamp their own time key on the
+same rows, which is why they agree cell by cell.
+
 Public API:
 
+- func `per_trip_pairs` - Every ordered stop pair one trip serves, one row per trip and pair.
 - func `od_pairs` - Every reachable ordered stop pair, aggregated over the trips serving it.
 
 ### `inmotion.bus.od.matrix`
@@ -485,9 +497,46 @@ Public API:
 - func `od_matrix` - The OD matrix: direct trips per stop pair, by operator, service and band.
 - func `wide_matrix` - Pivot a long OD matrix into origins by destinations.
 
+### `inmotion.bus.od.timeline`
+
+`src/inmotion/bus/od/timeline.py` - 190 lines
+
+OD matrices by time interval: the same relation, sliced by departure.
+
+A static matrix aggregates a whole service day into one number per stop pair. A
+*dynamic* OD matrix keeps the same rows and columns and adds when the movement
+happened: ``M_ij(t)``, the direct trips from ``i`` to ``j`` that left ``i``
+inside interval ``t``.
+
+The interval is stamped on the departure from the row's own origin, which is the
+instant the departure bands are keyed on. Two consequences worth naming: a trip
+is never split between slices — a 23:50 departure that arrives after midnight
+belongs to ``23:00-24:00`` in full — and a rider who boards mid-trip is counted
+in the slice they left in, not the one the vehicle started in.
+
+Portuguese timetables keep printing past 24:00 for the last trips of the day, so
+the grid keeps counting past it: ``24:00-25:00`` is a real interval, not an
+error.
+
+``window`` is how long a slice lasts and ``step`` how far apart the slices start.
+The defaults partition the service day into hours, which is what makes the slices
+add up to the static matrix; a ``step`` shorter than the window overlaps them, so
+a trip is counted by every slice containing its departure and the slices must not
+be summed, while a longer one samples the day and leaves the gaps between slices
+unread.
+
+Public API:
+
+- func `window_starts` - The start of every slice that contains ``minutes``, latest first.
+- func `interval_label` - A slice as ``07:00-08:00``, keeping hours past 24.
+- func `od_timeline` - The dynamic OD matrix: direct trips per stop pair, per time interval.
+- func `interval_matrices` - Every interval of one operator and service group as a dense grid.
+- func `read_stop_times` - The tidy timetable the slices are cut from.
+- func `write_timeline` - Write the long timeline, and with ``wide`` a grid per interval.
+
 ### `inmotion.bus.od.validate`
 
-`src/inmotion/bus/od/validate.py` - 41 lines
+`src/inmotion/bus/od/validate.py` - 68 lines
 
 Invariants the tables have to hold before an OD matrix is worth anything.
 
@@ -497,10 +546,11 @@ day, or a journey that arrives before it departs.
 Public API:
 
 - func `validate` - Invariants the tables have to satisfy to be worth an OD matrix.
+- func `validate_timeline` - The slices of a day have to hold the flows of the day they were cut from.
 
 ### `inmotion.bus.build`
 
-`src/inmotion/bus/build.py` - 189 lines
+`src/inmotion/bus/build.py` - 200 lines
 
 Build the bus tables and the OD matrices from the two operator sites.
 
@@ -515,7 +565,7 @@ Public API:
 - func `parse_busway` - Every BusWay trip, one line page at a time.
 - func `parse_aveirobus` - Every AveiroBus trip, one PDF at a time.
 - func `collect` - Fetch both operators and parse everything into trips.
-- func `write_tables` - Write the tidy tables and the OD matrices, and return what was written.
+- func `write_tables` - Write the tidy tables, the OD matrices and the timeline, and return them.
 - func `write_summary` - Record the build's counts and warnings next to the tables.
 - func `run` - Collect, write and summarise. Returns a process exit code.
 
@@ -569,6 +619,294 @@ the CLI holds no figure logic and the pipeline holds no argument parsing.
 Public API:
 
 - class `PlotConfig` - Command-line options for the OD-matrix figures.
+
+## Bus demand
+
+### `inmotion.bus.demand.config`
+
+`src/inmotion/bus/demand/config.py` - 380 lines
+
+One scenario's parameters, and the space a batch samples from.
+
+Every value that changes a number in the output lives here, which makes a run
+reproducible from its own ``scenario.json`` rather than from the command line that
+produced it. :class:`ScenarioSpace` turns ranges and choices into N scenarios with
+distinct seeds.
+
+Public API:
+
+- func `resolve_basemap` - Turn :data:`AUTO_BASEMAP` into the best basemap this machine can draw.
+- class `BusSize` - One size of vehicle in the fleet, and how many of them there are.
+- class `ScenarioConfig` - Everything one generated scenario depends on.
+- func `with_peak_share` - Rescale a band profile so the two peaks hold ``share`` of the day.
+- class `ScenarioSpace` - The ranges a batch of scenarios is sampled from.
+- func `sweep_configs` - Every combination of the values a sweep file lists.
+
+### `inmotion.bus.demand.allocate`
+
+`src/inmotion/bus/demand/allocate.py` - 149 lines
+
+Integer apportionment: splitting a whole number of people without losing one.
+
+The demand across stop pairs, the assignment across the trips serving a pair, and
+the queue across the destinations wanting the last seats all use largest
+remainder, with ties broken by a seeded jitter so no rounding detail becomes a
+systematic bias. ``sampled`` is the fourth: drawing riders individually is what
+makes a day sparse with a long tail, where rounding the expected value of every
+cell would empty most of the matrix.
+
+Public API:
+
+- func `jitter` - ``n`` reproducible uniform draws below 1, for breaking rounding ties.
+- func `largest_remainder` - Split ``total`` between ``weights``, to integers that add back up to it.
+- func `sampled` - Draw ``total`` riders across alternatives, in proportion to ``weights``.
+- func `apportion` - Add ``name``: ``total`` split per ``keys`` group in proportion to ``weights``.
+
+### `inmotion.bus.demand.inputs`
+
+`src/inmotion/bus/demand/inputs.py` - 206 lines
+
+The supply tables a scenario is generated from, and the user's stop attributes.
+
+Only ``stop_times.csv`` and ``stops.csv`` are read: the first already carries every
+fact the model keys on, so ``trips.csv`` would be a second copy that could
+disagree with it. The optional attributes file is a trust boundary, checked before
+anything uses it.
+
+Public API:
+
+- class `Network` - The supply side of a generated day: where the buses go, and when.
+- func `read_network` - Read the processed tables `inmotion bus build` writes.
+- func `read_stop_attributes` - The optional per-stop table, or an empty one with the full schema.
+- func `check` - What is worth reporting about the inputs, before a scenario is generated.
+
+### `inmotion.bus.demand.pairs`
+
+`src/inmotion/bus/demand/pairs.py` - 146 lines
+
+Every ordered stop pair a trip serves directly: the domain demand lives on.
+
+The relation ``inmotion.bus.od.pairs`` derives, in polars, with a parity test
+holding the two together — a second implementation is only safe if it cannot
+become a second answer. Two calls naming one stop at the same minute are one call,
+as the operators print them.
+
+Public API:
+
+- func `dedupe_calls` - Drop a call that repeats the previous stop at the same minute.
+- func `per_trip_pairs` - Every ordered stop pair one trip serves, one row per trip and pair.
+- func `stop_dictionary` - One name per stop id: the dictionary's, plus a fallback for its gaps.
+- func `name_stops` - Replace the pair relation's stop names with the dictionary's own.
+- func `with_time_keys` - Stamp each pair with the service group and band of its own departure.
+
+### `inmotion.bus.demand.model`
+
+`src/inmotion/bus/demand/model.py` - 212 lines
+
+Where the riders want to go: a gravity model over the pairs the network runs.
+
+``A_i = w_i * (1 + lines_i)^alpha`` — what a stop draws.
+``D_ij = exp(-beta * t_ij)`` — how sharply a longer ride is avoided.
+``T_ij ∝ A_i * A_j * D_ij``, normalised to the day's target and *drawn* per rider:
+rounding the expected value of every cell would empty most of the matrix, while
+drawing makes it sparse with a long tail, as real OD data is.
+
+The dials are conventional, not calibrated: every number reproduces from
+``scenario.json``, and none of it is a forecast of Aveiro's real ridership.
+
+Public API:
+
+- class `Demand` - The generated demand for one day, and anything worth saying about it.
+- func `attraction` - How much each stop draws, from its own service level and any override.
+- func `service_targets` - The boardings each operator and service day has to add up to.
+- func `pair_demand` - The day's demand per stop pair, on the pairs the network actually runs.
+- func `generate` - The demand of one scenario: the pairs, scaled to the day's target.
+
+### `inmotion.bus.demand.assignment`
+
+`src/inmotion/bus/demand/assignment.py` - 232 lines
+
+Which bus carries whom: demand spread over the trips serving each pair.
+
+Each serving trip is weighted by its departure band, so demand follows the
+commutes; each trip then gets one of the fleet's sizes, by the scenario's fleet
+policy, and that size is what later limits how many of those riders fit.
+
+The result is an intent — this many riders want this trip, from this stop, to
+that one. Whether they get on is the queue's decision, in ``simulate``.
+
+Public API:
+
+- func `ordered_fleet` - The fleet smallest first, with ties settled by name so a run is stable.
+- class `Assignment` - The demand, per trip, and the fleet that has to carry it.
+- func `band_preference` - How strongly each departure attracts riders, from its own band.
+- func `fleet_sizes` - One bus size per trip, by the scenario's fleet policy.
+- func `trip_table` - One row per scheduled trip: which line it runs, and when it starts.
+- func `assign` - Spread each pair's demand over the trips serving it, then size the fleet.
+
+### `inmotion.bus.demand.simulate`
+
+`src/inmotion/bus/demand/simulate.py` - 382 lines
+
+The queue at each stop, and the bus that either takes the riders or leaves them.
+
+``arrivals`` riders turn up for a departure; ``boarded`` (entry) is how many fit;
+``alighted`` (exit) is who got off here; ``waiting`` (stay in the stop) is who is
+still standing there, and a later bus for their destination can still take them.
+What is left when the day's last bus has gone is *stranded*, reported not dropped.
+
+Two orderings are load-bearing: events follow the order buses arrive at each stop,
+not the order they left their first one, and each service group is a separate day,
+so a weekday queue never boards a weekend bus.
+
+Public API:
+
+- class `Flows` - What one generated day moved: per trip and stop, per stop and hour.
+- func `simulate` - Run every generated service day's buses over that day's riders.
+
+### `inmotion.bus.demand.instants`
+
+`src/inmotion/bus/demand/instants.py` - 95 lines
+
+The flows on the 10-second grid the WiFi captures already use.
+
+``AA`` stayed inside the bus, ``BB`` stayed at the stop, ``BA`` boarded, ``AB``
+alighted. Rows exist around a stop visit — ``window`` seconds either side — because
+that is all a capture at that stop can see.
+
+Public API:
+
+- func `clock` - ``HH:MM:SS`` on a continuous scale, keeping hours past 24.
+- func `instants` - One row per stop visit and instant, in the label vocabulary of the data.
+
+### `inmotion.bus.demand.matrices`
+
+`src/inmotion/bus/demand/matrices.py` - 161 lines
+
+The passenger OD matrices: the supply tables' keys, one measure apart.
+
+``od_matrix.csv`` counts the departures a rider could take; these count the riders
+who took them. The static matrix and its hourly slices are built together, and
+``validate`` holds the second to adding back up to the first.
+
+Public API:
+
+- func `passenger_matrix` - Boardings per stop pair, by operator, service day and departure band.
+- func `passenger_timeline` - The same boardings per stop pair, sliced by when the ride left.
+- func `wide` - Pivot a long matrix into origins by destinations, absent cells as zero.
+
+### `inmotion.bus.demand.validate`
+
+`src/inmotion/bus/demand/validate.py` - 299 lines
+
+The invariants a generated day has to hold, and the supply it must trace to.
+
+A synthetic day can be wrong in ways that look plausible — a bus over capacity, a
+queue boarding riders who were never there, a matrix that does not add up. Each is
+checked here, including that every trip, call and clock came from the scrape, and a
+failure is reported rather than written.
+
+Public API:
+
+- func `check_flows` - Every identity a trip and a stop have to satisfy, on the flow tables.
+- func `check_conservation` - The day's totals: what was generated, what boarded, what was left.
+- func `check_demand` - The demand matrix itself: whole riders, on pairs that exist, non-negative.
+- func `check_timeline` - The slices of a day have to hold the boardings of the day they came from.
+- func `check` - Every invariant, in one call, for a run to attach to its report.
+- func `check_provenance` - Every vehicle movement must trace back to the scraped timetable.
+
+### `inmotion.bus.demand.coords`
+
+`src/inmotion/bus/demand/coords.py` - 672 lines
+
+Stop coordinates, resolved from OpenStreetMap and never invented.
+
+One cached Overpass request covers every bus stop of the region; matching then
+happens locally, cheapest tier first. Each stop records the tier that placed it —
+``manual``, ``exact``, ``expanded``, ``tokens``, ``fuzzy``, ``sibling``,
+``nominatim`` — or ``none``, with the coordinates left blank and the stop listed
+in ``stops_unresolved.csv``. A guessed position would put a phantom stop on the
+map and a plausible one in an analysis, so a gap is reported, not filled.
+
+Public API:
+
+- class `Resolution` - What the matcher did, per stop, and how the day's coordinates look.
+- func `expand` - The canonical form of a name, with its abbreviations spelled out.
+- func `strip_parenthetical` - A name without its qualifier: ``Esmoriz (Avenida da Praia 3)``.
+- func `side_base` - A name without a trailing direction qualifier, for sibling matching.
+- func `index_frame` - The Overpass response as a table: one row per named stop.
+- func `fetch_index` - Every named bus stop of the region, from the cache when it is there.
+- func `nominatim` - The best web match for one stop name, or nothing.
+- class `Index` - The OpenStreetMap stops, bucketed by every way a name can be compared.
+- func `build_index` - Bucket the OSM stops once, so each tier is a lookup rather than a scan.
+- func `match` - Place every stop of the network, or leave it blank and say so.
+- func `coords_schema` - The coordinate table's columns and types.
+- func `cluster` - Group stops that are the same place, whichever operator runs them.
+- func `write` - Write the coordinate table, the clusters and the unresolved list.
+- func `geocode` - Place every stop of the network, writing the tables `bus demand` reads.
+
+### `inmotion.bus.demand.map`
+
+`src/inmotion/bus/demand/map.py` - 642 lines
+
+The generated day as GIS layers, and as the payloads the pages draw.
+
+Coordinates come from ``coords``, so only placed stops appear. Two GeoJSON files
+serve a GIS; the rest feeds the three viewers in ``pages``.
+
+Public API:
+
+- func `stop_features` - One point per placed stop, carrying what the flows say about it.
+- func `flow_features` - The busiest OD relations as straight lines between their two stops.
+- func `network_legs` - Every leg between two consecutive stops of a trip, once, with coordinates.
+- func `hour_window` - The hours the day touches, and their labels, past midnight included.
+- func `basemap_payload` - Every basemap the viewer may switch to, and whether this machine can draw it.
+- func `placed_count` - How many stops have a position, which is what the map needs to exist.
+- func `require_key` - Refuse a keyed basemap whose key this machine does not have.
+- func `cube_payload` - The OD relation as a space-time cube: origin, destination, and the clock.
+- func `replay_payload` - One bus route's day, as an animation the page can drive.
+- func `write_replay` - Write the route-replay page, when there is a route worth replaying.
+- func `write_geojson` - A FeatureCollection, written the way any GIS expects to read it.
+- func `write` - Write the two GeoJSON files and the page, when coordinates allow it.
+- func `write_cube` - Write the space-time cube page, when coordinates allow one.
+
+### `inmotion.bus.demand.pages`
+
+`src/inmotion/bus/demand/pages.py` - 1746 lines
+
+The three pages the generator writes: the map, the cube, the replay.
+
+Each is one self-contained file that works when double-clicked. Every colour and
+space comes from the tokens in one place, every bulk toggle carries its inverse,
+and no layout scrolls sideways.
+
+Public API:
+
+- func `render_cube` - The space-time cube page: the OD relation as a tensor you can turn.
+- func `render_map` - The map page: the day's flows on the ground, with filters and a clock.
+- func `render_replay` - The replay page: a route's day, its buses moving, its people waiting.
+
+### `inmotion.bus.demand.build`
+
+`src/inmotion/bus/demand/build.py` - 475 lines
+
+Generate one scenario end to end, or a batch of them, and write them out.
+
+Read the supply, lay the demand over the pairs the network runs, spread it across
+the trips, run the buses over the queues, cut the result into the matrices, check
+every invariant — including that the supply is the scraped one — then write. Each
+scenario lands in its own directory with the configuration that produced it, and a
+batch adds ``index.csv`` for comparing them.
+
+Public API:
+
+- class `Report` - What a generated scenario produced, and what it had to work around.
+- func `digest` - The sha256 of each input file, so a scenario names the tables it read.
+- func `stop_coordinates` - Coordinates per stop: the geocoded table, with attributes as overrides.
+- func `run` - Generate one scenario and write its tables. Returns what it produced.
+- func `pair_relation_grid_axis` - Every stop of one operator, as the axis a dense grid is laid out on.
+- func `run_space` - Generate a batch of scenarios, sharing the supply tables between them.
+- func `index_schema` - The types of ``index.csv``, so an empty batch still writes a header.
 
 ## Quantization
 
@@ -747,7 +1085,7 @@ Public API:
 
 ### `inmotion.quant.export`
 
-`src/inmotion/quant/export.py` - 582 lines
+`src/inmotion/quant/export.py` - 632 lines
 
 Export a model to a portable artifact a non-Python runtime can execute.
 
@@ -787,7 +1125,7 @@ parity holds by construction and is asserted by the golden-vector tests.
 Public API:
 
 - class `ExportReport` - What was written and how big it is.
-- func `dequantize_artifact` - The float weights an artifact stands for: `(u - zero_point) * scale`.
+- func `dequantize_artifact` - The float weights an artifact stands for: `(code - zero_point) * scale`.
 - func `rebuild_state_dict` - The model's OWN state dict, from artifact-shaped tensors.
 - func `model_with_producer` - The model carrying a producer's quantization in its weights.
 - func `resolve_producer` - The per-weight quantizer and the `quant` metadata block for a producer.
@@ -967,7 +1305,7 @@ Public API:
 
 ### `inmotion.cli`
 
-`src/inmotion/cli/__init__.py` - 75 lines
+`src/inmotion/cli/__init__.py` - 77 lines
 
 The `inmotion` command-line interface.
 
@@ -981,6 +1319,7 @@ One package, one module per command group:
 ``evaluate``  evaluate and combine models (ensemble, checkpoints, shap, importance)
 ``analyze``   analyse results (seeds, interference)
 ``plots``     regenerate figures from saved results
+``edge``      the edge-quantization campaign on the wavecom routers
 ``doctor``    report on the environment and the artifact store
 
 Each command builds a typed ``RunConfig`` and calls the pipeline's ``run()``.
@@ -1035,15 +1374,18 @@ Public API:
 
 ### `inmotion.cli.bus`
 
-`src/inmotion/cli/bus.py` - 77 lines
+`src/inmotion/cli/bus.py` - 392 lines
 
 `inmotion bus` — scrape the Aveiro operators and build the OD matrices.
 
 Public API:
 
 - func `fetch` - Populate ``data/bus/raw`` and the checksum manifest.
+- func `timeline` - Read the processed stop times and write one matrix per time interval.
 - func `plot` - Render one figure per operator: both routes' OD grids and route ladders.
 - func `build` - Fetch if needed, parse, then write `data/bus/{interim,processed}`.
+- func `geocode` - Resolve stop coordinates once, so a scenario run stays offline.
+- func `demand` - Generate flows for the processed network and write them under `data/bus/scenarios`.
 
 ### `inmotion.cli.train`
 

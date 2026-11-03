@@ -35,15 +35,99 @@ a single bitmap.
 ```bash
 uv run inmotion bus fetch     # data/bus/raw + the checksum manifest
 uv run inmotion bus build     # data/bus/{interim,processed} + build.json
+uv run inmotion bus timeline  # re-slice the OD matrices by any window
 ```
+
+`bus build` writes the OD matrix twice: aggregated over departure bands, and
+sliced into hourly intervals (`od_timeline.csv`, the dynamic view). `bus timeline`
+re-cuts the slices from the processed table, so a 30-minute window costs one
+command and no scrape.
 
 `bus build` reads the AveiroBus timetables out of bitmaps, so it needs the
 `tesseract` binary with the Portuguese language pack (`tesseract-ocr-por`, or
 `por.traineddata` in the tessdata directory). Without it the build refuses and
 says so, rather than writing BusWay-only tables.
 
+The network's coordinates come from OpenStreetMap, and the passenger flows are
+generated over the timetable:
+
+```bash
+uv run inmotion bus geocode   # stop_coords.csv, clusters, unresolved list
+uv run inmotion bus demand    # data/bus/scenarios/<scenario>/ + index.csv
+uv run inmotion bus demand -n 8 --seed 42                  # a batch to compare
+uv run inmotion bus demand --sweep sweep.json              # an explicit grid
+```
+
+The page that comes out opens straight from disk. What it draws underneath the
+flows is chosen by `--basemap`, and the default `auto` picks the best thing the
+machine can actually render:
+
+| `--basemap` | under the flows | needs |
+|---|---|---|
+| `auto` (default) | `carto-dark` when `CARTO_API_KEY` is set, otherwise `network` | — |
+| `carto-dark`, `carto-light` | CARTO's basemaps | `CARTO_API_KEY` in `.env` (gitignored) |
+| `network` | the timetable's own leg geometry | nothing: no key, no network |
+| `osm` | OpenStreetMap's tiles | the page served over HTTP |
+| `none` | nothing, the flows on the page's own surface | nothing |
+
+Two tile servers were tried and rejected before this shape settled, and the
+reason is worth knowing because both failures look like something else.
+OpenStreetMap's volunteer tiles require an HTTP `Referer`, which a `file://` page
+never sends, so they answer 403 with their "Access blocked" page. CARTO's CDN
+reads the key from a query parameter named `key` — with `api_key` it returns a
+perfectly ordinary tile that says "API KEY REQUIRED", the same tile a wrong key
+gives, so a wrong parameter looks like a broken key. With the key it returns a
+real basemap, and that is what `auto` uses when one is configured.
+
+A CARTO key is a secret: it belongs in `.env` and is read from `CARTO_API_KEY`,
+never written into `scenario.json`. It *is* inside the generated page — that is
+how a client-side basemap key works — so a scenario built with one should not be
+committed; the credentials guard in `tests/test_no_secrets.py` knows the shape of
+a CARTO key for the files it scans.
+
+`bus geocode` makes the one network call the generator needs — one Overpass
+request for every bus stop of the region, cached under `data/bus/raw/osm` — and
+then matches names locally. A stop that cannot be placed is left blank and
+listed in `stops_unresolved.csv` rather than guessed at.
+
+Every scenario writes three pages, all self-contained and all openable by
+double-clicking: `flows_map.html`, the day on the ground, and `flows_cube.html`,
+the same day as a space-time cube — origin across, destination back, hours up,
+with entries and exits as the same rides read by the clock they stepped on and
+the clock they stepped off — and `flows_replay.html`, one bus route's day played
+back: buses move along the line on the timetable, riders waiting at a stop are a
+dot each, and a bus that calls shows who boarded, who got off and who was left
+standing there. The map filters by service day, operator, bus line,
+minimum riders, a stop search and an hour window, and plays the day through the
+hourly slider (or the sparkline) while the OD lines thin and thicken with the
+traffic. The cube filters by line and writes the same rides twice, so the two
+views answer different questions about one dataset.
+
+A replay is only as busy as the day it was generated from: at the default dial a
+single route carries a few hundred riders over the day, so for a demonstration
+worth watching generate a denser scenario —
+
+```bash
+uv run inmotion bus demand --seed 42 --boardings-per-departure 40 --out data/bus/scenarios/demo-dense
+```
+
+`bus demand` turns supply into demand: a gravity model over the stop pairs the
+timetable actually serves, sampled into whole riders, spread over the departures
+that serve each pair, and then run through a queue at every stop, where a bus
+takes as many riders as it has free seats and the rest stay at the stop. What
+comes out is `flows.csv` (per trip and stop: arrivals, boarded, alighted, the
+load before and after, and who was left behind), `stop_flow.csv` (the queue per
+stop and hour), `instants.csv` (the same day in the `AA`/`BB`/`BA`/`AB`
+vocabulary of the WiFi captures, on the 10-second grid), and the passenger OD
+matrices — `od_demand.csv` before any bus could refuse a rider, and
+`od_passengers.csv` after. Every scenario carries the `scenario.json` that
+reproduces it and a `report.json` holding the counts and every invariant that
+was checked.
+
 See [`AI_RESULT.md`](AI_RESULT.md) for what came out, how it was verified
-against the live sites, and what is known to be wrong.
+against the live sites, and what is known to be wrong. For the passenger-flow
+generator — every command and flag, the recipes, and how to share scenarios in a
+group — see [`docs/guides/passenger-flows.md`](docs/guides/passenger-flows.md).
 
 ## Setup
 

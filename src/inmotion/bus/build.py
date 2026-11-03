@@ -28,6 +28,7 @@ class Report:
     stop_times: int = 0
     od_pairs: int = 0
     od_cells: int = 0
+    timeline_cells: int = 0
     ocr_repairs: int = 0
     crossings: int = 0
     warnings: list[str] = field(default_factory=list)
@@ -40,6 +41,7 @@ class Report:
             f"stop times     {self.stop_times}",
             f"od pairs       {self.od_pairs}",
             f"od cells       {self.od_cells}",
+            f"timeline cells {self.timeline_cells}",
             f"ocr repairs    {self.ocr_repairs}",
             f"midnight rolls {self.crossings}",
             f"warnings       {len(self.warnings)}",
@@ -104,17 +106,20 @@ def collect(*, refresh: bool = False, verbose: bool = True) -> tuple[list[Trip],
 
 
 def write_tables(trips: list[Trip], report: Report) -> dict[str, pd.DataFrame]:
-    """Write the tidy tables and the OD matrices, and return what was written."""
+    """Write the tidy tables, the OD matrices and the timeline, and return them."""
     stop_times = od.stop_times_frame(trips)
     trips_table = od.trips_frame(trips)
     stops = od.stops_frame(stop_times)
     pairs = od.od_pairs(stop_times)
     matrix = od.od_matrix(pairs)
+    timeline = od.od_timeline(stop_times)
 
     report.warnings.extend(od.validate(stop_times, pairs))
+    report.warnings.extend(od.validate_timeline(matrix, timeline))
     report.stop_times = len(stop_times)
     report.od_pairs = len(pairs)
     report.od_cells = len(matrix)
+    report.timeline_cells = len(timeline)
 
     # Interim copies are per operator, so a parser can be checked on its own.
     for operator in sorted(stop_times["operator"].unique()):
@@ -143,6 +148,10 @@ def write_tables(trips: list[Trip], report: Report) -> dict[str, pd.DataFrame]:
             od.wide_matrix(subset).drop(columns=["operator"]).to_csv(
                 paths.processed(f"od_matrix_wide_{operator}_{group}.csv"), index=False
             )
+    # The dynamic view: the same relation sliced by the hour, written by the same
+    # writer the `bus timeline` command uses, so a rebuild and a re-slice of the
+    # default scheme cannot disagree on the file it lands in.
+    od.write_timeline(timeline, paths.PROCESSED_DIR)
 
     return {
         "stop_times": stop_times,
@@ -150,6 +159,7 @@ def write_tables(trips: list[Trip], report: Report) -> dict[str, pd.DataFrame]:
         "stops": stops,
         "od_pairs": pairs,
         "od_matrix": matrix,
+        "od_timeline": timeline,
     }
 
 
@@ -163,6 +173,7 @@ def write_summary(report: Report) -> None:
         "stop_times": report.stop_times,
         "od_pairs": report.od_pairs,
         "od_cells": report.od_cells,
+        "timeline_cells": report.timeline_cells,
         "ocr_repairs": report.ocr_repairs,
         "midnight_rolls": report.crossings,
         "warnings": report.warnings,

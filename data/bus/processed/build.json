@@ -1,11 +1,12 @@
 {
-  "built_at": "2026-10-13T10:52:11+00:00",
+  "built_at": "2026-10-13T12:04:48+00:00",
   "busway_pages": 197,
   "aveirobus_pdfs": 14,
   "trips": 1429,
   "stop_times": 24437,
-  "od_pairs": 97284,
-  "od_cells": 86836,
+  "od_pairs": 97282,
+  "od_cells": 86834,
+  "timeline_cells": 131728,
   "ocr_repairs": 103,
   "midnight_rolls": 3,
   "warnings": [

@@ -28,9 +28,23 @@ THEME_FILES := $(THEME_FOLDER)/* \
 
 TARGETS := p.pdf p-notes.pdf
 
-.PHONY: all install figures clean
+# EDAS only accepts letter / A4 / widescreen 13.33x7.5in (960x540pt) page sizes.
+# The deck is 160x90mm, exactly 16:9, so a 2.1167x scale lands on 960x540 with
+# no distortion. Done after the fact so the theme's absolute logo offsets stay put.
+EDAS_SIZE := 960 540
+p-edas.pdf: p.pdf
+	gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite \
+	   -dFIXEDMEDIA \
+	   -dDEVICEWIDTHPOINTS=$(word 1,$(EDAS_SIZE)) \
+	   -dDEVICEHEIGHTPOINTS=$(word 2,$(EDAS_SIZE)) \
+	   -dPDFFitPage \
+	   -sOutputFile=$@ $<
+
+.PHONY: all install figures edas clean
 
 all: $(TARGETS)
+
+edas: p-edas.pdf
 
 install: $(THEME_FILES)
 	@mkdir -p "$(DESTDIR)"
@@ -51,4 +65,4 @@ p-notes.pdf: $(SRC) $(ASSETS) $(GEN_FIGURES)
 	$(PANDOC) -V classoption=notes=only -o $@ $(SRC)
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) p-edas.pdf

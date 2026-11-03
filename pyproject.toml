@@ -30,6 +30,7 @@ dependencies = [
     "tabpfn>=8.4.0",
     "shap>=0.46.0",
     "typer>=0.25.1",
+    "polars>=2.0.0",
 ]
 
 [project.scripts]

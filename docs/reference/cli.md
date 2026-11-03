@@ -43,6 +43,31 @@ Options:
 - `--refresh` (default: `False`) - Re-download before parsing.
 - `--quiet`, `-q` (default: `False`) - Only report the summary.
 
+### `bus demand`
+
+Generate synthetic passenger flows and their OD matrices.
+
+Options:
+
+- `--scenarios`, `-n` (default: `1`) - How many scenarios to sample and generate.
+- `--seed` (default: `42`) - Seed of the batch; scenario i uses seed+i.
+- `--fleet` - Bus sizes as name:capacity:count, comma separated.
+- `--fleet-policy` - random, cycle or demand.
+- `--service` (default: `both`) - Which days to generate: weekday, weekend or both.
+- `--boardings-per-departure` - Demand dial, when no daily total is set. Sampled when a batch is requested.
+- `--daily-boardings` - Total riders for the day, split over the network.
+- `--alpha` - Attraction exponent of a stop's service. Sampled in a batch.
+- `--beta` - Journey-time decay, per minute. Sampled in a batch.
+- `--step` (default: `10`) - Seconds between ground-truth instants.
+- `--basemap` (default: `auto`) - What the map draws under the flows: auto (CARTO when CARTO_API_KEY is set, the timetable's own legs otherwise), carto-dark, carto-light, network, osm (needs the page served over HTTP) or none.
+- `--sweep` - JSON grid of parameters; every combination becomes a scenario.
+- `--no-instants` (default: `False`) - Skip the per-instant ground-truth table.
+- `--no-map` (default: `False`) - Skip the map and the GeoJSON files.
+- `--no-cube` (default: `False`) - Skip the origin-by-destination-by-time cube page.
+- `--cube-stops` (default: `60`) - How many of the busiest stops the cube holds.
+- `--no-replay` (default: `False`) - Skip the single-route day replay page.
+- `--out` - Where to write: the scenario itself for a single run, or the directory holding one per scenario for a batch.
+
 ### `bus fetch`
 
 Download the raw BusWay pages and AveiroBus PDFs.
@@ -50,6 +75,17 @@ Download the raw BusWay pages and AveiroBus PDFs.
 Options:
 
 - `--refresh` (default: `False`) - Re-download even when cached.
+
+### `bus geocode`
+
+Place the stops on the map, from OpenStreetMap.
+
+Options:
+
+- `--bbox` (default: `40.30,-8.95,41.10,-8.10`) - Area to index, as south,west,north,east (default: the Aveiro district).
+- `--stops` - Per-stop table with lat/lon, which wins over any match.
+- `--refresh` (default: `False`) - Re-fetch the OpenStreetMap index.
+- `--web` (default: `False`) - Also ask Nominatim about the stops the local index could not place (one request a second, so this takes a while).
 
 ### `bus plot`
 
@@ -60,6 +96,17 @@ Options:
 - `--service` (default: `weekday`) - Which service to compare: weekday or weekend.
 - `--out` (default: `plots/bus`) - Figure output directory.
 - `--no-labels` (default: `False`) - Leave out the stop names on the ladders.
+
+### `bus timeline`
+
+Slice the OD matrices by departure interval.
+
+Options:
+
+- `--window` (default: `60`) - Slice length in minutes.
+- `--step` (default: `60`) - Minutes between slice starts.
+- `--wide` (default: `False`) - Also write a dense grid per operator, service and slice.
+- `--out` (default: `data/bus/processed`) - Where to write the tables.
 
 ## `data`
 
@@ -150,6 +197,144 @@ Re-check every dataset against its recorded checksum and row count.
 ## `doctor`
 
 Report on the environment and the artifact store.
+
+## `edge`
+
+Edge-quantization campaign on the wavecom routers.
+
+### `edge accuracy`
+
+Score every artifact from its own weights.
+
+Options:
+
+- `--artifacts-dir` (default: `results/edge/artifacts`) - Directory of <model>-<precision> artifacts.
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+
+### `edge analyze`
+
+Compute the interference statistics.
+
+Options:
+
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--raw-dir` - Raw directory (for drop counters and inference windows).
+
+### `edge artifacts`
+
+Export the deployable artifact matrix.
+
+Options:
+
+- `--artifacts-dir` (default: `results/edge/artifacts`) - Output directory for artifacts.
+- `--models` - Comma-separated models (default: contract set).
+- `--precisions` - Comma-separated precisions (default: deployable set).
+
+### `edge bench`
+
+Run the load/latency matrix on a device.
+
+Options:
+
+- `--device` (default: `wave-router`) - Device key: wave-router, wave-router-2 or local.
+- `--profile` (default: `quick`) - smoke, quick or full.
+- `--artifacts-dir` (default: `results/edge/artifacts`) - Directory of <model>-<precision> artifacts.
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--raw-dir` (default: `results/edge/raw`) - Directory for raw device output.
+- `--binary` (default: `rust/target/x86_64-unknown-linux-musl/release/inmotion-infer`) - Static musl runtime binary to deploy.
+
+### `edge campaign`
+
+Run the full campaign and write a resumable run directory.
+
+Options:
+
+- `--profile` (default: `quick`) - smoke, quick or full.
+- `--devices` (default: `wave-router`) - Comma-separated device keys (wave-router,wave-router-2,local).
+- `--run-dir` - Explicit run directory.
+- `--results-root` (default: `results/edge`) - Root for runs/artifacts/windows.
+- `--artifacts-dir` - Override the artifact directory.
+- `--windows-dir` - Override the windows directory.
+- `--phases` - Comma-separated phase subset (default: all).
+- `--meter-file` - Meter reading file.
+- `--meter-cmd` - Meter command.
+- `--resume` (default: `False`) - Continue an interrupted run.
+- `--force` (default: `False`) - Overwrite an existing run.
+
+### `edge figures`
+
+Build the eight figures from the tables.
+
+Options:
+
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--out-dir` (default: `results/edge/figures`) - Figure output directory.
+- `--formats` (default: `pdf,png`) - Comma-separated formats: pdf,png.
+- `--dpi` (default: `300`) - Raster resolution.
+
+### `edge power`
+
+Estimate or measure energy per inference.
+
+Options:
+
+- `--device` (default: `wave-router`) - Device key: wave-router, wave-router-2 or local.
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--meter-file` - Torque meter reading file.
+- `--meter-cmd` - Command that prints watts or joules.
+
+### `edge preflight`
+
+Report what each device is and has.
+
+Options:
+
+- `--devices` (default: `wave-router,wave-router-2`) - Comma-separated device keys (default: both routers).
+
+### `edge replay`
+
+Replay the test windows on a device and compare.
+
+Options:
+
+- `--device` (default: `wave-router`) - Device key: wave-router, wave-router-2 or local.
+- `--profile` (default: `quick`) - smoke, quick or full.
+- `--artifacts-dir` (default: `results/edge/artifacts`) - Directory of <model>-<precision> artifacts.
+- `--windows-dir` (default: `results/edge/windows`) - Directory of per-model windows/labels/classes.
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--raw-dir` (default: `results/edge/raw`) - Directory for raw device output.
+- `--binary` (default: `rust/target/x86_64-unknown-linux-musl/release/inmotion-infer`) - Static musl runtime binary to deploy.
+
+### `edge report`
+
+Summarise the tables into a markdown report.
+
+Options:
+
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--out` (default: `results/edge/report.md`) - Report path.
+
+### `edge stress`
+
+Run the ABBA interference protocol on a device.
+
+Options:
+
+- `--device` (default: `wave-router`) - Device key: wave-router, wave-router-2 or local.
+- `--profile` (default: `quick`) - smoke, quick or full.
+- `--artifacts-dir` (default: `results/edge/artifacts`) - Directory of <model>-<precision> artifacts.
+- `--tables-dir` (default: `results/edge/tables`) - Directory for canonical CSVs.
+- `--raw-dir` (default: `results/edge/raw`) - Directory for raw device output.
+- `--binary` (default: `rust/target/x86_64-unknown-linux-musl/release/inmotion-infer`) - Static musl runtime binary to deploy.
+
+### `edge windows`
+
+Export the replayed test windows and labels.
+
+Options:
+
+- `--windows-dir` (default: `results/edge/windows`) - Directory of per-model windows/labels/classes.
+- `--models` - Comma-separated models (default: contract set).
 
 ## `evaluate`
 

@@ -91,16 +91,22 @@ class Fetcher:
         if wait > 0:
             time.sleep(wait)
 
-    def _download(self, url: str, target: Path, operator: Operator) -> bytes:
-        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    def _download(
+        self, url: str, target: Path, operator: Operator, data: dict[str, str] | None = None
+    ) -> bytes:
+        body = urllib.parse.urlencode(data).encode() if data is not None else None
+        headers = {"User-Agent": USER_AGENT}
+        if body is not None:
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+        request = urllib.request.Request(url, data=body, headers=headers)
         last: Exception | None = None
         for attempt in range(RETRIES):
             self._sleep(operator)
             try:
                 with urllib.request.urlopen(request, timeout=60) as response:
-                    body = response.read()
+                    payload = response.read()
                 self._last_request = time.monotonic()
-                return body
+                return payload
             except (urllib.error.URLError, TimeoutError) as exc:  # pragma: no cover
                 last = exc
                 self._last_request = time.monotonic()
@@ -136,6 +142,54 @@ class Fetcher:
         }
         if self.verbose:
             print(f"  fetched {name} ({len(body) / 1024:.0f} KiB)")
+        return target
+
+    def post(
+        self,
+        url: str,
+        data: dict[str, str],
+        operator: Operator,
+        *,
+        directory: Path | None = None,
+        suffix: str = ".json",
+    ) -> Path:
+        """Return the local path of a POST response, downloading it once.
+
+        Overpass takes its query in the body, so a URL is not a cache key on its
+        own: the body is digested into the filename, and the same query replays
+        from disk while a different one is a different file. Everything else —
+        the delay between requests, the retries, the checksummed manifest entry —
+        is what :meth:`get` already does, because this is the same polite path to
+        somebody else's server.
+        """
+        digest = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()[:16]
+        key = f"POST {url} {digest}"
+        name = f"{local_name(url, suffix='')[:40]}-{digest}{suffix}"
+        target = (directory if directory is not None else paths.raw_dir(operator.key)) / name
+
+        known = self._entry.get(key)
+        if (
+            target.exists()
+            and known
+            and not self.force
+            and int(known["bytes"]) == target.stat().st_size  # type: ignore[call-overload]
+        ):
+            if self.verbose:
+                print(f"  cached  {name}")
+            return target
+
+        payload = self._download(url, target, operator, data=data)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        self._entry[key] = {
+            "operator": operator.key,
+            "path": str(target.relative_to(paths.REPO_ROOT)),
+            "bytes": len(payload),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+            "fetched_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        }
+        if self.verbose:
+            print(f"  fetched {name} ({len(payload) / 1024:.0f} KiB)")
         return target
 
     def close(self) -> None:

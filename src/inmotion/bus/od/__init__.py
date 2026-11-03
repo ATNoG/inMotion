@@ -34,6 +34,7 @@ Submodules:
 ``tables``    the tidy per-trip and per-stop tables
 ``pairs``     the OD relation, one row per line, direction and stop pair
 ``matrix``    the matrices: aggregated over lines, long and wide
+``timeline``  the same relation sliced by departure interval, the dynamic view
 ``validate``  the invariants a trustworthy matrix has to satisfy
 """
 
@@ -41,24 +42,40 @@ from __future__ import annotations
 
 from inmotion.bus.od.bands import BANDS, WEEKEND, band, format_minutes, service_group
 from inmotion.bus.od.matrix import od_matrix, wide_matrix
-from inmotion.bus.od.pairs import od_pairs
+from inmotion.bus.od.pairs import od_pairs, per_trip_pairs
 from inmotion.bus.od.stops import canonical, stop_id, stops_frame
 from inmotion.bus.od.tables import stop_times_frame, trips_frame
-from inmotion.bus.od.validate import validate
+from inmotion.bus.od.timeline import (
+    TIMELINE_FILE,
+    interval_label,
+    interval_matrices,
+    od_timeline,
+    window_starts,
+    write_timeline,
+)
+from inmotion.bus.od.validate import validate, validate_timeline
 
 __all__ = [
     "BANDS",
+    "TIMELINE_FILE",
     "WEEKEND",
     "band",
     "canonical",
     "format_minutes",
+    "interval_label",
+    "interval_matrices",
     "od_matrix",
     "od_pairs",
+    "od_timeline",
+    "per_trip_pairs",
     "service_group",
     "stop_id",
     "stop_times_frame",
     "stops_frame",
     "trips_frame",
     "validate",
+    "validate_timeline",
     "wide_matrix",
+    "window_starts",
+    "write_timeline",
 ]
